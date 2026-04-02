@@ -263,6 +263,20 @@
 </head>
 <body>
 
+    <!-- AUTH GATE: Login obrigatório -->
+    <div id="authGate" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1a2a44 0%,#2d4a7a 100%);z-index:99999;">
+        <img src="DomusCar _ Logo.png" alt="DomusCar" style="height:90px;filter:brightness(0) invert(1);margin-bottom:32px;">
+        <h2 style="color:#fff;font-family:inherit;font-size:24px;margin:0 0 8px;">Gestão de Viaturas</h2>
+        <p style="color:rgba(255,255,255,0.7);font-size:14px;margin:0 0 32px;">Acesso restrito a colaboradores DomusCar</p>
+        <button id="authGateLoginBtn" onclick="loginUser()" style="background:#1a73e8;color:#fff;border:none;padding:14px 40px;border-radius:8px;font-size:16px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px rgba(0,0,0,0.3);transition:background 0.2s;">
+            <span style="font-size:20px;">&#128100;</span> Iniciar Sessão com Microsoft
+        </button>
+        <p id="authGateError" style="color:#ff6b6b;font-size:13px;margin-top:16px;display:none;"></p>
+        <p style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:48px;">Walkingarage, Lda. &copy; 2026</p>
+    </div>
+
+    <div id="appContent" style="display:none;">
+
     <!-- LOCATION SELECTOR OVERLAY (hidden by default, accessible via header badge) -->
     <div class="location-overlay hidden" id="locationOverlay">
         <img src="DomusCar _ Logo.png" alt="DomusCar" style="height:80px; filter: brightness(0) invert(1);">
@@ -931,34 +945,46 @@
             var accounts = msalInstance.getAllAccounts();
             if (accounts.length > 0) {
                 setCurrentUser(accounts[0]);
+                unlockApp();
             }
         } catch(e) { console.warn('MSAL init error:', e); }
     }
 
     function loginUser() {
         if (!msalInstance) {
-            // Modo local: pedir nome manualmente
-            var nome = prompt('Identifique-se (nome completo):');
-            if (nome && nome.trim()) {
-                currentUser = { name: nome.trim(), email: '', id: 'local-' + Date.now() };
-                localStorage.setItem('wg_currentUser', JSON.stringify(currentUser));
-                updateUserBadge();
-                showToast('Bem-vindo, ' + currentUser.name + '!', 'success');
-            }
+            var errEl = document.getElementById('authGateError');
+            if (errEl) { errEl.textContent = 'Erro: serviço de autenticação não disponível.'; errEl.style.display = ''; }
             return;
         }
         msalInstance.loginPopup({ scopes: ['User.Read'] }).then(function(response) {
             setCurrentUser(response.account);
+            unlockApp();
             showToast('Bem-vindo, ' + currentUser.name + '!', 'success');
-        }).catch(function(e) { console.error('Login error:', e); showToast('Erro no login. Tente novamente.', 'error'); });
+        }).catch(function(e) {
+            console.error('Login error:', e);
+            var errEl = document.getElementById('authGateError');
+            if (errEl) { errEl.textContent = 'Erro no login. Tente novamente.'; errEl.style.display = ''; }
+        });
+    }
+
+    function unlockApp() {
+        var gate = document.getElementById('authGate');
+        var content = document.getElementById('appContent');
+        if (gate) gate.style.display = 'none';
+        if (content) content.style.display = '';
     }
 
     function logoutUser() {
+        currentUser = null;
+        localStorage.removeItem('wg_currentUser');
+        // Mostrar gate de login novamente
+        var gate = document.getElementById('authGate');
+        var content = document.getElementById('appContent');
+        if (gate) gate.style.display = 'flex';
+        if (content) content.style.display = 'none';
         if (msalInstance) {
             msalInstance.logoutPopup().catch(function(e) { console.warn('Logout error:', e); });
         }
-        currentUser = null;
-        localStorage.removeItem('wg_currentUser');
         updateUserBadge();
     }
 
@@ -973,10 +999,8 @@
     }
 
     function restoreUser() {
-        try {
-            var saved = localStorage.getItem('wg_currentUser');
-            if (saved) currentUser = JSON.parse(saved);
-        } catch(e) {}
+        // Só restaurar se existir sessão MSAL válida (não permitir modo local)
+        // A restauração real acontece em initAuth() via getAllAccounts()
     }
 
     function getUserStamp() {
@@ -2800,5 +2824,7 @@
 
     init();
     </script>
+
+    </div><!-- /appContent -->
 </body>
 </html>
