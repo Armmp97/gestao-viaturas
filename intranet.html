@@ -1023,20 +1023,20 @@
             <!-- Configuração SharePoint -->
             <div class="settings-section">
                 <div class="settings-title">Configuração SharePoint</div>
-                <div class="settings-subtitle">Integração com SharePoint Online</div>
+                <div class="settings-subtitle">Integração com SharePoint Online — Graph API</div>
                 <div class="form-group">
                     <label class="form-label">URL do Site SharePoint</label>
-                    <input type="text" class="form-input" placeholder="https://domuscar.sharepoint.com/sites/intranet" value="https://domuscar.sharepoint.com/sites/intranet">
+                    <input type="text" class="form-input" value="https://cpmem.sharepoint.com/sites/GestaoViaturas" readonly style="background:#f0f0f0;cursor:default;">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Lista de Comunicações</label>
-                    <input type="text" class="form-input" placeholder="Communications" value="Communications">
+                    <label class="form-label">Drive de Documentos</label>
+                    <input type="text" class="form-input" value="Documentos" readonly style="background:#f0f0f0;cursor:default;">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Lista de Documentos</label>
-                    <input type="text" class="form-input" placeholder="Documents" value="Documents">
+                    <label class="form-label">Pasta Raiz</label>
+                    <input type="text" class="form-input" value="Intranet/" readonly style="background:#f0f0f0;cursor:default;">
                 </div>
-                <button class="form-button">Testar Conexão</button>
+                <button class="form-button" onclick="initSharePoint()">Testar Conexão</button>
             </div>
 
             <!-- Manutenção -->
@@ -1871,6 +1871,14 @@
         renderFeed();
         renderKpiContent('colisao');
         updateGreeting();
+        // Hide breadcrumb on home
+        document.getElementById('breadcrumb').style.display = 'none';
+        // Set dashboard as grid
+        document.getElementById('dashboardView').style.display = 'grid';
+        // Highlight Início
+        clearActiveNav();
+        var navHome = document.getElementById('navHome');
+        if (navHome) navHome.classList.add('active');
         // Initialize SharePoint connection (background)
         setTimeout(function() { initSharePoint(); }, 1000);
     }
