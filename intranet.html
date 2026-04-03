@@ -1826,7 +1826,7 @@
 
     function doLogin() {
         if (!msalInstance) { console.error('MSAL não inicializado'); return; }
-        msalInstance.loginPopup({ scopes: ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All'] }).then(function(response) {
+        msalInstance.loginPopup({ scopes: ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'] }).then(function(response) {
             currentMsalUser = response.account;
             unlockIntranet();
         }).catch(function(e) {
@@ -1941,11 +1941,11 @@
     function getGraphToken() {
         if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
         return msalInstance.acquireTokenSilent({
-            scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
+            scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'],
             account: currentMsalUser
         }).catch(function() {
             return msalInstance.acquireTokenPopup({
-                scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
+                scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'],
                 account: currentMsalUser
             });
         }).then(function(resp) { return resp.accessToken; });
@@ -2090,6 +2090,48 @@
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'openUrl') return;
         window.open(event.data.url, '_blank');
+    });
+
+    // Listen for createDraftEmail requests from iframes
+    // Creates a Graph API draft with HTML attachment, then opens it in Outlook web
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'createDraftEmail') return;
+        var d = event.data;
+        getGraphToken().then(function(token) {
+            // Base64 encode the HTML content
+            var base64Content = btoa(unescape(encodeURIComponent(d.attachmentContent)));
+            var draftPayload = {
+                subject: d.subject,
+                body: { contentType: 'HTML', content: d.body.replace(/\n/g, '<br>') },
+                toRecipients: [{ emailAddress: { address: d.to } }]
+            };
+            // 1) Create draft
+            return fetch('https://graph.microsoft.com/v1.0/me/messages', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify(draftPayload)
+            }).then(function(r) { return r.json(); }).then(function(msg) {
+                // 2) Add attachment
+                return fetch('https://graph.microsoft.com/v1.0/me/messages/' + msg.id + '/attachments', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        '@odata.type': '#microsoft.graph.fileAttachment',
+                        name: d.attachmentName || 'relatorio.html',
+                        contentType: 'text/html',
+                        contentBytes: base64Content
+                    })
+                }).then(function() { return msg; });
+            });
+        }).then(function(msg) {
+            // 3) Open draft in Outlook web
+            var outlookUrl = 'https://outlook.office.com/mail/compose/' + msg.id;
+            window.open(outlookUrl, '_blank');
+            event.source.postMessage({ type: 'draftEmailResult', success: true }, '*');
+        }).catch(function(err) {
+            console.error('Draft email error:', err);
+            event.source.postMessage({ type: 'draftEmailResult', success: false, error: err.message || String(err) }, '*');
+        });
     });
 
     // ======== NAVIGATION ========
