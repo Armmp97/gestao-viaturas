@@ -927,24 +927,13 @@
         <div class="sidebar-section">Operações</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Gestão de Viaturas</a></li>
-            <li><a onclick="openModule('picagens')" id="navPicagens"><span class="nav-icon">⏱️</span> Divergências / Picagens</a></li>
             <li id="navMargemLi" style="display:none;"><a onclick="openModule('margem')" id="navMargem"><span class="nav-icon">💰</span> Cálculo Margem Provisória</a></li>
             <li id="navDivergenciasLi" style="display:none;"><a onclick="openModule('divergencias')" id="navDivergencias"><span class="nav-icon">📊</span> Divergências Picagens OG/2Smart</a></li>
-            <li><a class="disabled"><span class="nav-icon">📋</span> Ordens de Serviço</a></li>
-            <li><a class="disabled"><span class="nav-icon">📦</span> Stock / Peças</a></li>
-        </ul>
-
-        <div class="sidebar-section">Empresa</div>
-        <ul class="sidebar-nav">
-            <li><a onclick="openModule('equipa')" id="navEquipa"><span class="nav-icon">👥</span> Equipa / Contactos</a></li>
-            <li><a onclick="openModule('documentos')" id="navDocumentos"><span class="nav-icon">📄</span> Documentos Internos</a></li>
-            <li><a onclick="openModule('comunicacoes')" id="navComunicacoes"><span class="nav-icon">📢</span> Comunicações</a></li>
         </ul>
 
         <div class="sidebar-section" id="adminSection" style="display: none;">Administração</div>
         <ul class="sidebar-nav" id="adminNav" style="display: none;">
             <li><a onclick="openSettings()" id="navDefinicoes"><span class="nav-icon">⚙️</span> Definições</a></li>
-            <li><a onclick="openModule('relatorios')" id="navRelatorios"><span class="nav-icon">📊</span> Relatórios</a></li>
         </ul>
 
         <div class="sidebar-footer">
@@ -1053,7 +1042,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Utilizadores Ativos</label>
-                    <input type="text" class="form-input" value="127 utilizadores" disabled>
+                    <input type="text" class="form-input" id="activeUsersCount" value="" disabled>
                 </div>
                 <button class="form-button">Limpar Cache</button>
                 <button class="form-button" style="margin-left: 8px; background: #e37400;">Força Atualização</button>
@@ -1803,15 +1792,15 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis','margem','divergencias']
+            modules: ['viaturas','definicoes','kpis','margem','divergencias']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis','margem','divergencias']
+            modules: ['viaturas','definicoes','kpis','margem','divergencias']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['viaturas','comunicacoes','equipa','kpis']
+            modules: ['viaturas','kpis']
         }
     };
 
@@ -2065,9 +2054,16 @@
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'saveToSharePoint') return;
         var data = event.data;
-        uploadToSharePoint(data.folderKey, data.fileName, data.fileContent, data.contentType)
+        // Auto-rename with timestamp to prevent overwrites
+        var origName = data.fileName;
+        var dotIdx = origName.lastIndexOf('.');
+        var baseName = dotIdx > 0 ? origName.substring(0, dotIdx) : origName;
+        var ext = dotIdx > 0 ? origName.substring(dotIdx) : '';
+        var ts = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        var uniqueName = baseName + '_' + ts + ext;
+        uploadToSharePoint(data.folderKey, uniqueName, data.fileContent, data.contentType)
             .then(function(result) {
-                event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: data.fileName }, '*');
+                event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: uniqueName }, '*');
             })
             .catch(function(err) {
                 event.source.postMessage({ type: 'saveToSharePointResult', success: false, error: err.message }, '*');
@@ -2126,7 +2122,6 @@
     function openModule(id) {
         const modules = {
             viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
-            picagens: { title: 'Divergências / Picagens', url: null },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' }
         };
@@ -2180,13 +2175,18 @@
         var tbody = document.getElementById('usersTableBody');
         if (!tbody) return;
         tbody.innerHTML = '';
+        var userCount = 0;
         Object.keys(USER_PERMISSIONS).forEach(function(email) {
             if (email === '_default') return;
+            userCount++;
             var user = USER_PERMISSIONS[email];
             var tr = document.createElement('tr');
             tr.innerHTML = '<td>' + user.name + '</td><td>' + email + '</td><td>' + (user.role === 'admin' ? 'Administrador' : 'Utilizador') + '</td><td>' + user.modules.length + ' módulos</td>';
             tbody.appendChild(tr);
         });
+        // Update active users count
+        var countEl = document.getElementById('activeUsersCount');
+        if (countEl) countEl.value = userCount + ' utilizadores registados';
     }
 
     function openClaudeDesktop() {

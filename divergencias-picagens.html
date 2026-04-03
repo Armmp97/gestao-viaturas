@@ -128,6 +128,8 @@ function handleFile(file, type) {
     if(type==='pdf') { pdfFile=file; document.getElementById('pdfInfo').textContent='OK: '+file.name; document.getElementById('pdfInfo').style.display='block'; }
     else { xlsxFile=file; document.getElementById('xlsxInfo').textContent='OK: '+file.name; document.getElementById('xlsxInfo').style.display='block'; }
     document.getElementById('generateBtn').disabled = !(pdfFile && xlsxFile);
+    // Save imported file to SharePoint via parent
+    saveFileToSharePoint(file, 'divergencias_importados');
 }
 if(document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initUI); }
 else { initUI(); }
@@ -827,7 +829,7 @@ async function generate() {
             htmlFiles[unit] = generateUnitHTML(unit, smart2, ogData);
         }
 
-        setProgress(90, 'A preparar downloads...');
+        setProgress(90, 'A preparar downloads e guardar no SharePoint...');
         var cardsDiv = document.getElementById('resultCards');
         cardsDiv.innerHTML = '';
         for(var unit in UNITS) {
@@ -844,6 +846,8 @@ async function generate() {
             (function(u,f){ dlBtn.onclick = function(){ var a=document.createElement('a'); a.href=u; a.download=f; a.click(); }; })(url,fn);
             card.appendChild(dlBtn);
             cardsDiv.appendChild(card);
+            // Save generated HTML to SharePoint
+            saveGeneratedHtmlToSharePoint(fn, htmlFiles[unit]);
         }
 
         setProgress(100, 'Concluído!');
@@ -857,5 +861,49 @@ async function generate() {
     }
     btn.disabled = false;
 }
+
+// ============================================================
+// SHAREPOINT INTEGRATION via postMessage to parent (intranet.html)
+// ============================================================
+function saveFileToSharePoint(file, folderKey) {
+    if (!window.parent || window.parent === window) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        window.parent.postMessage({
+            type: 'saveToSharePoint',
+            folderKey: folderKey,
+            fileName: file.name,
+            fileContent: e.target.result,
+            contentType: file.type
+        }, '*');
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function saveGeneratedHtmlToSharePoint(fileName, htmlContent) {
+    if (!window.parent || window.parent === window) return;
+    var blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        window.parent.postMessage({
+            type: 'saveToSharePoint',
+            folderKey: 'divergencias_gerados',
+            fileName: fileName,
+            fileContent: e.target.result,
+            contentType: 'text/html'
+        }, '*');
+    };
+    reader.readAsArrayBuffer(blob);
+}
+
+// Listen for save results from parent
+window.addEventListener('message', function(event) {
+    if (!event.data || event.data.type !== 'saveToSharePointResult') return;
+    if (event.data.success) {
+        console.log('SharePoint: ficheiro guardado - ' + event.data.fileName);
+    } else {
+        console.warn('SharePoint: erro ao guardar - ' + event.data.error);
+    }
+});
 </script>
 </body></html>

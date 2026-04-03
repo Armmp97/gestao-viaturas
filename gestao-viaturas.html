@@ -1264,6 +1264,12 @@
 
     function spUploadFile(bookingId, stage, fileName, base64Data) {
         if (!spSiteId || !spDriveId) return Promise.resolve();
+        // Auto-rename: add timestamp to prevent overwrites
+        var dotIdx = fileName.lastIndexOf('.');
+        var baseName = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
+        var ext = dotIdx > 0 ? fileName.substring(dotIdx) : '';
+        var ts = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        var uniqueName = baseName + '_' + ts + ext;
         // Converter base64 para blob
         var parts = base64Data.split(',');
         var mime = parts[0].match(/:(.*?);/)[1];
@@ -1271,7 +1277,7 @@
         var array = new Uint8Array(binary.length);
         for (var i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
         var blob = new Blob([array], { type: mime });
-        var path = bookingId + '/' + stage + '/' + fileName;
+        var path = bookingId + '/' + stage + '/' + uniqueName;
         return getAccessToken().then(function(token) {
             return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + path + ':/content', {
                 method: 'PUT',

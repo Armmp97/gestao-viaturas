@@ -464,6 +464,8 @@ function downloadHTML(filename, content){
 document.getElementById('fileInput').addEventListener('change', function(e){
   const file=e.target.files[0];
   if(!file)return;
+  // Save imported file to SharePoint via parent
+  saveFileToSharePoint(file, 'margem_importados');
 
   const st=document.getElementById('status');
   st.className='ok';
@@ -513,6 +515,8 @@ document.getElementById('fileInput').addEventListener('change', function(e){
 
       generated.forEach((g,i)=>{
         document.getElementById('dl-'+i).addEventListener('click',()=>downloadHTML(g.fname,g.html));
+        // Save generated HTML to SharePoint
+        saveGeneratedHtmlToSharePoint(g.fname, g.html);
       });
 
       const allBtn=document.createElement('button');
@@ -538,6 +542,50 @@ document.getElementById('fileInput').addEventListener('change', function(e){
     }
   };
   reader.readAsArrayBuffer(file);
+});
+
+// ============================================================
+// SHAREPOINT INTEGRATION via postMessage to parent (intranet.html)
+// ============================================================
+function saveFileToSharePoint(file, folderKey) {
+    if (!window.parent || window.parent === window) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        window.parent.postMessage({
+            type: 'saveToSharePoint',
+            folderKey: folderKey,
+            fileName: file.name,
+            fileContent: e.target.result,
+            contentType: file.type
+        }, '*');
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function saveGeneratedHtmlToSharePoint(fileName, htmlContent) {
+    if (!window.parent || window.parent === window) return;
+    var blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        window.parent.postMessage({
+            type: 'saveToSharePoint',
+            folderKey: 'margem_gerados',
+            fileName: fileName,
+            fileContent: e.target.result,
+            contentType: 'text/html'
+        }, '*');
+    };
+    reader.readAsArrayBuffer(blob);
+}
+
+// Listen for save results from parent
+window.addEventListener('message', function(event) {
+    if (!event.data || event.data.type !== 'saveToSharePointResult') return;
+    if (event.data.success) {
+        console.log('SharePoint: ficheiro guardado - ' + event.data.fileName);
+    } else {
+        console.warn('SharePoint: erro ao guardar - ' + event.data.error);
+    }
 });
 </script>
 </body>
