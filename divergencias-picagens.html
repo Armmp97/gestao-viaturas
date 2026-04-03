@@ -76,6 +76,11 @@ const COORDINATORS = {
     "Mecânica Cacém": {nome: "Jose Rodriguez", email: "jose.rodriguez@domuscar.com"},
     "Mecânica Lisboa": {nome: "Fabio Ramalho", email: "fabio.ramalho@domuscar.com"},
 };
+const COORDINATOR_EMAILS = {
+    "Colisão": "mario.perez@domuscar.com",
+    "Mecânica Cacém": "jose.rodriguez@domuscar.com",
+    "Mecânica Lisboa": "fabio.ramalho@domuscar.com"
+};
 const UNITS = {
     "Colisão": {
         colaboradores: ["Carlos Miguel Fernandes Gonçalves Antunes","Diogo Henrique Gomes Fernandes","Djeison Miguel Gonçalves Barbosa Amado","Gyanu Pujara","José Avelino da Cruz Fernandes","José João Ferreira Borges","João Paulo São Pedro Bizarro","Nuno Alexandre Carvalho Montês","Pedro Filipe de Castro Jana","Vitor Manuel Vilarinho Soutilha"],
@@ -844,13 +849,74 @@ async function generate() {
             card.className = 'result-card';
             card.innerHTML = '<div class="info">'+unit+'<br><span>'+COORDINATORS[unit].nome+' · '+fn+'<\/span><\/div>';
             var btnWrap = document.createElement('div');
-            btnWrap.style.cssText = 'display:flex;gap:6px;';
+            btnWrap.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
             var viewBtn = document.createElement('button');
             viewBtn.className = 'btn-download';
             viewBtn.style.cssText = 'background:#3498db;padding:8px 14px;font-size:0.85em;';
             viewBtn.textContent = 'Pré-visualizar';
             (function(h){ viewBtn.onclick = function(){ openPrintPreview([h]); }; })({ unit: unit, html: htmlFiles[unit] });
             btnWrap.appendChild(viewBtn);
+
+            // Per-department "Guardar no SharePoint e Enviar por E-Mail" button
+            var emailBtn = document.createElement('button');
+            emailBtn.className = 'btn-download';
+            emailBtn.style.cssText = 'background:#8e44ad;padding:8px 14px;font-size:0.85em;white-space:nowrap;';
+            emailBtn.textContent = 'SP + E-Mail';
+            (function(unitName, safeId, htmlContent) {
+                emailBtn.onclick = function() {
+                    var thisBtn = this;
+                    var origText = thisBtn.textContent;
+                    thisBtn.textContent = 'A guardar...';
+                    thisBtn.style.background = '#666';
+                    thisBtn.disabled = true;
+
+                    // 1) Save to SharePoint
+                    var ts = getTimestamp();
+                    var spName = 'Validacao_' + safeId.charAt(0).toUpperCase() + safeId.slice(1) + '_' + ts + '.html';
+                    saveGeneratedHtmlToSharePoint(spName, htmlContent);
+
+                    // 2) Copy email body to clipboard
+                    var emailBody = 'Bom dia,\n\n' +
+                        'Segue em anexo o relatório diário de divergências de picagens da vossa unidade, referente ao dia XX/XX/XXXX.\n\n' +
+                        'Este relatório compara os registos de ponto do 2Smart com os tempos de intervenção do Officegest, e inclui alertas sobre presença, tempo em intervenções, pausas de almoço, horas extras e tempo morto.\n\n' +
+                        'O que é necessário fazer:\n' +
+                        'Abrir o ficheiro HTML em anexo, analisar os alertas de cada colaborador e preencher os campos de validação quando aplicável (horas extras, correções de picagens, observações). No final, clicar no botão "Enviar Validação por Email" — o email de resposta é gerado automaticamente com toda a informação preenchida.\n\n' +
+                        'Como abrir o ficheiro:\n' +
+                        'No computador — Descarregar o anexo e abrir com o Chrome ou Edge (duplo clique no ficheiro). Não abrir dentro do Outlook, pois os formulários não funcionam na pré-visualização.\n' +
+                        'No telemóvel — Descarregar o anexo, abrir com o browser (Chrome ou Safari). Ao clicar no botão de envio, o Outlook abre automaticamente com o email preparado.\n\n' +
+                        'Responder a todos os campos que permitem preenchimento, mesmo que sejam óbvios, por favor.\n' +
+                        'Qualquer dúvida, contactem-me diretamente.\n\n' +
+                        'Ao abrir a caixa de email, fazer Ctrl-V para colar a mensagem\n\n' +
+                        'Cumprimentos,';
+
+                    var coordEmail = COORDINATOR_EMAILS[unitName] || '';
+                    var subject = encodeURIComponent('Validação Diária de Picagens \u2014 XX/XX/XXXX');
+                    var outlookUrl = 'https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(coordEmail) + '&subject=' + subject;
+
+                    navigator.clipboard.writeText(emailBody).then(function() {
+                        window.open(outlookUrl, '_blank');
+                        thisBtn.textContent = 'Enviado! (corpo copiado)';
+                        thisBtn.style.background = '#27ae60';
+                        setTimeout(function() {
+                            thisBtn.textContent = origText;
+                            thisBtn.style.background = '#8e44ad';
+                            thisBtn.disabled = false;
+                        }, 4000);
+                    }).catch(function() {
+                        // Clipboard failed — still open Outlook
+                        window.open(outlookUrl, '_blank');
+                        thisBtn.textContent = 'Outlook aberto (copiar falhou)';
+                        thisBtn.style.background = '#e67e22';
+                        setTimeout(function() {
+                            thisBtn.textContent = origText;
+                            thisBtn.style.background = '#8e44ad';
+                            thisBtn.disabled = false;
+                        }, 4000);
+                    });
+                };
+            })(unit, safe, htmlFiles[unit]);
+            btnWrap.appendChild(emailBtn);
+
             card.appendChild(btnWrap);
             cardsDiv.appendChild(card);
         }
