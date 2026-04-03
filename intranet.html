@@ -312,15 +312,9 @@
         /* ---- Dashboard ---- */
         .dashboard {
             padding: 24px;
-            display: grid;
-            grid-template-columns: minmax(250px, 320px) 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 24px;
-        }
-
-        @media (max-width: 1400px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
         }
 
         .feed-section {
@@ -847,9 +841,6 @@
         }
 
         @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
 
             .kpi-tecnico-grid {
                 grid-template-columns: 1fr;
@@ -927,13 +918,18 @@
         <div class="sidebar-section">Operações</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Gestão de Viaturas</a></li>
-            <li id="navMargemLi" style="display:none;"><a onclick="openModule('margem')" id="navMargem"><span class="nav-icon">💰</span> Cálculo Margem Provisória</a></li>
-            <li id="navDivergenciasLi" style="display:none;"><a onclick="openModule('divergencias')" id="navDivergencias"><span class="nav-icon">📊</span> Divergências Picagens OG/2Smart</a></li>
         </ul>
 
         <div class="sidebar-section" id="adminSection" style="display: none;">Administração</div>
         <ul class="sidebar-nav" id="adminNav" style="display: none;">
             <li><a onclick="openSettings()" id="navDefinicoes"><span class="nav-icon">⚙️</span> Definições</a></li>
+            <li id="navGerarRelatoriosLi">
+                <a onclick="toggleRelatoriosSubmenu()" id="navGerarRelatorios" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">📋</span> Gerar Relatórios</span><span id="relatoriosArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <ul id="relatoriosSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
+                    <li id="navMargemLi"><a onclick="openModule('margem')" id="navMargem"><span class="nav-icon">💰</span> Margem Provisória</a></li>
+                    <li id="navDivergenciasLi"><a onclick="openModule('divergencias')" id="navDivergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
+                </ul>
+            </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -952,18 +948,6 @@
     <main class="app-main" id="mainContent">
         <!-- Dashboard -->
         <div class="dashboard" id="dashboardView">
-            <!-- Feed Section -->
-            <div class="feed-section">
-                <div class="feed-header">Comunicações Recentes</div>
-                <div class="feed-messages" id="feedMessages">
-                    <!-- Messages populated by JS -->
-                </div>
-                <div class="feed-input-area">
-                    <input type="text" class="feed-input" placeholder="Escreva uma mensagem...">
-                    <button class="feed-send">Enviar</button>
-                </div>
-            </div>
-
             <!-- KPI Dashboard -->
             <div class="kpi-section">
                 <div class="kpi-header">
@@ -979,6 +963,18 @@
                 </div>
                 <div class="kpi-content" id="kpiContent">
                     <!-- KPI content populated by JS -->
+                </div>
+            </div>
+            <!-- Margem Provisória Block -->
+            <div class="kpi-section" id="margemDashboardBlock" style="display:none;">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title"><span>Margem Provisória</span><button class="kpi-collapse-btn" onclick="toggleMargemCollapse()">Minimizar</button></div>
+                        <div style="font-size:12px;color:#888;margin-top:4px;" id="margemLastUpdate"></div>
+                    </div>
+                </div>
+                <div id="margemContent" style="padding:16px;">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;" id="margemCards"></div>
                 </div>
             </div>
         </div>
@@ -1859,11 +1855,12 @@
 
         renderFeed();
         renderKpiContent('colisao');
+        loadMargemDashboard();
         updateGreeting();
         // Hide breadcrumb on home
         document.getElementById('breadcrumb').style.display = 'none';
         // Set dashboard as grid
-        document.getElementById('dashboardView').style.display = 'grid';
+        document.getElementById('dashboardView').style.display = 'flex';
         // Highlight Início
         clearActiveNav();
         var navHome = document.getElementById('navHome');
@@ -1872,22 +1869,29 @@
         setTimeout(function() { initSharePoint(); }, 1000);
     }
 
+    function toggleRelatoriosSubmenu() {
+        var sub = document.getElementById('relatoriosSubmenu');
+        var arrow = document.getElementById('relatoriosArrow');
+        if (!sub) return;
+        if (sub.style.display === 'none' || !sub.style.display) {
+            sub.style.display = 'block';
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        } else {
+            sub.style.display = 'none';
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
     function updateSidebarPermissions() {
         if (!currentUserPermissions) return;
         var adminSection = document.getElementById('adminSection');
         var adminNav = document.getElementById('adminNav');
-        var margemLi = document.getElementById('navMargemLi');
-        var divergenciasLi = document.getElementById('navDivergenciasLi');
         if (currentUserPermissions.role === 'admin') {
             if (adminSection) adminSection.style.display = 'block';
             if (adminNav) adminNav.style.display = 'block';
-            if (margemLi) margemLi.style.display = 'block';
-            if (divergenciasLi) divergenciasLi.style.display = 'block';
         } else {
             if (adminSection) adminSection.style.display = 'none';
             if (adminNav) adminNav.style.display = 'none';
-            if (margemLi) margemLi.style.display = 'none';
-            if (divergenciasLi) divergenciasLi.style.display = 'none';
         }
     }
 
@@ -2064,6 +2068,12 @@
             });
     });
 
+    // Listen for margem dashboard data from iframe
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'margemDashboardUpdate') return;
+        saveMargemDashboard(event.data.payload);
+    });
+
     // ======== NAVIGATION ========
     let currentModule = null;
     let desktopSidebarVisible = true;
@@ -2094,7 +2104,7 @@
 
     function goHome() {
         currentModule = null;
-        document.getElementById('dashboardView').style.display = 'grid';
+        document.getElementById('dashboardView').style.display = 'flex';
         var frame = document.getElementById('moduleFrame');
         frame.classList.remove('active');
         frame.classList.remove('visible');
@@ -2214,6 +2224,80 @@
         }
     }
 
+    // ============================================
+    // MARGEM DASHBOARD BLOCK
+    // ============================================
+    function toggleMargemCollapse() {
+        var block = document.getElementById('margemDashboardBlock');
+        var content = document.getElementById('margemContent');
+        var btn = block.querySelector('.kpi-collapse-btn');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            btn.textContent = 'Minimizar';
+        } else {
+            content.style.display = 'none';
+            btn.textContent = 'Expandir';
+        }
+    }
+
+    function loadMargemDashboard() {
+        try {
+            var stored = localStorage.getItem('intranet_margemDashboard');
+            if (!stored) return;
+            var data = JSON.parse(stored);
+            renderMargemDashboard(data);
+        } catch(e) { console.error('loadMargemDashboard:', e); }
+    }
+
+    function saveMargemDashboard(data) {
+        try {
+            localStorage.setItem('intranet_margemDashboard', JSON.stringify(data));
+        } catch(e) { console.error('saveMargemDashboard:', e); }
+        renderMargemDashboard(data);
+    }
+
+    function renderMargemDashboard(data) {
+        var block = document.getElementById('margemDashboardBlock');
+        var cardsDiv = document.getElementById('margemCards');
+        var updateDiv = document.getElementById('margemLastUpdate');
+        if (!data || !data.departments || data.departments.length === 0) {
+            block.style.display = 'none';
+            return;
+        }
+        block.style.display = 'block';
+        updateDiv.textContent = 'Atualizado: ' + (data.timestamp || '—');
+        cardsDiv.innerHTML = '';
+        var colors = { colisao: '#e8710a', cacem: '#1a73e8', lisboa: '#0d904f' };
+        data.departments.forEach(function(dept) {
+            var color = colors[dept.key] || '#333';
+            var mpVal = dept.margem !== null && dept.margem !== undefined ? (dept.margem * 100).toFixed(1) + '%' : '—';
+            var mpColor = dept.margem >= 0.30 ? '#0d904f' : (dept.margem >= 0.20 ? '#e37400' : '#d93025');
+            var card = document.createElement('div');
+            card.style.cssText = 'background:white;border-radius:12px;padding:20px;border-left:4px solid ' + color + ';box-shadow:0 1px 3px rgba(0,0,0,.1);';
+            card.innerHTML =
+                '<div style="font-size:14px;font-weight:600;color:' + color + ';margin-bottom:12px;">' + dept.label + '</div>' +
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
+                        '<div style="font-size:11px;color:#888;">Margem</div>' +
+                        '<div style="font-size:20px;font-weight:700;color:' + mpColor + ';">' + mpVal + '</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
+                        '<div style="font-size:11px;color:#888;">Vendas</div>' +
+                        '<div style="font-size:16px;font-weight:600;color:#333;">' + (dept.vendas || '—') + '</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
+                        '<div style="font-size:11px;color:#888;">Custos</div>' +
+                        '<div style="font-size:16px;font-weight:600;color:#333;">' + (dept.custos || '—') + '</div>' +
+                    '</div>' +
+                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
+                        '<div style="font-size:11px;color:#888;">Resultado</div>' +
+                        '<div style="font-size:16px;font-weight:600;color:' + mpColor + ';">' + (dept.resultado || '—') + '</div>' +
+                    '</div>' +
+                '</div>';
+            cardsDiv.appendChild(card);
+        });
+    }
+
     var currentSpFolder = null;
 
     function browseSharePoint(folderKey) {
@@ -2233,7 +2317,7 @@
                 return;
             }
             var html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
-            html += '<thead><tr style="background: #f5f5f5;"><th style="padding: 8px 12px; text-align: left;">Nome</th><th style="padding: 8px 12px; text-align: right; width: 80px;">Tamanho</th><th style="padding: 8px 12px; text-align: right; width: 140px;">Data</th><th style="padding: 8px 12px; width: 40px;"></th></tr></thead><tbody>';
+            html += '<thead><tr style="background: #f5f5f5;"><th style="padding: 8px 12px; text-align: left;">Nome</th><th style="padding: 8px 12px; text-align: right; width: 80px;">Tamanho</th><th style="padding: 8px 12px; text-align: right; width: 140px;">Data</th><th style="padding: 8px 12px; width: 80px; text-align: center;">Ações</th></tr></thead><tbody>';
             data.value.forEach(function(item) {
                 var isFolder = !!item.folder;
                 var size = item.size ? formatFileSize(item.size) : '—';
@@ -2249,7 +2333,14 @@
                 html += '</td>';
                 html += '<td style="padding: 8px 12px; text-align: right; color: var(--text-secondary);">' + size + '</td>';
                 html += '<td style="padding: 8px 12px; text-align: right; color: var(--text-secondary);">' + date + '</td>';
-                html += '<td style="padding: 8px 12px; text-align: center;"><button onclick="confirmDeleteFile(\'' + item.id + '\', \'' + item.name.replace(/'/g, "\\'") + '\')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;" title="Eliminar">🗑️</button></td>';
+                var actions = '';
+                if (!isFolder && item.webUrl) {
+                    actions += '<a href="' + item.webUrl + '" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-size: 14px; margin-right: 8px;" title="Abrir no SharePoint">🔗</a>';
+                }
+                if (currentUserPermissions && currentUserPermissions.role === 'admin') {
+                    actions += '<button onclick="confirmDeleteFile(\'' + item.id + '\', \'' + item.name.replace(/'/g, "\\'") + '\')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;" title="Eliminar do SharePoint">🗑️</button>';
+                }
+                html += '<td style="padding: 8px 12px; text-align: center;">' + actions + '</td>';
                 html += '</tr>';
             });
             html += '</tbody></table>';

@@ -461,6 +461,41 @@ function downloadHTML(filename, content){
   URL.revokeObjectURL(a.href);
 }
 
+function openPrintPreviewMargem(reports) {
+    var pw = window.open('', '_blank');
+    if (!pw) { alert('Popup bloqueado. Permita popups para esta página.'); return; }
+    pw.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pré-visualização — Margem Provisória</title>');
+    pw.document.write('<style>');
+    pw.document.write('body{font-family:Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}');
+    pw.document.write('.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;}');
+    pw.document.write('.report-header{background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;}');
+    pw.document.write('.report-frame{width:100%;border:none;min-height:600px;}');
+    pw.document.write('.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
+    pw.document.write('.toolbar h1{font-size:18px;margin:0;color:#1e3a5f;}');
+    pw.document.write('.btn-print{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
+    pw.document.write('.btn-print:hover{background:#1d4ed8;}');
+    pw.document.write('@media print{.toolbar{display:none;}.report-section{break-inside:avoid;box-shadow:none;}.report-frame{min-height:auto;}}');
+    pw.document.write('</style></head><body>');
+    pw.document.write('<div class="toolbar"><h1>Margem Provisória — ' + reports.length + ' Relatório(s)</h1>');
+    pw.document.write('<button class="btn-print" onclick="window.print()">Imprimir Todos</button></div>');
+    reports.forEach(function(r, idx) {
+        var label = r.cfg ? r.cfg.label : ('Relatório ' + (idx + 1));
+        pw.document.write('<div class="report-section"><div class="report-header">' + label + '</div>');
+        pw.document.write('<iframe id="frame_' + idx + '" class="report-frame"></iframe></div>');
+    });
+    pw.document.write('</body></html>');
+    pw.document.close();
+    setTimeout(function() {
+        reports.forEach(function(r, idx) {
+            var f = pw.document.getElementById('frame_' + idx);
+            if (f) {
+                f.srcdoc = r.html;
+                f.onload = function() { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; };
+            }
+        });
+    }, 200);
+}
+
 document.getElementById('fileInput').addEventListener('change', function(e){
   const file=e.target.files[0];
   if(!file)return;
@@ -511,27 +546,75 @@ document.getElementById('fileInput').addEventListener('change', function(e){
               <div class="result-margin">Margem: ${fp(g.parsed.mp)} | Vendas: ${fmt(g.parsed.vT)}</div>
             </div>
           </div>
-          <button class="dl-btn" id="dl-${i}">⬇ Download</button>`;
+          <button class="dl-btn" id="dl-${i}">Pré-visualizar</button>`;
         resDiv.appendChild(card);
       });
 
-      var ts = getTimestamp();
+      // Bind preview buttons (no auto-save)
       generated.forEach((g,i)=>{
-        document.getElementById('dl-'+i).addEventListener('click',()=>downloadHTML(g.fname,g.html));
-        // Save generated HTML to SharePoint with descriptive name + timestamp
-        var dotIdx = g.fname.lastIndexOf('.');
-        var spGenName = g.fname.substring(0, dotIdx) + '_' + ts + '.html';
-        saveGeneratedHtmlToSharePoint(spGenName, g.html);
+        document.getElementById('dl-'+i).addEventListener('click',()=>openPrintPreviewMargem([g]));
       });
 
+      // "Preview All" button
       const allBtn=document.createElement('button');
       allBtn.className='dl-btn';
-      allBtn.style.cssText='width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;font-family:inherit';
-      allBtn.textContent='⬇ Download Todos (3 ficheiros)';
-      allBtn.addEventListener('click',()=>{
-        generated.forEach((g,i)=>setTimeout(()=>downloadHTML(g.fname,g.html),i*400));
-      });
+      allBtn.style.cssText='width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#3498db,#2980b9);color:white;border:none;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;font-family:inherit';
+      allBtn.textContent='Pré-visualizar Todos (3 relatórios)';
+      allBtn.addEventListener('click',()=>openPrintPreviewMargem(generated));
       resDiv.appendChild(allBtn);
+
+      // "Validate, Dashboard & SharePoint" section
+      var dashSection = document.createElement('div');
+      dashSection.style.cssText='margin-top:20px;padding:16px;background:#f0f7ff;border:1px solid #b3d4fc;border-radius:10px;';
+      var dashPayload = {
+        timestamp: new Date().toLocaleString('pt-PT'),
+        departments: generated.map(function(g) {
+          return {
+            key: g.cfg.key,
+            label: g.cfg.label,
+            margem: g.parsed.mp,
+            vendas: fmt(g.parsed.vT),
+            custos: fmt(g.parsed.cf + g.parsed.cvT),
+            resultado: fmt(g.parsed.vT - g.parsed.cf - g.parsed.cvT)
+          };
+        })
+      };
+      dashSection.innerHTML = '<div style="font-size:14px;font-weight:600;color:#1e3a5f;margin-bottom:8px;">Validar e Publicar</div>' +
+        '<div style="font-size:12px;color:#555;margin-bottom:12px;">Ao confirmar, os dados de margem serão apresentados no dashboard da Intranet e os relatórios serão guardados no SharePoint.</div>' +
+        '<div id="dashPreview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;"></div>' +
+        '<button id="publishDashBtn" style="width:100%;padding:12px;background:#0d904f;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Validar, Carregar no Dashboard e Guardar no SharePoint</button>';
+      resDiv.appendChild(dashSection);
+
+      // Render preview cards
+      var previewDiv = dashSection.querySelector('#dashPreview');
+      dashPayload.departments.forEach(function(dept) {
+        var mpVal = dept.margem !== null && dept.margem !== undefined ? (dept.margem * 100).toFixed(1) + '%' : '—';
+        var div = document.createElement('div');
+        div.style.cssText = 'background:white;padding:10px;border-radius:6px;text-align:center;border:1px solid #e0e0e0;';
+        div.innerHTML = '<div style="font-size:11px;font-weight:600;color:#555;">' + dept.label + '</div>' +
+          '<div style="font-size:18px;font-weight:700;color:' + (dept.margem >= 0.30 ? '#0d904f' : dept.margem >= 0.20 ? '#e37400' : '#d93025') + ';">' + mpVal + '</div>' +
+          '<div style="font-size:10px;color:#888;">Vendas: ' + dept.vendas + '</div>';
+        previewDiv.appendChild(div);
+      });
+
+      dashSection.querySelector('#publishDashBtn').addEventListener('click', function() {
+        if (!confirm('Confirma que validou os relatórios?\n\nOs dados serão publicados no dashboard e guardados no SharePoint.')) return;
+        var btn = this;
+        // 1. Publish to dashboard via postMessage
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'margemDashboardUpdate', payload: dashPayload }, '*');
+        }
+        // 2. Save to SharePoint
+        var ts = getTimestamp();
+        generated.forEach(function(g) {
+          var dotIdx = g.fname.lastIndexOf('.');
+          var spGenName = g.fname.substring(0, dotIdx) + '_' + ts + '.html';
+          saveGeneratedHtmlToSharePoint(spGenName, g.html);
+        });
+        btn.textContent = 'Validado, publicado e guardado!';
+        btn.style.background = '#888';
+        btn.disabled = true;
+      });
 
       // Debug log (click status to toggle)
       dbg.innerHTML=allLogs.join('\n');

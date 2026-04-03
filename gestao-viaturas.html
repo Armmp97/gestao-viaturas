@@ -536,7 +536,7 @@
             <div class="card">
                 <div class="card-title">&#128663; Viaturas Disponíveis</div>
                 <table class="fleet-table">
-                    <thead><tr><th>Matrícula</th><th>Marca / Modelo</th><th>Estado Atual</th><th>Ações</th></tr></thead>
+                    <thead><tr><th>Matrícula</th><th>Marca / Modelo</th><th>Localização</th><th>Estado Atual</th><th>Ações</th></tr></thead>
                     <tbody id="fleetTableBody"></tbody>
                 </table>
             </div>
@@ -809,6 +809,14 @@
                             <label>Observações</label>
                             <textarea id="rt_observacoes" placeholder="Notas adicionais..."></textarea>
                         </div>
+                        <div class="form-group">
+                            <label>Local Físico de Devolução</label>
+                            <select id="rt_localFisico" style="padding:8px 12px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:14px;">
+                                <option value="Cacém">Cacém</option>
+                                <option value="Lisboa">Lisboa</option>
+                            </select>
+                            <small style="color:var(--gray-500);font-size:12px;margin-top:4px;display:block;" id="rt_localFisicoHint"></small>
+                        </div>
                     </div>
                 </div>
                 <div class="card" id="rt_kmsExtraCard" style="display:none;">
@@ -941,13 +949,14 @@
        FLEET DATA
        ============================================ */
     const FLEET = [
-        { matricula: 'CA-33-VT', modelo: 'Opel Corsa' },
-        { matricula: 'CA-86-VS', modelo: 'Opel Corsa' },
-        { matricula: 'BX-88-ZQ', modelo: 'Renault Kangoo' },
-        { matricula: 'BV-32-VA', modelo: 'Peugeot 208' },
-        { matricula: '01-LC-09', modelo: 'Renault Kangoo' },
-        { matricula: '93-MN-06', modelo: 'Volkswagen Transporter' }
+        { matricula: 'CA-33-VT', modelo: 'Opel Corsa', localizacao: 'Cacém' },
+        { matricula: 'CA-86-VS', modelo: 'Opel Corsa', localizacao: 'Lisboa' },
+        { matricula: 'BX-88-ZQ', modelo: 'Renault Kangoo', localizacao: 'Cacém' },
+        { matricula: 'BV-32-VA', modelo: 'Peugeot 208', localizacao: 'Cacém' },
+        { matricula: '01-LC-09', modelo: 'Renault Kangoo', localizacao: 'Lisboa' },
+        { matricula: '93-MN-06', modelo: 'Volkswagen Transporter', localizacao: 'Cacém' }
     ];
+    const LOCALIZACOES = ['Cacém', 'Lisboa'];
 
     const LOCATION_ADDRESS = {
         'Colisão': 'Alto da Bela Vista Pav. 32 | 2735-340 Agualva Cacém',
@@ -967,6 +976,23 @@
     let currentLocation = null;
     const uploadedFiles = {};
     let logoBase64 = '';
+    // Localizações físicas das viaturas (persistidas em localStorage)
+    let vehicleLocations = {};
+    function getVehicleLocation(matricula) {
+        if (vehicleLocations[matricula]) return vehicleLocations[matricula];
+        var v = FLEET.find(function(f) { return f.matricula === matricula; });
+        return v ? v.localizacao : '—';
+    }
+    function setVehicleLocation(matricula, loc) {
+        vehicleLocations[matricula] = loc;
+        try { localStorage.setItem('wg_vehicleLocations', JSON.stringify(vehicleLocations)); } catch(e) {}
+    }
+    function loadVehicleLocations() {
+        try {
+            var stored = localStorage.getItem('wg_vehicleLocations');
+            if (stored) vehicleLocations = JSON.parse(stored);
+        } catch(e) { vehicleLocations = {}; }
+    }
 
     /* ============================================
        USER AUTH (MSAL / Azure AD)
@@ -1324,6 +1350,7 @@
             const savedFiles = localStorage.getItem('wg_files');
             if (savedFiles) fileStore = JSON.parse(savedFiles);
         } catch(e) { bookings = []; fileStore = {}; }
+        loadVehicleLocations();
     }
 
     function loadDataFromSharePoint() {
@@ -1472,8 +1499,10 @@
                 if (activeBooking.estado === 'Agendado') statusHtml = '<span class="status-badge agendado">Agendado — ' + activeBooking.nomeCliente + '</span> <span class="location-badge ' + getLocationClass(activeBooking.localizacao) + '">' + activeBooking.localizacao + '</span>';
                 else if (activeBooking.estado === 'Levantado') statusHtml = '<span class="status-badge levantado">Em serviço — ' + activeBooking.nomeCliente + '</span> <span class="location-badge ' + getLocationClass(activeBooking.localizacao) + '">' + activeBooking.localizacao + '</span>';
             }
+            var loc = getVehicleLocation(v.matricula);
+            var locClass = loc === 'Lisboa' ? 'lisboa' : 'cacem';
             const tr = document.createElement('tr');
-            tr.innerHTML = '<td class="matricula-cell">' + v.matricula + '</td><td>' + v.modelo + '</td><td>' + statusHtml + '</td><td>' +
+            tr.innerHTML = '<td class="matricula-cell">' + v.matricula + '</td><td>' + v.modelo + '</td><td><span class="location-badge ' + locClass + '">' + loc + '</span></td><td>' + statusHtml + '</td><td>' +
                 (!activeBooking ? '<button class="btn btn-primary btn-sm" onclick="startBookingForVehicle(\'' + v.matricula + '\')">Agendar</button>' : '') +
                 (activeBooking && activeBooking.estado === 'Agendado' ? '<button class="btn btn-success btn-sm" onclick="startPickupFromBooking(\'' + activeBooking.id + '\')">Levantamento</button>' : '') +
                 (activeBooking && activeBooking.estado === 'Levantado' ? '<button class="btn btn-warning btn-sm" onclick="startReturnFromBooking(\'' + activeBooking.id + '\')">Devolução</button>' : '') +
@@ -1496,7 +1525,9 @@
         FLEET.forEach(v => {
             const div = document.createElement('div');
             div.className = 'vehicle-option' + (v.matricula === selectedMatricula ? ' selected' : '');
-            div.innerHTML = '<span class="v-matricula">' + v.matricula + '</span><span class="v-model">' + v.modelo + '</span><span class="v-status"></span>';
+            var vLoc = getVehicleLocation(v.matricula);
+            var vLocClass = vLoc === 'Lisboa' ? 'lisboa' : 'cacem';
+            div.innerHTML = '<span class="v-matricula">' + v.matricula + '</span><span class="v-model">' + v.modelo + '</span><span class="location-badge ' + vLocClass + '" style="font-size:10px;padding:1px 8px;">' + vLoc + '</span><span class="v-status"></span>';
             div.onclick = function() {
                 container.querySelectorAll('.vehicle-option').forEach(el => el.classList.remove('selected'));
                 div.classList.add('selected');
@@ -2269,12 +2300,21 @@
             '<div class="detail-item"><label>Nº Levantamento</label><span><strong>' + (b.levantamento && b.levantamento.id ? b.levantamento.id : '—') + '</strong></span></div>' +
             '<div class="detail-item"><label>Kms Entrada</label><span>' + (b.levantamento ? b.levantamento.kms : '—') + '</span></div>' +
             '<div class="detail-item"><label>Combustível Entrada</label><span>' + (b.levantamento ? b.levantamento.combustivel + '%' : '—') + '</span></div>' +
+            '<div class="detail-item"><label>Local Físico Atual</label><span><span class="location-badge ' + (getVehicleLocation(b.matricula) === 'Lisboa' ? 'lisboa' : 'cacem') + '">' + getVehicleLocation(b.matricula) + '</span></span></div>' +
             '<div class="detail-item"><label>Localização</label><span>' +
                 '<select id="rt_localizacao" style="padding:4px 8px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:13px;font-weight:600;">' +
                     '<option value="Colisão"' + (b.localizacao === 'Colisão' ? ' selected' : '') + '>Colisão</option>' +
                     '<option value="Mecânica Cacém"' + (b.localizacao === 'Mecânica Cacém' ? ' selected' : '') + '>Mecânica Cacém</option>' +
                     '<option value="Mecânica Lisboa"' + (b.localizacao === 'Mecânica Lisboa' ? ' selected' : '') + '>Mecânica Lisboa</option>' +
                 '</select></span></div>';
+        // Set physical location default based on current vehicle location
+        var currentPhysLoc = getVehicleLocation(b.matricula);
+        var rtLocalFisico = document.getElementById('rt_localFisico');
+        if (rtLocalFisico) {
+            rtLocalFisico.value = currentPhysLoc;
+            var hint = document.getElementById('rt_localFisicoHint');
+            if (hint) hint.textContent = 'Localização atual: ' + currentPhysLoc;
+        }
         // Toggle damage fields when novosDanos has content
         var danosField = document.getElementById('rt_novosDanos');
         danosField.oninput = function() {
@@ -2314,9 +2354,15 @@
         var excessKms = Math.max(0, kmsDriven - allowedKms);
         var extraPacks = Math.ceil(excessKms / 75);
         var extraCost = extraPacks * 13.84;
-        // Atualizar localização se alterada no formulário
+        // Atualizar localização de serviço se alterada no formulário
         var rtLocSel = document.getElementById('rt_localizacao');
         if (rtLocSel) b.localizacao = rtLocSel.value;
+        // Atualizar localização física da viatura
+        var rtLocalFisico = document.getElementById('rt_localFisico');
+        var novoLocalFisico = rtLocalFisico ? rtLocalFisico.value : null;
+        if (novoLocalFisico) {
+            setVehicleLocation(b.matricula, novoLocalFisico);
+        }
         b.devolucao = {
             id: generateOperationId('DEV'),
             kms: kmsOut,
@@ -2330,6 +2376,7 @@
             excessKms: excessKms,
             extraPacks: extraPacks,
             extraCost: extraCost,
+            localFisicoDevolucao: novoLocalFisico || getVehicleLocation(b.matricula),
             dataHora: new Date().toISOString(),
             registadoPor: getUserStamp()
         };

@@ -832,27 +832,52 @@ async function generate() {
             htmlFiles[unit] = generateUnitHTML(unit, smart2, ogData);
         }
 
-        setProgress(90, 'A preparar downloads e guardar no SharePoint...');
+        setProgress(90, 'A preparar relatórios...');
         var cardsDiv = document.getElementById('resultCards');
         cardsDiv.innerHTML = '';
+        var generatedReports = [];
         for(var unit in UNITS) {
             var safe = unit.toLowerCase().replace(/ã/g,'a').replace(/é/g,'e').replace(/ /g,'_');
             var fn = 'validacao_'+safe+'.html';
-            var blob = new Blob([htmlFiles[unit]], {type:'text/html;charset=utf-8'});
-            var url = URL.createObjectURL(blob);
+            generatedReports.push({ unit: unit, filename: fn, html: htmlFiles[unit], safe: safe });
             var card = document.createElement('div');
             card.className = 'result-card';
             card.innerHTML = '<div class="info">'+unit+'<br><span>'+COORDINATORS[unit].nome+' · '+fn+'<\/span><\/div>';
-            var dlBtn = document.createElement('button');
-            dlBtn.className = 'btn-download';
-            dlBtn.textContent = 'Descarregar';
-            (function(u,f){ dlBtn.onclick = function(){ var a=document.createElement('a'); a.href=u; a.download=f; a.click(); }; })(url,fn);
-            card.appendChild(dlBtn);
+            var btnWrap = document.createElement('div');
+            btnWrap.style.cssText = 'display:flex;gap:6px;';
+            var viewBtn = document.createElement('button');
+            viewBtn.className = 'btn-download';
+            viewBtn.style.cssText = 'background:#3498db;padding:8px 14px;font-size:0.85em;';
+            viewBtn.textContent = 'Pré-visualizar';
+            (function(h){ viewBtn.onclick = function(){ openPrintPreview([h]); }; })({ unit: unit, html: htmlFiles[unit] });
+            btnWrap.appendChild(viewBtn);
+            card.appendChild(btnWrap);
             cardsDiv.appendChild(card);
-            // Save generated HTML to SharePoint with descriptive name
-            var spGenName = 'Validacao_' + safe.charAt(0).toUpperCase() + safe.slice(1) + '_' + getTimestamp() + '.html';
-            saveGeneratedHtmlToSharePoint(spGenName, htmlFiles[unit]);
         }
+        // "Preview All" button
+        var allBtn = document.createElement('button');
+        allBtn.className = 'btn-download';
+        allBtn.style.cssText = 'width:100%;margin-top:12px;padding:12px;font-size:0.95em;background:#3498db;';
+        allBtn.textContent = 'Pré-visualizar Todos (3 relatórios)';
+        allBtn.onclick = function() { openPrintPreview(generatedReports); };
+        cardsDiv.appendChild(allBtn);
+        // "Validate & Save to SharePoint" button
+        var saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-download';
+        saveBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;font-size:1em;background:#27ae60;';
+        saveBtn.textContent = 'Validar e Guardar no SharePoint';
+        saveBtn.onclick = function() {
+            if (!confirm('Confirma que validou os relatórios e pretende guardá-los no SharePoint?')) return;
+            var ts = getTimestamp();
+            generatedReports.forEach(function(r) {
+                var spGenName = 'Validacao_' + r.safe.charAt(0).toUpperCase() + r.safe.slice(1) + '_' + ts + '.html';
+                saveGeneratedHtmlToSharePoint(spGenName, r.html);
+            });
+            saveBtn.textContent = 'Guardado no SharePoint!';
+            saveBtn.style.background = '#888';
+            saveBtn.disabled = true;
+        };
+        cardsDiv.appendChild(saveBtn);
 
         setProgress(100, 'Concluído!');
         document.getElementById('uploadScreen').style.display = 'none';
@@ -864,6 +889,57 @@ async function generate() {
         console.error(e);
     }
     btn.disabled = false;
+}
+
+// ============================================================
+// PRINT PREVIEW
+// ============================================================
+function openPrintPreview(reports) {
+    var pw = window.open('', '_blank');
+    if (!pw) { alert('Popup bloqueado. Permita popups para esta página.'); return; }
+    pw.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pré-visualização de Relatórios</title>');
+    pw.document.write('<style>');
+    pw.document.write('body{font-family:Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}');
+    pw.document.write('.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;}');
+    pw.document.write('.report-header{background:#2c3e50;color:white;padding:12px 20px;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}');
+    pw.document.write('.report-frame{width:100%;border:none;min-height:600px;}');
+    pw.document.write('.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #2c3e50;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
+    pw.document.write('.toolbar h1{font-size:18px;margin:0;color:#2c3e50;}');
+    pw.document.write('.toolbar-actions{display:flex;gap:10px;}');
+    pw.document.write('.btn-print{padding:8px 20px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
+    pw.document.write('.btn-print:hover{background:#219a52;}');
+    pw.document.write('@media print{.toolbar{display:none;}.report-section{break-inside:avoid;page-break-inside:avoid;box-shadow:none;margin-bottom:10px;}.report-frame{min-height:auto;}}');
+    pw.document.write('</style></head><body>');
+    pw.document.write('<div class="toolbar"><h1>Divergências Picagens — ' + reports.length + ' Relatório(s)</h1>');
+    pw.document.write('<div class="toolbar-actions"><button class="btn-print" onclick="window.print()">Imprimir Todos</button></div></div>');
+    reports.forEach(function(r, idx) {
+        var frameId = 'frame_' + idx;
+        pw.document.write('<div class="report-section"><div class="report-header"><span>' + (r.unit || 'Relatório ' + (idx+1)) + '</span></div>');
+        pw.document.write('<iframe id="' + frameId + '" class="report-frame" srcdoc=""></iframe></div>');
+    });
+    pw.document.write('<script>');
+    pw.document.write('window.addEventListener("load", function(){');
+    reports.forEach(function(r, idx) {
+        // Escape for srcdoc
+        pw.document.write('var f' + idx + '=document.getElementById("frame_' + idx + '");');
+        pw.document.write('f' + idx + '.srcdoc=window.__reportData[' + idx + '];');
+        pw.document.write('f' + idx + '.onload=function(){f' + idx + '.style.height=f' + idx + '.contentDocument.documentElement.scrollHeight+"px";};');
+    });
+    pw.document.write('});');
+    pw.document.write('<\/script></body></html>');
+    // Pass data via window object to avoid escaping issues
+    pw.document.close();
+    pw.__reportData = reports.map(function(r) { return r.html; });
+    // Trigger srcdoc assignment after document is ready
+    setTimeout(function() {
+        reports.forEach(function(r, idx) {
+            var f = pw.document.getElementById('frame_' + idx);
+            if (f) {
+                f.srcdoc = r.html;
+                f.onload = function() { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; };
+            }
+        });
+    }, 200);
 }
 
 // ============================================================
