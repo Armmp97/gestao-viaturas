@@ -868,7 +868,29 @@ async function generate() {
         saveBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;font-size:1em;background:#27ae60;';
         saveBtn.textContent = 'Validar e Guardar no SharePoint';
         saveBtn.onclick = function() {
-            if (!confirm('Confirma que validou os relatórios e pretende guardá-los no SharePoint?')) return;
+            // Show inline confirmation
+            divConfirmBox.style.display = 'block';
+            saveBtn.style.display = 'none';
+        };
+        cardsDiv.appendChild(saveBtn);
+
+        // Inline confirmation box (replaces confirm() which can be blocked in iframes)
+        var divConfirmBox = document.createElement('div');
+        divConfirmBox.style.cssText = 'display:none;margin-top:8px;padding:14px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;text-align:center;';
+        divConfirmBox.innerHTML = '<div style="font-size:14px;font-weight:600;color:#856404;margin-bottom:8px;">Confirma que validou os relatórios?</div>' +
+            '<div style="font-size:12px;color:#856404;margin-bottom:10px;">Os relatórios serão guardados no SharePoint.</div>' +
+            '<button id="divConfirmYes" style="padding:8px 24px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;">Sim, Guardar</button>' +
+            '<button id="divConfirmNo" style="padding:8px 24px;background:#6c757d;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>';
+        cardsDiv.appendChild(divConfirmBox);
+
+        divConfirmBox.querySelector('#divConfirmNo').onclick = function() {
+            divConfirmBox.style.display = 'none';
+            saveBtn.style.display = 'block';
+        };
+
+        divConfirmBox.querySelector('#divConfirmYes').onclick = function() {
+            divConfirmBox.style.display = 'none';
+            saveBtn.style.display = 'block';
             saveBtn.textContent = 'A guardar no SharePoint...';
             saveBtn.style.background = '#666';
             saveBtn.disabled = true;
@@ -882,7 +904,6 @@ async function generate() {
                 saveGeneratedHtmlToSharePoint(spGenName, r.html);
             });
         };
-        cardsDiv.appendChild(saveBtn);
 
         setProgress(100, 'Concluído!');
         document.getElementById('uploadScreen').style.display = 'none';

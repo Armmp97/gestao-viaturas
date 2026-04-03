@@ -626,7 +626,13 @@ document.getElementById('fileInput').addEventListener('change', function(e){
       dashSection.innerHTML = '<div style="font-size:14px;font-weight:600;color:#1e3a5f;margin-bottom:8px;">Validar e Publicar</div>' +
         '<div style="font-size:12px;color:#555;margin-bottom:12px;">Ao confirmar, os dados de margem serão apresentados no dashboard da Intranet e os relatórios serão guardados no SharePoint.</div>' +
         '<div id="dashPreview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;"></div>' +
-        '<button id="publishDashBtn" style="width:100%;padding:12px;background:#0d904f;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Validar, Carregar no Dashboard e Guardar no SharePoint</button>';
+        '<button id="publishDashBtn" style="width:100%;padding:12px;background:#0d904f;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Validar, Carregar no Dashboard e Guardar no SharePoint</button>' +
+        '<div id="publishConfirmBox" style="display:none;margin-top:10px;padding:12px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;text-align:center;">' +
+          '<div style="font-size:13px;font-weight:600;color:#856404;margin-bottom:8px;">Confirma que validou os relatórios?</div>' +
+          '<div style="font-size:12px;color:#856404;margin-bottom:10px;">Os dados serão publicados no dashboard e guardados no SharePoint.</div>' +
+          '<button id="publishConfirmYes" style="padding:8px 24px;background:#0d904f;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;font-family:inherit;">Sim, Publicar</button>' +
+          '<button id="publishConfirmNo" style="padding:8px 24px;background:#6c757d;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>' +
+        '</div>';
       resDiv.appendChild(dashSection);
 
       // Render preview cards
@@ -641,9 +647,25 @@ document.getElementById('fileInput').addEventListener('change', function(e){
         previewDiv.appendChild(div);
       });
 
+      // Step 1: Show confirmation box
       dashSection.querySelector('#publishDashBtn').addEventListener('click', function() {
-        if (!confirm('Confirma que validou os relatórios?\n\nOs dados serão publicados no dashboard e guardados no SharePoint.')) return;
-        var btn = this;
+        var confirmBox = document.getElementById('publishConfirmBox');
+        confirmBox.style.display = 'block';
+        this.style.display = 'none';
+      });
+
+      // Cancel: hide confirmation, show button again
+      dashSection.querySelector('#publishConfirmNo').addEventListener('click', function() {
+        document.getElementById('publishConfirmBox').style.display = 'none';
+        document.getElementById('publishDashBtn').style.display = 'block';
+      });
+
+      // Step 2: Confirm and execute
+      dashSection.querySelector('#publishConfirmYes').addEventListener('click', function() {
+        var confirmBox = document.getElementById('publishConfirmBox');
+        confirmBox.style.display = 'none';
+        var btn = document.getElementById('publishDashBtn');
+        btn.style.display = 'block';
         btn.textContent = 'A publicar e guardar...';
         btn.style.background = '#666';
         btn.disabled = true;
