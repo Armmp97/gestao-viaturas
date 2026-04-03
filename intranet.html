@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet DomusCar</title>
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0a1628;
+            --sidebar-hover: #152238;
+            --sidebar-active: #1a73e8;
+            --sidebar-width: 260px;
+            --header-height: 56px;
+            --content-bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #5f6368;
+            --text-light: #b0b8c4;
+            --text-sidebar: #c8d0dc;
+            --accent-blue: #1a73e8;
+            --accent-blue-light: #e8f0fe;
+            --border-color: #e0e3e8;
+            --danger: #d93025;
+            --success: #0d904f;
+            --warning: #e37400;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--content-bg);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ======== AUTH GATE ======== */
+        #authGate {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2744 50%, #0d1b30 100%);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+        }
+        #authGate .login-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 48px 40px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        #authGate .login-logo { height: 60px; margin-bottom: 32px; }
+        #authGate h2 {
+            font-size: 22px; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 8px;
+        }
+        #authGate .login-subtitle {
+            font-size: 14px; color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+        #authGate .login-btn {
+            width: 100%; padding: 14px 24px;
+            background: var(--accent-blue); color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 10px;
+            transition: background 0.2s;
+        }
+        #authGate .login-btn:hover { background: #1557b0; }
+        #authGate .login-btn svg { width: 20px; height: 20px; }
+        #authGate .login-footer {
+            margin-top: 24px; font-size: 12px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* ======== LAYOUT ======== */
+        #appContent { display: none; height: 100vh; }
+
+        /* ---- Header ---- */
+        .app-header {
+            height: var(--header-height);
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center;
+            padding: 0 24px;
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 100;
+        }
+        .header-logo { height: 32px; cursor: pointer; }
+        .header-divider {
+            width: 1px; height: 28px;
+            background: var(--border-color);
+            margin: 0 20px;
+        }
+        .header-title {
+            font-size: 15px; font-weight: 600;
+            color: var(--text-primary);
+        }
+        .header-right {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .header-user {
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer; padding: 6px 12px;
+            border-radius: 8px; transition: background 0.2s;
+        }
+        .header-user:hover { background: var(--content-bg); }
+        .user-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            color: #fff; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600;
+        }
+        .user-name { font-size: 13px; font-weight: 500; }
+        .user-role { font-size: 11px; color: var(--text-secondary); }
+        .header-logout {
+            background: none; border: 1px solid var(--border-color);
+            border-radius: 6px; padding: 6px 14px;
+            font-size: 12px; color: var(--text-secondary);
+            cursor: pointer; font-family: inherit;
+            transition: all 0.2s;
+        }
+        .header-logout:hover {
+            border-color: var(--danger); color: var(--danger);
+        }
+
+        /* ---- Sidebar ---- */
+        .app-sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            overflow-y: auto;
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        .app-sidebar.hidden { transform: translateX(-100%); }
+
+        .sidebar-section {
+            padding: 20px 16px 8px;
+            font-size: 10px; font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-light);
+            opacity: 0.5;
+        }
+        .sidebar-nav { list-style: none; padding: 0 8px; }
+        .sidebar-nav li { margin-bottom: 2px; }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .sidebar-nav a:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+        .sidebar-nav a.active {
+            background: var(--sidebar-active);
+            color: #fff;
+            font-weight: 600;
+        }
+        .sidebar-nav a .nav-icon {
+            width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .sidebar-nav a .badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: #fff;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .sidebar-nav a.disabled {
+            opacity: 0.35;
+            cursor: default;
+            pointer-events: none;
+        }
+        .sidebar-nav a.disabled::after {
+            content: 'Em breve';
+            margin-left: auto;
+            font-size: 9px;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 11px;
+            color: var(--text-light);
+            opacity: 0.4;
+            text-align: center;
+        }
+
+        /* ---- Main Content ---- */
+        .app-main {
+            margin-top: var(--header-height);
+            margin-left: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            overflow-y: auto;
+            transition: margin-left 0.3s ease;
+        }
+        .app-main.full { margin-left: 0; }
+
+        /* ---- Dashboard (Homepage) ---- */
+        .dashboard {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dashboard-welcome {
+            margin-bottom: 36px;
+        }
+        .dashboard-welcome h1 {
+            font-size: 26px; font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .dashboard-welcome p {
+            font-size: 14px; color: var(--text-secondary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .dash-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 28px 24px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .dash-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border-color: var(--accent-blue);
+        }
+        .dash-card .card-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .dash-card .card-icon.blue { background: #e8f0fe; }
+        .dash-card .card-icon.green { background: #e6f4ea; }
+        .dash-card .card-icon.orange { background: #fef7e0; }
+        .dash-card .card-icon.purple { background: #f3e8fd; }
+        .dash-card .card-icon.red { background: #fce8e6; }
+        .dash-card .card-icon.teal { background: #e0f7fa; }
+
+        .dash-card h3 {
+            font-size: 16px; font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .dash-card p {
+            font-size: 13px; color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .dash-card.disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .dash-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--border-color);
+        }
+        .dash-card .card-badge {
+            position: absolute; top: 16px; right: 16px;
+            font-size: 10px; font-weight: 600;
+            padding: 3px 10px; border-radius: 12px;
+        }
+        .card-badge.active { background: #e6f4ea; color: #0d904f; }
+        .card-badge.soon { background: #f0f2f5; color: #5f6368; }
+
+        /* ---- Module view (iframe) ---- */
+        .module-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+        }
+        .module-frame.active { display: block; }
+
+        /* ---- Breadcrumb ---- */
+        .breadcrumb {
+            padding: 14px 28px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: none;
+        }
+        .breadcrumb a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { margin: 0 6px; color: var(--text-light); }
+    </style>
+</head>
+<body>
+
+<!-- ======== AUTH GATE ======== -->
+<div id="authGate">
+    <div class="login-card">
+        <img id="loginLogo" class="login-logo" alt="DomusCar">
+        <h2>Intranet DomusCar</h2>
+        <p class="login-subtitle">Aceda com a sua conta Microsoft corporativa</p>
+        <button class="login-btn" onclick="doLogin()">
+            <svg viewBox="0 0 21 21" fill="none"><path d="M0 0h10v10H0z" fill="#f25022"/><path d="M11 0h10v10H11z" fill="#7fba00"/><path d="M0 11h10v10H0z" fill="#00a4ef"/><path d="M11 11h10v10H11z" fill="#ffb900"/></svg>
+            Iniciar Sessão com Microsoft
+        </button>
+        <p id="authGateError" style="color:#ff6b6b;font-size:13px;margin-top:16px;display:none;"></p>
+    </div>
+    <p class="login-footer">DomusCar / Walkingarage Lda &copy; 2026</p>
+</div>
+
+<!-- ======== APP CONTENT ======== -->
+<div id="appContent">
+
+    <!-- Header -->
+    <header class="app-header">
+        <img id="headerLogo" class="header-logo" alt="DomusCar" onclick="goHome()">
+        <div class="header-divider"></div>
+        <span class="header-title" id="headerTitle">Intranet</span>
+        <div class="header-right">
+            <div class="header-user" id="headerUser">
+                <div class="user-avatar" id="userAvatar">AP</div>
+                <div>
+                    <div class="user-name" id="userName">André Pereira</div>
+                    <div class="user-role">Administrador</div>
+                </div>
+            </div>
+            <button class="header-logout" onclick="doLogout()">Terminar Sessão</button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="app-sidebar hidden" id="sidebar">
+        <div class="sidebar-section">Principal</div>
+        <ul class="sidebar-nav">
+            <li><a onclick="goHome()" id="navHome"><span class="nav-icon">🏠</span> Início</a></li>
+        </ul>
+
+        <div class="sidebar-section">Operações</div>
+        <ul class="sidebar-nav">
+            <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Gestão de Viaturas</a></li>
+            <li><a onclick="openModule('picagens')" id="navPicagens" class="disabled"><span class="nav-icon">⏱️</span> Divergências / Picagens</a></li>
+            <li><a class="disabled"><span class="nav-icon">📋</span> Ordens de Serviço</a></li>
+            <li><a class="disabled"><span class="nav-icon">📦</span> Stock / Peças</a></li>
+        </ul>
+
+        <div class="sidebar-section">Empresa</div>
+        <ul class="sidebar-nav">
+            <li><a class="disabled"><span class="nav-icon">👥</span> Equipa / Contactos</a></li>
+            <li><a class="disabled"><span class="nav-icon">📄</span> Documentos Internos</a></li>
+            <li><a class="disabled"><span class="nav-icon">📢</span> Comunicações</a></li>
+        </ul>
+
+        <div class="sidebar-section">Administração</div>
+        <ul class="sidebar-nav">
+            <li><a class="disabled"><span class="nav-icon">⚙️</span> Definições</a></li>
+            <li><a class="disabled"><span class="nav-icon">📊</span> Relatórios</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            Intranet DomusCar v1.0
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb" id="breadcrumb">
+        <a onclick="goHome()">Início</a>
+        <span>›</span>
+        <span id="breadcrumbCurrent">Gestão de Viaturas</span>
+    </div>
+
+    <!-- Main content -->
+    <main class="app-main full" id="mainContent">
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboardView">
+            <div class="dashboard-welcome">
+                <h1 id="welcomeMsg">Bom dia, André</h1>
+                <p>Selecione um módulo para começar</p>
+            </div>
+            <div class="dashboard-grid">
+                <div class="dash-card" onclick="openModule('viaturas')">
+                    <div class="card-icon blue">🚗</div>
+                    <span class="card-badge active">Ativo</span>
+                    <h3>Gestão de Viaturas</h3>
+                    <p>Agendamentos, levantamentos, devoluções e gestão da frota de viaturas de cortesia.</p>
+                </div>
+                <div class="dash-card" onclick="openModule('picagens')">
+                    <div class="card-icon green">⏱️</div>
+                    <span class="card-badge soon">Em breve</span>
+                    <h3>Divergências / Picagens</h3>
+                    <p>Relatórios diários de presenças comparando 2Smart com Officegest.</p>
+                </div>
+                <div class="dash-card disabled">
+                    <div class="card-icon orange">📋</div>
+                    <span class="card-badge soon">Em breve</span>
+                    <h3>Ordens de Serviço</h3>
+                    <p>Gestão e acompanhamento de ordens de serviço das oficinas.</p>
+                </div>
+                <div class="dash-card disabled">
+                    <div class="card-icon purple">📦</div>
+                    <span class="card-badge soon">Em breve</span>
+                    <h3>Stock / Peças</h3>
+                    <p>Controlo de stock e encomendas de peças para as oficinas.</p>
+                </div>
+                <div class="dash-card disabled">
+                    <div class="card-icon teal">👥</div>
+                    <span class="card-badge soon">Em breve</span>
+                    <h3>Equipa / Contactos</h3>
+                    <p>Diretório de colaboradores, contactos internos e organograma.</p>
+                </div>
+                <div class="dash-card disabled">
+                    <div class="card-icon red">📄</div>
+                    <span class="card-badge soon">Em breve</span>
+                    <h3>Documentos Internos</h3>
+                    <p>Procedimentos, manuais, templates e documentação da empresa.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module iframe container -->
+        <iframe class="module-frame" id="moduleFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+    </main>
+</div>
+
+<script>
+    // ---- Logo base64 (inline from file) ----
+    const LOGO_URL = 'DomusCar%20_%20Logo.png';
+
+    function initLogos() {
+        document.getElementById('loginLogo').src = LOGO_URL;
+        document.getElementById('headerLogo').src = LOGO_URL;
+    }
+
+    // ---- Auth (Azure AD via MSAL) ----
+    const MSAL_CONFIG = {
+        auth: {
+            clientId: '09d343c1-e3ef-4a71-b50e-be14e7aed4c4',
+            authority: 'https://login.microsoftonline.com/17ce2502-f743-4288-86df-fb21fcc4b655',
+            redirectUri: window.location.origin + window.location.pathname
+        },
+        cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
+    };
+    let msalInstance = null;
+    let currentMsalUser = null;
+
+    function initMsal() {
+        try {
+            msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+            var accounts = msalInstance.getAllAccounts();
+            if (accounts.length > 0) {
+                currentMsalUser = accounts[0];
+                unlockIntranet();
+            }
+        } catch(e) { console.warn('MSAL init error:', e); }
+    }
+
+    function doLogin() {
+        if (!msalInstance) { console.error('MSAL não inicializado'); return; }
+        msalInstance.loginPopup({ scopes: ['User.Read'] }).then(function(response) {
+            currentMsalUser = response.account;
+            unlockIntranet();
+        }).catch(function(e) {
+            console.error('Login error:', e);
+            var errEl = document.getElementById('authGateError');
+            if (errEl) { errEl.textContent = 'Erro no login. Tente novamente.'; errEl.style.display = ''; }
+        });
+    }
+
+    function unlockIntranet() {
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+        if (currentMsalUser) {
+            var name = currentMsalUser.name || currentMsalUser.username || '';
+            var initials = name.split(' ').map(function(n){ return n[0]; }).join('').substring(0,2).toUpperCase();
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userAvatar').textContent = initials;
+        }
+        updateGreeting();
+    }
+
+    function doLogout() {
+        if (msalInstance) {
+            msalInstance.logoutPopup().catch(function(e) { console.warn('Logout error:', e); });
+        }
+        currentMsalUser = null;
+        document.getElementById('appContent').style.display = 'none';
+        document.getElementById('authGate').style.display = 'flex';
+    }
+
+    // ---- Navigation ----
+    let currentModule = null;
+
+    function goHome() {
+        currentModule = null;
+        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('moduleFrame').classList.remove('active');
+        document.getElementById('sidebar').classList.add('hidden');
+        document.getElementById('mainContent').classList.add('full');
+        document.getElementById('breadcrumb').style.display = 'none';
+        document.getElementById('headerTitle').textContent = 'Intranet';
+        clearActiveNav();
+    }
+
+    function openModule(id) {
+        const modules = {
+            viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
+            picagens: { title: 'Divergências / Picagens', url: null }
+        };
+        const mod = modules[id];
+        if (!mod || !mod.url) return;
+
+        currentModule = id;
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('sidebar').classList.remove('hidden');
+        document.getElementById('mainContent').classList.remove('full');
+        document.getElementById('breadcrumb').style.display = 'block';
+        document.getElementById('breadcrumbCurrent').textContent = mod.title;
+        document.getElementById('headerTitle').textContent = mod.title;
+
+        const frame = document.getElementById('moduleFrame');
+        frame.src = mod.url;
+        frame.classList.add('active');
+
+        clearActiveNav();
+        const navEl = document.getElementById('nav' + id.charAt(0).toUpperCase() + id.slice(1));
+        if (navEl) navEl.classList.add('active');
+    }
+
+    function clearActiveNav() {
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    }
+
+    function updateGreeting() {
+        const h = new Date().getHours();
+        let greeting = h < 12 ? 'Bom dia' : h < 19 ? 'Boa tarde' : 'Boa noite';
+        var firstName = 'Utilizador';
+        if (currentMsalUser && currentMsalUser.name) {
+            firstName = currentMsalUser.name.split(' ')[0];
+        }
+        document.getElementById('welcomeMsg').textContent = greeting + ', ' + firstName;
+    }
+
+    // Init
+    initLogos();
+    initMsal();
+</script>
+</body>
+</html>
