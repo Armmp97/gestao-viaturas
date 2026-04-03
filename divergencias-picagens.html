@@ -866,16 +866,10 @@ async function generate() {
                 emailBtn.onclick = function() {
                     var thisBtn = this;
                     var origText = thisBtn.textContent;
-                    thisBtn.textContent = 'A guardar...';
+                    thisBtn.textContent = 'A processar...';
                     thisBtn.style.background = '#666';
                     thisBtn.disabled = true;
 
-                    // 1) Save to SharePoint
-                    var ts = getTimestamp();
-                    var spName = 'Validacao_' + safeId.charAt(0).toUpperCase() + safeId.slice(1) + '_' + ts + '.html';
-                    saveGeneratedHtmlToSharePoint(spName, htmlContent);
-
-                    // 2) Copy email body to clipboard
                     var emailBody = 'Bom dia,\n\n' +
                         'Segue em anexo o relatório diário de divergências de picagens da vossa unidade, referente ao dia XX/XX/XXXX.\n\n' +
                         'Este relatório compara os registos de ponto do 2Smart com os tempos de intervenção do Officegest, e inclui alertas sobre presença, tempo em intervenções, pausas de almoço, horas extras e tempo morto.\n\n' +
@@ -886,16 +880,22 @@ async function generate() {
                         'No telemóvel — Descarregar o anexo, abrir com o browser (Chrome ou Safari). Ao clicar no botão de envio, o Outlook abre automaticamente com o email preparado.\n\n' +
                         'Responder a todos os campos que permitem preenchimento, mesmo que sejam óbvios, por favor.\n' +
                         'Qualquer dúvida, contactem-me diretamente.\n\n' +
-                        'Ao abrir a caixa de email, fazer Ctrl-V para colar a mensagem\n\n' +
                         'Cumprimentos,';
 
                     var coordEmail = COORDINATOR_EMAILS[unitName] || '';
+                    var ts = getTimestamp();
+                    var spFileName = 'Validacao_' + safeId.charAt(0).toUpperCase() + safeId.slice(1) + '_' + ts + '.html';
                     var attachName = 'Validacao_' + safeId.charAt(0).toUpperCase() + safeId.slice(1) + '.html';
 
-                    // Create draft email with attachment via parent (Graph API)
+                    // Single postMessage: save to SP + create draft email (sequential in parent)
                     if (window.parent && window.parent !== window) {
                         window.parent.postMessage({
-                            type: 'createDraftEmail',
+                            type: 'saveAndDraftEmail',
+                            // SharePoint save data
+                            folderKey: 'divergencias_gerados',
+                            spFileName: spFileName,
+                            fileContent: htmlContent,
+                            // Email draft data
                             to: coordEmail,
                             subject: 'Validação Diária de Picagens \u2014 XX/XX/XXXX',
                             body: emailBody,
@@ -905,11 +905,11 @@ async function generate() {
                     }
 
                     // Listen for result
-                    function onDraftResult(ev) {
-                        if (!ev.data || ev.data.type !== 'draftEmailResult') return;
-                        window.removeEventListener('message', onDraftResult);
+                    function onResult(ev) {
+                        if (!ev.data || ev.data.type !== 'saveAndDraftResult') return;
+                        window.removeEventListener('message', onResult);
                         if (ev.data.success) {
-                            thisBtn.textContent = 'Email criado!';
+                            thisBtn.textContent = 'Concluído!';
                             thisBtn.style.background = '#27ae60';
                         } else {
                             thisBtn.textContent = 'Erro: ' + (ev.data.error || 'desconhecido');
@@ -921,7 +921,7 @@ async function generate() {
                             thisBtn.disabled = false;
                         }, 4000);
                     }
-                    window.addEventListener('message', onDraftResult);
+                    window.addEventListener('message', onResult);
                 };
             })(unit, safe, htmlFiles[unit]);
             btnWrap.appendChild(emailBtn);

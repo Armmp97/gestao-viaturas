@@ -2092,45 +2092,47 @@
         window.open(event.data.url, '_blank');
     });
 
-    // Listen for createDraftEmail requests from iframes
-    // Creates a Graph API draft with HTML attachment, then opens it in Outlook web
+    // Listen for saveAndDraftEmail: saves HTML to SharePoint THEN creates draft email (sequential, single token)
     window.addEventListener('message', function(event) {
-        if (!event.data || event.data.type !== 'createDraftEmail') return;
+        if (!event.data || event.data.type !== 'saveAndDraftEmail') return;
         var d = event.data;
         getGraphToken().then(function(token) {
-            // Base64 encode the HTML content
-            var base64Content = btoa(unescape(encodeURIComponent(d.attachmentContent)));
-            var draftPayload = {
-                subject: d.subject,
-                body: { contentType: 'HTML', content: d.body.replace(/\n/g, '<br>') },
-                toRecipients: [{ emailAddress: { address: d.to } }]
-            };
-            // 1) Create draft
-            return fetch('https://graph.microsoft.com/v1.0/me/messages', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify(draftPayload)
-            }).then(function(r) { return r.json(); }).then(function(msg) {
-                // 2) Add attachment
-                return fetch('https://graph.microsoft.com/v1.0/me/messages/' + msg.id + '/attachments', {
+            // 1) Save to SharePoint
+            var spContent = new Blob([d.fileContent], {type: 'text/html'});
+            return uploadToSharePoint(d.folderKey, d.spFileName, spContent, 'text/html').then(function() {
+                // 2) Create draft email
+                var base64Content = btoa(unescape(encodeURIComponent(d.attachmentContent)));
+                var draftPayload = {
+                    subject: d.subject,
+                    body: { contentType: 'HTML', content: d.body.replace(/\n/g, '<br>') },
+                    toRecipients: [{ emailAddress: { address: d.to } }]
+                };
+                return fetch('https://graph.microsoft.com/v1.0/me/messages', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        '@odata.type': '#microsoft.graph.fileAttachment',
-                        name: d.attachmentName || 'relatorio.html',
-                        contentType: 'text/html',
-                        contentBytes: base64Content
-                    })
-                }).then(function() { return msg; });
+                    body: JSON.stringify(draftPayload)
+                }).then(function(r) { return r.json(); }).then(function(msg) {
+                    // 3) Add attachment to draft
+                    return fetch('https://graph.microsoft.com/v1.0/me/messages/' + msg.id + '/attachments', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            '@odata.type': '#microsoft.graph.fileAttachment',
+                            name: d.attachmentName || 'relatorio.html',
+                            contentType: 'text/html',
+                            contentBytes: base64Content
+                        })
+                    }).then(function() { return msg; });
+                });
             });
         }).then(function(msg) {
-            // 3) Open draft in Outlook web
+            // 4) Open draft in Outlook web
             var outlookUrl = 'https://outlook.office.com/mail/compose/' + msg.id;
             window.open(outlookUrl, '_blank');
-            event.source.postMessage({ type: 'draftEmailResult', success: true }, '*');
+            event.source.postMessage({ type: 'saveAndDraftResult', success: true }, '*');
         }).catch(function(err) {
-            console.error('Draft email error:', err);
-            event.source.postMessage({ type: 'draftEmailResult', success: false, error: err.message || String(err) }, '*');
+            console.error('SaveAndDraft error:', err);
+            event.source.postMessage({ type: 'saveAndDraftResult', success: false, error: err.message || String(err) }, '*');
         });
     });
 
