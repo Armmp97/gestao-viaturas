@@ -2349,9 +2349,7 @@
                 html += '<td style="padding: 8px 12px; text-align: right; color: var(--text-secondary);">' + date + '</td>';
                 var actions = '';
                 if (!isFolder && item.webUrl) {
-                    var folderPath = SP_CONFIG.folders[currentSpFolder] || SP_CONFIG.folders.geral;
-                    var spIdPath = '/sites/GestaoViaturas/' + SP_CONFIG.driveName + '/' + folderPath;
-                    var spFolderUrl = 'https://' + SP_CONFIG.siteUrl + SP_CONFIG.sitePath + '/' + SP_CONFIG.driveName + '/Forms/AllItems.aspx?id=' + encodeURIComponent(spIdPath);
+                    var spFolderUrl = item.webUrl.substring(0, item.webUrl.lastIndexOf('/'));
                     actions += '<a href="' + spFolderUrl + '" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-size: 14px; margin-right: 8px;" title="Abrir pasta no SharePoint">📂</a>';
                     actions += '<a href="' + item.webUrl + '" target="_blank" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; margin-right: 8px;" title="Download do ficheiro">⬇️</a>';
                 }
