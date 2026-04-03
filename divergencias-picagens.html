@@ -891,37 +891,23 @@ async function generate() {
 
                     var coordEmail = COORDINATOR_EMAILS[unitName] || '';
                     var subject = encodeURIComponent('Validação Diária de Picagens \u2014 XX/XX/XXXX');
-                    var outlookUrl = 'https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(coordEmail) + '&subject=' + subject;
+                    var body = encodeURIComponent(emailBody);
+                    var outlookUrl = 'https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(coordEmail) + '&subject=' + subject + '&body=' + body;
 
                     // Open URL via parent to avoid iframe sandbox blocking
-                    function openOutlook() {
-                        if (window.parent && window.parent !== window) {
-                            window.parent.postMessage({ type: 'openUrl', url: outlookUrl }, '*');
-                        } else {
-                            window.open(outlookUrl, '_blank');
-                        }
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'openUrl', url: outlookUrl }, '*');
+                    } else {
+                        window.open(outlookUrl, '_blank');
                     }
 
-                    navigator.clipboard.writeText(emailBody).then(function() {
-                        openOutlook();
-                        thisBtn.textContent = 'Enviado! (corpo copiado)';
-                        thisBtn.style.background = '#27ae60';
-                        setTimeout(function() {
-                            thisBtn.textContent = origText;
-                            thisBtn.style.background = '#8e44ad';
-                            thisBtn.disabled = false;
-                        }, 4000);
-                    }).catch(function() {
-                        // Clipboard failed — still open Outlook
-                        openOutlook();
-                        thisBtn.textContent = 'Outlook aberto (copiar falhou)';
-                        thisBtn.style.background = '#e67e22';
-                        setTimeout(function() {
-                            thisBtn.textContent = origText;
-                            thisBtn.style.background = '#8e44ad';
-                            thisBtn.disabled = false;
-                        }, 4000);
-                    });
+                    thisBtn.textContent = 'Outlook aberto!';
+                    thisBtn.style.background = '#27ae60';
+                    setTimeout(function() {
+                        thisBtn.textContent = origText;
+                        thisBtn.style.background = '#8e44ad';
+                        thisBtn.disabled = false;
+                    }, 4000);
                 };
             })(unit, safe, htmlFiles[unit]);
             btnWrap.appendChild(emailBtn);
