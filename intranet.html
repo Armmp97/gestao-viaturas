@@ -180,7 +180,8 @@
             transition: transform 0.3s ease;
         }
 
-        .app-sidebar.hidden {
+        .app-sidebar.hidden,
+        .app-sidebar.desktop-hidden {
             transform: translateX(-100%);
         }
 
@@ -288,7 +289,8 @@
             z-index: 1;
         }
 
-        .app-main.sidebar-hidden {
+        .app-main.sidebar-hidden,
+        .app-main.full {
             left: 0;
         }
 
@@ -824,24 +826,19 @@
 </head>
 <body>
 
-<!-- Auth Gate -->
+<!-- ======== AUTH GATE ======== -->
 <div id="authGate">
     <div class="login-card">
-        <svg class="login-logo" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-blue);">
-            <text x="10" y="28" font-size="24" font-weight="700">DomusCar</text>
-        </svg>
-        <h2>Bem-vindo</h2>
-        <p class="login-subtitle">Intranet Corporativa</p>
+        <img id="loginLogo" class="login-logo" alt="DomusCar">
+        <h2>Intranet DomusCar</h2>
+        <p class="login-subtitle">Aceda com a sua conta Microsoft corporativa</p>
         <button class="login-btn" onclick="doLogin()">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>
+            <svg viewBox="0 0 21 21" fill="none"><path d="M0 0h10v10H0z" fill="#f25022"/><path d="M11 0h10v10H11z" fill="#7fba00"/><path d="M0 11h10v10H0z" fill="#00a4ef"/><path d="M11 11h10v10H11z" fill="#ffb900"/></svg>
             Iniciar Sessão com Microsoft
         </button>
-        <div class="login-footer">
-            Intranet DomusCar v2.0 © 2026
-        </div>
+        <p id="authGateError" style="color:#ff6b6b;font-size:13px;margin-top:16px;display:none;"></p>
     </div>
+    <p class="login-footer">DomusCar / Walkingarage Lda &copy; 2026</p>
 </div>
 
 <!-- ======== APP CONTENT ======== -->
@@ -860,7 +857,7 @@
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
         </button>
-        <img id="headerLogo" class="header-logo" alt="DomusCar" onclick="goHome()" style="background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 40%22><text x=%2210%22 y=%2228%22 font-size=%2220%22 font-weight=%22700%22 fill=%22%231a73e8%22>DomusCar</text></svg>'); background-size: contain; background-repeat: no-repeat;">
+        <img id="headerLogo" class="header-logo" alt="DomusCar" onclick="goHome()">
         <div class="header-divider"></div>
         <span class="header-title" id="headerTitle">Intranet</span>
         <div class="header-right">
@@ -1038,6 +1035,13 @@
 </div>
 
 <script>
+    // ---- Logo ----
+    const LOGO_URL = 'DomusCar%20_%20Logo.png';
+    function initLogos() {
+        document.getElementById('loginLogo').src = LOGO_URL;
+        document.getElementById('headerLogo').src = LOGO_URL;
+    }
+
     // ======== KPI DATA ========
     const KPI_DATA = {
         colisao: {
@@ -1662,68 +1666,252 @@
         overlay.classList.toggle('visible');
     }
 
+    // ======== COMMUNICATIONS FEED DATA ========
+    const FEED_MESSAGES = [
+        { from: 'André Pereira', initials: 'AP', time: 'Hoje', message: 'Reunião de coordenação amanhã às 10h' },
+        { from: 'Vanessa Borges', initials: 'VB', time: 'Ontem', message: 'Nova política de férias disponível nos Documentos Internos' },
+        { from: 'Sistema', initials: 'SYS', time: 'Há 2 dias', message: 'Manutenção do sistema agendada para Domingo' },
+        { from: 'Administração', initials: 'ADM', time: 'Há 1 semana', message: 'Bem-vindos ao novo portal da Intranet!' }
+    ];
+
+    // ======== USER PERMISSIONS ========
+    const USER_PERMISSIONS = {
+        'andre.pereira@domuscar.com': {
+            role: 'admin', name: 'André Pereira',
+            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis']
+        },
+        'vanessa.borges@domuscar.com': {
+            role: 'admin', name: 'Vanessa Borges',
+            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis']
+        },
+        '_default': {
+            role: 'user', name: '',
+            modules: ['viaturas','comunicacoes','equipa','kpis']
+        }
+    };
+
+    // ======== AUTH (Azure AD via MSAL) ========
+    const MSAL_CONFIG = {
+        auth: {
+            clientId: '09d343c1-e3ef-4a71-b50e-be14e7aed4c4',
+            authority: 'https://login.microsoftonline.com/17ce2502-f743-4288-86df-fb21fcc4b655',
+            redirectUri: window.location.origin + window.location.pathname
+        },
+        cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
+    };
+    let msalInstance = null;
+    let currentMsalUser = null;
+    let currentUserPermissions = null;
+
+    function initMsal() {
+        try {
+            msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+            var accounts = msalInstance.getAllAccounts();
+            if (accounts.length > 0) {
+                currentMsalUser = accounts[0];
+                unlockIntranet();
+            }
+        } catch(e) { console.warn('MSAL init error:', e); }
+    }
+
+    function doLogin() {
+        if (!msalInstance) { console.error('MSAL não inicializado'); return; }
+        msalInstance.loginPopup({ scopes: ['User.Read'] }).then(function(response) {
+            currentMsalUser = response.account;
+            unlockIntranet();
+        }).catch(function(e) {
+            console.error('Login error:', e);
+            var errEl = document.getElementById('authGateError');
+            if (errEl) { errEl.textContent = 'Erro no login. Tente novamente.'; errEl.style.display = ''; }
+        });
+    }
+
+    function unlockIntranet() {
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+
+        var userEmail = (currentMsalUser.username || currentMsalUser.name || '').toLowerCase();
+        currentUserPermissions = USER_PERMISSIONS[userEmail] || USER_PERMISSIONS._default;
+
+        updateSidebarPermissions();
+
+        if (currentMsalUser) {
+            var name = currentMsalUser.name || currentMsalUser.username || '';
+            var initials = name.split(' ').map(function(n){ return n[0]; }).join('').substring(0,2).toUpperCase();
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userRole').textContent = currentUserPermissions.role === 'admin' ? 'Administrador' : 'Utilizador';
+        }
+
+        renderFeed();
+        renderKpiContent('colisao');
+        updateGreeting();
+    }
+
+    function updateSidebarPermissions() {
+        if (!currentUserPermissions) return;
+        var adminSection = document.getElementById('adminSection');
+        var adminNav = document.getElementById('adminNav');
+        if (currentUserPermissions.role === 'admin') {
+            if (adminSection) adminSection.style.display = 'block';
+            if (adminNav) adminNav.style.display = 'block';
+        } else {
+            if (adminSection) adminSection.style.display = 'none';
+            if (adminNav) adminNav.style.display = 'none';
+        }
+    }
+
+    function renderFeed() {
+        var feedMessages = document.getElementById('feedMessages');
+        if (!feedMessages) return;
+        feedMessages.innerHTML = '';
+        FEED_MESSAGES.forEach(function(msg) {
+            var msgEl = document.createElement('div');
+            msgEl.className = 'feed-message';
+            msgEl.innerHTML = '<div class="feed-avatar">' + msg.initials + '</div>' +
+                '<div class="feed-content">' +
+                '<div><span class="feed-from">' + msg.from + '</span><span class="feed-time">' + msg.time + '</span></div>' +
+                '<div class="feed-text">' + msg.message + '</div>' +
+                '</div>';
+            feedMessages.appendChild(msgEl);
+        });
+    }
+
+    function doLogout() {
+        if (msalInstance) {
+            msalInstance.logoutPopup().catch(function(e) { console.warn('Logout error:', e); });
+        }
+        currentMsalUser = null;
+        document.getElementById('appContent').style.display = 'none';
+        document.getElementById('authGate').style.display = 'flex';
+    }
+
+    // ======== NAVIGATION ========
+    let currentModule = null;
+    let desktopSidebarVisible = true;
+
+    function isMobile() { return window.innerWidth <= 768; }
+
+    function toggleSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        if (isMobile()) {
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+    }
+
     function toggleSidebarDesktop() {
-        const sidebar = document.getElementById('sidebar');
-        const breadcrumb = document.getElementById('breadcrumb');
-        const mainContent = document.getElementById('mainContent');
-        sidebar.classList.toggle('hidden');
-        breadcrumb.classList.toggle('sidebar-hidden');
-        mainContent.classList.toggle('sidebar-hidden');
+        var sidebar = document.getElementById('sidebar');
+        var main = document.getElementById('mainContent');
+        desktopSidebarVisible = !desktopSidebarVisible;
+        if (desktopSidebarVisible) {
+            sidebar.classList.remove('desktop-hidden');
+            main.classList.remove('full');
+        } else {
+            sidebar.classList.add('desktop-hidden');
+            main.classList.add('full');
+        }
     }
 
     function goHome() {
-        document.getElementById('dashboardView').style.display = 'grid';
-        document.getElementById('settingsPage').style.display = 'none';
-        document.getElementById('moduleFrame').classList.remove('visible');
-        document.getElementById('headerTitle').innerText = 'Início';
-        document.getElementById('breadcrumbCurrent').innerText = 'Início';
+        currentModule = null;
+        document.getElementById('dashboardView').style.display = 'flex';
+        document.getElementById('moduleFrame').classList.remove('active');
+        var sp = document.getElementById('settingsPage');
+        if (sp) sp.classList.remove('active');
+        document.getElementById('breadcrumb').style.display = 'none';
+        document.getElementById('headerTitle').textContent = 'Intranet';
+        clearActiveNav();
+        var navHome = document.getElementById('navHome');
+        if (navHome) navHome.classList.add('active');
     }
 
-    function openDashboard(section) {
+    function openDashboard(type) {
         goHome();
         renderKpiContent('colisao');
     }
 
-    function openSettings() {
+    function openModule(id) {
+        const modules = {
+            viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
+            picagens: { title: 'Divergências / Picagens', url: null }
+        };
+        const mod = modules[id];
+        if (!mod) return;
+        if (currentUserPermissions && !currentUserPermissions.modules.includes(id)) {
+            alert('Não tem permissão para aceder a este módulo');
+            return;
+        }
+        if (!mod.url) { alert('Este módulo ainda não está disponível'); return; }
+
+        currentModule = id;
         document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('settingsPage').style.display = 'block';
-        document.getElementById('moduleFrame').classList.remove('visible');
-        document.getElementById('headerTitle').innerText = 'Definições';
-        document.getElementById('breadcrumbCurrent').innerText = 'Definições';
+        var sp = document.getElementById('settingsPage');
+        if (sp) sp.classList.remove('active');
+        document.getElementById('breadcrumb').style.display = 'block';
+        document.getElementById('breadcrumbCurrent').textContent = mod.title;
+        document.getElementById('headerTitle').textContent = mod.title;
+
+        var frame = document.getElementById('moduleFrame');
+        frame.src = mod.url;
+        frame.classList.add('active');
+
+        clearActiveNav();
     }
 
-    function openModule(moduleName) {
+    function openSettings() {
+        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
+            alert('Apenas administradores podem aceder às definições');
+            return;
+        }
         document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('settingsPage').style.display = 'none';
-        document.getElementById('moduleFrame').classList.add('visible');
-        document.getElementById('headerTitle').innerText = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
-        document.getElementById('breadcrumbCurrent').innerText = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+        document.getElementById('moduleFrame').classList.remove('active');
+        var sp = document.getElementById('settingsPage');
+        if (sp) sp.classList.add('active');
+        document.getElementById('breadcrumb').style.display = 'none';
+        document.getElementById('headerTitle').textContent = 'Definições';
+        clearActiveNav();
+        var navDef = document.getElementById('navDefinicoes');
+        if (navDef) navDef.classList.add('active');
+        renderUsersTable();
+    }
 
-        const moduleUrl = 'https://domuscar.sharepoint.com/sites/intranet/modules/' + moduleName + '.html';
-        document.getElementById('moduleFrame').src = moduleUrl;
+    function renderUsersTable() {
+        var tbody = document.getElementById('usersTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        Object.keys(USER_PERMISSIONS).forEach(function(email) {
+            if (email === '_default') return;
+            var user = USER_PERMISSIONS[email];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + user.name + '</td><td>' + email + '</td><td>' + (user.role === 'admin' ? 'Administrador' : 'Utilizador') + '</td><td>' + user.modules.length + ' módulos</td>';
+            tbody.appendChild(tr);
+        });
     }
 
     function openClaudeDesktop() {
-        alert('Claude Desktop não está instalado. Visite https://claude.ai para utilizar Claude Online.');
+        alert('A integração Claude AI está em desenvolvimento. Por agora, utilize o Claude Desktop instalado nesta máquina.');
     }
 
-    function doLogin() {
-        document.getElementById('authGate').style.display = 'none';
-        document.getElementById('appContent').style.display = 'flex';
-        renderKpiContent('colisao');
+    function clearActiveNav() {
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
     }
 
-    function doLogout() {
-        if (confirm('Deseja terminar a sessão?')) {
-            document.getElementById('authGate').style.display = 'flex';
-            document.getElementById('appContent').style.display = 'none';
+    function updateGreeting() {
+        const h = new Date().getHours();
+        let greeting = h < 12 ? 'Bom dia' : h < 19 ? 'Boa tarde' : 'Boa noite';
+        var firstName = 'Utilizador';
+        if (currentMsalUser && currentMsalUser.name) {
+            firstName = currentMsalUser.name.split(' ')[0];
         }
+        var el = document.getElementById('welcomeMsg');
+        if (el) el.textContent = greeting + ', ' + firstName;
     }
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-        renderKpiContent('colisao');
-    });
+    // ======== INIT ========
+    initLogos();
+    initMsal();
 </script>
 
 </body>
