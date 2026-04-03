@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intranet DomusCar</title>
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -250,11 +251,14 @@
         /* ---- Dashboard (Homepage) ---- */
         .dashboard {
             padding: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            gap: 40px;
+            height: 100%;
+            overflow: hidden;
         }
+
         .dashboard-welcome {
-            margin-bottom: 36px;
+            margin-bottom: 24px;
         }
         .dashboard-welcome h1 {
             font-size: 26px; font-weight: 700;
@@ -264,64 +268,246 @@
             font-size: 14px; color: var(--text-secondary);
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .dash-card {
+        /* Feed / Communications */
+        .feed-section {
+            flex: 0 0 35%;
+            display: flex;
+            flex-direction: column;
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 28px 24px;
             border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
             overflow: hidden;
         }
-        .dash-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        .feed-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .feed-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+        .feed-message {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        .feed-message:hover {
+            background: #fafafa;
+        }
+        .feed-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .feed-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .feed-from {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .feed-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        .feed-text {
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-top: 4px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .feed-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+        }
+        .feed-input {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+        .feed-input:focus {
+            outline: none;
             border-color: var(--accent-blue);
         }
-        .dash-card .card-icon {
-            width: 48px; height: 48px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px;
-            margin-bottom: 16px;
+        .feed-send {
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
         }
-        .dash-card .card-icon.blue { background: #e8f0fe; }
-        .dash-card .card-icon.green { background: #e6f4ea; }
-        .dash-card .card-icon.orange { background: #fef7e0; }
-        .dash-card .card-icon.purple { background: #f3e8fd; }
-        .dash-card .card-icon.red { background: #fce8e6; }
-        .dash-card .card-icon.teal { background: #e0f7fa; }
+        .feed-send:hover {
+            background: #1557b0;
+        }
 
-        .dash-card h3 {
-            font-size: 16px; font-weight: 600;
-            margin-bottom: 6px;
+        /* KPI Dashboard */
+        .kpi-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
         }
-        .dash-card p {
-            font-size: 13px; color: var(--text-secondary);
-            line-height: 1.5;
+        .kpi-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .dash-card.disabled {
-            opacity: 0.5;
-            cursor: default;
+        .kpi-title {
+            font-size: 15px;
+            font-weight: 600;
         }
-        .dash-card.disabled:hover {
-            transform: none;
-            box-shadow: none;
-            border-color: var(--border-color);
+        .kpi-tabs {
+            display: flex;
+            gap: 0;
+            margin-left: 20px;
         }
-        .dash-card .card-badge {
-            position: absolute; top: 16px; right: 16px;
-            font-size: 10px; font-weight: 600;
-            padding: 3px 10px; border-radius: 12px;
+        .kpi-tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
         }
-        .card-badge.active { background: #e6f4ea; color: #0d904f; }
-        .card-badge.soon { background: #f0f2f5; color: #5f6368; }
+        .kpi-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        .kpi-tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+        .kpi-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .kpi-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .kpi-unit {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+
+        .kpi-efficiency {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .kpi-efficiency.green { background: #e6f4ea; color: #0d904f; }
+        .kpi-efficiency.orange { background: #fef7e0; color: #e37400; }
+        .kpi-efficiency.red { background: #fce8e6; color: #d93025; }
+
+        .ranking-section {
+            margin-top: 24px;
+        }
+        .ranking-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .ranking-position {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .ranking-medal {
+            font-size: 16px;
+            margin-right: 8px;
+        }
+        .ranking-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        .ranking-value {
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
 
         /* ---- Module view (iframe) ---- */
         .module-frame {
@@ -349,6 +535,102 @@
         .breadcrumb a:hover { text-decoration: underline; }
         .breadcrumb span { margin: 0 6px; color: var(--text-light); }
 
+        /* ---- Settings Page ---- */
+        .settings-page {
+            display: none;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .settings-page.active {
+            display: block;
+        }
+        .settings-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .settings-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        .settings-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        .form-input:disabled {
+            background: #f5f5f5;
+            color: var(--text-secondary);
+        }
+        .form-button {
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .form-button:hover {
+            background: #1557b0;
+        }
+        .form-button:disabled {
+            background: var(--text-light);
+            cursor: default;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .users-table th {
+            text-align: left;
+            padding: 12px;
+            background: #f9f9f9;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .users-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
         /* ======== RESPONSIVE / MOBILE ======== */
         @media (max-width: 768px) {
             .app-header { padding: 0 12px; }
@@ -375,11 +657,20 @@
                 padding: 10px 16px;
             }
 
-            .dashboard { padding: 20px 16px; }
-            .dashboard-welcome h1 { font-size: 22px; }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
+            .dashboard {
+                flex-direction: column;
+                padding: 20px 16px;
+                gap: 20px;
+            }
+            .feed-section, .kpi-section {
+                flex: 1;
+            }
+            .kpi-tabs {
+                margin-left: 0;
+                margin-top: 12px;
+            }
+            .settings-page {
+                padding: 20px 16px;
             }
         }
 
@@ -425,7 +716,7 @@
                 <div class="user-avatar" id="userAvatar">AP</div>
                 <div>
                     <div class="user-name" id="userName">André Pereira</div>
-                    <div class="user-role">Administrador</div>
+                    <div class="user-role" id="userRole">Administrador</div>
                 </div>
             </div>
             <button class="header-logout" onclick="doLogout()">Terminar Sessão</button>
@@ -433,35 +724,36 @@
     </header>
 
     <!-- Sidebar -->
-    <nav class="app-sidebar hidden" id="sidebar">
+    <nav class="app-sidebar" id="sidebar">
         <div class="sidebar-section">Principal</div>
         <ul class="sidebar-nav">
             <li><a onclick="goHome()" id="navHome"><span class="nav-icon">🏠</span> Início</a></li>
+            <li><a onclick="openDashboard('kpis')" id="navKpis"><span class="nav-icon">📊</span> Dashboard KPIs</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Gestão de Viaturas</a></li>
-            <li><a onclick="openModule('picagens')" id="navPicagens" class="disabled"><span class="nav-icon">⏱️</span> Divergências / Picagens</a></li>
+            <li><a onclick="openModule('picagens')" id="navPicagens"><span class="nav-icon">⏱️</span> Divergências / Picagens</a></li>
             <li><a class="disabled"><span class="nav-icon">📋</span> Ordens de Serviço</a></li>
             <li><a class="disabled"><span class="nav-icon">📦</span> Stock / Peças</a></li>
         </ul>
 
         <div class="sidebar-section">Empresa</div>
         <ul class="sidebar-nav">
-            <li><a class="disabled"><span class="nav-icon">👥</span> Equipa / Contactos</a></li>
-            <li><a class="disabled"><span class="nav-icon">📄</span> Documentos Internos</a></li>
-            <li><a class="disabled"><span class="nav-icon">📢</span> Comunicações</a></li>
+            <li><a onclick="openModule('equipa')" id="navEquipa"><span class="nav-icon">👥</span> Equipa / Contactos</a></li>
+            <li><a onclick="openModule('documentos')" id="navDocumentos"><span class="nav-icon">📄</span> Documentos Internos</a></li>
+            <li><a onclick="openModule('comunicacoes')" id="navComunicacoes"><span class="nav-icon">📢</span> Comunicações</a></li>
         </ul>
 
-        <div class="sidebar-section">Administração</div>
-        <ul class="sidebar-nav">
-            <li><a class="disabled"><span class="nav-icon">⚙️</span> Definições</a></li>
-            <li><a class="disabled"><span class="nav-icon">📊</span> Relatórios</a></li>
+        <div class="sidebar-section" id="adminSection" style="display: none;">Administração</div>
+        <ul class="sidebar-nav" id="adminNav" style="display: none;">
+            <li><a onclick="openSettings()" id="navDefinicoes"><span class="nav-icon">⚙️</span> Definições</a></li>
+            <li><a onclick="openModule('relatorios')" id="navRelatorios"><span class="nav-icon">📊</span> Relatórios</a></li>
         </ul>
 
         <div class="sidebar-footer">
-            Intranet DomusCar v1.0
+            Intranet DomusCar v2.0
         </div>
     </nav>
 
@@ -469,54 +761,122 @@
     <div class="breadcrumb" id="breadcrumb">
         <a onclick="goHome()">Início</a>
         <span>›</span>
-        <span id="breadcrumbCurrent">Gestão de Viaturas</span>
+        <span id="breadcrumbCurrent">Página</span>
     </div>
 
     <!-- Main content -->
-    <main class="app-main full" id="mainContent">
+    <main class="app-main" id="mainContent">
         <!-- Dashboard -->
         <div class="dashboard" id="dashboardView">
-            <div class="dashboard-welcome">
-                <h1 id="welcomeMsg">Bom dia, André</h1>
-                <p>Selecione um módulo para começar</p>
+            <!-- Feed Section -->
+            <div class="feed-section">
+                <div class="feed-header">Comunicações Recentes</div>
+                <div class="feed-messages" id="feedMessages">
+                    <!-- Messages populated by JS -->
+                </div>
+                <div class="feed-input-area">
+                    <input type="text" class="feed-input" placeholder="Escreva uma mensagem...">
+                    <button class="feed-send">Enviar</button>
+                </div>
             </div>
-            <div class="dashboard-grid">
-                <div class="dash-card" onclick="openModule('viaturas')">
-                    <div class="card-icon blue">🚗</div>
-                    <span class="card-badge active">Ativo</span>
-                    <h3>Gestão de Viaturas</h3>
-                    <p>Agendamentos, levantamentos, devoluções e gestão da frota de viaturas de cortesia.</p>
+
+            <!-- KPI Dashboard -->
+            <div class="kpi-section">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title">Dashboard KPIs</div>
+                        <div class="kpi-tabs">
+                            <button class="kpi-tab active" onclick="switchKpiTab('colisao')">Colisão</button>
+                            <button class="kpi-tab" onclick="switchKpiTab('cacém')">Mecânica Cacém</button>
+                            <button class="kpi-tab" onclick="switchKpiTab('lisboa')">Mecânica Lisboa</button>
+                            <button class="kpi-tab" onclick="switchKpiTab('comparacao')">Comparação</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="dash-card" onclick="openModule('picagens')">
-                    <div class="card-icon green">⏱️</div>
-                    <span class="card-badge soon">Em breve</span>
-                    <h3>Divergências / Picagens</h3>
-                    <p>Relatórios diários de presenças comparando 2Smart com Officegest.</p>
+                <div class="kpi-content" id="kpiContent">
+                    <!-- KPI content populated by JS -->
                 </div>
-                <div class="dash-card disabled">
-                    <div class="card-icon orange">📋</div>
-                    <span class="card-badge soon">Em breve</span>
-                    <h3>Ordens de Serviço</h3>
-                    <p>Gestão e acompanhamento de ordens de serviço das oficinas.</p>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="settings-page" id="settingsPage">
+            <div class="dashboard-welcome" style="margin-bottom: 32px;">
+                <h1>Definições</h1>
+                <p>Configurações administrativas do sistema</p>
+            </div>
+
+            <!-- Gestão de Utilizadores -->
+            <div class="settings-section">
+                <div class="settings-title">Gestão de Utilizadores</div>
+                <div class="settings-subtitle">Utilizadores e suas permissões</div>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Função</th>
+                            <th>Módulos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Configuração SharePoint -->
+            <div class="settings-section">
+                <div class="settings-title">Configuração SharePoint</div>
+                <div class="settings-subtitle">Integração com SharePoint Online</div>
+                <div class="form-group">
+                    <label class="form-label">URL do Site SharePoint</label>
+                    <input type="text" class="form-input" placeholder="https://domuscar.sharepoint.com/sites/intranet" value="https://domuscar.sharepoint.com/sites/intranet">
                 </div>
-                <div class="dash-card disabled">
-                    <div class="card-icon purple">📦</div>
-                    <span class="card-badge soon">Em breve</span>
-                    <h3>Stock / Peças</h3>
-                    <p>Controlo de stock e encomendas de peças para as oficinas.</p>
+                <div class="form-group">
+                    <label class="form-label">Lista de Comunicações</label>
+                    <input type="text" class="form-input" placeholder="Communications" value="Communications">
                 </div>
-                <div class="dash-card disabled">
-                    <div class="card-icon teal">👥</div>
-                    <span class="card-badge soon">Em breve</span>
-                    <h3>Equipa / Contactos</h3>
-                    <p>Diretório de colaboradores, contactos internos e organograma.</p>
+                <div class="form-group">
+                    <label class="form-label">Lista de Documentos</label>
+                    <input type="text" class="form-input" placeholder="Documents" value="Documents">
                 </div>
-                <div class="dash-card disabled">
-                    <div class="card-icon red">📄</div>
-                    <span class="card-badge soon">Em breve</span>
-                    <h3>Documentos Internos</h3>
-                    <p>Procedimentos, manuais, templates e documentação da empresa.</p>
+                <button class="form-button">Testar Conexão</button>
+            </div>
+
+            <!-- Manutenção -->
+            <div class="settings-section">
+                <div class="settings-title">Manutenção do Sistema</div>
+                <div class="settings-subtitle">Informações e ferramentas de manutenção</div>
+                <div class="form-group">
+                    <label class="form-label">Versão do Sistema</label>
+                    <input type="text" class="form-input" value="v2.0 - Build 2026.04.03" disabled>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Último Backup</label>
+                    <input type="text" class="form-input" value="2026-04-03 03:15 UTC" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Utilizadores Ativos</label>
+                    <input type="text" class="form-input" value="127 utilizadores" disabled>
+                </div>
+                <button class="form-button">Limpar Cache</button>
+                <button class="form-button" style="margin-left: 8px; background: #e37400;">Força Atualização</button>
+            </div>
+
+            <!-- Claude AI -->
+            <div class="settings-section">
+                <div class="settings-title">Claude AI (Futuro)</div>
+                <div class="settings-subtitle">Integração com Claude para análise inteligente de dados</div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    A integração com Claude API está em desenvolvimento. Esta funcionalidade permitirá análise automática de dados e geração de relatórios inteligentes.
+                </p>
+                <div class="form-group">
+                    <label class="form-label">Chave API Claude</label>
+                    <input type="password" class="form-input" placeholder="sk-..." disabled value="">
+                </div>
+                <button class="form-button" disabled style="background: var(--text-light);">Ativar (Em breve)</button>
+                <button class="form-button" style="margin-left: 8px;" onclick="openClaudeDesktop()">Abrir Claude Desktop</button>
             </div>
         </div>
 
@@ -526,6 +886,127 @@
 </div>
 
 <script>
+    // ======== KPI DATA ========
+    const KPI_DATA = {
+        colisao: {
+            prepPintura: {
+                name: 'Colisão - Prep + Pintura',
+                horasTrabalhadas: 1126.7,
+                horasVendidas: 770.8,
+                horasDisponiveis: 1249.5,
+                eficienciaP: 100.0,
+                utilizacao: 90.0
+            },
+            chapa: {
+                name: 'Colisão - Chapa',
+                horasTrabalhadas: 244.6,
+                horasVendidas: 439.5,
+                horasDisponiveis: 264.4,
+                eficienciaP: 113.0,
+                utilizacao: 92.0
+            },
+            global: {
+                name: 'Colisão - Global',
+                horasTrabalhadas: 1371.2,
+                horasVendidas: 1210.3,
+                horasDisponiveis: 1513.8,
+                eficienciaP: 102.0,
+                utilizacao: 90.0,
+                faturado: 112178.85
+            }
+        },
+        cacém: {
+            name: 'Mecânica Cacém',
+            horasTrabalhadas: 575.8,
+            horasVendidas: 768.6,
+            horasDisponiveis: 589.9,
+            eficienciaP: 144.0,
+            utilizacao: 98.0,
+            faturado: 97987.28
+        },
+        lisboa: {
+            name: 'Mecânica Lisboa',
+            horasTrabalhadas: 356.6,
+            horasVendidas: 611.9,
+            horasDisponiveis: 322.1,
+            eficienciaP: 158.0,
+            utilizacao: 132.0,
+            faturado: 70989.30
+        },
+        comparacao: {
+            lisboa: { eficiencia: 158.0, utilizacao: 132.7 },
+            cacém: { eficiencia: 143.5, utilizacao: 97.7 },
+            prepPint: { eficiencia: 109.0, utilizacao: 73.5 },
+            chapa: { eficiencia: 113.0, utilizacao: 92.0 },
+            global: { eficiencia: 97.0, utilizacao: 94.4 }
+        }
+    };
+
+    const RANKINGS = {
+        hours: [
+            { name: 'Jorge (LX)', hours: 217.6 },
+            { name: 'Gonçalo (CA)', hours: 198.7 },
+            { name: 'Arnaldo (CA)', hours: 197.5 },
+            { name: 'Filipe (CA)', hours: 190.7 },
+            { name: 'Edmilson (CA)', hours: 151.6 }
+        ],
+        revenue: [
+            { name: 'Gonçalo (CA)', value: 31672.47 },
+            { name: 'Jorge (LX)', value: 29830.72 },
+            { name: 'Filipe (CA)', value: 25141.87 },
+            { name: 'Arnaldo (CA)', value: 23756.38 },
+            { name: 'Sérgio (LX)', value: 20478.62 }
+        ],
+        totalFaturado: 281155.43
+    };
+
+    // ======== COMMUNICATIONS FEED DATA ========
+    const FEED_MESSAGES = [
+        {
+            from: 'André Pereira',
+            initials: 'AP',
+            time: 'Hoje',
+            message: 'Reunião de coordenação amanhã às 10h'
+        },
+        {
+            from: 'Vanessa Borges',
+            initials: 'VB',
+            time: 'Ontem',
+            message: 'Nova política de férias disponível nos Documentos Internos'
+        },
+        {
+            from: 'Sistema',
+            initials: 'SYS',
+            time: 'Há 2 dias',
+            message: 'Manutenção do sistema agendada para Domingo'
+        },
+        {
+            from: 'Administração',
+            initials: 'ADM',
+            time: 'Há 1 semana',
+            message: 'Bem-vindos ao novo portal da Intranet!'
+        }
+    ];
+
+    // ======== USER PERMISSIONS ========
+    const USER_PERMISSIONS = {
+        'andre.pereira@domuscar.com': {
+            role: 'admin',
+            name: 'André Pereira',
+            modules: ['viaturas', 'picagens', 'ordens', 'stock', 'equipa', 'documentos', 'comunicacoes', 'definicoes', 'relatorios', 'kpis']
+        },
+        'vanessa.borges@domuscar.com': {
+            role: 'admin',
+            name: 'Vanessa Borges',
+            modules: ['viaturas', 'picagens', 'ordens', 'stock', 'equipa', 'documentos', 'comunicacoes', 'definicoes', 'relatorios', 'kpis']
+        },
+        '_default': {
+            role: 'user',
+            name: '',
+            modules: ['viaturas', 'comunicacoes', 'equipa']
+        }
+    };
+
     // ---- Logo base64 (inline from file) ----
     const LOGO_URL = 'DomusCar%20_%20Logo.png';
 
@@ -545,6 +1026,7 @@
     };
     let msalInstance = null;
     let currentMsalUser = null;
+    let currentUserPermissions = null;
 
     function initMsal() {
         try {
@@ -572,13 +1054,180 @@
     function unlockIntranet() {
         document.getElementById('authGate').style.display = 'none';
         document.getElementById('appContent').style.display = 'block';
+
+        // Get user permissions
+        var userEmail = currentMsalUser.username || currentMsalUser.name || '';
+        currentUserPermissions = USER_PERMISSIONS[userEmail] || USER_PERMISSIONS._default;
+
+        // Update sidebar based on permissions
+        updateSidebarPermissions();
+
+        // Update header
         if (currentMsalUser) {
             var name = currentMsalUser.name || currentMsalUser.username || '';
             var initials = name.split(' ').map(function(n){ return n[0]; }).join('').substring(0,2).toUpperCase();
             document.getElementById('userName').textContent = name;
             document.getElementById('userAvatar').textContent = initials;
+            document.getElementById('userRole').textContent = currentUserPermissions.role === 'admin' ? 'Administrador' : 'Utilizador';
         }
+
+        // Render feed
+        renderFeed();
+
+        // Render initial KPI
+        renderKpiTab('colisao');
+
         updateGreeting();
+    }
+
+    function updateSidebarPermissions() {
+        if (!currentUserPermissions) return;
+
+        // Show/hide admin section
+        var adminSection = document.getElementById('adminSection');
+        var adminNav = document.getElementById('adminNav');
+        if (currentUserPermissions.role === 'admin') {
+            adminSection.style.display = 'block';
+            adminNav.style.display = 'block';
+        } else {
+            adminSection.style.display = 'none';
+            adminNav.style.display = 'none';
+        }
+
+        // Hide modules without permission
+        document.querySelectorAll('.sidebar-nav a:not(.disabled)').forEach(function(el) {
+            var id = el.getAttribute('onclick');
+            if (!id) return;
+            // Extract module ID from onclick
+            var match = id.match(/openModule\('(\w+)'\)/);
+            if (match && !currentUserPermissions.modules.includes(match[1])) {
+                el.style.display = 'none';
+            }
+        });
+    }
+
+    function renderFeed() {
+        var feedMessages = document.getElementById('feedMessages');
+        feedMessages.innerHTML = '';
+        FEED_MESSAGES.forEach(function(msg) {
+            var msgEl = document.createElement('div');
+            msgEl.className = 'feed-message';
+            msgEl.innerHTML = '<div class="feed-avatar">' + msg.initials + '</div>' +
+                '<div class="feed-content">' +
+                '<div><span class="feed-from">' + msg.from + '</span><span class="feed-time">' + msg.time + '</span></div>' +
+                '<div class="feed-text">' + msg.message + '</div>' +
+                '</div>';
+            feedMessages.appendChild(msgEl);
+        });
+    }
+
+    function getEfficiencyClass(value) {
+        if (value >= 100) return 'green';
+        if (value >= 80) return 'orange';
+        return 'red';
+    }
+
+    function renderKpiTab(tab) {
+        var content = document.getElementById('kpiContent');
+        var html = '';
+
+        if (tab === 'colisao') {
+            // Colisão sections
+            var sections = ['prepPintura', 'chapa', 'global'];
+            sections.forEach(function(section) {
+                var data = KPI_DATA.colisao[section];
+                html += '<div><div class="kpi-title" style="font-size: 14px; margin: 20px 0 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">' + data.name + '</div>';
+                html += '<div class="kpi-cards">';
+                html += '<div class="kpi-card"><div class="kpi-label">Horas Trabalhadas</div><div class="kpi-value">' + data.horasTrabalhadas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+                html += '<div class="kpi-card"><div class="kpi-label">Horas Vendidas</div><div class="kpi-value">' + data.horasVendidas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+                html += '<div class="kpi-card"><div class="kpi-label">Horas Disponíveis</div><div class="kpi-value">' + data.horasDisponiveis.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+                var effClass = getEfficiencyClass(data.eficienciaP);
+                html += '<div class="kpi-card"><div class="kpi-label">Eficiência Produtiva</div><div class="kpi-value">' + data.eficienciaP.toFixed(1) + '<span class="kpi-unit">%</span></div><div class="kpi-efficiency ' + effClass + '">' + data.eficienciaP.toFixed(1) + '%</div></div>';
+                html += '<div class="kpi-card"><div class="kpi-label">Taxa de Utilização</div><div class="kpi-value">' + data.utilizacao.toFixed(1) + '<span class="kpi-unit">%</span></div></div>';
+                if (data.faturado) {
+                    html += '<div class="kpi-card"><div class="kpi-label">Total Faturado</div><div class="kpi-value">' + (data.faturado / 1000).toFixed(1) + '<span class="kpi-unit">k€</span></div></div>';
+                }
+                html += '</div></div>';
+            });
+        } else if (tab === 'cacém') {
+            var data = KPI_DATA.cacém;
+            html += '<div class="kpi-cards">';
+            html += '<div class="kpi-card"><div class="kpi-label">Horas Trabalhadas</div><div class="kpi-value">' + data.horasTrabalhadas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Horas Vendidas</div><div class="kpi-value">' + data.horasVendidas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Horas Disponíveis</div><div class="kpi-value">' + data.horasDisponiveis.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+            var effClass = getEfficiencyClass(data.eficienciaP);
+            html += '<div class="kpi-card"><div class="kpi-label">Eficiência Produtiva</div><div class="kpi-value">' + data.eficienciaP.toFixed(1) + '<span class="kpi-unit">%</span></div><div class="kpi-efficiency ' + effClass + '">' + data.eficienciaP.toFixed(1) + '%</div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Taxa de Utilização</div><div class="kpi-value">' + data.utilizacao.toFixed(1) + '<span class="kpi-unit">%</span></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Total Faturado</div><div class="kpi-value">' + (data.faturado / 1000).toFixed(1) + '<span class="kpi-unit">k€</span></div></div>';
+            html += '</div>';
+        } else if (tab === 'lisboa') {
+            var data = KPI_DATA.lisboa;
+            html += '<div class="kpi-cards">';
+            html += '<div class="kpi-card"><div class="kpi-label">Horas Trabalhadas</div><div class="kpi-value">' + data.horasTrabalhadas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Horas Vendidas</div><div class="kpi-value">' + data.horasVendidas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Horas Disponíveis</div><div class="kpi-value">' + data.horasDisponiveis.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
+            var effClass = getEfficiencyClass(data.eficienciaP);
+            html += '<div class="kpi-card"><div class="kpi-label">Eficiência Produtiva</div><div class="kpi-value">' + data.eficienciaP.toFixed(1) + '<span class="kpi-unit">%</span></div><div class="kpi-efficiency ' + effClass + '">' + data.eficienciaP.toFixed(1) + '%</div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Taxa de Utilização</div><div class="kpi-value">' + data.utilizacao.toFixed(1) + '<span class="kpi-unit">%</span></div></div>';
+            html += '<div class="kpi-card"><div class="kpi-label">Total Faturado</div><div class="kpi-value">' + (data.faturado / 1000).toFixed(1) + '<span class="kpi-unit">k€</span></div></div>';
+            html += '</div>';
+        } else if (tab === 'comparacao') {
+            var comp = KPI_DATA.comparacao;
+            html += '<div style="margin-top: 16px;">';
+            html += '<div class="ranking-title">Eficiência Produtiva vs Taxa de Utilização</div>';
+            var items = [
+                { name: 'Mecânica Lisboa', eff: comp.lisboa.eficiencia, util: comp.lisboa.utilizacao },
+                { name: 'Mecânica Cacém', eff: comp.cacém.eficiencia, util: comp.cacém.utilizacao },
+                { name: 'Colisão Prep+Pint', eff: comp.prepPint.eficiencia, util: comp.prepPint.utilizacao },
+                { name: 'Colisão Chapa', eff: comp.chapa.eficiencia, util: comp.chapa.utilizacao },
+                { name: 'Colisão Global', eff: comp.global.eficiencia, util: comp.global.utilizacao }
+            ];
+            items.forEach(function(item, idx) {
+                var medal = '';
+                if (idx === 0) medal = '🥇';
+                else if (idx === 1) medal = '🥈';
+                else if (idx === 2) medal = '🥉';
+                html += '<div class="ranking-item" style="margin-bottom: 12px;">' + medal + '<span style="flex: 1; font-weight: 500;">' + item.name + '</span><span style="color: var(--accent-blue); font-weight: 600; margin-right: 16px;">' + item.eff.toFixed(1) + '%</span><span style="color: var(--success); font-weight: 600;">' + item.util.toFixed(1) + '%</span></div>';
+            });
+            html += '</div>';
+        }
+
+        // Add rankings
+        html += '<div class="ranking-section">';
+        html += '<div class="ranking-title">Top 5 por Horas</div>';
+        RANKINGS.hours.forEach(function(item, idx) {
+            var medal = '';
+            if (idx === 0) medal = '🥇';
+            else if (idx === 1) medal = '🥈';
+            else if (idx === 2) medal = '🥉';
+            html += '<div class="ranking-item">' + medal + '<span class="ranking-name">' + item.name + '</span><span class="ranking-value">' + item.hours.toFixed(1) + 'h</span></div>';
+        });
+        html += '</div>';
+
+        html += '<div class="ranking-section">';
+        html += '<div class="ranking-title">Top 5 por Faturação</div>';
+        RANKINGS.revenue.forEach(function(item, idx) {
+            var medal = '';
+            if (idx === 0) medal = '🥇';
+            else if (idx === 1) medal = '🥈';
+            else if (idx === 2) medal = '🥉';
+            html += '<div class="ranking-item">' + medal + '<span class="ranking-name">' + item.name + '</span><span class="ranking-value">' + (item.value / 1000).toFixed(1) + 'k€</span></div>';
+        });
+        html += '<div style="margin-top: 16px; padding: 12px; background: var(--accent-blue-light); border-radius: 8px; text-align: center;">';
+        html += '<div class="kpi-label">Total Faturado</div>';
+        html += '<div class="kpi-value" style="color: var(--accent-blue);">' + (RANKINGS.totalFaturado / 1000).toFixed(1) + '<span class="kpi-unit">€</span></div>';
+        html += '</div>';
+        html += '</div>';
+
+        content.innerHTML = html;
+    }
+
+    function switchKpiTab(tab) {
+        document.querySelectorAll('.kpi-tab').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        renderKpiTab(tab);
     }
 
     function doLogout() {
@@ -634,13 +1283,14 @@
 
     function goHome() {
         currentModule = null;
-        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'flex';
         document.getElementById('moduleFrame').classList.remove('active');
-        document.getElementById('sidebar').classList.add('hidden');
+        document.getElementById('settingsPage').classList.remove('active');
+        document.getElementById('sidebar').classList.remove('hidden');
         document.getElementById('sidebar').classList.remove('mobile-open');
         document.getElementById('sidebar').classList.remove('desktop-hidden');
         document.getElementById('sidebarOverlay').classList.remove('active');
-        document.getElementById('mainContent').classList.add('full');
+        document.getElementById('mainContent').classList.remove('full');
         document.getElementById('breadcrumb').style.display = 'none';
         document.getElementById('headerTitle').textContent = 'Intranet';
         document.getElementById('sidebarToggle').classList.remove('visible');
@@ -648,18 +1298,44 @@
         clearActiveNav();
     }
 
+    function openDashboard(type) {
+        if (type === 'kpis') {
+            document.getElementById('dashboardView').style.display = 'flex';
+            document.getElementById('moduleFrame').classList.remove('active');
+            document.getElementById('settingsPage').classList.remove('active');
+            document.getElementById('headerTitle').textContent = 'Dashboard KPIs';
+            document.getElementById('navKpis').classList.add('active');
+        }
+    }
+
     function openModule(id) {
         const modules = {
             viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
-            picagens: { title: 'Divergências / Picagens', url: null }
+            picagens: { title: 'Divergências / Picagens', url: null },
+            equipa: { title: 'Equipa / Contactos', url: null },
+            documentos: { title: 'Documentos Internos', url: null },
+            comunicacoes: { title: 'Comunicações', url: null },
+            relatorios: { title: 'Relatórios', url: null }
         };
         const mod = modules[id];
-        if (!mod || !mod.url) return;
+        if (!mod) return;
+
+        // Check permissions
+        if (currentUserPermissions && !currentUserPermissions.modules.includes(id)) {
+            alert('Não tem permissão para aceder a este módulo');
+            return;
+        }
+
+        if (!mod.url) {
+            alert('Este módulo ainda não está disponível');
+            return;
+        }
 
         currentModule = id;
         closeMobileSidebar();
 
         document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('settingsPage').classList.remove('active');
         document.getElementById('breadcrumb').style.display = 'block';
         document.getElementById('breadcrumbCurrent').textContent = mod.title;
         document.getElementById('headerTitle').textContent = mod.title;
@@ -687,6 +1363,54 @@
         if (navEl) navEl.classList.add('active');
     }
 
+    function openSettings() {
+        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
+            alert('Apenas administradores podem aceder às definições');
+            return;
+        }
+
+        currentModule = null;
+        closeMobileSidebar();
+
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('moduleFrame').classList.remove('active');
+        document.getElementById('settingsPage').classList.add('active');
+        document.getElementById('breadcrumb').style.display = 'none';
+        document.getElementById('headerTitle').textContent = 'Definições';
+        document.getElementById('sidebarToggle').classList.remove('visible');
+
+        var sidebar = document.getElementById('sidebar');
+        var main = document.getElementById('mainContent');
+
+        if (!isMobile()) {
+            sidebar.classList.remove('hidden');
+            main.classList.remove('full');
+            sidebarVisible = true;
+        }
+
+        clearActiveNav();
+        document.getElementById('navDefinicoes').classList.add('active');
+
+        // Render users table
+        renderUsersTable();
+    }
+
+    function renderUsersTable() {
+        var tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+        Object.keys(USER_PERMISSIONS).forEach(function(email) {
+            if (email === '_default') return;
+            var user = USER_PERMISSIONS[email];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + user.name + '</td><td>' + email + '</td><td>' + (user.role === 'admin' ? 'Administrador' : 'Utilizador') + '</td><td>' + user.modules.length + ' módulos</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openClaudeDesktop() {
+        alert('Claude Desktop será aberto em background. A integração está em desenvolvimento.');
+    }
+
     function clearActiveNav() {
         document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
     }
@@ -698,7 +1422,6 @@
         if (currentMsalUser && currentMsalUser.name) {
             firstName = currentMsalUser.name.split(' ')[0];
         }
-        document.getElementById('welcomeMsg').textContent = greeting + ', ' + firstName;
     }
 
     // Init
