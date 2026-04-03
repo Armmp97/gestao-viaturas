@@ -922,7 +922,6 @@
         <div class="sidebar-section">Principal</div>
         <ul class="sidebar-nav">
             <li><a onclick="goHome()" id="navHome"><span class="nav-icon">🏠</span> Início</a></li>
-            <li><a onclick="openDashboard('kpis')" id="navKpis"><span class="nav-icon">📊</span> Dashboard KPIs</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -1058,6 +1057,36 @@
                 </div>
                 <button class="form-button">Limpar Cache</button>
                 <button class="form-button" style="margin-left: 8px; background: #e37400;">Força Atualização</button>
+            </div>
+
+            <!-- Gestão de Ficheiros SharePoint -->
+            <div class="settings-section">
+                <div class="settings-title">Gestão de Ficheiros — SharePoint</div>
+                <div class="settings-subtitle">Ficheiros armazenados no SharePoint (cpmem.sharepoint.com)</div>
+                <div id="spStatus" style="margin-bottom: 16px; padding: 12px; border-radius: 8px; background: #e8f0fe; font-size: 13px; color: var(--accent-blue);">
+                    A verificar ligação ao SharePoint...
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <button class="form-button" onclick="browseSharePoint('kpis')">📊 KPIs</button>
+                    <button class="form-button" onclick="browseSharePoint('divergencias_gerados')">⏱️ Divergências</button>
+                    <button class="form-button" onclick="browseSharePoint('margem_gerados')">💰 Margem</button>
+                    <button class="form-button" onclick="browseSharePoint('geral')" style="background: var(--text-secondary);">📁 Geral</button>
+                </div>
+                <div id="spFileBrowser" style="display: none; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                    <div id="spFileBrowserHeader" style="background: #2d3e50; color: white; padding: 12px 16px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                        <span id="spFolderName">Pasta</span>
+                        <div style="display: flex; gap: 8px;">
+                            <label class="form-button" style="background: var(--success); font-size: 12px; padding: 6px 12px; cursor: pointer; margin: 0;">
+                                📤 Upload
+                                <input type="file" id="spFileUpload" style="display: none;" multiple onchange="handleSpUpload(this.files)">
+                            </label>
+                            <button class="form-button" style="font-size: 12px; padding: 6px 12px; background: var(--text-secondary);" onclick="document.getElementById('spFileBrowser').style.display='none'">✕ Fechar</button>
+                        </div>
+                    </div>
+                    <div id="spFileList" style="max-height: 300px; overflow-y: auto; padding: 8px;">
+                        <p style="padding: 16px; color: var(--text-secondary); font-size: 13px; text-align: center;">A carregar...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Claude AI -->
@@ -1812,7 +1841,7 @@
 
     function doLogin() {
         if (!msalInstance) { console.error('MSAL não inicializado'); return; }
-        msalInstance.loginPopup({ scopes: ['User.Read'] }).then(function(response) {
+        msalInstance.loginPopup({ scopes: ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All'] }).then(function(response) {
             currentMsalUser = response.account;
             unlockIntranet();
         }).catch(function(e) {
@@ -1842,6 +1871,8 @@
         renderFeed();
         renderKpiContent('colisao');
         updateGreeting();
+        // Initialize SharePoint connection (background)
+        setTimeout(function() { initSharePoint(); }, 1000);
     }
 
     function updateSidebarPermissions() {
@@ -1887,6 +1918,153 @@
         document.getElementById('appContent').style.display = 'none';
         document.getElementById('authGate').style.display = 'flex';
     }
+
+    // ======== SHAREPOINT INTEGRATION ========
+    const SP_CONFIG = {
+        siteUrl: 'cpmem.sharepoint.com',
+        sitePath: '/sites/GestaoViaturas',
+        driveName: 'Documentos',
+        folders: {
+            kpis: 'Intranet/KPIs',
+            divergencias_importados: 'Intranet/Divergencias_Picagens/Importados',
+            divergencias_gerados: 'Intranet/Divergencias_Picagens/Gerados',
+            margem_importados: 'Intranet/Margem_Provisoria/Importados',
+            margem_gerados: 'Intranet/Margem_Provisoria/Gerados',
+            comunicacoes: 'Intranet/Comunicacoes',
+            geral: 'Intranet/Geral'
+        }
+    };
+    let spSiteId = null;
+    let spDriveId = null;
+
+    function getGraphToken() {
+        if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
+        return msalInstance.acquireTokenSilent({
+            scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
+            account: currentMsalUser
+        }).catch(function() {
+            return msalInstance.acquireTokenPopup({
+                scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
+                account: currentMsalUser
+            });
+        }).then(function(resp) { return resp.accessToken; });
+    }
+
+    function graphRequest(url, options) {
+        return getGraphToken().then(function(token) {
+            var opts = options || {};
+            opts.headers = opts.headers || {};
+            opts.headers['Authorization'] = 'Bearer ' + token;
+            if (!opts.headers['Content-Type'] && opts.method !== 'PUT') {
+                opts.headers['Content-Type'] = 'application/json';
+            }
+            return fetch(url, opts);
+        }).then(function(resp) {
+            if (!resp.ok) throw new Error('Graph API error: ' + resp.status);
+            var ct = resp.headers.get('content-type') || '';
+            if (ct.includes('application/json')) return resp.json();
+            return resp;
+        });
+    }
+
+    function initSharePoint() {
+        var siteId = SP_CONFIG.siteUrl + ':' + SP_CONFIG.sitePath;
+        return graphRequest('https://graph.microsoft.com/v1.0/sites/' + siteId)
+            .then(function(site) {
+                spSiteId = site.id;
+                return graphRequest('https://graph.microsoft.com/v1.0/sites/' + spSiteId + '/drives');
+            })
+            .then(function(drives) {
+                var target = drives.value.find(function(d) { return d.name === SP_CONFIG.driveName; });
+                if (target) {
+                    spDriveId = target.id;
+                    console.log('SharePoint connected. Drive:', spDriveId);
+                    updateSpStatus();
+                    return ensureFolderStructure();
+                }
+                throw new Error('Drive "' + SP_CONFIG.driveName + '" not found');
+            })
+            .catch(function(e) {
+                console.warn('SharePoint init failed:', e);
+                updateSpStatus();
+            });
+    }
+
+    function ensureFolderStructure() {
+        var promises = Object.values(SP_CONFIG.folders).map(function(folderPath) {
+            return createFolderPath(folderPath);
+        });
+        return Promise.all(promises).then(function() {
+            console.log('SharePoint folder structure ready');
+        });
+    }
+
+    function createFolderPath(path) {
+        if (!spDriveId) return Promise.reject('No drive');
+        // Create folder recursively by using the path
+        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + path, {
+            method: 'PATCH',
+            body: JSON.stringify({ folder: {}, '@microsoft.graph.conflictBehavior': 'fail' })
+        }).catch(function(e) {
+            // If folder exists (409) that's fine, otherwise try creating parent first
+            var parts = path.split('/');
+            if (parts.length <= 1) return;
+            var parentPath = parts.slice(0, -1).join('/');
+            var folderName = parts[parts.length - 1];
+            return createFolderPath(parentPath).then(function() {
+                return graphRequest('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + parentPath + ':/children', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: folderName, folder: {}, '@microsoft.graph.conflictBehavior': 'replace' })
+                }).catch(function() { /* folder likely exists */ });
+            });
+        });
+    }
+
+    function uploadToSharePoint(folderKey, fileName, fileContent, contentType) {
+        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        var folderPath = SP_CONFIG.folders[folderKey] || SP_CONFIG.folders.geral;
+        var uploadUrl = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        return graphRequest(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': contentType || 'application/octet-stream' },
+            body: fileContent
+        });
+    }
+
+    function listSharePointFiles(folderKey) {
+        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        var folderPath = SP_CONFIG.folders[folderKey] || SP_CONFIG.folders.geral;
+        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + ':/children?$orderby=lastModifiedDateTime desc&$top=50');
+    }
+
+    function downloadSharePointFile(fileId) {
+        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        return getGraphToken().then(function(token) {
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/items/' + fileId + '/content', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+        });
+    }
+
+    function deleteSharePointFile(fileId) {
+        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/items/' + fileId, {
+            method: 'DELETE'
+        });
+    }
+
+    // Listen for messages from iframe modules (margem, divergencias) to save files
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'saveToSharePoint') return;
+        var data = event.data;
+        uploadToSharePoint(data.folderKey, data.fileName, data.fileContent, data.contentType)
+            .then(function(result) {
+                event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: data.fileName }, '*');
+            })
+            .catch(function(err) {
+                event.source.postMessage({ type: 'saveToSharePointResult', success: false, error: err.message }, '*');
+            });
+    });
 
     // ======== NAVIGATION ========
     let currentModule = null;
@@ -2031,6 +2209,113 @@
         } else {
             section.classList.add('collapsed');
             btn.textContent = 'Expandir';
+        }
+    }
+
+    var currentSpFolder = null;
+
+    function browseSharePoint(folderKey) {
+        currentSpFolder = folderKey;
+        var browser = document.getElementById('spFileBrowser');
+        var folderName = document.getElementById('spFolderName');
+        var fileList = document.getElementById('spFileList');
+
+        var names = { kpis: '📊 KPIs', divergencias_gerados: '⏱️ Divergências (Gerados)', divergencias_importados: '⏱️ Divergências (Importados)', margem_gerados: '💰 Margem (Gerados)', margem_importados: '💰 Margem (Importados)', geral: '📁 Geral' };
+        folderName.textContent = names[folderKey] || folderKey;
+        browser.style.display = 'block';
+        fileList.innerHTML = '<p style="padding: 16px; color: var(--text-secondary); font-size: 13px; text-align: center;">A carregar...</p>';
+
+        listSharePointFiles(folderKey).then(function(data) {
+            if (!data.value || data.value.length === 0) {
+                fileList.innerHTML = '<p style="padding: 16px; color: var(--text-secondary); font-size: 13px; text-align: center;">Pasta vazia</p>';
+                return;
+            }
+            var html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+            html += '<thead><tr style="background: #f5f5f5;"><th style="padding: 8px 12px; text-align: left;">Nome</th><th style="padding: 8px 12px; text-align: right; width: 80px;">Tamanho</th><th style="padding: 8px 12px; text-align: right; width: 140px;">Data</th><th style="padding: 8px 12px; width: 40px;"></th></tr></thead><tbody>';
+            data.value.forEach(function(item) {
+                var isFolder = !!item.folder;
+                var size = item.size ? formatFileSize(item.size) : '—';
+                var date = item.lastModifiedDateTime ? new Date(item.lastModifiedDateTime).toLocaleDateString('pt-PT') + ' ' + new Date(item.lastModifiedDateTime).toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'}) : '—';
+                var icon = isFolder ? '📁' : getFileIcon(item.name);
+                html += '<tr style="border-bottom: 1px solid #eee;">';
+                html += '<td style="padding: 8px 12px;">' + icon + ' ';
+                if (!isFolder && item.webUrl) {
+                    html += '<a href="' + item.webUrl + '" target="_blank" style="color: var(--accent-blue); text-decoration: none;">' + item.name + '</a>';
+                } else {
+                    html += item.name;
+                }
+                html += '</td>';
+                html += '<td style="padding: 8px 12px; text-align: right; color: var(--text-secondary);">' + size + '</td>';
+                html += '<td style="padding: 8px 12px; text-align: right; color: var(--text-secondary);">' + date + '</td>';
+                html += '<td style="padding: 8px 12px; text-align: center;"><button onclick="confirmDeleteFile(\'' + item.id + '\', \'' + item.name.replace(/'/g, "\\'") + '\')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;" title="Eliminar">🗑️</button></td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            fileList.innerHTML = html;
+        }).catch(function(err) {
+            fileList.innerHTML = '<p style="padding: 16px; color: var(--danger); font-size: 13px; text-align: center;">Erro: ' + err.message + '</p>';
+        });
+    }
+
+    function handleSpUpload(files) {
+        if (!files || !files.length || !currentSpFolder) return;
+        var fileList = document.getElementById('spFileList');
+        var uploadPromises = [];
+        for (var i = 0; i < files.length; i++) {
+            (function(file) {
+                uploadPromises.push(
+                    file.arrayBuffer().then(function(buffer) {
+                        return uploadToSharePoint(currentSpFolder, file.name, buffer, file.type);
+                    })
+                );
+            })(files[i]);
+        }
+        fileList.innerHTML = '<p style="padding: 16px; color: var(--accent-blue); font-size: 13px; text-align: center;">A enviar ' + files.length + ' ficheiro(s)...</p>';
+        Promise.all(uploadPromises).then(function() {
+            browseSharePoint(currentSpFolder); // refresh
+        }).catch(function(err) {
+            fileList.innerHTML = '<p style="padding: 16px; color: var(--danger); font-size: 13px; text-align: center;">Erro no upload: ' + err.message + '</p>';
+        });
+        // Clear the file input
+        document.getElementById('spFileUpload').value = '';
+    }
+
+    function confirmDeleteFile(fileId, fileName) {
+        if (!confirm('Tem a certeza que deseja eliminar "' + fileName + '"?')) return;
+        deleteSharePointFile(fileId).then(function() {
+            browseSharePoint(currentSpFolder);
+        }).catch(function(err) {
+            alert('Erro ao eliminar: ' + err.message);
+        });
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function getFileIcon(name) {
+        var ext = (name || '').split('.').pop().toLowerCase();
+        if (ext === 'pdf') return '📄';
+        if (ext === 'xlsx' || ext === 'xls') return '📊';
+        if (ext === 'docx' || ext === 'doc') return '📝';
+        if (ext === 'html' || ext === 'htm') return '🌐';
+        if (ext === 'png' || ext === 'jpg' || ext === 'jpeg') return '🖼️';
+        return '📎';
+    }
+
+    function updateSpStatus() {
+        var el = document.getElementById('spStatus');
+        if (!el) return;
+        if (spDriveId) {
+            el.style.background = '#e6f4ea';
+            el.style.color = '#0d904f';
+            el.innerHTML = '✅ Ligação ao SharePoint ativa — Site: Gestao Viaturas | Biblioteca: Documentos';
+        } else {
+            el.style.background = '#fce8e6';
+            el.style.color = '#d93025';
+            el.innerHTML = '❌ Não foi possível ligar ao SharePoint. Verifique as permissões.';
         }
     }
 
