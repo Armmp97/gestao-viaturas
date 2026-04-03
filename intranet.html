@@ -2159,7 +2159,7 @@
         document.getElementById('headerTitle').textContent = mod.title;
 
         var frame = document.getElementById('moduleFrame');
-        frame.src = mod.url;
+        frame.src = mod.url + '?v=' + Date.now();
         frame.classList.add('active');
 
         var bc = document.getElementById('breadcrumb');
