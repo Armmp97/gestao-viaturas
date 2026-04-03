@@ -941,11 +941,20 @@
                 cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
             };
             msalInstance = new msal.PublicClientApplication(msalConfig);
-            // Verificar se já existe sessão ativa
+            // Verificar se já existe sessão ativa no cache
             var accounts = msalInstance.getAllAccounts();
             if (accounts.length > 0) {
                 setCurrentUser(accounts[0]);
                 unlockApp();
+            } else {
+                // Tentar SSO silencioso (detecta sessão Microsoft ativa no browser, ex: quando carregado em iframe)
+                msalInstance.ssoSilent({ scopes: ['User.Read'] }).then(function(response) {
+                    setCurrentUser(response.account);
+                    unlockApp();
+                    console.log('SSO silencioso OK:', response.account.name);
+                }).catch(function(e) {
+                    console.log('SSO silencioso falhou, aguardar login manual:', e.message || e);
+                });
             }
         } catch(e) { console.warn('MSAL init error:', e); }
     }
