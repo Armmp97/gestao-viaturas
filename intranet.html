@@ -2086,6 +2086,12 @@
         saveMargemDashboard(event.data.payload);
     });
 
+    // Listen for openUrl requests from iframes (popups from sandboxed iframes get blocked)
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'openUrl') return;
+        window.open(event.data.url, '_blank');
+    });
+
     // ======== NAVIGATION ========
     let currentModule = null;
     let desktopSidebarVisible = true;

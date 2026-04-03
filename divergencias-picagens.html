@@ -893,8 +893,17 @@ async function generate() {
                     var subject = encodeURIComponent('Validação Diária de Picagens \u2014 XX/XX/XXXX');
                     var outlookUrl = 'https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(coordEmail) + '&subject=' + subject;
 
+                    // Open URL via parent to avoid iframe sandbox blocking
+                    function openOutlook() {
+                        if (window.parent && window.parent !== window) {
+                            window.parent.postMessage({ type: 'openUrl', url: outlookUrl }, '*');
+                        } else {
+                            window.open(outlookUrl, '_blank');
+                        }
+                    }
+
                     navigator.clipboard.writeText(emailBody).then(function() {
-                        window.open(outlookUrl, '_blank');
+                        openOutlook();
                         thisBtn.textContent = 'Enviado! (corpo copiado)';
                         thisBtn.style.background = '#27ae60';
                         setTimeout(function() {
@@ -904,7 +913,7 @@ async function generate() {
                         }, 4000);
                     }).catch(function() {
                         // Clipboard failed — still open Outlook
-                        window.open(outlookUrl, '_blank');
+                        openOutlook();
                         thisBtn.textContent = 'Outlook aberto (copiar falhou)';
                         thisBtn.style.background = '#e67e22';
                         setTimeout(function() {
