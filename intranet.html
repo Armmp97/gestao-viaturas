@@ -1816,6 +1816,8 @@
     function initMsal() {
         try {
             msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+            // Clear any stuck interaction state from previous sessions
+            msalInstance.handleRedirectPromise().catch(function() {});
             var accounts = msalInstance.getAllAccounts();
             if (accounts.length > 0) {
                 currentMsalUser = accounts[0];
@@ -1941,11 +1943,24 @@
     function getGraphToken() {
         if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
         return msalInstance.acquireTokenSilent({
-            scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'],
+            scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
             account: currentMsalUser
         }).catch(function() {
             return msalInstance.acquireTokenPopup({
-                scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'],
+                scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
+                account: currentMsalUser
+            });
+        }).then(function(resp) { return resp.accessToken; });
+    }
+
+    function getMailToken() {
+        if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
+        return msalInstance.acquireTokenSilent({
+            scopes: ['Mail.ReadWrite'],
+            account: currentMsalUser
+        }).catch(function() {
+            return msalInstance.acquireTokenPopup({
+                scopes: ['Mail.ReadWrite'],
                 account: currentMsalUser
             });
         }).then(function(resp) { return resp.accessToken; });
@@ -2092,41 +2107,43 @@
         window.open(event.data.url, '_blank');
     });
 
-    // Listen for saveAndDraftEmail: saves HTML to SharePoint THEN creates draft email (sequential, single token)
+    // Listen for saveAndDraftEmail: saves HTML to SharePoint THEN creates draft email (sequential, separate tokens)
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'saveAndDraftEmail') return;
         var d = event.data;
-        getGraphToken().then(function(token) {
-            // 1) Save to SharePoint
-            var spContent = new Blob([d.fileContent], {type: 'text/html'});
-            return uploadToSharePoint(d.folderKey, d.spFileName, spContent, 'text/html').then(function() {
-                // 2) Create draft email
-                var base64Content = btoa(unescape(encodeURIComponent(d.attachmentContent)));
-                var draftPayload = {
-                    subject: d.subject,
-                    body: { contentType: 'HTML', content: d.body.replace(/\n/g, '<br>') },
-                    toRecipients: [{ emailAddress: { address: d.to } }]
-                };
-                return fetch('https://graph.microsoft.com/v1.0/me/messages', {
+        // Step 1: Save to SharePoint (uses Files token)
+        var spContent = new Blob([d.fileContent], {type: 'text/html'});
+        uploadToSharePoint(d.folderKey, d.spFileName, spContent, 'text/html').then(function() {
+            console.log('SP save OK, acquiring mail token...');
+            // Step 2: Get mail token (may trigger consent popup — separate from files token)
+            return getMailToken();
+        }).then(function(mailToken) {
+            // Step 3: Create draft email
+            var base64Content = btoa(unescape(encodeURIComponent(d.attachmentContent)));
+            var draftPayload = {
+                subject: d.subject,
+                body: { contentType: 'HTML', content: d.body.replace(/\n/g, '<br>') },
+                toRecipients: [{ emailAddress: { address: d.to } }]
+            };
+            return fetch('https://graph.microsoft.com/v1.0/me/messages', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + mailToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify(draftPayload)
+            }).then(function(r) { return r.json(); }).then(function(msg) {
+                // Step 4: Add attachment to draft
+                return fetch('https://graph.microsoft.com/v1.0/me/messages/' + msg.id + '/attachments', {
                     method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(draftPayload)
-                }).then(function(r) { return r.json(); }).then(function(msg) {
-                    // 3) Add attachment to draft
-                    return fetch('https://graph.microsoft.com/v1.0/me/messages/' + msg.id + '/attachments', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            '@odata.type': '#microsoft.graph.fileAttachment',
-                            name: d.attachmentName || 'relatorio.html',
-                            contentType: 'text/html',
-                            contentBytes: base64Content
-                        })
-                    }).then(function() { return msg; });
-                });
+                    headers: { 'Authorization': 'Bearer ' + mailToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        '@odata.type': '#microsoft.graph.fileAttachment',
+                        name: d.attachmentName || 'relatorio.html',
+                        contentType: 'text/html',
+                        contentBytes: base64Content
+                    })
+                }).then(function() { return msg; });
             });
         }).then(function(msg) {
-            // 4) Open draft in Outlook web
+            // Step 5: Open draft in Outlook web
             var outlookUrl = 'https://outlook.office.com/mail/compose/' + msg.id;
             window.open(outlookUrl, '_blank');
             event.source.postMessage({ type: 'saveAndDraftResult', success: true }, '*');
