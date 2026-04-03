@@ -464,8 +464,10 @@ function downloadHTML(filename, content){
 document.getElementById('fileInput').addEventListener('change', function(e){
   const file=e.target.files[0];
   if(!file)return;
-  // Save imported file to SharePoint via parent
-  saveFileToSharePoint(file, 'margem_importados');
+  // Save imported file to SharePoint with descriptive name
+  var ext = file.name.substring(file.name.lastIndexOf('.'));
+  var spName = 'Faturacao_Import_' + getTimestamp() + ext;
+  saveFileToSharePoint(file, 'margem_importados', spName);
 
   const st=document.getElementById('status');
   st.className='ok';
@@ -513,10 +515,13 @@ document.getElementById('fileInput').addEventListener('change', function(e){
         resDiv.appendChild(card);
       });
 
+      var ts = getTimestamp();
       generated.forEach((g,i)=>{
         document.getElementById('dl-'+i).addEventListener('click',()=>downloadHTML(g.fname,g.html));
-        // Save generated HTML to SharePoint
-        saveGeneratedHtmlToSharePoint(g.fname, g.html);
+        // Save generated HTML to SharePoint with descriptive name + timestamp
+        var dotIdx = g.fname.lastIndexOf('.');
+        var spGenName = g.fname.substring(0, dotIdx) + '_' + ts + '.html';
+        saveGeneratedHtmlToSharePoint(spGenName, g.html);
       });
 
       const allBtn=document.createElement('button');
@@ -547,14 +552,24 @@ document.getElementById('fileInput').addEventListener('change', function(e){
 // ============================================================
 // SHAREPOINT INTEGRATION via postMessage to parent (intranet.html)
 // ============================================================
-function saveFileToSharePoint(file, folderKey) {
+function getTimestamp() {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+        String(d.getMonth()+1).padStart(2,'0') + '-' +
+        String(d.getDate()).padStart(2,'0') + '_' +
+        String(d.getHours()).padStart(2,'0') +
+        String(d.getMinutes()).padStart(2,'0') +
+        String(d.getSeconds()).padStart(2,'0');
+}
+
+function saveFileToSharePoint(file, folderKey, spName) {
     if (!window.parent || window.parent === window) return;
     var reader = new FileReader();
     reader.onload = function(e) {
         window.parent.postMessage({
             type: 'saveToSharePoint',
             folderKey: folderKey,
-            fileName: file.name,
+            fileName: spName || file.name,
             fileContent: e.target.result,
             contentType: file.type
         }, '*');

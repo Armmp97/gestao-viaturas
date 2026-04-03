@@ -1262,14 +1262,31 @@
         }
     }
 
+    // Helper: timestamp string for filenames
+    function getTs() {
+        var d = new Date();
+        return d.getFullYear() + '-' +
+            String(d.getMonth()+1).padStart(2,'0') + '-' +
+            String(d.getDate()).padStart(2,'0') + '_' +
+            String(d.getHours()).padStart(2,'0') +
+            String(d.getMinutes()).padStart(2,'0') +
+            String(d.getSeconds()).padStart(2,'0');
+    }
+
+    // Helper: extract file extension from base64 data URI
+    function getExtFromBase64(base64) {
+        try {
+            var mime = base64.split(',')[0].match(/:(.*?);/)[1];
+            var map = {'image/jpeg':'.jpg','image/png':'.png','image/gif':'.gif','image/webp':'.webp',
+                       'application/pdf':'.pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document':'.docx',
+                       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'.xlsx'};
+            return map[mime] || '.' + mime.split('/')[1];
+        } catch(e) { return '.bin'; }
+    }
+
     function spUploadFile(bookingId, stage, fileName, base64Data) {
         if (!spSiteId || !spDriveId) return Promise.resolve();
-        // Auto-rename: add timestamp to prevent overwrites
-        var dotIdx = fileName.lastIndexOf('.');
-        var baseName = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
-        var ext = dotIdx > 0 ? fileName.substring(dotIdx) : '';
-        var ts = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-        var uniqueName = baseName + '_' + ts + ext;
+        // fileName already contains descriptive name with timestamp from caller
         // Converter base64 para blob
         var parts = base64Data.split(',');
         var mime = parts[0].match(/:(.*?);/)[1];
@@ -1277,7 +1294,7 @@
         var array = new Uint8Array(binary.length);
         for (var i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
         var blob = new Blob([array], { type: mime });
-        var path = bookingId + '/' + stage + '/' + uniqueName;
+        var path = bookingId + '/' + stage + '/' + fileName;
         return getAccessToken().then(function(token) {
             return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + path + ':/content', {
                 method: 'PUT',
@@ -2199,8 +2216,16 @@
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId][stage]) fileStore[bookingId][stage] = {};
         fileStore[bookingId][stage].documentoAssinado = uploadedFiles['signedDocPreview'];
-        delete uploadedFiles['signedDocPreview'];
+        // Upload to SharePoint with descriptive name
         var b = bookings.find(function(x) { return x.id === bookingId; });
+        var mat = b ? b.matricula : bookingId;
+        var opId = (b && b.levantamento && b.levantamento.id) ? b.levantamento.id : 'LEV';
+        uploadedFiles['signedDocPreview'].forEach(function(base64, idx) {
+            var ext = getExtFromBase64(base64);
+            var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
+            spUploadFile(bookingId, 'levantamento', name, base64);
+        });
+        delete uploadedFiles['signedDocPreview'];
         if (b && b.levantamento) b.levantamento.documentoAssinado = true;
         saveData();
         showToast('Documento assinado guardado com sucesso!', 'success');
@@ -2435,8 +2460,16 @@
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId].devolucao) fileStore[bookingId].devolucao = {};
         fileStore[bookingId].devolucao.documentoAssinado = uploadedFiles['signedReturnDocPreview'];
-        delete uploadedFiles['signedReturnDocPreview'];
+        // Upload to SharePoint with descriptive name
         var b = bookings.find(function(x) { return x.id === bookingId; });
+        var mat = b ? b.matricula : bookingId;
+        var opId = (b && b.devolucao && b.devolucao.id) ? b.devolucao.id : 'DEV';
+        uploadedFiles['signedReturnDocPreview'].forEach(function(base64, idx) {
+            var ext = getExtFromBase64(base64);
+            var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
+            spUploadFile(bookingId, 'devolucao', name, base64);
+        });
+        delete uploadedFiles['signedReturnDocPreview'];
         if (b && b.devolucao) b.devolucao.documentoAssinado = true;
         saveData();
         showToast('Documento de devolução assinado guardado com sucesso!', 'success');
@@ -2553,16 +2586,56 @@
     function saveUploadedFiles(bookingId, stage) {
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId][stage]) fileStore[bookingId][stage] = { fotos: [], docs: [] };
+        var b = bookings.find(function(x) { return x.id === bookingId; });
+        var mat = b ? b.matricula : bookingId;
+        var ts = getTs();
         if (stage === 'levantamento') {
-            if (uploadedFiles['pk_fotosPreview']) fileStore[bookingId][stage].fotos = uploadedFiles['pk_fotosPreview'];
-            if (uploadedFiles['pk_ccFrentePreview']) fileStore[bookingId][stage].ccFrente = uploadedFiles['pk_ccFrentePreview'];
-            if (uploadedFiles['pk_ccVersoPreview']) fileStore[bookingId][stage].ccVerso = uploadedFiles['pk_ccVersoPreview'];
-            if (uploadedFiles['pk_cartaFrentePreview']) fileStore[bookingId][stage].cartaFrente = uploadedFiles['pk_cartaFrentePreview'];
-            if (uploadedFiles['pk_cartaVersoPreview']) fileStore[bookingId][stage].cartaVerso = uploadedFiles['pk_cartaVersoPreview'];
+            var levId = (b && b.levantamento && b.levantamento.id) ? b.levantamento.id : 'LEV';
+            if (uploadedFiles['pk_fotosPreview']) {
+                fileStore[bookingId][stage].fotos = uploadedFiles['pk_fotosPreview'];
+                uploadedFiles['pk_fotosPreview'].forEach(function(base64, i) {
+                    spUploadFile(bookingId, stage, mat + '_' + levId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
+            if (uploadedFiles['pk_ccFrentePreview']) {
+                fileStore[bookingId][stage].ccFrente = uploadedFiles['pk_ccFrentePreview'];
+                uploadedFiles['pk_ccFrentePreview'].forEach(function(base64) {
+                    spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Frente_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
+            if (uploadedFiles['pk_ccVersoPreview']) {
+                fileStore[bookingId][stage].ccVerso = uploadedFiles['pk_ccVersoPreview'];
+                uploadedFiles['pk_ccVersoPreview'].forEach(function(base64) {
+                    spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Verso_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
+            if (uploadedFiles['pk_cartaFrentePreview']) {
+                fileStore[bookingId][stage].cartaFrente = uploadedFiles['pk_cartaFrentePreview'];
+                uploadedFiles['pk_cartaFrentePreview'].forEach(function(base64) {
+                    spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Frente_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
+            if (uploadedFiles['pk_cartaVersoPreview']) {
+                fileStore[bookingId][stage].cartaVerso = uploadedFiles['pk_cartaVersoPreview'];
+                uploadedFiles['pk_cartaVersoPreview'].forEach(function(base64) {
+                    spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Verso_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
             delete uploadedFiles['pk_fotosPreview']; delete uploadedFiles['pk_ccFrentePreview']; delete uploadedFiles['pk_ccVersoPreview']; delete uploadedFiles['pk_cartaFrentePreview']; delete uploadedFiles['pk_cartaVersoPreview'];
         } else if (stage === 'devolucao') {
-            if (uploadedFiles['rt_fotosPreview']) fileStore[bookingId][stage].fotos = uploadedFiles['rt_fotosPreview'];
-            if (uploadedFiles['rt_orcamentoPreview']) fileStore[bookingId][stage].orcamento = uploadedFiles['rt_orcamentoPreview'];
+            var devId = (b && b.devolucao && b.devolucao.id) ? b.devolucao.id : 'DEV';
+            if (uploadedFiles['rt_fotosPreview']) {
+                fileStore[bookingId][stage].fotos = uploadedFiles['rt_fotosPreview'];
+                uploadedFiles['rt_fotosPreview'].forEach(function(base64, i) {
+                    spUploadFile(bookingId, stage, mat + '_' + devId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
+            if (uploadedFiles['rt_orcamentoPreview']) {
+                fileStore[bookingId][stage].orcamento = uploadedFiles['rt_orcamentoPreview'];
+                uploadedFiles['rt_orcamentoPreview'].forEach(function(base64) {
+                    spUploadFile(bookingId, stage, mat + '_' + devId + '_Orcamento_' + ts + getExtFromBase64(base64), base64);
+                });
+            }
             delete uploadedFiles['rt_fotosPreview']; delete uploadedFiles['rt_orcamentoPreview'];
         }
     }

@@ -2051,19 +2051,13 @@
     }
 
     // Listen for messages from iframe modules (margem, divergencias) to save files
+    // Modules are responsible for naming files descriptively — handler does passthrough
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'saveToSharePoint') return;
         var data = event.data;
-        // Auto-rename with timestamp to prevent overwrites
-        var origName = data.fileName;
-        var dotIdx = origName.lastIndexOf('.');
-        var baseName = dotIdx > 0 ? origName.substring(0, dotIdx) : origName;
-        var ext = dotIdx > 0 ? origName.substring(dotIdx) : '';
-        var ts = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-        var uniqueName = baseName + '_' + ts + ext;
-        uploadToSharePoint(data.folderKey, uniqueName, data.fileContent, data.contentType)
+        uploadToSharePoint(data.folderKey, data.fileName, data.fileContent, data.contentType)
             .then(function(result) {
-                event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: uniqueName }, '*');
+                event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: data.fileName }, '*');
             })
             .catch(function(err) {
                 event.source.postMessage({ type: 'saveToSharePointResult', success: false, error: err.message }, '*');
