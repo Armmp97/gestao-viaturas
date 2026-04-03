@@ -91,6 +91,39 @@
             position: fixed; top: 0; left: 0; right: 0;
             z-index: 100;
         }
+
+        /* Desktop sidebar toggle button (always visible) */
+        .desktop-sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            color: var(--text-primary);
+            cursor: pointer;
+            margin-right: 12px;
+            padding: 4px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .desktop-sidebar-toggle:hover {
+            background: var(--content-bg);
+        }
+        .desktop-sidebar-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        @media (min-width: 769px) {
+            .desktop-sidebar-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
         .header-logo { height: 32px; cursor: pointer; }
         .header-divider {
             width: 1px; height: 28px;
@@ -98,603 +131,717 @@
             margin: 0 20px;
         }
         .header-title {
-            font-size: 15px; font-weight: 600;
-            color: var(--text-primary);
+            font-size: 16px; font-weight: 600;
+            color: var(--text-primary); margin: 0;
         }
         .header-right {
-            margin-left: auto;
-            display: flex; align-items: center; gap: 16px;
+            display: flex; align-items: center;
+            margin-left: auto; gap: 16px;
         }
         .header-user {
-            display: flex; align-items: center; gap: 10px;
-            cursor: pointer; padding: 6px 12px;
-            border-radius: 8px; transition: background 0.2s;
+            display: flex; align-items: center; gap: 12px;
+            cursor: pointer;
         }
-        .header-user:hover { background: var(--content-bg); }
         .user-avatar {
             width: 32px; height: 32px;
-            border-radius: 50%;
-            background: var(--accent-blue);
-            color: #fff; display: flex;
+            background: var(--accent-blue); color: #fff;
+            border-radius: 50%; display: flex;
             align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 600;
+            font-weight: 600; font-size: 12px;
         }
-        .user-name { font-size: 13px; font-weight: 500; }
-        .user-role { font-size: 11px; color: var(--text-secondary); }
-        .header-logout {
-            background: none; border: 1px solid var(--border-color);
-            border-radius: 6px; padding: 6px 14px;
+        .user-name {
+            font-size: 13px; font-weight: 600;
+            color: var(--text-primary);
+        }
+        .user-role {
             font-size: 12px; color: var(--text-secondary);
-            cursor: pointer; font-family: inherit;
-            transition: all 0.2s;
+        }
+        .header-logout {
+            padding: 8px 16px;
+            background: var(--content-bg); border: none;
+            border-radius: 6px;
+            font-size: 13px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: background 0.2s;
         }
         .header-logout:hover {
-            border-color: var(--danger); color: var(--danger);
+            background: #e0e3e8;
         }
 
         /* ---- Sidebar ---- */
         .app-sidebar {
-            position: fixed;
-            top: var(--header-height);
-            left: 0;
-            bottom: 0;
+            position: fixed; left: 0; top: var(--header-height);
             width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
             background: var(--sidebar-bg);
             overflow-y: auto;
-            z-index: 90;
-            display: flex;
-            flex-direction: column;
+            z-index: 99;
             transition: transform 0.3s ease;
         }
-        .app-sidebar.hidden { transform: translateX(-100%); }
+
+        .app-sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        @media (max-width: 768px) {
+            .app-sidebar.hidden {
+                transform: translateX(-100%);
+            }
+        }
+
+        .sidebar-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 98;
+            display: none;
+            top: var(--header-height);
+        }
+        .sidebar-overlay.visible {
+            display: block;
+        }
 
         .sidebar-section {
-            padding: 20px 16px 8px;
-            font-size: 10px; font-weight: 700;
+            padding: 16px 20px 8px;
+            font-size: 11px; font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
+            letter-spacing: 0.5px;
             color: var(--text-light);
-            opacity: 0.5;
         }
-        .sidebar-nav { list-style: none; padding: 0 8px; }
-        .sidebar-nav li { margin-bottom: 2px; }
+        .sidebar-nav {
+            list-style: none;
+        }
+        .sidebar-nav li {
+            margin: 4px 0;
+        }
         .sidebar-nav a {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 14px;
-            border-radius: 8px;
+            display: block; padding: 12px 20px;
             color: var(--text-sidebar);
             text-decoration: none;
-            font-size: 13px; font-weight: 500;
-            transition: all 0.15s;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
         }
         .sidebar-nav a:hover {
             background: var(--sidebar-hover);
-            color: #fff;
         }
         .sidebar-nav a.active {
             background: var(--sidebar-active);
             color: #fff;
             font-weight: 600;
         }
-        .sidebar-nav a .nav-icon {
-            width: 20px; height: 20px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px;
-        }
-        .sidebar-nav a .badge {
-            margin-left: auto;
-            background: var(--danger);
-            color: #fff;
-            font-size: 10px; font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 10px;
-        }
         .sidebar-nav a.disabled {
-            opacity: 0.35;
-            cursor: default;
-            pointer-events: none;
+            cursor: not-allowed; color: var(--text-light);
+            opacity: 0.5;
         }
-        .sidebar-nav a.disabled::after {
-            content: 'Em breve';
-            margin-left: auto;
-            font-size: 9px;
-            background: rgba(255,255,255,0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: var(--text-light);
+        .nav-icon {
+            margin-right: 12px;
+            display: inline-block;
+            width: 16px;
         }
-
         .sidebar-footer {
-            margin-top: auto;
-            padding: 16px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            font-size: 11px;
-            color: var(--text-light);
-            opacity: 0.4;
+            padding: 16px 20px;
+            font-size: 11px; color: var(--text-light);
             text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
         }
 
-        /* ---- Sidebar Toggle Button ---- */
-        .sidebar-toggle {
-            display: none;
-            background: none; border: none;
-            cursor: pointer; padding: 6px;
-            margin-right: 8px;
-            border-radius: 6px;
-            transition: background 0.2s;
-            color: var(--text-primary);
+        /* ---- Breadcrumb ---- */
+        .breadcrumb {
+            position: fixed; top: var(--header-height); left: var(--sidebar-width);
+            right: 0; height: 40px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center;
+            padding: 0 24px;
+            font-size: 13px;
+            z-index: 50;
+            transition: left 0.3s ease;
         }
-        .sidebar-toggle:hover { background: var(--content-bg); }
-        .sidebar-toggle svg { width: 22px; height: 22px; }
-        .sidebar-toggle.visible { display: flex; align-items: center; }
 
-        /* ---- Sidebar Overlay (mobile) ---- */
-        .sidebar-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 85;
+        .breadcrumb.sidebar-hidden {
+            left: 0;
         }
-        .sidebar-overlay.active { display: block; }
+
+        .breadcrumb a {
+            color: var(--accent-blue);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .breadcrumb span:nth-child(2) {
+            margin: 0 8px; color: var(--border-color);
+        }
+        .breadcrumb span:nth-child(3) {
+            color: var(--text-secondary);
+        }
 
         /* ---- Main Content ---- */
         .app-main {
-            margin-top: var(--header-height);
-            margin-left: var(--sidebar-width);
-            height: calc(100vh - var(--header-height));
+            position: fixed; top: calc(var(--header-height) + 40px);
+            left: var(--sidebar-width); right: 0;
+            bottom: 0;
             overflow-y: auto;
-            transition: margin-left 0.3s ease;
+            background: var(--content-bg);
+            transition: left 0.3s ease;
+            z-index: 1;
         }
-        .app-main.full { margin-left: 0; }
 
-        /* ---- Dashboard (Homepage) ---- */
+        .app-main.sidebar-hidden {
+            left: 0;
+        }
+
+        .sidebar-toggle {
+            display: none; background: none;
+            border: none; width: 32px; height: 32px;
+            color: var(--text-primary); cursor: pointer;
+            padding: 4px;
+        }
+        .sidebar-toggle svg {
+            width: 20px; height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle { display: flex; }
+        }
+
+        /* ---- Dashboard ---- */
         .dashboard {
-            padding: 40px;
-            display: flex;
-            gap: 40px;
-            height: 100%;
-            overflow: hidden;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr minmax(300px, 400px);
+            gap: 24px;
         }
 
-        .dashboard-welcome {
-            margin-bottom: 24px;
-        }
-        .dashboard-welcome h1 {
-            font-size: 26px; font-weight: 700;
-            margin-bottom: 6px;
-        }
-        .dashboard-welcome p {
-            font-size: 14px; color: var(--text-secondary);
+        @media (max-width: 1400px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* Feed / Communications */
         .feed-section {
-            flex: 0 0 35%;
-            display: flex;
-            flex-direction: column;
             background: var(--card-bg);
             border-radius: 12px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         .feed-header {
-            padding: 20px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
-            font-size: 15px;
-            font-weight: 600;
         }
         .feed-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px 0;
+            height: 400px; overflow-y: auto;
+            margin-bottom: 16px;
         }
         .feed-message {
-            padding: 16px 20px;
-            border-bottom: 1px solid #f5f5f5;
-            display: flex;
-            gap: 12px;
-            transition: background 0.2s;
-        }
-        .feed-message:hover {
-            background: #fafafa;
-        }
-        .feed-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--accent-blue);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
             font-size: 13px;
-            font-weight: 600;
-            flex-shrink: 0;
         }
-        .feed-content {
-            flex: 1;
-            min-width: 0;
+        .feed-message:last-child {
+            border-bottom: none;
         }
-        .feed-from {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
+        .feed-message-author {
+            font-weight: 600; color: var(--text-primary);
+            margin-bottom: 4px;
         }
-        .feed-time {
-            font-size: 12px;
+        .feed-message-text {
             color: var(--text-secondary);
-            margin-left: 8px;
-        }
-        .feed-text {
-            font-size: 13px;
-            color: var(--text-primary);
-            margin-top: 4px;
             line-height: 1.4;
-            word-wrap: break-word;
         }
         .feed-input-area {
-            padding: 16px 20px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 8px;
+            display: flex; gap: 8px;
         }
         .feed-input {
-            flex: 1;
+            flex: 1; padding: 10px 12px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-family: inherit;
+            border-radius: 6px;
             font-size: 13px;
-            transition: border-color 0.2s;
-        }
-        .feed-input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
         }
         .feed-send {
-            background: var(--accent-blue);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
+            padding: 10px 16px;
+            background: var(--accent-blue); color: #fff;
+            border: none; border-radius: 6px;
+            font-size: 13px; font-weight: 600;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        .feed-send:hover {
-            background: #1557b0;
         }
 
-        /* KPI Dashboard */
+        /* ---- KPI Section ---- */
         .kpi-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             background: var(--card-bg);
             border-radius: 12px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-        .kpi-header {
             padding: 20px;
-            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
         }
+
+        .kpi-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
         .kpi-title {
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
         }
+
         .kpi-tabs {
             display: flex;
-            gap: 0;
-            margin-left: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
+
         .kpi-tab {
             padding: 8px 16px;
-            background: none;
-            border: none;
-            cursor: pointer;
+            background: var(--content-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
             color: var(--text-secondary);
-            border-bottom: 2px solid transparent;
+            cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
         }
+
+        .kpi-tab:hover {
+            background: #e8e8e8;
+        }
+
         .kpi-tab.active {
-            color: var(--accent-blue);
-            border-bottom-color: var(--accent-blue);
+            background: var(--accent-blue);
+            color: #fff;
+            border-color: var(--accent-blue);
         }
-        .kpi-tab:hover:not(.active) {
-            color: var(--text-primary);
-        }
+
         .kpi-content {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-        }
-        .kpi-cards {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .kpi-card {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 16px;
-            border: 1px solid var(--border-color);
-        }
-        .kpi-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-        .kpi-value {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .kpi-unit {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-left: 4px;
+            padding-right: 8px;
         }
 
-        .kpi-efficiency {
-            padding: 8px;
+        /* PDF-Style KPI Report */
+        .kpi-report {
+            background: #fff;
+        }
+
+        .kpi-page-header {
+            padding: 16px 20px;
+            background: #2d3e50;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .kpi-page-header.colisao {
+            background: #2d3e50;
+        }
+
+        .kpi-page-header.cacém {
+            background: #3a6b4c;
+        }
+
+        .kpi-page-header.lisboa {
+            background: #1e3a5f;
+        }
+
+        .kpi-page-header.comparacao {
+            background: #2d3e50;
+        }
+
+        .kpi-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
-            text-align: center;
-            margin-top: 8px;
         }
-        .kpi-efficiency.green { background: #e6f4ea; color: #0d904f; }
-        .kpi-efficiency.orange { background: #fef7e0; color: #e37400; }
-        .kpi-efficiency.red { background: #fce8e6; color: #d93025; }
 
-        .ranking-section {
-            margin-top: 24px;
+        .kpi-subsection {
+            margin-bottom: 24px;
         }
-        .ranking-title {
+
+        .kpi-subsection-header {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 12px;
+        }
+
+        .kpi-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+
+        .kpi-table thead {
+            background: #2d3e50;
+            color: white;
+        }
+
+        .kpi-table th {
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .kpi-table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .kpi-table tbody tr:hover {
+            background: #f0f0f0;
+        }
+
+        /* Mês column styling */
+        .kpi-mes-cell {
+            font-weight: 700;
+            border-left: 3px solid var(--accent-blue);
+            background: #f0f7ff !important;
+        }
+
+        .kpi-percent-green {
+            background: #0d904f !important;
+            color: white;
+            border-radius: 2px;
+            padding: 4px 8px;
+            font-weight: 600;
+        }
+
+        .kpi-percent-orange {
+            background: #e37400 !important;
+            color: white;
+            border-radius: 2px;
+            padding: 4px 8px;
+            font-weight: 600;
+        }
+
+        .kpi-percent-red {
+            background: #d93025 !important;
+            color: white;
+            border-radius: 2px;
+            padding: 4px 8px;
+            font-weight: 600;
+        }
+
+        .kpi-ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+
+        .kpi-ranking-table thead {
+            background: #2d3e50;
+            color: white;
+        }
+
+        .kpi-ranking-table th {
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .kpi-ranking-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .kpi-ranking-table tbody tr:nth-child(odd) {
+            background: #f9f9f9;
+        }
+
+        .kpi-ranking-table tbody tr:hover {
+            background: #f0f0f0;
+        }
+
+        .kpi-office-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            margin-left: 8px;
+        }
+
+        .office-lx { background: #1a73e8; }
+        .office-ca { background: #0d904f; }
+        .office-co-prep { background: #e37400; }
+        .office-co-chapa { background: #9c27b0; }
+        .office-co-mix { background: #e8710a; }
+        .office-lx-star { background: #7db3e8; }
+
+        .kpi-tecnico-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .kpi-tecnico-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kpi-tecnico-card {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .kpi-tecnico-name {
+            background: #0d904f;
+            color: white;
+            padding: 10px 12px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .kpi-tecnico-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .kpi-tecnico-table th {
+            background: #f0f0f0;
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .kpi-tecnico-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #f0f0f0;
+        }
+
+        .kpi-tecnico-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .kpi-tecnico-summary-item {
+            padding: 10px;
+            text-align: center;
+            background: #0d904f;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            border-right: 1px solid #0a6d3d;
+        }
+
+        .kpi-tecnico-summary-item:last-child {
+            border-right: none;
+        }
+
+        .kpi-tecnico-summary-label {
+            font-size: 10px;
+            opacity: 0.9;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .kpi-tecnico-summary-value {
+            font-size: 14px;
+            font-weight: 700;
+            display: block;
+        }
+
+        /* Settings Page */
+        .settings-page {
+            padding: 24px;
+            max-width: 1200px;
+        }
+
+        .dashboard-welcome {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-welcome h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .dashboard-welcome p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .settings-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .settings-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .settings-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
             font-size: 13px;
             font-weight: 600;
-            margin-bottom: 12px;
             color: var(--text-primary);
+            margin-bottom: 6px;
         }
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 8px;
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 13px;
         }
-        .ranking-position {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+
+        .form-input:disabled {
+            background: var(--content-bg);
+            cursor: not-allowed;
+        }
+
+        .form-button {
+            padding: 10px 20px;
             background: var(--accent-blue);
             color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-        .ranking-medal {
-            font-size: 16px;
-            margin-right: 8px;
-        }
-        .ranking-name {
-            flex: 1;
-            font-weight: 500;
-        }
-        .ranking-value {
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--accent-blue);
+            cursor: pointer;
         }
 
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 20px 0;
+        .form-button:hover {
+            background: #1557b0;
         }
 
-        /* ---- Module view (iframe) ---- */
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            background: var(--content-bg);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .users-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
         .module-frame {
             width: 100%;
             height: 100%;
             border: none;
             display: none;
         }
-        .module-frame.active { display: block; }
 
-        /* ---- Breadcrumb ---- */
-        .breadcrumb {
-            padding: 14px 28px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            background: #fff;
-            border-bottom: 1px solid var(--border-color);
-            display: none;
-        }
-        .breadcrumb a {
-            color: var(--accent-blue);
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb span { margin: 0 6px; color: var(--text-light); }
-
-        /* ---- Settings Page ---- */
-        .settings-page {
-            display: none;
-            padding: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .settings-page.active {
+        .module-frame.visible {
             display: block;
         }
-        .settings-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        .settings-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-        }
-        .settings-subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-        .form-input, .form-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 13px;
-            transition: border-color 0.2s;
-        }
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-        .form-input:disabled {
-            background: #f5f5f5;
-            color: var(--text-secondary);
-        }
-        .form-button {
-            background: var(--accent-blue);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .form-button:hover {
-            background: #1557b0;
-        }
-        .form-button:disabled {
-            background: var(--text-light);
-            cursor: default;
-        }
-        .users-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-        }
-        .users-table th {
-            text-align: left;
-            padding: 12px;
-            background: #f9f9f9;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-        .users-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
-        }
-        .users-table tr:last-child td {
-            border-bottom: none;
-        }
 
-        /* ======== RESPONSIVE / MOBILE ======== */
         @media (max-width: 768px) {
-            .app-header { padding: 0 12px; }
-            .header-divider { margin: 0 10px; }
-            .header-title { font-size: 13px; }
-            .header-logout { display: none; }
-            .user-name { font-size: 12px; }
-            .user-role { display: none; }
-
-            .sidebar-toggle.visible { display: flex; }
-
-            .app-sidebar {
-                width: 280px;
-                transform: translateX(-100%);
-                z-index: 95;
-            }
-            .app-sidebar.mobile-open { transform: translateX(0); }
-            .app-sidebar.hidden { transform: translateX(-100%); }
-
-            .app-main { margin-left: 0 !important; }
-
-            .breadcrumb {
-                margin-left: 0 !important;
-                padding: 10px 16px;
-            }
-
             .dashboard {
-                flex-direction: column;
-                padding: 20px 16px;
-                gap: 20px;
+                grid-template-columns: 1fr;
             }
-            .feed-section, .kpi-section {
-                flex: 1;
-            }
-            .kpi-tabs {
-                margin-left: 0;
-                margin-top: 12px;
-            }
-            .settings-page {
-                padding: 20px 16px;
-            }
-        }
 
-        /* Desktop sidebar toggle */
-        @media (min-width: 769px) {
-            .app-sidebar.desktop-hidden { transform: translateX(-100%); }
+            .kpi-tecnico-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-right {
+                gap: 8px;
+            }
+
+            .header-user {
+                gap: 8px;
+            }
+
+            .user-name, .user-role {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- ======== AUTH GATE ======== -->
+<!-- Auth Gate -->
 <div id="authGate">
     <div class="login-card">
-        <img id="loginLogo" class="login-logo" alt="DomusCar">
-        <h2>Intranet DomusCar</h2>
-        <p class="login-subtitle">Aceda com a sua conta Microsoft corporativa</p>
+        <svg class="login-logo" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-blue);">
+            <text x="10" y="28" font-size="24" font-weight="700">DomusCar</text>
+        </svg>
+        <h2>Bem-vindo</h2>
+        <p class="login-subtitle">Intranet Corporativa</p>
         <button class="login-btn" onclick="doLogin()">
-            <svg viewBox="0 0 21 21" fill="none"><path d="M0 0h10v10H0z" fill="#f25022"/><path d="M11 0h10v10H11z" fill="#7fba00"/><path d="M0 11h10v10H0z" fill="#00a4ef"/><path d="M11 11h10v10H11z" fill="#ffb900"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
             Iniciar Sessão com Microsoft
         </button>
-        <p id="authGateError" style="color:#ff6b6b;font-size:13px;margin-top:16px;display:none;"></p>
+        <div class="login-footer">
+            Intranet DomusCar v2.0 © 2026
+        </div>
     </div>
-    <p class="login-footer">DomusCar / Walkingarage Lda &copy; 2026</p>
 </div>
 
 <!-- ======== APP CONTENT ======== -->
@@ -708,7 +855,12 @@
         <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <img id="headerLogo" class="header-logo" alt="DomusCar" onclick="goHome()">
+        <button class="desktop-sidebar-toggle" id="desktopSidebarToggle" onclick="toggleSidebarDesktop()" title="Esconder barra lateral">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+        <img id="headerLogo" class="header-logo" alt="DomusCar" onclick="goHome()" style="background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 40%22><text x=%2210%22 y=%2228%22 font-size=%2220%22 font-weight=%22700%22 fill=%22%231a73e8%22>DomusCar</text></svg>'); background-size: contain; background-repeat: no-repeat;">
         <div class="header-divider"></div>
         <span class="header-title" id="headerTitle">Intranet</span>
         <div class="header-right">
@@ -889,544 +1041,690 @@
     // ======== KPI DATA ========
     const KPI_DATA = {
         colisao: {
-            prepPintura: {
-                name: 'Colisão - Prep + Pintura',
-                horasTrabalhadas: 1126.7,
-                horasVendidas: 770.8,
-                horasDisponiveis: 1249.5,
-                eficienciaP: 100.0,
-                utilizacao: 90.0
-            },
-            chapa: {
-                name: 'Colisão - Chapa',
-                horasTrabalhadas: 244.6,
-                horasVendidas: 439.5,
-                horasDisponiveis: 264.4,
-                eficienciaP: 113.0,
-                utilizacao: 92.0
-            },
-            global: {
-                name: 'Colisão - Global',
-                horasTrabalhadas: 1371.2,
-                horasVendidas: 1210.3,
-                horasDisponiveis: 1513.8,
-                eficienciaP: 102.0,
-                utilizacao: 90.0,
-                faturado: 112178.85
-            }
+            prepPintura: [
+                { kpi: 'Horas Trabalhadas', s1: 248.2, s2: 238.2, s3: 246.0, s4: 296.4, s5: 97.9, mes: 1126.7, unit: 'h' },
+                { kpi: 'Horas Vendidas', s1: 91.5, s2: 126.2, s3: 273.4, s4: 155.6, s5: 124.1, mes: 770.8, unit: 'h' },
+                { kpi: 'Horas Disponíveis', s1: 307.7, s2: 269.4, s3: 267.8, s4: 311.9, s5: 92.7, mes: 1249.5, unit: 'h' },
+                { kpi: 'Horas Faltas', s1: 24.0, s2: 56.0, s3: 64.0, s4: 16.0, s5: null, mes: 160.0, unit: 'h' },
+                { kpi: 'Horas Férias', s1: null, s2: null, s3: null, s4: null, s5: 24.0, mes: 24.0, unit: 'h' },
+                { kpi: 'Eficiência Produtiva', s1: 37.0, s2: 53.0, s3: 111.0, s4: 52.0, s5: 127.0, mes: 100.0, unit: '%', colorized: true },
+                { kpi: 'Taxa de Utilização', s1: 81.0, s2: 78.0, s3: 82.0, s4: 95.0, s5: 82.0, mes: 90.0, unit: '%', colorized: true }
+            ],
+            chapa: [
+                { kpi: 'Horas Trabalhadas', s1: 35.4, s2: 59.0, s3: 56.1, s4: 62.9, s5: 31.2, mes: 244.6, unit: 'h' },
+                { kpi: 'Horas Vendidas', s1: 77.0, s2: 80.8, s3: 108.1, s4: 99.6, s5: 74.0, mes: 439.5, unit: 'h' },
+                { kpi: 'Horas Disponíveis', s1: 36.5, s2: 68.0, s3: 68.0, s4: 64.6, s5: 27.2, mes: 264.4, unit: 'h' },
+                { kpi: 'Horas Faltas', s1: null, s2: null, s3: null, s4: null, s5: null, mes: null, unit: 'h' },
+                { kpi: 'Horas Férias', s1: 40.0, s2: null, s3: null, s4: 8.0, s5: null, mes: 48.0, unit: 'h' },
+                { kpi: 'Eficiência Produtiva', s1: 217.0, s2: 137.0, s3: 193.0, s4: 158.0, s5: 237.0, mes: 113.0, unit: '%', colorized: true },
+                { kpi: 'Taxa de Utilização', s1: 48.0, s2: 87.0, s3: 82.0, s4: 97.0, s5: 115.0, mes: 92.0, unit: '%', colorized: true }
+            ],
+            global: [
+                { kpi: 'Horas Trabalhadas', s1: 283.6, s2: 297.1, s3: 302.1, s4: 359.3, s5: 129.1, mes: 1371.2, unit: 'h' },
+                { kpi: 'Horas Vendidas', s1: 168.5, s2: 207.0, s3: 381.6, s4: 255.1, s5: 198.1, mes: 1210.3, unit: 'h' },
+                { kpi: 'Horas Disponíveis', s1: 344.2, s2: 337.4, s3: 335.8, s4: 376.6, s5: 119.8, mes: 1513.8, unit: 'h' },
+                { kpi: 'Horas Faltas', s1: 24.0, s2: 56.0, s3: 64.0, s4: 16.0, s5: null, mes: 160.0, unit: 'h' },
+                { kpi: 'Horas Férias', s1: 40.0, s2: null, s3: null, s4: 8.0, s5: 24.0, mes: 72.0, unit: 'h' },
+                { kpi: 'Eficiência Produtiva', s1: 59.0, s2: 70.0, s3: 126.0, s4: 71.0, s5: 153.0, mes: 102.0, unit: '%', colorized: true },
+                { kpi: 'Taxa de Utilização', s1: 75.0, s2: 80.0, s3: 82.0, s4: 95.0, s5: 88.0, mes: 90.0, unit: '%', colorized: true }
+            ],
+            ranking_hf: [
+                { rank: 1, name: 'José Borges', value: 138.8, unit: 'h', medal: '🥇' },
+                { rank: 2, name: 'Vitor Soutilha', value: 134.0, unit: 'h', medal: '🥈' },
+                { rank: 3, name: 'José Fernandes', value: 125.0, unit: 'h', medal: '🥉' },
+                { rank: 4, name: 'Djeison Amado', value: 120.3, unit: 'h' },
+                { rank: 5, name: 'Nuno Montês', value: 111.8, unit: 'h' },
+                { rank: 6, name: 'João Bizarro', value: 107.1, unit: 'h' },
+                { rank: 7, name: 'Gyanu Pujara', value: 85.0, unit: 'h' },
+                { rank: 8, name: 'Diamantino Silva', value: 81.4, unit: 'h' },
+                { rank: 9, name: 'Diogo Fernandes', value: 76.0, unit: 'h' },
+                { rank: 10, name: 'Pedro Jana', value: 69.5, unit: 'h' },
+                { rank: 11, name: 'Carlos Antunes', value: 34.0, unit: 'h' }
+            ],
+            ranking_eur: [
+                { rank: 1, name: 'José Borges', value: 18107.54, office: 'CO Chapa', medal: '🥇' },
+                { rank: 2, name: 'Vitor Soutilha', value: 15729.57, office: 'CO Mix', medal: '🥈' },
+                { rank: 3, name: 'Nuno Montês', value: 15129.08, office: 'CO Prep', medal: '🥉' },
+                { rank: 4, name: 'José Fernandes', value: 10810.05, office: 'CO Mix' },
+                { rank: 5, name: 'Pedro Jana', value: 10729.22, office: 'CO Chapa' },
+                { rank: 6, name: 'Gyanu Pujara', value: 9657.32, office: 'CO Mix' },
+                { rank: 7, name: 'Carlos Antunes', value: 8120.82, office: 'CO Mix' },
+                { rank: 8, name: 'Djeison Amado', value: 6507.45, office: 'CO Mix' },
+                { rank: 9, name: 'Diogo Fernandes', value: 6435.58, office: 'CO Prep' },
+                { rank: 10, name: 'Diamantino Silva', value: 5556.58, office: 'CO Mix' },
+                { rank: 11, name: 'João Bizarro', value: 5395.64, office: 'CO Mix' }
+            ],
+            tecnicos: [
+                { name: 'Diogo Fernandes', office: 'CO Prep', weeks: [{s: 1, ht: 7.5, hd: 39.1, u: 19.0}, {s: 2, ht: 26.1, hd: 34.0, u: 77.0}, {s: 3, ht: 28.9, hd: 34.0, u: 85.0}, {s: 4, ht: 36.8, hd: 38.2, u: 96.0}, {s: 5, ht: null, hd: null, u: null}], ep: 98.0, ut: 68.0 },
+                { name: 'Nuno Montês', office: 'CO Prep', weeks: [{s: 1, ht: 26.1, hd: 39.1, u: 67.0}, {s: 2, ht: 27.1, hd: 34.0, u: 80.0}, {s: 3, ht: 26.1, hd: 34.0, u: 77.0}, {s: 4, ht: 37.3, hd: 40.8, u: 91.0}, {s: 5, ht: 11.2, hd: 13.6, u: 82.0}], ep: 120.0, ut: 79.0 },
+                { name: 'José Borges', office: 'CO Chapa', weeks: [{s: 1, ht: 35.4, hd: 36.5, u: 97.0}, {s: 2, ht: 32.5, hd: 34.0, u: 95.0}, {s: 3, ht: 32.5, hd: 34.0, u: 96.0}, {s: 4, ht: 30.4, hd: 30.6, u: 99.0}, {s: 5, ht: 16.0, hd: 13.6, u: 118.0}], ep: 133.0, ut: 99.0 },
+                { name: 'Pedro Jana', office: 'CO Chapa', weeks: [{s: 1, ht: null, hd: null, u: null}, {s: 2, ht: 26.5, hd: 34.0, u: 78.0}, {s: 3, ht: 23.5, hd: 34.0, u: 69.0}, {s: 4, ht: 32.5, hd: 34.0, u: 95.0}, {s: 5, ht: 15.2, hd: 13.6, u: 112.0}], ep: 93.0, ut: 85.0 },
+                { name: 'Carlos Antunes', office: 'CO Mix', weeks: [{s: 1, ht: 10.8, hd: 18.7, u: 58.0}, {s: 2, ht: null, hd: null, u: null}, {s: 3, ht: null, hd: null, u: null}, {s: 4, ht: 26.6, hd: 30.6, u: 87.0}, {s: 5, ht: 12.3, hd: 13.6, u: 90.0}], ep: 88.0, ut: 79.0 },
+                { name: 'Vitor Soutilha', office: 'CO Mix', weeks: [{s: 1, ht: 36.5, hd: 38.2, u: 96.0}, {s: 2, ht: 37.8, hd: 40.0, u: 95.0}, {s: 3, ht: 37.9, hd: 39.1, u: 97.0}, {s: 4, ht: 35.5, hd: 39.1, u: 91.0}, {s: 5, ht: 17.7, hd: 16.1, u: 110.0}], ep: 87.0, ut: 96.0 },
+                { name: 'Gyanu Pujara', office: 'CO Mix', weeks: [{s: 1, ht: 33.3, hd: 39.1, u: 85.0}, {s: 2, ht: 9.9, hd: 32.3, u: 31.0}, {s: 3, ht: 33.3, hd: 45.0, u: 74.0}, {s: 4, ht: 25.0, hd: 31.4, u: 80.0}, {s: 5, ht: 17.0, hd: 15.3, u: 111.0}], ep: 80.0, ut: 73.0 },
+                { name: 'José Fernandes', office: 'CO Mix', weeks: [{s: 1, ht: 30.8, hd: 34.9, u: 88.0}, {s: 2, ht: 39.0, hd: 34.0, u: 115.0}, {s: 3, ht: 39.3, hd: 34.0, u: 116.0}, {s: 4, ht: 39.5, hd: 36.5, u: 108.0}, {s: 5, ht: 16.2, hd: 13.6, u: 119.0}], ep: 127.0, ut: 108.0 },
+                { name: 'João Bizarro', office: 'CO Mix', weeks: [{s: 1, ht: 39.0, hd: 34.0, u: 115.0}, {s: 2, ht: 38.0, hd: 34.0, u: 112.0}, {s: 3, ht: 36.7, hd: 34.0, u: 108.0}, {s: 4, ht: 37.5, hd: 34.0, u: 110.0}, {s: 5, ht: 15.8, hd: 13.6, u: 116.0}], ep: 77.0, ut: 111.0 },
+                { name: 'Djeison Amado', office: 'CO Mix', weeks: [{s: 1, ht: 32.0, hd: 30.6, u: 105.0}, {s: 2, ht: 33.8, hd: 34.0, u: 99.0}, {s: 3, ht: 27.2, hd: 27.2, u: 100.0}, {s: 4, ht: 30.2, hd: 34.0, u: 89.0}, {s: 5, ht: 7.6, hd: 6.8, u: 112.0}], ep: 102.0, ut: 99.0 },
+                { name: 'Diamantino Silva', office: 'CO Mix', weeks: [{s: 1, ht: 32.1, hd: 34.0, u: 95.0}, {s: 2, ht: 26.5, hd: 27.2, u: 97.0}, {s: 3, ht: 16.5, hd: 20.4, u: 81.0}, {s: 4, ht: 28.0, hd: 27.2, u: 103.0}, {s: 5, ht: null, hd: null, u: null}], ep: 118.0, ut: 95.0 }
+            ],
+            horas_picadas: [
+                { tecnico: 'Diogo Fernandes', hp: 99.3, hd: 187.0, hf: 0, ha: 0, media: 4.3 },
+                { tecnico: 'Nuno Montês', hp: 127.9, hd: 190.0, hf: 0, ha: 0, media: 5.6 },
+                { tecnico: 'Carlos Antunes', hp: 49.8, hd: 74.0, hf: 0, ha: 108, media: 6.2 },
+                { tecnico: 'Vitor Soutilha', hp: 165.4, hd: 200.0, hf: 0, ha: 0, media: 7.5 },
+                { tecnico: 'Gyanu Pujara', hp: 118.5, hd: 190.0, hf: 0, ha: 16, media: 5.6 },
+                { tecnico: 'José Fernandes', hp: 164.7, hd: 180.0, hf: 0, ha: 0, media: 7.2 },
+                { tecnico: 'João Bizarro', hp: 167.1, hd: 176.0, hf: 0, ha: 0, media: 7.6 },
+                { tecnico: 'Djeison Amado', hp: 130.9, hd: 164.0, hf: 0, ha: 12, media: 6.5 },
+                { tecnico: 'Diamantino Silva', hp: 103.1, hd: 128.0, hf: 0, ha: 24, media: 6.4 },
+                { tecnico: 'José Borges', hp: 146.8, hd: 175.0, hf: 8, ha: 0, media: 7.0 },
+                { tecnico: 'Pedro Jana', hp: 97.7, hd: 136.0, hf: 40, ha: 0, media: 5.7 }
+            ]
         },
         cacém: {
-            name: 'Mecânica Cacém',
-            horasTrabalhadas: 575.8,
-            horasVendidas: 768.6,
-            horasDisponiveis: 589.9,
-            eficienciaP: 144.0,
-            utilizacao: 98.0,
-            faturado: 97987.28
+            kpis: [
+                { kpi: 'Horas Trabalhadas', s1: 141.6, s2: 122.1, s3: 135.2, s4: 121.1, s5: 55.8, mes: 575.8, unit: 'h' },
+                { kpi: 'Horas Vendidas', s1: 182.2, s2: 119.1, s3: 168.4, s4: 115.2, s5: 183.6, mes: 768.6, unit: 'h' },
+                { kpi: 'Horas Disponíveis', s1: 142.8, s2: 136.0, s3: 136.0, s4: 122.4, s5: 52.7, mes: 589.9, unit: 'h' },
+                { kpi: 'Horas Faltas', s1: null, s2: null, s3: null, s4: 16.0, s5: 2.0, mes: 18.0, unit: 'h' },
+                { kpi: 'Horas Férias', s1: null, s2: null, s3: null, s4: 8.0, s5: null, mes: 8.0, unit: 'h' },
+                { kpi: 'Eficiência Produtiva', s1: 129.0, s2: 97.0, s3: 125.0, s4: 95.0, s5: 329.0, mes: 144.0, unit: '%', colorized: true },
+                { kpi: 'Taxa de Utilização', s1: 99.0, s2: 90.0, s3: 99.0, s4: 101.0, s5: 106.0, mes: 98.0, unit: '%', colorized: true }
+            ],
+            ranking_hf: [
+                { rank: 1, name: 'Gonçalo', value: 198.7, medal: '🥇' },
+                { rank: 2, name: 'Arnaldo', value: 197.5, medal: '🥈' },
+                { rank: 3, name: 'Filipe', value: 190.7, medal: '🥉' },
+                { rank: 4, name: 'Edmilson', value: 151.6 }
+            ],
+            ranking_eur: [
+                { rank: 1, name: 'Gonçalo', value: 31672.47, medal: '🥇' },
+                { rank: 2, name: 'Filipe', value: 25141.87, medal: '🥈' },
+                { rank: 3, name: 'Arnaldo', value: 23756.38, medal: '🥉' },
+                { rank: 4, name: 'Edmilson', value: 17416.56 }
+            ],
+            total_eur: 97987.28,
+            tecnicos: [
+                { name: 'Arnaldo', weeks: [{s: 1, ht: 36.4, hd: 34.0, u: 107.0}, {s: 2, ht: 34.7, hd: 34.0, u: 102.0}, {s: 3, ht: 35.7, hd: 34.0, u: 105.0}, {s: 4, ht: 29.1, hd: 27.2, u: 107.0}, {s: 5, ht: 14.2, hd: 13.6, u: 105.0}], ep: 140.0, ut: 105.0 },
+                { name: 'Edmilson', weeks: [{s: 1, ht: 35.3, hd: 34.0, u: 104.0}, {s: 2, ht: 23.2, hd: 27.2, u: 85.0}, {s: 3, ht: 31.4, hd: 34.0, u: 92.0}, {s: 4, ht: 23.2, hd: 20.4, u: 114.0}, {s: 5, ht: 14.2, hd: 11.9, u: 119.0}], ep: 121.0, ut: 100.0 },
+                { name: 'Filipe', weeks: [{s: 1, ht: 30.8, hd: 34.0, u: 91.0}, {s: 2, ht: 30.7, hd: 40.8, u: 75.0}, {s: 3, ht: 33.3, hd: 34.0, u: 98.0}, {s: 4, ht: 27.3, hd: 34.0, u: 80.0}, {s: 5, ht: 12.6, hd: 13.6, u: 92.0}], ep: 155.0, ut: 86.0 },
+                { name: 'Gonçalo', weeks: [{s: 1, ht: 39.1, hd: 40.8, u: 96.0}, {s: 2, ht: 33.6, hd: 34.0, u: 99.0}, {s: 3, ht: 34.9, hd: 34.0, u: 103.0}, {s: 4, ht: 41.4, hd: 40.8, u: 102.0}, {s: 5, ht: 14.8, hd: 13.6, u: 109.0}], ep: 158.0, ut: 100.0 }
+            ],
+            horas_picadas: [
+                { tecnico: 'Arnaldo Cruz', hp: 150.1, hd: 168.0, hf: 0, ha: 8, media: 7.1 },
+                { tecnico: 'Edmilson Fernandes', hp: 127.3, hd: 152.0, hf: 0, ha: 16, media: 6.7 },
+                { tecnico: 'Filipe Bonifácio', hp: 134.6, hd: 184.0, hf: 0, ha: 0, media: 5.9 },
+                { tecnico: 'Gonçalo Matos', hp: 163.8, hd: 192.0, hf: 0, ha: 0, media: 6.8 }
+            ]
         },
         lisboa: {
-            name: 'Mecânica Lisboa',
-            horasTrabalhadas: 356.6,
-            horasVendidas: 611.9,
-            horasDisponiveis: 322.1,
-            eficienciaP: 158.0,
-            utilizacao: 132.0,
-            faturado: 70989.30
+            kpis: [
+                { kpi: 'Horas Trabalhadas', s1: 97.0, s2: 88.5, s3: 66.0, s4: 76.5, s5: 28.6, mes: 356.6, unit: 'h' },
+                { kpi: 'Horas Vendidas', s1: 130.2, s2: 124.2, s3: 117.5, s4: 180.7, s5: 59.2, mes: 611.9, unit: 'h' },
+                { kpi: 'Horas Disponíveis', s1: 68.0, s2: 95.2, s3: 63.8, s4: 68.0, s5: 27.2, mes: 322.1, unit: 'h' },
+                { kpi: 'Horas Faltas', s1: null, s2: null, s3: 45.0, s4: 40.0, s5: 16.0, mes: 101.0, unit: 'h' },
+                { kpi: 'Horas Férias', s1: null, s2: 8.0, s3: null, s4: null, s5: null, mes: 8.0, unit: 'h' },
+                { kpi: 'Eficiência Produtiva', s1: 134.0, s2: 140.0, s3: 178.0, s4: 236.0, s5: 207.0, mes: 158.0, unit: '%', colorized: true },
+                { kpi: 'Taxa de Utilização', s1: 62.0, s2: 93.0, s3: 101.0, s4: 75.0, s5: 70.0, mes: 132.0, unit: '%', colorized: true }
+            ],
+            ranking_hf: [
+                { rank: 1, name: 'Jorge', value: 217.6, medal: '🥇' },
+                { rank: 2, name: 'Sérgio', value: 151.1, medal: '🥈' },
+                { rank: 3, name: 'Emanuel', value: 122.1, medal: '🥉' },
+                { rank: 4, name: 'Xavier', value: 83.8 }
+            ],
+            ranking_eur: [
+                { rank: 1, name: 'Jorge', value: 29830.72, medal: '🥇' },
+                { rank: 2, name: 'Sérgio', value: 20478.62, medal: '🥈' },
+                { rank: 3, name: 'Emanuel', value: 15935.34, medal: '🥉' },
+                { rank: 4, name: 'Xavier', value: 4744.62 }
+            ],
+            total_eur: 70989.30,
+            tecnicos: [
+                { name: 'Emanuel', weeks: [{s: 1, ht: 33.2, hd: null, u: null}, {s: 2, ht: 26.8, hd: 27.2, u: 99.0}, {s: 3, ht: 6.5, hd: 6.8, u: 95.0}, {s: 4, ht: null, hd: null, u: null}, {s: 5, ht: null, hd: null, u: null}], ep: 185.0, ut: 196.0 },
+                { name: 'Jorge', weeks: [{s: 1, ht: 32.3, hd: 34.0, u: 95.0}, {s: 2, ht: 30.9, hd: 34.0, u: 91.0}, {s: 3, ht: 35.8, hd: 34.0, u: 105.0}, {s: 4, ht: 35.6, hd: 34.0, u: 105.0}, {s: 5, ht: 14.3, hd: 13.6, u: 105.0}], ep: 165.0, ut: 100.0 },
+                { name: 'Sérgio', weeks: [{s: 1, ht: 31.4, hd: 34.0, u: 92.0}, {s: 2, ht: 30.7, hd: 34.0, u: 90.0}, {s: 3, ht: 23.8, hd: 22.9, u: 104.0}, {s: 4, ht: 40.9, hd: 34.0, u: 120.0}, {s: 5, ht: 14.2, hd: 13.6, u: 105.0}], ep: 124.0, ut: 102.0 },
+                { name: 'Xavier', weeks: [{s: 1, ht: 12.5, hd: 13.6, u: 92.0}, {s: 2, ht: 23.4, hd: 27.2, u: 86.0}, {s: 3, ht: 24.8, hd: 27.2, u: 91.0}, {s: 4, ht: 26.1, hd: 27.2, u: 96.0}, {s: 5, ht: 10.5, hd: 6.8, u: 155.0}], ep: 86.0, ut: 95.0 }
+            ],
+            horas_picadas: [
+                { tecnico: 'Emanuel Gonçalves', hp: 66.6, hd: 40.0, hf: 8, ha: 88, media: 13.3 },
+                { tecnico: 'Jorge Silva', hp: 148.9, hd: 176.0, hf: 0, ha: 0, media: 6.8 },
+                { tecnico: 'Sérgio Pereira', hp: 141.1, hd: 163.0, hf: 0, ha: 13, media: 7.1 },
+                { tecnico: 'Xavier Jorge', hp: 97.3, hd: 120.0, hf: 0, ha: 16, media: 6.5 }
+            ]
         },
         comparacao: {
-            lisboa: { eficiencia: 158.0, utilizacao: 132.7 },
-            cacém: { eficiencia: 143.5, utilizacao: 97.7 },
-            prepPint: { eficiencia: 109.0, utilizacao: 73.5 },
-            chapa: { eficiencia: 113.0, utilizacao: 92.0 },
-            global: { eficiencia: 97.0, utilizacao: 94.4 }
+            resumo_oficinas: [
+                { oficina: 'Mecânica Lisboa', ef: 158.0, ut: 132.7 },
+                { oficina: 'Mecânica Cacém', ef: 143.5, ut: 97.7 },
+                { oficina: 'Colisão Prep+Pint', ef: 109.0, ut: 73.5 },
+                { oficina: 'Colisão Chapa', ef: 113.0, ut: 92.0 },
+                { oficina: 'Colisão Global', ef: 97.0, ut: 94.4 }
+            ],
+            ranking_ef: [
+                { rank: 1, name: 'Emanuel', office: 'LX', value: 185.0, medal: '🥇' },
+                { rank: 2, name: 'Jorge', office: 'LX', value: 165.0, medal: '🥈' },
+                { rank: 3, name: 'Gonçalo', office: 'CA', value: 158.0, medal: '🥉' },
+                { rank: 4, name: 'Filipe', office: 'CA', value: 155.0 },
+                { rank: 5, name: 'Arnaldo', office: 'CA', value: 140.0 },
+                { rank: 6, name: 'José Borges', office: 'CO Chapa', value: 133.0 },
+                { rank: 7, name: 'José Fernandes', office: 'CO Mix', value: 127.0 },
+                { rank: 8, name: 'Sérgio', office: 'LX', value: 124.0 },
+                { rank: 9, name: 'Edmilson', office: 'CA', value: 121.0 },
+                { rank: 10, name: 'Nuno Montês', office: 'CO Prep', value: 120.0 },
+                { rank: 11, name: 'Diamantino Silva', office: 'CO Mix', value: 118.0 },
+                { rank: 12, name: 'Djeison Amado', office: 'CO Mix', value: 102.0 },
+                { rank: 13, name: 'Diogo Fernandes', office: 'CO Prep', value: 98.0 },
+                { rank: 14, name: 'Pedro Jana', office: 'CO Chapa', value: 93.0 },
+                { rank: 15, name: 'Carlos Antunes', office: 'CO Mix', value: 88.0 },
+                { rank: 16, name: 'Vitor Soutilha', office: 'CO Mix', value: 87.0 },
+                { rank: 17, name: 'Xavier', office: 'LX*', value: 86.0 },
+                { rank: 18, name: 'Gyanu Pujara', office: 'CO Mix', value: 80.0 },
+                { rank: 19, name: 'João Bizarro', office: 'CO Mix', value: 77.0 }
+            ],
+            ranking_ut: [
+                { rank: 1, name: 'Emanuel', office: 'LX', value: 196.0, medal: '🥇' },
+                { rank: 2, name: 'João Bizarro', office: 'CO Mix', value: 111.0, medal: '🥈' },
+                { rank: 3, name: 'José Fernandes', office: 'CO Mix', value: 108.0, medal: '🥉' },
+                { rank: 4, name: 'Arnaldo', office: 'CA', value: 105.0 },
+                { rank: 5, name: 'Sérgio', office: 'LX', value: 102.0 },
+                { rank: 6, name: 'Jorge', office: 'LX', value: 100.0 },
+                { rank: 7, name: 'Edmilson', office: 'CA', value: 100.0 },
+                { rank: 8, name: 'Gonçalo', office: 'CA', value: 100.0 },
+                { rank: 9, name: 'José Borges', office: 'CO Chapa', value: 99.0 },
+                { rank: 10, name: 'Djeison Amado', office: 'CO Mix', value: 99.0 },
+                { rank: 11, name: 'Vitor Soutilha', office: 'CO Mix', value: 96.0 },
+                { rank: 12, name: 'Xavier', office: 'LX*', value: 95.0 },
+                { rank: 13, name: 'Diamantino Silva', office: 'CO Mix', value: 95.0 },
+                { rank: 14, name: 'Filipe', office: 'CA', value: 86.0 },
+                { rank: 15, name: 'Pedro Jana', office: 'CO Chapa', value: 85.0 },
+                { rank: 16, name: 'Nuno Montês', office: 'CO Prep', value: 79.0 },
+                { rank: 17, name: 'Carlos Antunes', office: 'CO Mix', value: 79.0 },
+                { rank: 18, name: 'Gyanu Pujara', office: 'CO Mix', value: 73.0 },
+                { rank: 19, name: 'Diogo Fernandes', office: 'CO Prep', value: 68.0 }
+            ],
+            ranking_hf: [
+                { rank: 1, name: 'Jorge', office: 'LX', value: 217.6, medal: '🥇' },
+                { rank: 2, name: 'Gonçalo', office: 'CA', value: 198.7, medal: '🥈' },
+                { rank: 3, name: 'Arnaldo', office: 'CA', value: 197.5, medal: '🥉' },
+                { rank: 4, name: 'Filipe', office: 'CA', value: 190.7 },
+                { rank: 5, name: 'Edmilson', office: 'CA', value: 151.6 },
+                { rank: 6, name: 'Sérgio', office: 'LX', value: 151.1 },
+                { rank: 7, name: 'José Borges', office: 'CO Chapa', value: 138.8 },
+                { rank: 8, name: 'Vitor Soutilha', office: 'CO Mix', value: 134.0 },
+                { rank: 9, name: 'José Fernandes', office: 'CO Mix', value: 125.0 },
+                { rank: 10, name: 'Emanuel', office: 'LX', value: 122.1 },
+                { rank: 11, name: 'Djeison Amado', office: 'CO Mix', value: 120.3 },
+                { rank: 12, name: 'Nuno Montês', office: 'CO Prep', value: 111.8 },
+                { rank: 13, name: 'João Bizarro', office: 'CO Mix', value: 107.1 },
+                { rank: 14, name: 'Gyanu Pujara', office: 'CO Mix', value: 85.0 },
+                { rank: 15, name: 'Xavier', office: 'LX*', value: 83.8 },
+                { rank: 16, name: 'Diamantino Silva', office: 'CO Mix', value: 81.4 },
+                { rank: 17, name: 'Diogo Fernandes', office: 'CO Prep', value: 76.0 },
+                { rank: 18, name: 'Pedro Jana', office: 'CO Chapa', value: 69.5 },
+                { rank: 19, name: 'Carlos Antunes', office: 'CO Mix', value: 34.0 }
+            ],
+            ranking_eur: [
+                { rank: 1, name: 'Gonçalo', office: 'CA', value: 31672.47, medal: '🥇' },
+                { rank: 2, name: 'Jorge', office: 'LX', value: 29830.72, medal: '🥈' },
+                { rank: 3, name: 'Filipe', office: 'CA', value: 25141.87, medal: '🥉' },
+                { rank: 4, name: 'Arnaldo', office: 'CA', value: 23756.38 },
+                { rank: 5, name: 'Sérgio', office: 'LX', value: 20478.62 },
+                { rank: 6, name: 'José Borges', office: 'CO Chapa', value: 18107.54 },
+                { rank: 7, name: 'Edmilson', office: 'CA', value: 17416.56 },
+                { rank: 8, name: 'Emanuel', office: 'LX', value: 15935.34 },
+                { rank: 9, name: 'Vitor Soutilha', office: 'CO Mix', value: 15729.57 },
+                { rank: 10, name: 'Nuno Montês', office: 'CO Prep', value: 15129.08 },
+                { rank: 11, name: 'José Fernandes', office: 'CO Mix', value: 10810.05 },
+                { rank: 12, name: 'Pedro Jana', office: 'CO Chapa', value: 10729.22 },
+                { rank: 13, name: 'Gyanu Pujara', office: 'CO Mix', value: 9657.32 },
+                { rank: 14, name: 'Carlos Antunes', office: 'CO Mix', value: 8120.82 },
+                { rank: 15, name: 'Djeison Amado', office: 'CO Mix', value: 6507.45 },
+                { rank: 16, name: 'Diogo Fernandes', office: 'CO Prep', value: 6435.58 },
+                { rank: 17, name: 'Diamantino Silva', office: 'CO Mix', value: 5556.58 },
+                { rank: 18, name: 'João Bizarro', office: 'CO Mix', value: 5395.64 },
+                { rank: 19, name: 'Xavier', office: 'LX*', value: 4744.62 }
+            ]
         }
     };
 
-    const RANKINGS = {
-        hours: [
-            { name: 'Jorge (LX)', hours: 217.6 },
-            { name: 'Gonçalo (CA)', hours: 198.7 },
-            { name: 'Arnaldo (CA)', hours: 197.5 },
-            { name: 'Filipe (CA)', hours: 190.7 },
-            { name: 'Edmilson (CA)', hours: 151.6 }
-        ],
-        revenue: [
-            { name: 'Gonçalo (CA)', value: 31672.47 },
-            { name: 'Jorge (LX)', value: 29830.72 },
-            { name: 'Filipe (CA)', value: 25141.87 },
-            { name: 'Arnaldo (CA)', value: 23756.38 },
-            { name: 'Sérgio (LX)', value: 20478.62 }
-        ],
-        totalFaturado: 281155.43
-    };
-
-    // ======== COMMUNICATIONS FEED DATA ========
-    const FEED_MESSAGES = [
-        {
-            from: 'André Pereira',
-            initials: 'AP',
-            time: 'Hoje',
-            message: 'Reunião de coordenação amanhã às 10h'
-        },
-        {
-            from: 'Vanessa Borges',
-            initials: 'VB',
-            time: 'Ontem',
-            message: 'Nova política de férias disponível nos Documentos Internos'
-        },
-        {
-            from: 'Sistema',
-            initials: 'SYS',
-            time: 'Há 2 dias',
-            message: 'Manutenção do sistema agendada para Domingo'
-        },
-        {
-            from: 'Administração',
-            initials: 'ADM',
-            time: 'Há 1 semana',
-            message: 'Bem-vindos ao novo portal da Intranet!'
-        }
-    ];
-
-    // ======== USER PERMISSIONS ========
-    const USER_PERMISSIONS = {
-        'andre.pereira@domuscar.com': {
-            role: 'admin',
-            name: 'André Pereira',
-            modules: ['viaturas', 'picagens', 'ordens', 'stock', 'equipa', 'documentos', 'comunicacoes', 'definicoes', 'relatorios', 'kpis']
-        },
-        'vanessa.borges@domuscar.com': {
-            role: 'admin',
-            name: 'Vanessa Borges',
-            modules: ['viaturas', 'picagens', 'ordens', 'stock', 'equipa', 'documentos', 'comunicacoes', 'definicoes', 'relatorios', 'kpis']
-        },
-        '_default': {
-            role: 'user',
-            name: '',
-            modules: ['viaturas', 'comunicacoes', 'equipa']
-        }
-    };
-
-    // ---- Logo base64 (inline from file) ----
-    const LOGO_URL = 'DomusCar%20_%20Logo.png';
-
-    function initLogos() {
-        document.getElementById('loginLogo').src = LOGO_URL;
-        document.getElementById('headerLogo').src = LOGO_URL;
+    // ======== FUNCTIONS ========
+    function getColorClass(value, isPercent = true) {
+        if (!isPercent) return '';
+        if (value >= 100) return 'kpi-percent-green';
+        if (value >= 80) return 'kpi-percent-orange';
+        return 'kpi-percent-red';
     }
 
-    // ---- Auth (Azure AD via MSAL) ----
-    const MSAL_CONFIG = {
-        auth: {
-            clientId: '09d343c1-e3ef-4a71-b50e-be14e7aed4c4',
-            authority: 'https://login.microsoftonline.com/17ce2502-f743-4288-86df-fb21fcc4b655',
-            redirectUri: window.location.origin + window.location.pathname
-        },
-        cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
-    };
-    let msalInstance = null;
-    let currentMsalUser = null;
-    let currentUserPermissions = null;
-
-    function initMsal() {
-        try {
-            msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
-            var accounts = msalInstance.getAllAccounts();
-            if (accounts.length > 0) {
-                currentMsalUser = accounts[0];
-                unlockIntranet();
-            }
-        } catch(e) { console.warn('MSAL init error:', e); }
+    function formatValue(value, unit) {
+        if (value === null || value === undefined) return '—';
+        if (unit === '%') return value.toFixed(1);
+        if (unit === 'h') return value.toFixed(1);
+        return value.toFixed(2);
     }
 
-    function doLogin() {
-        if (!msalInstance) { console.error('MSAL não inicializado'); return; }
-        msalInstance.loginPopup({ scopes: ['User.Read'] }).then(function(response) {
-            currentMsalUser = response.account;
-            unlockIntranet();
-        }).catch(function(e) {
-            console.error('Login error:', e);
-            var errEl = document.getElementById('authGateError');
-            if (errEl) { errEl.textContent = 'Erro no login. Tente novamente.'; errEl.style.display = ''; }
-        });
+    function formatEuro(value) {
+        if (!value) return '0,00 €';
+        return (value / 1).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
     }
 
-    function unlockIntranet() {
-        document.getElementById('authGate').style.display = 'none';
-        document.getElementById('appContent').style.display = 'block';
-
-        // Get user permissions
-        var userEmail = currentMsalUser.username || currentMsalUser.name || '';
-        currentUserPermissions = USER_PERMISSIONS[userEmail] || USER_PERMISSIONS._default;
-
-        // Update sidebar based on permissions
-        updateSidebarPermissions();
-
-        // Update header
-        if (currentMsalUser) {
-            var name = currentMsalUser.name || currentMsalUser.username || '';
-            var initials = name.split(' ').map(function(n){ return n[0]; }).join('').substring(0,2).toUpperCase();
-            document.getElementById('userName').textContent = name;
-            document.getElementById('userAvatar').textContent = initials;
-            document.getElementById('userRole').textContent = currentUserPermissions.role === 'admin' ? 'Administrador' : 'Utilizador';
-        }
-
-        // Render feed
-        renderFeed();
-
-        // Render initial KPI
-        renderKpiTab('colisao');
-
-        updateGreeting();
+    function switchKpiTab(tab) {
+        document.querySelectorAll('.kpi-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        renderKpiContent(tab);
     }
 
-    function updateSidebarPermissions() {
-        if (!currentUserPermissions) return;
-
-        // Show/hide admin section
-        var adminSection = document.getElementById('adminSection');
-        var adminNav = document.getElementById('adminNav');
-        if (currentUserPermissions.role === 'admin') {
-            adminSection.style.display = 'block';
-            adminNav.style.display = 'block';
-        } else {
-            adminSection.style.display = 'none';
-            adminNav.style.display = 'none';
-        }
-
-        // Hide modules without permission
-        document.querySelectorAll('.sidebar-nav a:not(.disabled)').forEach(function(el) {
-            var id = el.getAttribute('onclick');
-            if (!id) return;
-            // Extract module ID from onclick
-            var match = id.match(/openModule\('(\w+)'\)/);
-            if (match && !currentUserPermissions.modules.includes(match[1])) {
-                el.style.display = 'none';
-            }
-        });
-    }
-
-    function renderFeed() {
-        var feedMessages = document.getElementById('feedMessages');
-        feedMessages.innerHTML = '';
-        FEED_MESSAGES.forEach(function(msg) {
-            var msgEl = document.createElement('div');
-            msgEl.className = 'feed-message';
-            msgEl.innerHTML = '<div class="feed-avatar">' + msg.initials + '</div>' +
-                '<div class="feed-content">' +
-                '<div><span class="feed-from">' + msg.from + '</span><span class="feed-time">' + msg.time + '</span></div>' +
-                '<div class="feed-text">' + msg.message + '</div>' +
-                '</div>';
-            feedMessages.appendChild(msgEl);
-        });
-    }
-
-    function getEfficiencyClass(value) {
-        if (value >= 100) return 'green';
-        if (value >= 80) return 'orange';
-        return 'red';
-    }
-
-    function renderKpiTab(tab) {
-        var content = document.getElementById('kpiContent');
-        var html = '';
+    function renderKpiContent(tab) {
+        const content = document.getElementById('kpiContent');
+        let html = '';
 
         if (tab === 'colisao') {
-            // Colisão sections
-            var sections = ['prepPintura', 'chapa', 'global'];
-            sections.forEach(function(section) {
-                var data = KPI_DATA.colisao[section];
-                html += '<div><div class="kpi-title" style="font-size: 14px; margin: 20px 0 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">' + data.name + '</div>';
-                html += '<div class="kpi-cards">';
-                html += '<div class="kpi-card"><div class="kpi-label">Horas Trabalhadas</div><div class="kpi-value">' + data.horasTrabalhadas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-                html += '<div class="kpi-card"><div class="kpi-label">Horas Vendidas</div><div class="kpi-value">' + data.horasVendidas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-                html += '<div class="kpi-card"><div class="kpi-label">Horas Disponíveis</div><div class="kpi-value">' + data.horasDisponiveis.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-                var effClass = getEfficiencyClass(data.eficienciaP);
-                html += '<div class="kpi-card"><div class="kpi-label">Eficiência Produtiva</div><div class="kpi-value">' + data.eficienciaP.toFixed(1) + '<span class="kpi-unit">%</span></div><div class="kpi-efficiency ' + effClass + '">' + data.eficienciaP.toFixed(1) + '%</div></div>';
-                html += '<div class="kpi-card"><div class="kpi-label">Taxa de Utilização</div><div class="kpi-value">' + data.utilizacao.toFixed(1) + '<span class="kpi-unit">%</span></div></div>';
-                if (data.faturado) {
-                    html += '<div class="kpi-card"><div class="kpi-label">Total Faturado</div><div class="kpi-value">' + (data.faturado / 1000).toFixed(1) + '<span class="kpi-unit">k€</span></div></div>';
-                }
-                html += '</div></div>';
-            });
+            html = renderColisaoTab();
         } else if (tab === 'cacém') {
-            var data = KPI_DATA.cacém;
-            html += '<div class="kpi-cards">';
-            html += '<div class="kpi-card"><div class="kpi-label">Horas Trabalhadas</div><div class="kpi-value">' + data.horasTrabalhadas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Horas Vendidas</div><div class="kpi-value">' + data.horasVendidas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Horas Disponíveis</div><div class="kpi-value">' + data.horasDisponiveis.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-            var effClass = getEfficiencyClass(data.eficienciaP);
-            html += '<div class="kpi-card"><div class="kpi-label">Eficiência Produtiva</div><div class="kpi-value">' + data.eficienciaP.toFixed(1) + '<span class="kpi-unit">%</span></div><div class="kpi-efficiency ' + effClass + '">' + data.eficienciaP.toFixed(1) + '%</div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Taxa de Utilização</div><div class="kpi-value">' + data.utilizacao.toFixed(1) + '<span class="kpi-unit">%</span></div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Total Faturado</div><div class="kpi-value">' + (data.faturado / 1000).toFixed(1) + '<span class="kpi-unit">k€</span></div></div>';
-            html += '</div>';
+            html = renderCacémTab();
         } else if (tab === 'lisboa') {
-            var data = KPI_DATA.lisboa;
-            html += '<div class="kpi-cards">';
-            html += '<div class="kpi-card"><div class="kpi-label">Horas Trabalhadas</div><div class="kpi-value">' + data.horasTrabalhadas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Horas Vendidas</div><div class="kpi-value">' + data.horasVendidas.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Horas Disponíveis</div><div class="kpi-value">' + data.horasDisponiveis.toFixed(1) + '<span class="kpi-unit">h</span></div></div>';
-            var effClass = getEfficiencyClass(data.eficienciaP);
-            html += '<div class="kpi-card"><div class="kpi-label">Eficiência Produtiva</div><div class="kpi-value">' + data.eficienciaP.toFixed(1) + '<span class="kpi-unit">%</span></div><div class="kpi-efficiency ' + effClass + '">' + data.eficienciaP.toFixed(1) + '%</div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Taxa de Utilização</div><div class="kpi-value">' + data.utilizacao.toFixed(1) + '<span class="kpi-unit">%</span></div></div>';
-            html += '<div class="kpi-card"><div class="kpi-label">Total Faturado</div><div class="kpi-value">' + (data.faturado / 1000).toFixed(1) + '<span class="kpi-unit">k€</span></div></div>';
-            html += '</div>';
+            html = renderLisboaTab();
         } else if (tab === 'comparacao') {
-            var comp = KPI_DATA.comparacao;
-            html += '<div style="margin-top: 16px;">';
-            html += '<div class="ranking-title">Eficiência Produtiva vs Taxa de Utilização</div>';
-            var items = [
-                { name: 'Mecânica Lisboa', eff: comp.lisboa.eficiencia, util: comp.lisboa.utilizacao },
-                { name: 'Mecânica Cacém', eff: comp.cacém.eficiencia, util: comp.cacém.utilizacao },
-                { name: 'Colisão Prep+Pint', eff: comp.prepPint.eficiencia, util: comp.prepPint.utilizacao },
-                { name: 'Colisão Chapa', eff: comp.chapa.eficiencia, util: comp.chapa.utilizacao },
-                { name: 'Colisão Global', eff: comp.global.eficiencia, util: comp.global.utilizacao }
-            ];
-            items.forEach(function(item, idx) {
-                var medal = '';
-                if (idx === 0) medal = '🥇';
-                else if (idx === 1) medal = '🥈';
-                else if (idx === 2) medal = '🥉';
-                html += '<div class="ranking-item" style="margin-bottom: 12px;">' + medal + '<span style="flex: 1; font-weight: 500;">' + item.name + '</span><span style="color: var(--accent-blue); font-weight: 600; margin-right: 16px;">' + item.eff.toFixed(1) + '%</span><span style="color: var(--success); font-weight: 600;">' + item.util.toFixed(1) + '%</span></div>';
-            });
-            html += '</div>';
+            html = renderComparacaoTab();
         }
-
-        // Add rankings
-        html += '<div class="ranking-section">';
-        html += '<div class="ranking-title">Top 5 por Horas</div>';
-        RANKINGS.hours.forEach(function(item, idx) {
-            var medal = '';
-            if (idx === 0) medal = '🥇';
-            else if (idx === 1) medal = '🥈';
-            else if (idx === 2) medal = '🥉';
-            html += '<div class="ranking-item">' + medal + '<span class="ranking-name">' + item.name + '</span><span class="ranking-value">' + item.hours.toFixed(1) + 'h</span></div>';
-        });
-        html += '</div>';
-
-        html += '<div class="ranking-section">';
-        html += '<div class="ranking-title">Top 5 por Faturação</div>';
-        RANKINGS.revenue.forEach(function(item, idx) {
-            var medal = '';
-            if (idx === 0) medal = '🥇';
-            else if (idx === 1) medal = '🥈';
-            else if (idx === 2) medal = '🥉';
-            html += '<div class="ranking-item">' + medal + '<span class="ranking-name">' + item.name + '</span><span class="ranking-value">' + (item.value / 1000).toFixed(1) + 'k€</span></div>';
-        });
-        html += '<div style="margin-top: 16px; padding: 12px; background: var(--accent-blue-light); border-radius: 8px; text-align: center;">';
-        html += '<div class="kpi-label">Total Faturado</div>';
-        html += '<div class="kpi-value" style="color: var(--accent-blue);">' + (RANKINGS.totalFaturado / 1000).toFixed(1) + '<span class="kpi-unit">€</span></div>';
-        html += '</div>';
-        html += '</div>';
 
         content.innerHTML = html;
     }
 
-    function switchKpiTab(tab) {
-        document.querySelectorAll('.kpi-tab').forEach(function(btn) {
-            btn.classList.remove('active');
+    function renderColisaoTab() {
+        let html = '<div class="kpi-report">';
+        html += '<div class="kpi-page-header colisao">COLISÃO <span class="kpi-badge">MAR 2026</span></div>';
+
+        // Prep + Pintura
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">KPIs Gerais — Prep + Pintura</div>';
+        html += '<table class="kpi-table"><thead><tr><th>KPI</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>Mês</th></tr></thead><tbody>';
+        KPI_DATA.colisao.prepPintura.forEach(row => {
+            html += '<tr>';
+            html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
+            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
+            if (row.colorized) {
+                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+            } else {
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+            }
+            html += '</tr>';
         });
-        event.target.classList.add('active');
-        renderKpiTab(tab);
+        html += '</tbody></table></div>';
+
+        // Chapa
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">KPIs Gerais — Chapa</div>';
+        html += '<table class="kpi-table"><thead><tr><th>KPI</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>Mês</th></tr></thead><tbody>';
+        KPI_DATA.colisao.chapa.forEach(row => {
+            html += '<tr>';
+            html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
+            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
+            if (row.colorized) {
+                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+            } else {
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+            }
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Global
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">KPIs Gerais — Global</div>';
+        html += '<table class="kpi-table"><thead><tr><th>KPI</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>Mês</th></tr></thead><tbody>';
+        KPI_DATA.colisao.global.forEach(row => {
+            html += '<tr>';
+            html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
+            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
+            if (row.colorized) {
+                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+            } else {
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+            }
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking HF
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Total Faturado (Horas Faturadas)</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Horas Faturadas</th></tr></thead><tbody>';
+        KPI_DATA.colisao.ranking_hf.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + row.value.toFixed(1) + ' h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking EUR
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Total Faturado (€)</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Total Faturado</th></tr></thead><tbody>';
+        KPI_DATA.colisao.ranking_eur.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + formatEuro(row.value) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: 112.178,85 €</div></div>';
+
+        // Técnicos Individuais
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
+        html += '<div class="kpi-tecnico-grid">';
+        KPI_DATA.colisao.tecnicos.forEach(tec => {
+            html += '<div class="kpi-tecnico-card">';
+            html += '<div class="kpi-tecnico-name">' + tec.name + ' (' + tec.office + ')</div>';
+            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
+            tec.weeks.forEach(w => {
+                html += '<tr><td>' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) : '—') + '</td><td>' + (w.u !== null ? w.u.toFixed(0) + '%' : '—') + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            html += '<div class="kpi-tecnico-summary">';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Ef. Produtiva</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(0) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Utilização</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(0) + '%</span></div>';
+            html += '</div></div>';
+        });
+        html += '</div></div>';
+
+        // Horas Picadas
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Horas Picadas — Resumo do Mês</div>';
+        html += '<table class="kpi-table"><thead><tr><th>Técnico</th><th>H. Produtivas</th><th>H. Disponíveis</th><th>H. Férias</th><th>H. Ausência</th><th>Média/dia útil</th></tr></thead><tbody>';
+        KPI_DATA.colisao.horas_picadas.forEach(row => {
+            html += '<tr><td style="font-weight: 600;">' + row.tecnico + '</td><td>' + row.hp.toFixed(1) + 'h</td><td>' + row.hd.toFixed(1) + 'h</td><td>' + row.hf.toFixed(1) + 'h</td><td>' + row.ha.toFixed(1) + 'h</td><td>' + row.media.toFixed(1) + 'h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        html += '</div>';
+        return html;
     }
 
-    function doLogout() {
-        if (msalInstance) {
-            msalInstance.logoutPopup().catch(function(e) { console.warn('Logout error:', e); });
-        }
-        currentMsalUser = null;
-        document.getElementById('appContent').style.display = 'none';
-        document.getElementById('authGate').style.display = 'flex';
+    function renderCacémTab() {
+        let html = '<div class="kpi-report">';
+        html += '<div class="kpi-page-header cacém">MECÂNICA CACÉM <span class="kpi-badge">MAR 2026</span></div>';
+
+        // KPIs
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">KPIs Gerais — Mecânica Cacém</div>';
+        html += '<table class="kpi-table"><thead><tr><th>KPI</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>Mês</th></tr></thead><tbody>';
+        KPI_DATA.cacém.kpis.forEach(row => {
+            html += '<tr>';
+            html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
+            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
+            if (row.colorized) {
+                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+            } else {
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+            }
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking HF
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Horas Faturadas</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Horas Faturadas</th></tr></thead><tbody>';
+        KPI_DATA.cacém.ranking_hf.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + row.value.toFixed(1) + ' h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking EUR
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Total Faturado (€)</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Total Faturado</th></tr></thead><tbody>';
+        KPI_DATA.cacém.ranking_eur.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + formatEuro(row.value) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: ' + formatEuro(KPI_DATA.cacém.total_eur) + '</div></div>';
+
+        // Técnicos Individuais
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
+        html += '<div class="kpi-tecnico-grid">';
+        KPI_DATA.cacém.tecnicos.forEach(tec => {
+            html += '<div class="kpi-tecnico-card">';
+            html += '<div class="kpi-tecnico-name">' + tec.name + '</div>';
+            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
+            tec.weeks.forEach(w => {
+                html += '<tr><td>' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) : '—') + '</td><td>' + (w.u !== null ? w.u.toFixed(0) + '%' : '—') + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            html += '<div class="kpi-tecnico-summary">';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Ef. Produtiva</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(0) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Utilização</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(0) + '%</span></div>';
+            html += '</div></div>';
+        });
+        html += '</div></div>';
+
+        // Horas Picadas
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Horas Picadas — Resumo do Mês</div>';
+        html += '<table class="kpi-table"><thead><tr><th>Técnico</th><th>H. Produtivas</th><th>H. Disponíveis</th><th>H. Férias</th><th>H. Ausência</th><th>Média/dia útil</th></tr></thead><tbody>';
+        KPI_DATA.cacém.horas_picadas.forEach(row => {
+            html += '<tr><td style="font-weight: 600;">' + row.tecnico + '</td><td>' + row.hp.toFixed(1) + 'h</td><td>' + row.hd.toFixed(1) + 'h</td><td>' + row.hf.toFixed(1) + 'h</td><td>' + row.ha.toFixed(1) + 'h</td><td>' + row.media.toFixed(1) + 'h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        html += '</div>';
+        return html;
     }
 
-    // ---- Navigation ----
-    let currentModule = null;
-    let sidebarVisible = false;
+    function renderLisboaTab() {
+        let html = '<div class="kpi-report">';
+        html += '<div class="kpi-page-header lisboa">MECÂNICA LISBOA <span class="kpi-badge">MAR 2026</span></div>';
 
-    function isMobile() { return window.innerWidth <= 768; }
+        // KPIs
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">KPIs Gerais — Mecânica Lisboa</div>';
+        html += '<table class="kpi-table"><thead><tr><th>KPI</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>S5</th><th>Mês</th></tr></thead><tbody>';
+        KPI_DATA.lisboa.kpis.forEach(row => {
+            html += '<tr>';
+            html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
+            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
+            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
+            if (row.colorized) {
+                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+            } else {
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+            }
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking HF
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Horas Faturadas</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Horas Faturadas</th></tr></thead><tbody>';
+        KPI_DATA.lisboa.ranking_hf.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + row.value.toFixed(1) + ' h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking EUR
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Total Faturado (€)</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Total Faturado</th></tr></thead><tbody>';
+        KPI_DATA.lisboa.ranking_eur.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + formatEuro(row.value) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: ' + formatEuro(KPI_DATA.lisboa.total_eur) + '</div></div>';
+
+        // Técnicos Individuais
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
+        html += '<div class="kpi-tecnico-grid">';
+        KPI_DATA.lisboa.tecnicos.forEach(tec => {
+            html += '<div class="kpi-tecnico-card">';
+            html += '<div class="kpi-tecnico-name">' + tec.name + '</div>';
+            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
+            tec.weeks.forEach(w => {
+                html += '<tr><td>' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) : '—') + '</td><td>' + (w.u !== null ? w.u.toFixed(0) + '%' : '—') + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            html += '<div class="kpi-tecnico-summary">';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Ef. Produtiva</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(0) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Utilização</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(0) + '%</span></div>';
+            html += '</div></div>';
+        });
+        html += '</div></div>';
+
+        // Horas Picadas
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Horas Picadas — Resumo do Mês</div>';
+        html += '<table class="kpi-table"><thead><tr><th>Técnico</th><th>H. Produtivas</th><th>H. Disponíveis</th><th>H. Férias</th><th>H. Ausência</th><th>Média/dia útil</th></tr></thead><tbody>';
+        KPI_DATA.lisboa.horas_picadas.forEach(row => {
+            html += '<tr><td style="font-weight: 600;">' + row.tecnico + '</td><td>' + row.hp.toFixed(1) + 'h</td><td>' + row.hd.toFixed(1) + 'h</td><td>' + row.hf.toFixed(1) + 'h</td><td>' + row.ha.toFixed(1) + 'h</td><td>' + row.media.toFixed(1) + 'h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        html += '</div>';
+        return html;
+    }
+
+    function renderComparacaoTab() {
+        let html = '<div class="kpi-report">';
+        html += '<div class="kpi-page-header comparacao">COMPARAÇÃO ENTRE TÉCNICOS <span class="kpi-badge">MAR 2026</span></div>';
+
+        // Resumo Oficinas
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Resumo por Oficina — Médias dos Técnicos</div>';
+        html += '<table class="kpi-table"><thead><tr><th>Oficina</th><th>Ef. Produtiva (média)</th><th>Utilização (média)</th></tr></thead><tbody>';
+        KPI_DATA.comparacao.resumo_oficinas.forEach(row => {
+            html += '<tr><td style="font-weight: 600;">' + row.oficina + '</td><td ' + (row.ef >= 100 ? 'class="kpi-percent-green"' : row.ef >= 80 ? 'class="kpi-percent-orange"' : 'class="kpi-percent-red"') + '>' + row.ef.toFixed(1) + '%</td><td ' + (row.ut >= 100 ? 'class="kpi-percent-green"' : row.ut >= 80 ? 'class="kpi-percent-orange"' : 'class="kpi-percent-red"') + '>' + row.ut.toFixed(1) + '%</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking Eficiência
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Rankings Individuais — Eficiência Produtiva</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Oficina</th><th>Valor</th></tr></thead><tbody>';
+        KPI_DATA.comparacao.ranking_ef.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td ' + getColorClass(row.value) + '>' + row.value.toFixed(1) + '%</td></tr>';
+        });
+        html += '</tbody></table><div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Meta: 100.0%</div></div>';
+
+        // Ranking Utilização
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Rankings Individuais — Taxa de Utilização</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Oficina</th><th>Valor</th></tr></thead><tbody>';
+        KPI_DATA.comparacao.ranking_ut.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td ' + getColorClass(row.value) + '>' + row.value.toFixed(1) + '%</td></tr>';
+        });
+        html += '</tbody></table><div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Meta: 85.0%</div></div>';
+
+        // Ranking Horas Faturadas
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Horas Faturadas</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Oficina</th><th>Horas Faturadas</th></tr></thead><tbody>';
+        KPI_DATA.comparacao.ranking_hf.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td>' + row.value.toFixed(1) + ' h</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Ranking EUR
+        html += '<div class="kpi-subsection">';
+        html += '<div class="kpi-subsection-header">Ranking Total Faturado (€)</div>';
+        html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Oficina</th><th>Total Faturado</th></tr></thead><tbody>';
+        KPI_DATA.comparacao.ranking_eur.forEach(row => {
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td>' + formatEuro(row.value) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: 281.155,43 €</div></div>';
+
+        html += '</div>';
+        return html;
+    }
 
     function toggleSidebar() {
-        var sidebar = document.getElementById('sidebar');
-        var overlay = document.getElementById('sidebarOverlay');
-        var main = document.getElementById('mainContent');
-
-        if (isMobile()) {
-            sidebarVisible = !sidebarVisible;
-            if (sidebarVisible) {
-                sidebar.classList.add('mobile-open');
-                sidebar.classList.remove('hidden');
-                overlay.classList.add('active');
-            } else {
-                sidebar.classList.remove('mobile-open');
-                overlay.classList.remove('active');
-            }
-        } else {
-            sidebarVisible = !sidebarVisible;
-            if (sidebarVisible) {
-                sidebar.classList.remove('desktop-hidden');
-                sidebar.classList.remove('hidden');
-                main.classList.remove('full');
-            } else {
-                sidebar.classList.add('desktop-hidden');
-                main.classList.add('full');
-            }
-        }
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('hidden');
+        overlay.classList.toggle('visible');
     }
 
-    function closeMobileSidebar() {
-        if (isMobile()) {
-            sidebarVisible = false;
-            document.getElementById('sidebar').classList.remove('mobile-open');
-            document.getElementById('sidebarOverlay').classList.remove('active');
-        }
+    function toggleSidebarDesktop() {
+        const sidebar = document.getElementById('sidebar');
+        const breadcrumb = document.getElementById('breadcrumb');
+        const mainContent = document.getElementById('mainContent');
+        sidebar.classList.toggle('hidden');
+        breadcrumb.classList.toggle('sidebar-hidden');
+        mainContent.classList.toggle('sidebar-hidden');
     }
 
     function goHome() {
-        currentModule = null;
-        document.getElementById('dashboardView').style.display = 'flex';
-        document.getElementById('moduleFrame').classList.remove('active');
-        document.getElementById('settingsPage').classList.remove('active');
-        document.getElementById('sidebar').classList.remove('hidden');
-        document.getElementById('sidebar').classList.remove('mobile-open');
-        document.getElementById('sidebar').classList.remove('desktop-hidden');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-        document.getElementById('mainContent').classList.remove('full');
-        document.getElementById('breadcrumb').style.display = 'none';
-        document.getElementById('headerTitle').textContent = 'Intranet';
-        document.getElementById('sidebarToggle').classList.remove('visible');
-        sidebarVisible = false;
-        clearActiveNav();
+        document.getElementById('dashboardView').style.display = 'grid';
+        document.getElementById('settingsPage').style.display = 'none';
+        document.getElementById('moduleFrame').classList.remove('visible');
+        document.getElementById('headerTitle').innerText = 'Início';
+        document.getElementById('breadcrumbCurrent').innerText = 'Início';
     }
 
-    function openDashboard(type) {
-        if (type === 'kpis') {
-            document.getElementById('dashboardView').style.display = 'flex';
-            document.getElementById('moduleFrame').classList.remove('active');
-            document.getElementById('settingsPage').classList.remove('active');
-            document.getElementById('headerTitle').textContent = 'Dashboard KPIs';
-            document.getElementById('navKpis').classList.add('active');
-        }
-    }
-
-    function openModule(id) {
-        const modules = {
-            viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
-            picagens: { title: 'Divergências / Picagens', url: null },
-            equipa: { title: 'Equipa / Contactos', url: null },
-            documentos: { title: 'Documentos Internos', url: null },
-            comunicacoes: { title: 'Comunicações', url: null },
-            relatorios: { title: 'Relatórios', url: null }
-        };
-        const mod = modules[id];
-        if (!mod) return;
-
-        // Check permissions
-        if (currentUserPermissions && !currentUserPermissions.modules.includes(id)) {
-            alert('Não tem permissão para aceder a este módulo');
-            return;
-        }
-
-        if (!mod.url) {
-            alert('Este módulo ainda não está disponível');
-            return;
-        }
-
-        currentModule = id;
-        closeMobileSidebar();
-
-        document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('settingsPage').classList.remove('active');
-        document.getElementById('breadcrumb').style.display = 'block';
-        document.getElementById('breadcrumbCurrent').textContent = mod.title;
-        document.getElementById('headerTitle').textContent = mod.title;
-        document.getElementById('sidebarToggle').classList.add('visible');
-
-        var sidebar = document.getElementById('sidebar');
-        var main = document.getElementById('mainContent');
-
-        if (isMobile()) {
-            sidebar.classList.add('hidden');
-            main.classList.add('full');
-            sidebarVisible = false;
-        } else {
-            sidebar.classList.remove('hidden');
-            main.classList.remove('full');
-            sidebarVisible = true;
-        }
-
-        var frame = document.getElementById('moduleFrame');
-        frame.src = mod.url;
-        frame.classList.add('active');
-
-        clearActiveNav();
-        var navEl = document.getElementById('nav' + id.charAt(0).toUpperCase() + id.slice(1));
-        if (navEl) navEl.classList.add('active');
+    function openDashboard(section) {
+        goHome();
+        renderKpiContent('colisao');
     }
 
     function openSettings() {
-        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
-            alert('Apenas administradores podem aceder às definições');
-            return;
-        }
-
-        currentModule = null;
-        closeMobileSidebar();
-
         document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('moduleFrame').classList.remove('active');
-        document.getElementById('settingsPage').classList.add('active');
-        document.getElementById('breadcrumb').style.display = 'none';
-        document.getElementById('headerTitle').textContent = 'Definições';
-        document.getElementById('sidebarToggle').classList.remove('visible');
-
-        var sidebar = document.getElementById('sidebar');
-        var main = document.getElementById('mainContent');
-
-        if (!isMobile()) {
-            sidebar.classList.remove('hidden');
-            main.classList.remove('full');
-            sidebarVisible = true;
-        }
-
-        clearActiveNav();
-        document.getElementById('navDefinicoes').classList.add('active');
-
-        // Render users table
-        renderUsersTable();
+        document.getElementById('settingsPage').style.display = 'block';
+        document.getElementById('moduleFrame').classList.remove('visible');
+        document.getElementById('headerTitle').innerText = 'Definições';
+        document.getElementById('breadcrumbCurrent').innerText = 'Definições';
     }
 
-    function renderUsersTable() {
-        var tbody = document.getElementById('usersTableBody');
-        tbody.innerHTML = '';
-        Object.keys(USER_PERMISSIONS).forEach(function(email) {
-            if (email === '_default') return;
-            var user = USER_PERMISSIONS[email];
-            var tr = document.createElement('tr');
-            tr.innerHTML = '<td>' + user.name + '</td><td>' + email + '</td><td>' + (user.role === 'admin' ? 'Administrador' : 'Utilizador') + '</td><td>' + user.modules.length + ' módulos</td>';
-            tbody.appendChild(tr);
-        });
+    function openModule(moduleName) {
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('settingsPage').style.display = 'none';
+        document.getElementById('moduleFrame').classList.add('visible');
+        document.getElementById('headerTitle').innerText = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+        document.getElementById('breadcrumbCurrent').innerText = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+
+        const moduleUrl = 'https://domuscar.sharepoint.com/sites/intranet/modules/' + moduleName + '.html';
+        document.getElementById('moduleFrame').src = moduleUrl;
     }
 
     function openClaudeDesktop() {
-        alert('Claude Desktop será aberto em background. A integração está em desenvolvimento.');
+        alert('Claude Desktop não está instalado. Visite https://claude.ai para utilizar Claude Online.');
     }
 
-    function clearActiveNav() {
-        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    function doLogin() {
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('appContent').style.display = 'flex';
+        renderKpiContent('colisao');
     }
 
-    function updateGreeting() {
-        const h = new Date().getHours();
-        let greeting = h < 12 ? 'Bom dia' : h < 19 ? 'Boa tarde' : 'Boa noite';
-        var firstName = 'Utilizador';
-        if (currentMsalUser && currentMsalUser.name) {
-            firstName = currentMsalUser.name.split(' ')[0];
+    function doLogout() {
+        if (confirm('Deseja terminar a sessão?')) {
+            document.getElementById('authGate').style.display = 'flex';
+            document.getElementById('appContent').style.display = 'none';
         }
     }
 
-    // Init
-    initLogos();
-    initMsal();
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+        renderKpiContent('colisao');
+    });
 </script>
+
 </body>
 </html>
