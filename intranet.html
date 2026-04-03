@@ -2059,7 +2059,19 @@
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'saveToSharePoint') return;
         var data = event.data;
-        uploadToSharePoint(data.folderKey, data.fileName, data.fileContent, data.contentType)
+        // Convert base64 data URL to ArrayBuffer if needed
+        var content = data.fileContent;
+        if (typeof content === 'string' && content.indexOf('data:') === 0) {
+            var base64 = content.split(',')[1];
+            var binary = atob(base64);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            content = bytes.buffer;
+        } else if (typeof content === 'string') {
+            // Plain text content (e.g., HTML string)
+            content = new Blob([content], {type: data.contentType || 'text/html'});
+        }
+        uploadToSharePoint(data.folderKey, data.fileName, content, data.contentType)
             .then(function(result) {
                 event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: data.fileName }, '*');
             })
@@ -2116,6 +2128,7 @@
         clearActiveNav();
         var navHome = document.getElementById('navHome');
         if (navHome) navHome.classList.add('active');
+        loadMargemDashboard();
     }
 
     function openDashboard(type) {
@@ -2265,7 +2278,8 @@
             return;
         }
         block.style.display = 'block';
-        updateDiv.textContent = 'Atualizado: ' + (data.timestamp || '—');
+        var periodoText = data.periodo ? data.periodo + ' | ' : '';
+        updateDiv.textContent = periodoText + 'Atualizado: ' + (data.timestamp || '—');
         cardsDiv.innerHTML = '';
         var colors = { colisao: '#e8710a', cacem: '#1a73e8', lisboa: '#0d904f' };
         data.departments.forEach(function(dept) {
@@ -2317,7 +2331,7 @@
                 return;
             }
             var html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
-            html += '<thead><tr style="background: #f5f5f5;"><th style="padding: 8px 12px; text-align: left;">Nome</th><th style="padding: 8px 12px; text-align: right; width: 80px;">Tamanho</th><th style="padding: 8px 12px; text-align: right; width: 140px;">Data</th><th style="padding: 8px 12px; width: 80px; text-align: center;">Ações</th></tr></thead><tbody>';
+            html += '<thead><tr style="background: #f5f5f5;"><th style="padding: 8px 12px; text-align: left;">Nome</th><th style="padding: 8px 12px; text-align: right; width: 80px;">Tamanho</th><th style="padding: 8px 12px; text-align: right; width: 140px;">Data</th><th style="padding: 8px 12px; width: 110px; text-align: center;">Ações</th></tr></thead><tbody>';
             data.value.forEach(function(item) {
                 var isFolder = !!item.folder;
                 var size = item.size ? formatFileSize(item.size) : '—';
@@ -2335,7 +2349,11 @@
                 html += '<td style="padding: 8px 12px; text-align: right; color: var(--text-secondary);">' + date + '</td>';
                 var actions = '';
                 if (!isFolder && item.webUrl) {
-                    actions += '<a href="' + item.webUrl + '" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-size: 14px; margin-right: 8px;" title="Abrir no SharePoint">🔗</a>';
+                    var folderPath = SP_CONFIG.folders[currentSpFolder] || SP_CONFIG.folders.geral;
+                    var spIdPath = '/sites/GestaoViaturas/' + SP_CONFIG.driveName + '/' + folderPath;
+                    var spFolderUrl = 'https://' + SP_CONFIG.siteUrl + SP_CONFIG.sitePath + '/' + SP_CONFIG.driveName + '/Forms/AllItems.aspx?id=' + encodeURIComponent(spIdPath);
+                    actions += '<a href="' + spFolderUrl + '" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-size: 14px; margin-right: 8px;" title="Abrir pasta no SharePoint">📂</a>';
+                    actions += '<a href="' + item.webUrl + '" target="_blank" style="color: var(--text-secondary); text-decoration: none; font-size: 14px; margin-right: 8px;" title="Download do ficheiro">⬇️</a>';
                 }
                 if (currentUserPermissions && currentUserPermissions.role === 'admin') {
                     actions += '<button onclick="confirmDeleteFile(\'' + item.id + '\', \'' + item.name.replace(/'/g, "\\'") + '\')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;" title="Eliminar do SharePoint">🗑️</button>';

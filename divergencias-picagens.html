@@ -864,18 +864,23 @@ async function generate() {
         // "Validate & Save to SharePoint" button
         var saveBtn = document.createElement('button');
         saveBtn.className = 'btn-download';
+        saveBtn.id = 'divSaveSpBtn';
         saveBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;font-size:1em;background:#27ae60;';
         saveBtn.textContent = 'Validar e Guardar no SharePoint';
         saveBtn.onclick = function() {
             if (!confirm('Confirma que validou os relatórios e pretende guardá-los no SharePoint?')) return;
+            saveBtn.textContent = 'A guardar no SharePoint...';
+            saveBtn.style.background = '#666';
+            saveBtn.disabled = true;
+            // Reset counters
+            divSpSaveCount = 0;
+            divSpSaveTotal = generatedReports.length;
+            divSpSaveErrors = [];
             var ts = getTimestamp();
             generatedReports.forEach(function(r) {
                 var spGenName = 'Validacao_' + r.safe.charAt(0).toUpperCase() + r.safe.slice(1) + '_' + ts + '.html';
                 saveGeneratedHtmlToSharePoint(spGenName, r.html);
             });
-            saveBtn.textContent = 'Guardado no SharePoint!';
-            saveBtn.style.background = '#888';
-            saveBtn.disabled = true;
         };
         cardsDiv.appendChild(saveBtn);
 
@@ -967,32 +972,46 @@ function saveFileToSharePoint(file, folderKey, spName) {
             contentType: file.type
         }, '*');
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsDataURL(file);
 }
 
 function saveGeneratedHtmlToSharePoint(fileName, htmlContent) {
     if (!window.parent || window.parent === window) return;
-    var blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        window.parent.postMessage({
-            type: 'saveToSharePoint',
-            folderKey: 'divergencias_gerados',
-            fileName: fileName,
-            fileContent: e.target.result,
-            contentType: 'text/html'
-        }, '*');
-    };
-    reader.readAsArrayBuffer(blob);
+    window.parent.postMessage({
+        type: 'saveToSharePoint',
+        folderKey: 'divergencias_gerados',
+        fileName: fileName,
+        fileContent: htmlContent,
+        contentType: 'text/html'
+    }, '*');
 }
 
 // Listen for save results from parent
+var divSpSaveCount = 0;
+var divSpSaveTotal = 0;
+var divSpSaveErrors = [];
 window.addEventListener('message', function(event) {
     if (!event.data || event.data.type !== 'saveToSharePointResult') return;
+    divSpSaveCount++;
     if (event.data.success) {
         console.log('SharePoint: ficheiro guardado - ' + event.data.fileName);
     } else {
         console.warn('SharePoint: erro ao guardar - ' + event.data.error);
+        divSpSaveErrors.push(event.data.fileName + ': ' + event.data.error);
+    }
+    // Update button when all saves complete
+    if (divSpSaveCount >= divSpSaveTotal && divSpSaveTotal > 0) {
+        var btn = document.getElementById('divSaveSpBtn');
+        if (btn) {
+            if (divSpSaveErrors.length === 0) {
+                btn.textContent = 'Guardado no SharePoint com sucesso!';
+                btn.style.background = '#0d904f';
+            } else {
+                btn.textContent = 'Erro ao guardar (' + divSpSaveErrors.length + ' ficheiro(s))';
+                btn.style.background = '#d93025';
+                alert('Erros ao guardar no SharePoint:\n' + divSpSaveErrors.join('\n'));
+            }
+        }
     }
 });
 </script>

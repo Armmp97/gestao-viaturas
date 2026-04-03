@@ -242,9 +242,10 @@ function parseSection(ws, cfg, range) {
 }
 
 // ====== HTML GENERATOR ======
-function genHTML(dept, data){
+function genHTML(dept, data, periodo){
   const d=data, c=dept;
   const today=new Date().toLocaleDateString('pt-PT');
+  const per = periodo || '';
 
   let vRows=d.vDet.map(x=>`
     <tr><td style="width:3px;padding:0;background:${c.accent}"></td>
@@ -306,7 +307,7 @@ function genHTML(dept, data){
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teste de Margem — ${c.label}</title>
+<title>Teste de Margem — ${c.label}${per ? ' — ' + per : ''}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
@@ -333,7 +334,7 @@ function genHTML(dept, data){
     <div style="background:${c.headerGrad};border-radius:12px;padding:26px 28px;color:white;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
       <div>
         <div style="font-size:22px;font-weight:800">Teste de Margem</div>
-        <div style="font-size:13px;opacity:0.7;margin-top:2px">${c.label}</div>
+        <div style="font-size:13px;opacity:0.7;margin-top:2px">${c.label}${per ? ' — ' + per : ''}</div>
       </div>
       <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:10px;padding:10px 22px;text-align:center">
         <div style="font-size:24px;font-weight:800">${fp(d.mp)}</div>
@@ -524,11 +525,53 @@ document.getElementById('fileInput').addEventListener('change', function(e){
       let allLogs=[];
       const generated=[];
 
+      // Extrair mês de referência do Excel (procura nas primeiras linhas e no nome do sheet)
+      var mesReferencia = '';
+      var mesesPT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      // Try sheet name first
+      var sheetName = wb.SheetNames[0] || '';
+      mesesPT.forEach(function(m) { if (sheetName.toLowerCase().includes(m.toLowerCase())) mesReferencia = m; });
+      // Then scan first 5 rows of columns A-D for month references
+      if (!mesReferencia) {
+        for (var sr = 1; sr <= 5; sr++) {
+          ['A','B','C','D'].forEach(function(col) {
+            var txt = getCellText(ws, col, sr);
+            if (txt && !mesReferencia) {
+              mesesPT.forEach(function(m) { if (txt.toLowerCase().includes(m.toLowerCase())) mesReferencia = m; });
+              // Also check for date-like patterns (e.g., "Mar 2026", "03/2026")
+              if (!mesReferencia) {
+                var dateMatch = txt.match(/(\d{1,2})[\/\-](\d{4})/);
+                if (dateMatch) { var mi = parseInt(dateMatch[1]) - 1; if (mi >= 0 && mi < 12) mesReferencia = mesesPT[mi] + ' ' + dateMatch[2]; }
+              }
+              var shortMonths = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+              if (!mesReferencia) {
+                shortMonths.forEach(function(sm, idx) {
+                  if (txt.toLowerCase().includes(sm) && txt.length < 30) mesReferencia = mesesPT[idx];
+                });
+              }
+            }
+          });
+        }
+      }
+      // Extract year if present near month
+      var anoReferencia = '';
+      if (mesReferencia) {
+        for (var yr = 1; yr <= 5; yr++) {
+          ['A','B','C','D'].forEach(function(col) {
+            var txt = getCellText(ws, col, yr);
+            var ym = txt.match(/(20\d{2})/);
+            if (ym && !anoReferencia) anoReferencia = ym[1];
+          });
+        }
+      }
+      if (!anoReferencia) anoReferencia = new Date().getFullYear();
+      var periodoLabel = mesReferencia ? mesReferencia + ' ' + anoReferencia : 'Período não identificado';
+
       DEPT_CFG.forEach((cfg,i)=>{
         const parsed=parseSection(ws,cfg,range);
-        const html=genHTML(cfg,parsed);
+        const html=genHTML(cfg,parsed,periodoLabel);
         const fname='Margem_'+cfg.key.charAt(0).toUpperCase()+cfg.key.slice(1)+'.html';
-        generated.push({cfg,parsed,html,fname});
+        generated.push({cfg,parsed,html,fname,periodo:periodoLabel});
         allLogs.push(`\n=== ${cfg.label} ===`);
         allLogs=allLogs.concat(parsed.log);
       });
@@ -543,7 +586,7 @@ document.getElementById('fileInput').addEventListener('change', function(e){
             <div class="result-dot" style="background:${g.cfg.accent}"></div>
             <div>
               <div class="result-name">${g.cfg.label}</div>
-              <div class="result-margin">Margem: ${fp(g.parsed.mp)} | Vendas: ${fmt(g.parsed.vT)}</div>
+              <div class="result-margin">${periodoLabel} | Margem: ${fp(g.parsed.mp)} | Vendas: ${fmt(g.parsed.vT)}</div>
             </div>
           </div>
           <button class="dl-btn" id="dl-${i}">Pré-visualizar</button>`;
@@ -568,6 +611,7 @@ document.getElementById('fileInput').addEventListener('change', function(e){
       dashSection.style.cssText='margin-top:20px;padding:16px;background:#f0f7ff;border:1px solid #b3d4fc;border-radius:10px;';
       var dashPayload = {
         timestamp: new Date().toLocaleString('pt-PT'),
+        periodo: periodoLabel,
         departments: generated.map(function(g) {
           return {
             key: g.cfg.key,
@@ -600,6 +644,13 @@ document.getElementById('fileInput').addEventListener('change', function(e){
       dashSection.querySelector('#publishDashBtn').addEventListener('click', function() {
         if (!confirm('Confirma que validou os relatórios?\n\nOs dados serão publicados no dashboard e guardados no SharePoint.')) return;
         var btn = this;
+        btn.textContent = 'A publicar e guardar...';
+        btn.style.background = '#666';
+        btn.disabled = true;
+        // Reset counters
+        spSaveCount = 0;
+        spSaveTotal = generated.length;
+        spSaveErrors = [];
         // 1. Publish to dashboard via postMessage
         if (window.parent && window.parent !== window) {
           window.parent.postMessage({ type: 'margemDashboardUpdate', payload: dashPayload }, '*');
@@ -611,9 +662,6 @@ document.getElementById('fileInput').addEventListener('change', function(e){
           var spGenName = g.fname.substring(0, dotIdx) + '_' + ts + '.html';
           saveGeneratedHtmlToSharePoint(spGenName, g.html);
         });
-        btn.textContent = 'Validado, publicado e guardado!';
-        btn.style.background = '#888';
-        btn.disabled = true;
       });
 
       // Debug log (click status to toggle)
@@ -657,32 +705,46 @@ function saveFileToSharePoint(file, folderKey, spName) {
             contentType: file.type
         }, '*');
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsDataURL(file);
 }
 
 function saveGeneratedHtmlToSharePoint(fileName, htmlContent) {
     if (!window.parent || window.parent === window) return;
-    var blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        window.parent.postMessage({
-            type: 'saveToSharePoint',
-            folderKey: 'margem_gerados',
-            fileName: fileName,
-            fileContent: e.target.result,
-            contentType: 'text/html'
-        }, '*');
-    };
-    reader.readAsArrayBuffer(blob);
+    window.parent.postMessage({
+        type: 'saveToSharePoint',
+        folderKey: 'margem_gerados',
+        fileName: fileName,
+        fileContent: htmlContent,
+        contentType: 'text/html'
+    }, '*');
 }
 
 // Listen for save results from parent
+var spSaveCount = 0;
+var spSaveTotal = 0;
+var spSaveErrors = [];
 window.addEventListener('message', function(event) {
     if (!event.data || event.data.type !== 'saveToSharePointResult') return;
+    spSaveCount++;
     if (event.data.success) {
         console.log('SharePoint: ficheiro guardado - ' + event.data.fileName);
     } else {
         console.warn('SharePoint: erro ao guardar - ' + event.data.error);
+        spSaveErrors.push(event.data.fileName + ': ' + event.data.error);
+    }
+    // Update button when all saves complete
+    if (spSaveCount >= spSaveTotal && spSaveTotal > 0) {
+        var btn = document.getElementById('publishDashBtn');
+        if (btn) {
+            if (spSaveErrors.length === 0) {
+                btn.textContent = 'Validado, publicado e guardado no SharePoint!';
+                btn.style.background = '#0d904f';
+            } else {
+                btn.textContent = 'Publicado mas com erros no SharePoint (' + spSaveErrors.length + ')';
+                btn.style.background = '#d93025';
+                alert('Erros ao guardar no SharePoint:\n' + spSaveErrors.join('\n'));
+            }
+        }
     }
 });
 </script>

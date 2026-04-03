@@ -1502,13 +1502,25 @@
             var loc = getVehicleLocation(v.matricula);
             var locClass = loc === 'Lisboa' ? 'lisboa' : 'cacem';
             const tr = document.createElement('tr');
-            tr.innerHTML = '<td class="matricula-cell">' + v.matricula + '</td><td>' + v.modelo + '</td><td><span class="location-badge ' + locClass + '">' + loc + '</span></td><td>' + statusHtml + '</td><td>' +
+            var locHtml = '<select onchange="changeVehicleLocation(\'' + v.matricula + '\', this.value)" style="padding:3px 8px;border:1px solid var(--gray-300);border-radius:12px;font-size:12px;font-weight:600;cursor:pointer;' +
+                (loc === 'Lisboa' ? 'background:var(--lisboa);color:white;' : 'background:var(--cacem);color:white;') + '">';
+            LOCALIZACOES.forEach(function(l) {
+                locHtml += '<option value="' + l + '"' + (l === loc ? ' selected' : '') + '>' + l + '</option>';
+            });
+            locHtml += '</select>';
+            tr.innerHTML = '<td class="matricula-cell">' + v.matricula + '</td><td>' + v.modelo + '</td><td>' + locHtml + '</td><td>' + statusHtml + '</td><td>' +
                 (!activeBooking ? '<button class="btn btn-primary btn-sm" onclick="startBookingForVehicle(\'' + v.matricula + '\')">Agendar</button>' : '') +
                 (activeBooking && activeBooking.estado === 'Agendado' ? '<button class="btn btn-success btn-sm" onclick="startPickupFromBooking(\'' + activeBooking.id + '\')">Levantamento</button>' : '') +
                 (activeBooking && activeBooking.estado === 'Levantado' ? '<button class="btn btn-warning btn-sm" onclick="startReturnFromBooking(\'' + activeBooking.id + '\')">Devolução</button>' : '') +
                 '</td>';
             tbody.appendChild(tr);
         });
+    }
+
+    function changeVehicleLocation(matricula, newLoc) {
+        setVehicleLocation(matricula, newLoc);
+        showToast('Localização de ' + matricula + ' alterada para ' + newLoc, 'success');
+        renderFleet();
     }
 
     function startBookingForVehicle(matricula) {
