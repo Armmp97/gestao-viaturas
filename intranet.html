@@ -214,6 +214,29 @@
             text-align: center;
         }
 
+        /* ---- Sidebar Toggle Button ---- */
+        .sidebar-toggle {
+            display: none;
+            background: none; border: none;
+            cursor: pointer; padding: 6px;
+            margin-right: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            color: var(--text-primary);
+        }
+        .sidebar-toggle:hover { background: var(--content-bg); }
+        .sidebar-toggle svg { width: 22px; height: 22px; }
+        .sidebar-toggle.visible { display: flex; align-items: center; }
+
+        /* ---- Sidebar Overlay (mobile) ---- */
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 85;
+        }
+        .sidebar-overlay.active { display: block; }
+
         /* ---- Main Content ---- */
         .app-main {
             margin-top: var(--header-height);
@@ -325,6 +348,45 @@
         }
         .breadcrumb a:hover { text-decoration: underline; }
         .breadcrumb span { margin: 0 6px; color: var(--text-light); }
+
+        /* ======== RESPONSIVE / MOBILE ======== */
+        @media (max-width: 768px) {
+            .app-header { padding: 0 12px; }
+            .header-divider { margin: 0 10px; }
+            .header-title { font-size: 13px; }
+            .header-logout { display: none; }
+            .user-name { font-size: 12px; }
+            .user-role { display: none; }
+
+            .sidebar-toggle.visible { display: flex; }
+
+            .app-sidebar {
+                width: 280px;
+                transform: translateX(-100%);
+                z-index: 95;
+            }
+            .app-sidebar.mobile-open { transform: translateX(0); }
+            .app-sidebar.hidden { transform: translateX(-100%); }
+
+            .app-main { margin-left: 0 !important; }
+
+            .breadcrumb {
+                margin-left: 0 !important;
+                padding: 10px 16px;
+            }
+
+            .dashboard { padding: 20px 16px; }
+            .dashboard-welcome h1 { font-size: 22px; }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        /* Desktop sidebar toggle */
+        @media (min-width: 769px) {
+            .app-sidebar.desktop-hidden { transform: translateX(-100%); }
+        }
     </style>
 </head>
 <body>
@@ -347,8 +409,14 @@
 <!-- ======== APP CONTENT ======== -->
 <div id="appContent">
 
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <!-- Header -->
     <header class="app-header">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <img id="headerLogo" class="header-logo" alt="DomusCar" onclick="goHome()">
         <div class="header-divider"></div>
         <span class="header-title" id="headerTitle">Intranet</span>
@@ -524,15 +592,59 @@
 
     // ---- Navigation ----
     let currentModule = null;
+    let sidebarVisible = false;
+
+    function isMobile() { return window.innerWidth <= 768; }
+
+    function toggleSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        var main = document.getElementById('mainContent');
+
+        if (isMobile()) {
+            sidebarVisible = !sidebarVisible;
+            if (sidebarVisible) {
+                sidebar.classList.add('mobile-open');
+                sidebar.classList.remove('hidden');
+                overlay.classList.add('active');
+            } else {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+            }
+        } else {
+            sidebarVisible = !sidebarVisible;
+            if (sidebarVisible) {
+                sidebar.classList.remove('desktop-hidden');
+                sidebar.classList.remove('hidden');
+                main.classList.remove('full');
+            } else {
+                sidebar.classList.add('desktop-hidden');
+                main.classList.add('full');
+            }
+        }
+    }
+
+    function closeMobileSidebar() {
+        if (isMobile()) {
+            sidebarVisible = false;
+            document.getElementById('sidebar').classList.remove('mobile-open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+    }
 
     function goHome() {
         currentModule = null;
         document.getElementById('dashboardView').style.display = 'block';
         document.getElementById('moduleFrame').classList.remove('active');
         document.getElementById('sidebar').classList.add('hidden');
+        document.getElementById('sidebar').classList.remove('mobile-open');
+        document.getElementById('sidebar').classList.remove('desktop-hidden');
+        document.getElementById('sidebarOverlay').classList.remove('active');
         document.getElementById('mainContent').classList.add('full');
         document.getElementById('breadcrumb').style.display = 'none';
         document.getElementById('headerTitle').textContent = 'Intranet';
+        document.getElementById('sidebarToggle').classList.remove('visible');
+        sidebarVisible = false;
         clearActiveNav();
     }
 
@@ -545,19 +657,33 @@
         if (!mod || !mod.url) return;
 
         currentModule = id;
+        closeMobileSidebar();
+
         document.getElementById('dashboardView').style.display = 'none';
-        document.getElementById('sidebar').classList.remove('hidden');
-        document.getElementById('mainContent').classList.remove('full');
         document.getElementById('breadcrumb').style.display = 'block';
         document.getElementById('breadcrumbCurrent').textContent = mod.title;
         document.getElementById('headerTitle').textContent = mod.title;
+        document.getElementById('sidebarToggle').classList.add('visible');
 
-        const frame = document.getElementById('moduleFrame');
+        var sidebar = document.getElementById('sidebar');
+        var main = document.getElementById('mainContent');
+
+        if (isMobile()) {
+            sidebar.classList.add('hidden');
+            main.classList.add('full');
+            sidebarVisible = false;
+        } else {
+            sidebar.classList.remove('hidden');
+            main.classList.remove('full');
+            sidebarVisible = true;
+        }
+
+        var frame = document.getElementById('moduleFrame');
         frame.src = mod.url;
         frame.classList.add('active');
 
         clearActiveNav();
-        const navEl = document.getElementById('nav' + id.charAt(0).toUpperCase() + id.slice(1));
+        var navEl = document.getElementById('nav' + id.charAt(0).toUpperCase() + id.slice(1));
         if (navEl) navEl.classList.add('active');
     }
 
