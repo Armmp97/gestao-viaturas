@@ -262,7 +262,8 @@
             transition: left 0.3s ease;
         }
 
-        .breadcrumb.sidebar-hidden {
+        .breadcrumb.sidebar-hidden,
+        .breadcrumb.full {
             left: 0;
         }
 
@@ -312,7 +313,7 @@
         .dashboard {
             padding: 24px;
             display: grid;
-            grid-template-columns: 1fr minmax(300px, 400px);
+            grid-template-columns: minmax(250px, 320px) 1fr;
             gap: 24px;
         }
 
@@ -336,7 +337,7 @@
             border-bottom: 1px solid var(--border-color);
         }
         .feed-messages {
-            height: 400px; overflow-y: auto;
+            height: 300px; overflow-y: auto;
             margin-bottom: 16px;
         }
         .feed-message {
@@ -393,6 +394,29 @@
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-collapse-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kpi-collapse-btn:hover {
+            background: var(--content-bg);
+        }
+
+        .kpi-section.collapsed .kpi-content,
+        .kpi-section.collapsed .kpi-tabs {
+            display: none;
         }
 
         .kpi-tabs {
@@ -623,13 +647,21 @@
             overflow: hidden;
         }
 
+        .kpi-tecnico-card.cacém-border { border-left: 4px solid #3a6b4c; }
+        .kpi-tecnico-card.lisboa-border { border-left: 4px solid #1e3a5f; }
+        .kpi-tecnico-card.colisao-border { border-left: 4px solid #e37400; }
+
         .kpi-tecnico-name {
-            background: #0d904f;
+            background: #2d3e50;
             color: white;
             padding: 10px 12px;
             font-weight: 700;
             font-size: 12px;
         }
+
+        .kpi-tecnico-name.cacém-theme { background: #3a6b4c; }
+        .kpi-tecnico-name.lisboa-theme { background: #1e3a5f; }
+        .kpi-tecnico-name.colisao-theme { background: #2d3e50; }
 
         .kpi-tecnico-table {
             width: 100%;
@@ -660,12 +692,16 @@
         .kpi-tecnico-summary-item {
             padding: 10px;
             text-align: center;
-            background: #0d904f;
+            background: #2d3e50;
             color: white;
             font-size: 11px;
             font-weight: 700;
-            border-right: 1px solid #0a6d3d;
+            border-right: 1px solid rgba(255,255,255,0.15);
         }
+
+        .kpi-tecnico-summary.cacém-theme .kpi-tecnico-summary-item { background: #3a6b4c; border-right-color: #2d5a3d; }
+        .kpi-tecnico-summary.lisboa-theme .kpi-tecnico-summary-item { background: #1e3a5f; border-right-color: #162d4a; }
+        .kpi-tecnico-summary.colisao-theme .kpi-tecnico-summary-item { background: #2d3e50; border-right-color: #243445; }
 
         .kpi-tecnico-summary-item:last-child {
             border-right: none;
@@ -797,7 +833,16 @@
             display: none;
         }
 
-        .module-frame.visible {
+        .module-frame.visible,
+        .module-frame.active {
+            display: block;
+        }
+
+        .settings-page {
+            display: none;
+        }
+
+        .settings-page.active {
             display: block;
         }
 
@@ -884,6 +929,8 @@
         <ul class="sidebar-nav">
             <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Gestão de Viaturas</a></li>
             <li><a onclick="openModule('picagens')" id="navPicagens"><span class="nav-icon">⏱️</span> Divergências / Picagens</a></li>
+            <li id="navMargemLi" style="display:none;"><a onclick="openModule('margem')" id="navMargem"><span class="nav-icon">💰</span> Cálculo Margem Provisória</a></li>
+            <li id="navDivergenciasLi" style="display:none;"><a onclick="openModule('divergencias')" id="navDivergencias"><span class="nav-icon">📊</span> Divergências Picagens OG/2Smart</a></li>
             <li><a class="disabled"><span class="nav-icon">📋</span> Ordens de Serviço</a></li>
             <li><a class="disabled"><span class="nav-icon">📦</span> Stock / Peças</a></li>
         </ul>
@@ -933,7 +980,7 @@
             <div class="kpi-section">
                 <div class="kpi-header">
                     <div>
-                        <div class="kpi-title">Dashboard KPIs</div>
+                        <div class="kpi-title"><span>Dashboard KPIs</span><button class="kpi-collapse-btn" onclick="toggleKpiCollapse()">Minimizar</button></div>
                         <div class="kpi-tabs">
                             <button class="kpi-tab active" onclick="switchKpiTab('colisao')">Colisão</button>
                             <button class="kpi-tab" onclick="switchKpiTab('cacém')">Mecânica Cacém</button>
@@ -1293,9 +1340,36 @@
     };
 
     // ======== FUNCTIONS ========
-    function getColorClass(value, isPercent = true) {
-        if (!isPercent) return '';
+    function getColorClass(value, type) {
+        if (!type) return '';
+        if (type === 'ef') {
+            if (value >= 100) return 'kpi-percent-green';
+            if (value >= 50) return 'kpi-percent-orange';
+            return 'kpi-percent-red';
+        }
+        if (type === 'ut') {
+            if (value >= 90) return 'kpi-percent-green';
+            if (value >= 70) return 'kpi-percent-orange';
+            return 'kpi-percent-red';
+        }
+        // fallback
         if (value >= 100) return 'kpi-percent-green';
+        if (value >= 80) return 'kpi-percent-orange';
+        return 'kpi-percent-red';
+    }
+
+    function getColorClassForRow(kpiName, value) {
+        if (value === null || value === undefined) return '';
+        var lower = kpiName.toLowerCase();
+        if (lower.includes('eficiência') || lower.includes('produtiva')) return getColorClass(value, 'ef');
+        if (lower.includes('taxa') || lower.includes('utilização')) return getColorClass(value, 'ut');
+        return '';
+    }
+
+    function getUtilColor(value) {
+        if (value === null || value === undefined) return '';
+        if (value >= 100) return 'kpi-percent-green';
+        if (value >= 90) return 'kpi-percent-green';
         if (value >= 80) return 'kpi-percent-orange';
         return 'kpi-percent-red';
     }
@@ -1313,8 +1387,12 @@
     }
 
     function switchKpiTab(tab) {
-        document.querySelectorAll('.kpi-tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
+        document.querySelectorAll('.kpi-tab').forEach(t => {
+            t.classList.remove('active');
+            if (t.textContent.toLowerCase().includes(tab === 'colisao' ? 'colisão' : tab === 'cacém' ? 'cacém' : tab === 'lisboa' ? 'lisboa' : 'comparação')) {
+                t.classList.add('active');
+            }
+        });
         renderKpiContent(tab);
     }
 
@@ -1346,15 +1424,19 @@
         KPI_DATA.colisao.prepPintura.forEach(row => {
             html += '<tr>';
             html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
-            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
             if (row.colorized) {
-                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+                ['s1','s2','s3','s4','s5'].forEach(k => {
+                    var cls = row[k] !== null ? getColorClassForRow(row.kpi, row[k]) : '';
+                    html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + formatValue(row[k], row.unit) + '%</td>';
+                });
+                html += '<td class="kpi-mes-cell ' + getColorClassForRow(row.kpi, row.mes) + '">' + formatValue(row.mes, row.unit) + '%</td>';
             } else {
-                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+                html += '<td>' + formatValue(row.s1, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s2, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s3, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s4, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s5, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
             }
             html += '</tr>';
         });
@@ -1367,15 +1449,19 @@
         KPI_DATA.colisao.chapa.forEach(row => {
             html += '<tr>';
             html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
-            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
             if (row.colorized) {
-                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+                ['s1','s2','s3','s4','s5'].forEach(k => {
+                    var cls = row[k] !== null ? getColorClassForRow(row.kpi, row[k]) : '';
+                    html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + formatValue(row[k], row.unit) + '%</td>';
+                });
+                html += '<td class="kpi-mes-cell ' + getColorClassForRow(row.kpi, row.mes) + '">' + formatValue(row.mes, row.unit) + '%</td>';
             } else {
-                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+                html += '<td>' + formatValue(row.s1, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s2, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s3, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s4, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s5, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
             }
             html += '</tr>';
         });
@@ -1388,15 +1474,19 @@
         KPI_DATA.colisao.global.forEach(row => {
             html += '<tr>';
             html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
-            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
             if (row.colorized) {
-                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+                ['s1','s2','s3','s4','s5'].forEach(k => {
+                    var cls = row[k] !== null ? getColorClassForRow(row.kpi, row[k]) : '';
+                    html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + formatValue(row[k], row.unit) + '%</td>';
+                });
+                html += '<td class="kpi-mes-cell ' + getColorClassForRow(row.kpi, row.mes) + '">' + formatValue(row.mes, row.unit) + '%</td>';
             } else {
-                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+                html += '<td>' + formatValue(row.s1, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s2, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s3, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s4, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s5, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
             }
             html += '</tr>';
         });
@@ -1426,16 +1516,17 @@
         html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
         html += '<div class="kpi-tecnico-grid">';
         KPI_DATA.colisao.tecnicos.forEach(tec => {
-            html += '<div class="kpi-tecnico-card">';
-            html += '<div class="kpi-tecnico-name">' + tec.name + ' (' + tec.office + ')</div>';
-            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
+            html += '<div class="kpi-tecnico-card colisao-border">';
+            html += '<div class="kpi-tecnico-name colisao-theme">' + tec.name + ' (' + tec.office + ')</div>';
+            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem.</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
             tec.weeks.forEach(w => {
-                html += '<tr><td>' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) : '—') + '</td><td>' + (w.u !== null ? w.u.toFixed(0) + '%' : '—') + '</td></tr>';
+                var uCls = w.u !== null ? getUtilColor(w.u) : '';
+                html += '<tr><td>S' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) + 'h' : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) + 'h' : '—') + '</td><td' + (uCls ? ' class="' + uCls + '"' : '') + '>' + (w.u !== null ? w.u.toFixed(1) + '%' : '—') + '</td></tr>';
             });
             html += '</tbody></table>';
-            html += '<div class="kpi-tecnico-summary">';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Ef. Produtiva</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(0) + '%</span></div>';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Utilização</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(0) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary colisao-theme">';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(1) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(1) + '%</span></div>';
             html += '</div></div>';
         });
         html += '</div></div>';
@@ -1464,15 +1555,19 @@
         KPI_DATA.cacém.kpis.forEach(row => {
             html += '<tr>';
             html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
-            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
             if (row.colorized) {
-                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+                ['s1','s2','s3','s4','s5'].forEach(k => {
+                    var cls = row[k] !== null ? getColorClassForRow(row.kpi, row[k]) : '';
+                    html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + formatValue(row[k], row.unit) + '%</td>';
+                });
+                html += '<td class="kpi-mes-cell ' + getColorClassForRow(row.kpi, row.mes) + '">' + formatValue(row.mes, row.unit) + '%</td>';
             } else {
-                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+                html += '<td>' + formatValue(row.s1, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s2, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s3, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s4, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s5, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
             }
             html += '</tr>';
         });
@@ -1502,16 +1597,17 @@
         html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
         html += '<div class="kpi-tecnico-grid">';
         KPI_DATA.cacém.tecnicos.forEach(tec => {
-            html += '<div class="kpi-tecnico-card">';
-            html += '<div class="kpi-tecnico-name">' + tec.name + '</div>';
-            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
+            html += '<div class="kpi-tecnico-card cacém-border">';
+            html += '<div class="kpi-tecnico-name cacém-theme">' + tec.name + '</div>';
+            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem.</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
             tec.weeks.forEach(w => {
-                html += '<tr><td>' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) : '—') + '</td><td>' + (w.u !== null ? w.u.toFixed(0) + '%' : '—') + '</td></tr>';
+                var uCls = w.u !== null ? getUtilColor(w.u) : '';
+                html += '<tr><td>S' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) + 'h' : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) + 'h' : '—') + '</td><td' + (uCls ? ' class="' + uCls + '"' : '') + '>' + (w.u !== null ? w.u.toFixed(1) + '%' : '—') + '</td></tr>';
             });
             html += '</tbody></table>';
-            html += '<div class="kpi-tecnico-summary">';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Ef. Produtiva</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(0) + '%</span></div>';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Utilização</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(0) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary cacém-theme">';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(1) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(1) + '%</span></div>';
             html += '</div></div>';
         });
         html += '</div></div>';
@@ -1540,15 +1636,19 @@
         KPI_DATA.lisboa.kpis.forEach(row => {
             html += '<tr>';
             html += '<td style="font-weight: 600;">' + row.kpi + '</td>';
-            html += '<td>' + formatValue(row.s1, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s2, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s3, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s4, row.unit) + '</td>';
-            html += '<td>' + formatValue(row.s5, row.unit) + '</td>';
             if (row.colorized) {
-                html += '<td class="kpi-mes-cell ' + getColorClass(row.mes) + '">' + formatValue(row.mes, row.unit) + '</td>';
+                ['s1','s2','s3','s4','s5'].forEach(k => {
+                    var cls = row[k] !== null ? getColorClassForRow(row.kpi, row[k]) : '';
+                    html += '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + formatValue(row[k], row.unit) + '%</td>';
+                });
+                html += '<td class="kpi-mes-cell ' + getColorClassForRow(row.kpi, row.mes) + '">' + formatValue(row.mes, row.unit) + '%</td>';
             } else {
-                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + '</td>';
+                html += '<td>' + formatValue(row.s1, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s2, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s3, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s4, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td>' + formatValue(row.s5, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
+                html += '<td class="kpi-mes-cell">' + formatValue(row.mes, row.unit) + (row.unit === 'h' ? 'h' : '') + '</td>';
             }
             html += '</tr>';
         });
@@ -1578,16 +1678,17 @@
         html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
         html += '<div class="kpi-tecnico-grid">';
         KPI_DATA.lisboa.tecnicos.forEach(tec => {
-            html += '<div class="kpi-tecnico-card">';
-            html += '<div class="kpi-tecnico-name">' + tec.name + '</div>';
-            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
+            html += '<div class="kpi-tecnico-card lisboa-border">';
+            html += '<div class="kpi-tecnico-name lisboa-theme">' + tec.name + '</div>';
+            html += '<table class="kpi-tecnico-table"><thead><tr><th>Sem.</th><th>HT</th><th>HD</th><th>Utilização</th></tr></thead><tbody>';
             tec.weeks.forEach(w => {
-                html += '<tr><td>' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) : '—') + '</td><td>' + (w.u !== null ? w.u.toFixed(0) + '%' : '—') + '</td></tr>';
+                var uCls = w.u !== null ? getUtilColor(w.u) : '';
+                html += '<tr><td>S' + w.s + '</td><td>' + (w.ht !== null ? w.ht.toFixed(1) + 'h' : '—') + '</td><td>' + (w.hd !== null ? w.hd.toFixed(1) + 'h' : '—') + '</td><td' + (uCls ? ' class="' + uCls + '"' : '') + '>' + (w.u !== null ? w.u.toFixed(1) + '%' : '—') + '</td></tr>';
             });
             html += '</tbody></table>';
-            html += '<div class="kpi-tecnico-summary">';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Ef. Produtiva</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(0) + '%</span></div>';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">Utilização</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(0) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary lisboa-theme">';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(1) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(1) + '%</span></div>';
             html += '</div></div>';
         });
         html += '</div></div>';
@@ -1623,7 +1724,8 @@
         html += '<div class="kpi-subsection-header">Rankings Individuais — Eficiência Produtiva</div>';
         html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Oficina</th><th>Valor</th></tr></thead><tbody>';
         KPI_DATA.comparacao.ranking_ef.forEach(row => {
-            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td ' + getColorClass(row.value) + '>' + row.value.toFixed(1) + '%</td></tr>';
+            var cls = getColorClass(row.value, 'ef');
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td' + (cls ? ' class="' + cls + '"' : '') + '>' + row.value.toFixed(1) + '%</td></tr>';
         });
         html += '</tbody></table><div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Meta: 100.0%</div></div>';
 
@@ -1632,7 +1734,8 @@
         html += '<div class="kpi-subsection-header">Rankings Individuais — Taxa de Utilização</div>';
         html += '<table class="kpi-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th>Oficina</th><th>Valor</th></tr></thead><tbody>';
         KPI_DATA.comparacao.ranking_ut.forEach(row => {
-            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td ' + getColorClass(row.value) + '>' + row.value.toFixed(1) + '%</td></tr>';
+            var cls = getColorClass(row.value, 'ut');
+            html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td' + (cls ? ' class="' + cls + '"' : '') + '>' + row.value.toFixed(1) + '%</td></tr>';
         });
         html += '</tbody></table><div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Meta: 85.0%</div></div>';
 
@@ -1659,13 +1762,6 @@
         return html;
     }
 
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('hidden');
-        overlay.classList.toggle('visible');
-    }
-
     // ======== COMMUNICATIONS FEED DATA ========
     const FEED_MESSAGES = [
         { from: 'André Pereira', initials: 'AP', time: 'Hoje', message: 'Reunião de coordenação amanhã às 10h' },
@@ -1678,11 +1774,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis']
+            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis','margem','divergencias']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis']
+            modules: ['viaturas','picagens','ordens','stock','equipa','documentos','comunicacoes','definicoes','relatorios','kpis','margem','divergencias']
         },
         '_default': {
             role: 'user', name: '',
@@ -1752,12 +1848,18 @@
         if (!currentUserPermissions) return;
         var adminSection = document.getElementById('adminSection');
         var adminNav = document.getElementById('adminNav');
+        var margemLi = document.getElementById('navMargemLi');
+        var divergenciasLi = document.getElementById('navDivergenciasLi');
         if (currentUserPermissions.role === 'admin') {
             if (adminSection) adminSection.style.display = 'block';
             if (adminNav) adminNav.style.display = 'block';
+            if (margemLi) margemLi.style.display = 'block';
+            if (divergenciasLi) divergenciasLi.style.display = 'block';
         } else {
             if (adminSection) adminSection.style.display = 'none';
             if (adminNav) adminNav.style.display = 'none';
+            if (margemLi) margemLi.style.display = 'none';
+            if (divergenciasLi) divergenciasLi.style.display = 'none';
         }
     }
 
@@ -1816,8 +1918,11 @@
 
     function goHome() {
         currentModule = null;
-        document.getElementById('dashboardView').style.display = 'flex';
-        document.getElementById('moduleFrame').classList.remove('active');
+        document.getElementById('dashboardView').style.display = 'grid';
+        var frame = document.getElementById('moduleFrame');
+        frame.classList.remove('active');
+        frame.classList.remove('visible');
+        frame.src = '';
         var sp = document.getElementById('settingsPage');
         if (sp) sp.classList.remove('active');
         document.getElementById('breadcrumb').style.display = 'none';
@@ -1835,7 +1940,9 @@
     function openModule(id) {
         const modules = {
             viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
-            picagens: { title: 'Divergências / Picagens', url: null }
+            picagens: { title: 'Divergências / Picagens', url: null },
+            margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
+            divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' }
         };
         const mod = modules[id];
         if (!mod) return;
@@ -1857,7 +1964,13 @@
         frame.src = mod.url;
         frame.classList.add('active');
 
+        var bc = document.getElementById('breadcrumb');
+        if (!desktopSidebarVisible) bc.classList.add('full');
+        else bc.classList.remove('full');
+
         clearActiveNav();
+        var navEl = document.getElementById('nav' + id.charAt(0).toUpperCase() + id.slice(1));
+        if (navEl) navEl.classList.add('active');
     }
 
     function openSettings() {
@@ -1907,6 +2020,18 @@
         }
         var el = document.getElementById('welcomeMsg');
         if (el) el.textContent = greeting + ', ' + firstName;
+    }
+
+    function toggleKpiCollapse() {
+        var section = document.querySelector('.kpi-section');
+        var btn = document.querySelector('.kpi-collapse-btn');
+        if (section.classList.contains('collapsed')) {
+            section.classList.remove('collapsed');
+            btn.textContent = 'Minimizar';
+        } else {
+            section.classList.add('collapsed');
+            btn.textContent = 'Expandir';
+        }
     }
 
     // ======== INIT ========

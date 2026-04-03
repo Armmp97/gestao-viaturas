@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gerador de Relatórios de Divergências</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#333;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:40px 20px}
+h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
+.subtitle{color:#666;font-size:0.9em;text-align:center;margin-bottom:30px}
+.upload-area{background:white;border-radius:12px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:20px}
+.upload-area h2{font-size:1.1em;color:#2980b9;margin-bottom:15px}
+.drop-zone{border:2px dashed #b8daff;border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:10px}
+.drop-zone:hover,.drop-zone.dragover{border-color:#2980b9;background:#f0f7ff}
+.drop-zone .icon{font-size:2em;margin-bottom:8px}
+.drop-zone p{color:#666;font-size:0.9em}
+.file-info{font-size:0.85em;color:#155724;background:#d4edda;padding:8px 12px;border-radius:6px;display:none}
+.btn{display:block;width:100%;padding:14px;background:#2980b9;color:white;border:none;border-radius:8px;font-size:1.1em;font-weight:700;cursor:pointer;margin-top:20px}
+.btn:hover{background:#2471a3}
+.btn:disabled{background:#bbb;cursor:not-allowed}
+.progress{display:none;margin-top:15px}
+.progress-bar{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:#2980b9;border-radius:3px;transition:width 0.3s}
+.progress-text{font-size:0.8em;color:#666;margin-top:5px;text-align:center}
+.results{display:none}
+.result-card{background:white;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.result-card .info{font-weight:600;font-size:0.95em}
+.result-card .info span{font-weight:400;color:#666;font-size:0.85em}
+.btn-download{padding:10px 20px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:0.9em;font-weight:600;cursor:pointer}
+.btn-download:hover{background:#219a52}
+.btn-back{display:block;text-align:center;color:#2980b9;font-size:0.9em;margin-top:15px;cursor:pointer;text-decoration:underline}
+.error{background:#f8d7da;color:#721c24;padding:12px;border-radius:8px;margin-top:15px;display:none}
+</style>
+</head><body>
+<div class="container">
+<h1>Relatório de Divergências de Picagens</h1>
+<p class="subtitle">Walkingarage, Lda. · 2Smart vs Officegest</p>
+
+<div id="uploadScreen">
+<div class="upload-area">
+<h2>PDF do 2Smart</h2>
+<div class="drop-zone" id="pdfZone"><div class="icon">📋</div><p>Arraste o PDF aqui ou clique para selecionar</p></div>
+<input type="file" id="pdfInput" accept=".pdf" style="display:none">
+<div class="file-info" id="pdfInfo"></div>
+</div>
+<div class="upload-area">
+<h2>Excel do Officegest</h2>
+<div class="drop-zone" id="xlsxZone"><div class="icon">📊</div><p>Arraste o Excel aqui ou clique para selecionar</p></div>
+<input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none">
+<div class="file-info" id="xlsxInfo"></div>
+</div>
+<button class="btn" id="generateBtn" disabled>Gerar Relatórios</button>
+<div class="progress" id="progress"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div><p class="progress-text" id="progressText">A processar...</p></div>
+<div class="error" id="errorMsg"></div>
+</div>
+
+<div id="resultsScreen" class="results">
+<div class="upload-area" style="text-align:center">
+<h2 style="margin-bottom:5px">Relatórios gerados com sucesso!</h2>
+<p style="color:#666;font-size:0.85em;margin-bottom:20px">Descarregue os 3 HTMLs e envie cada um ao respetivo coordenador.</p>
+<div id="resultCards"></div>
+<div class="btn-back" id="backBtn">Importar novos ficheiros</div>
+</div>
+</div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURAÇÃO (idêntica ao script Python)
+// ============================================================
+const MY_EMAIL = "recursoshumanos@domuscar.com";
+const CC_EMAILS = "andre.pereira@domuscar.com,vanessa.borges@domuscar.com,claudia.pedro@domuscar.com";
+const COORDINATORS = {
+    "Colisão": {nome: "Mario Peres", email: "colisao@domuscar.com"},
+    "Mecânica Cacém": {nome: "Jose Rodriguez", email: "jose.rodriguez@domuscar.com"},
+    "Mecânica Lisboa": {nome: "Fabio Ramalho", email: "fabio.ramalho@domuscar.com"},
+};
+const UNITS = {
+    "Colisão": {
+        colaboradores: ["Carlos Miguel Fernandes Gonçalves Antunes","Diogo Henrique Gomes Fernandes","Djeison Miguel Gonçalves Barbosa Amado","Gyanu Pujara","José Avelino da Cruz Fernandes","José João Ferreira Borges","João Paulo São Pedro Bizarro","Nuno Alexandre Carvalho Montês","Pedro Filipe de Castro Jana","Vitor Manuel Vilarinho Soutilha"],
+        horarios: {},
+        nota_horario: "Sem horário rígido, mínimo 8h diárias"
+    },
+    "Mecânica Cacém": {
+        colaboradores: ["Arnaldo José Carvalho Brites da Cruz","Edmilson Jorge Pereira Fernandes","Filipe José Reis Bonifácio","Gonçalo Miguel Palrinhas Matos"],
+        horarios: {"Gonçalo Miguel Palrinhas Matos":["09:00","13:00","14:00","18:00"],"Filipe José Reis Bonifácio":["09:00","13:00","14:00","18:00"],"Arnaldo José Carvalho Brites da Cruz":["08:30","12:30","13:30","17:30"],"Edmilson Jorge Pereira Fernandes":["08:30","12:30","13:30","17:30"]}
+    },
+    "Mecânica Lisboa": {
+        colaboradores: ["Emanuel Antonio de Oliveira Alves Gonçalves","Jorge Miguel Alves Silva","Sérgio Fernando Migueis Pereira"],
+        horarios: {"Emanuel Antonio de Oliveira Alves Gonçalves":["08:30","12:30","13:30","17:30"],"Jorge Miguel Alves Silva":["08:30","12:30","13:30","17:30"],"Sérgio Fernando Migueis Pereira":["08:30","12:30","13:30","17:30"]}
+    }
+};
+
+let pdfFile = null, xlsxFile = null;
+let DATE_STR = "";
+
+// ============================================================
+// UI SETUP
+// ============================================================
+function initUI() {
+    if(typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+    setupDrop('pdfZone','pdfInput','pdf');
+    setupDrop('xlsxZone','xlsxInput','xlsx');
+    document.getElementById('generateBtn').addEventListener('click', generate);
+    document.getElementById('backBtn').addEventListener('click', function() {
+        document.getElementById('uploadScreen').style.display='block';
+        document.getElementById('resultsScreen').style.display='none';
+        pdfFile=null; xlsxFile=null;
+        document.getElementById('pdfInfo').style.display='none';
+        document.getElementById('xlsxInfo').style.display='none';
+        document.getElementById('generateBtn').disabled=true;
+    });
+}
+function setupDrop(zoneId, inputId, type) {
+    var zone = document.getElementById(zoneId);
+    var input = document.getElementById(inputId);
+    if(!zone || !input) return;
+    zone.addEventListener('click', function() { input.click(); });
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e) { e.preventDefault(); zone.classList.remove('dragover'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], type); });
+    input.addEventListener('change', function(e) { if(e.target.files[0]) handleFile(e.target.files[0], type); });
+}
+function handleFile(file, type) {
+    if(type==='pdf') { pdfFile=file; document.getElementById('pdfInfo').textContent='OK: '+file.name; document.getElementById('pdfInfo').style.display='block'; }
+    else { xlsxFile=file; document.getElementById('xlsxInfo').textContent='OK: '+file.name; document.getElementById('xlsxInfo').style.display='block'; }
+    document.getElementById('generateBtn').disabled = !(pdfFile && xlsxFile);
+}
+if(document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initUI); }
+else { initUI(); }
+
+function setProgress(pct, text) {
+    document.getElementById('progress').style.display='block';
+    document.getElementById('progressFill').style.width=pct+'%';
+    document.getElementById('progressText').textContent=text;
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function hm2min(s) {
+    if(!s) return null;
+    var p = s.trim().split(':');
+    if(p.length < 2) return null;
+    return parseInt(p[0])*60 + parseInt(p[1]);
+}
+function fmt(minutes) {
+    if(minutes === null || minutes === undefined || minutes <= 0) return "0h 00m";
+    var h = Math.floor(minutes / 60), m = Math.round(minutes) % 60;
+    return h + "h " + (m < 10 ? "0" : "") + m + "m";
+}
+function fmtTime(min) {
+    var h = Math.floor(min / 60), m = Math.round(min) % 60;
+    return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+}
+// Normalize name: trim, collapse spaces, NFC unicode
+function normName(s) {
+    return s.trim().replace(/\s+/g, ' ').normalize('NFC');
+}
+// Find name in dictionary with fuzzy matching
+function findInDict(dict, name) {
+    if(dict[name]) return dict[name];
+    var norm = normName(name);
+    for(var key in dict) {
+        if(normName(key) === norm) return dict[key];
+    }
+    // Try removing all accents for last-resort match
+    var strip = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    for(var key2 in dict) {
+        var strip2 = normName(key2).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        if(strip === strip2) return dict[key2];
+    }
+    return null;
+}
+function mergeIntervals(intervals) {
+    if(!intervals.length) return [];
+    var s = intervals.slice().sort(function(a,b){ return a[0] - b[0]; });
+    var merged = [s[0].slice()];
+    for(var i = 1; i < s.length; i++) {
+        if(s[i][0] <= merged[merged.length-1][1]) {
+            merged[merged.length-1][1] = Math.max(merged[merged.length-1][1], s[i][1]);
+        } else {
+            merged.push(s[i].slice());
+        }
+    }
+    return merged;
+}
+
+// ============================================================
+// PDF EXTRACTION (reconstruct lines by Y coordinate, like pdfplumber)
+// ============================================================
+async function extractPDF(file) {
+    if(typeof pdfjsLib === 'undefined') throw new Error('PDF.js não carregou. Verifique a ligação à Internet.');
+    var buf = await file.arrayBuffer();
+    var pdf = await pdfjsLib.getDocument({data: new Uint8Array(buf)}).promise;
+    var smart2 = {};
+    var reportDate = null;
+
+    for(var p = 1; p <= pdf.numPages; p++) {
+        var page = await pdf.getPage(p);
+        var tc = await page.getTextContent();
+
+        // Group text items by Y coordinate to reconstruct lines
+        var lineMap = {};
+        for(var ti = 0; ti < tc.items.length; ti++) {
+            var item = tc.items[ti];
+            var y = Math.round(item.transform[5]);
+            if(!lineMap[y]) lineMap[y] = [];
+            lineMap[y].push({x: item.transform[4], str: item.str});
+        }
+        // Sort by Y descending (PDF coords: bottom=0), then items by X
+        var ys = Object.keys(lineMap).map(Number).sort(function(a,b){ return b - a; });
+        var lines = [];
+        for(var yi = 0; yi < ys.length; yi++) {
+            var yItems = lineMap[ys[yi]].sort(function(a,b){ return a.x - b.x; });
+            var lineStr = yItems.map(function(it){ return it.str; }).join(' ').trim();
+            if(lineStr.length > 0) lines.push(lineStr);
+        }
+
+        // Find name (line before "Nº Colaborador:")
+        var name = null;
+        for(var i = 0; i < lines.length; i++) {
+            if(lines[i].indexOf('Colaborador:') >= 0 && i > 0) {
+                name = lines[i-1].trim();
+                break;
+            }
+        }
+        if(!name) continue;
+
+        // Extract date from "De DD.MM.YYYY"
+        if(!reportDate) {
+            for(var di = 0; di < lines.length; di++) {
+                var dm = lines[di].match(/De (\d{2})\.(\d{2})\.(\d{4})/);
+                if(dm) { reportDate = dm[1] + "/" + dm[2] + "/" + dm[3]; break; }
+            }
+        }
+
+        // Find movements line: may start with "seg DD.MM.YYYY" (pdfplumber)
+        // or just "DD.MM.YYYY" if day abbreviation is on separate Y line (PDF.js)
+        var movsLine = null;
+        for(var mi = 0; mi < lines.length; mi++) {
+            if(/^(seg|ter|qua|qui|sex|sab|dom)\s+\d{2}\.\d{2}\.\d{4}/i.test(lines[mi])) {
+                movsLine = lines[mi];
+                break;
+            }
+            if(/^\d{2}\.\d{2}\.\d{4}/.test(lines[mi])) {
+                movsLine = lines[mi];
+                break;
+            }
+        }
+
+        if(!movsLine) {
+            smart2[name] = {movs: null, note: "Sem movimentos registados"};
+            continue;
+        }
+
+        // Remove day prefix (if present) + date
+        var rest = movsLine.replace(/^(?:(?:seg|ter|qua|qui|sex|sab|dom)\s+)?\d{2}\.\d{2}\.\d{4}\s*!?\s*/i, '');
+        var hasImpar = movsLine.indexOf('!') >= 0;
+        var hasPipe = movsLine.indexOf('|') >= 0;
+
+        if(hasPipe) {
+            // Extract pipe-separated times
+            var pipeMatch = rest.match(/(\d{2}:\d{2}(?:\s*\|\s*\d{2}:\d{2})*)/);
+            if(pipeMatch) {
+                var movsTimes = pipeMatch[1].split('|').map(function(t){ return t.trim(); });
+                var afterPipes = rest.substring(rest.indexOf(pipeMatch[0]) + pipeMatch[0].length).trim();
+                var totalMatch = afterPipes.match(/(\d{2}:\d{2})/);
+                var entry = {movs: movsTimes.join(' | ')};
+                if(totalMatch) entry.total = totalMatch[1];
+                if(hasImpar) entry.note = "Imparidade (" + movsTimes.length + " picagens)";
+                else if(movsTimes.length === 2) entry.note = "Sem pausa almoço registada (2 picagens)";
+                smart2[name] = entry;
+            } else {
+                smart2[name] = {movs: null, note: "Formato não reconhecido"};
+            }
+        } else {
+            // No pipes - check for férias
+            if(/\b1(\.0)?\b/.test(rest) && !/\d{2}:\d{2}/.test(rest)) {
+                smart2[name] = {movs: null, note: "Dia de Férias"};
+            } else {
+                smart2[name] = {movs: null, note: "Sem movimentos registados"};
+            }
+        }
+    }
+    DATE_STR = reportDate || "";
+    console.log("[2Smart] Data:", DATE_STR);
+    console.log("[2Smart] Colaboradores:", Object.keys(smart2));
+    for(var nn in smart2) console.log("  ", nn, "->", JSON.stringify(smart2[nn]));
+    return smart2;
+}
+
+// ============================================================
+// EXCEL EXTRACTION (by column index like openpyxl: B=1, H=7, I=8)
+// ============================================================
+async function extractExcel(file) {
+    if(typeof XLSX === 'undefined') throw new Error('SheetJS não carregou. Verifique a ligação à Internet.');
+    var buf = await file.arrayBuffer();
+    var wb = XLSX.read(buf, {type:'array', cellDates:true, raw:false});
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:false});
+    var data = {};
+
+    console.log("[OG] Total rows:", rows.length);
+    if(rows.length > 2) console.log("[OG] Row 2 sample:", JSON.stringify(rows[2]));
+
+    for(var i = 2; i < rows.length; i++) {
+        var row = rows[i];
+        var name = row[1];
+        if(!name || typeof name !== 'string' || name.trim() === '') continue;
+        name = name.trim();
+        var osv = String(row[2] || '');
+        var interv = String(row[6] || '');
+        var hi = parseOgTime(row[7]);
+        var hf = parseOgTime(row[8]);
+
+        if(!data[name]) data[name] = [];
+        if(hi !== null) {
+            data[name].push({inicio: hi, fim: hf, intervencao: interv, osv: osv});
+        }
+    }
+    // Sort by start time
+    for(var n in data) data[n].sort(function(a,b){ return a.inicio - b.inicio; });
+    console.log("[OG] Colaboradores com intervenções:", Object.keys(data));
+    return data;
+}
+
+function parseOgTime(val) {
+    if(val === null || val === undefined || val === '') return null;
+    var s = String(val).trim();
+    if(s === '') return null;
+    // Try "YYYY-MM-DD HH:MM:SS" or "DD/MM/YYYY HH:MM:SS" format
+    var dtMatch = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if(dtMatch) {
+        var h = parseInt(dtMatch[1]), m = parseInt(dtMatch[2]);
+        var sec = dtMatch[3] ? parseInt(dtMatch[3]) : 0;
+        return h * 60 + m + sec / 60;
+    }
+    // Excel serial date/time
+    var numVal = typeof val === 'number' ? val : parseFloat(val);
+    if(!isNaN(numVal)) {
+        if(numVal > 0 && numVal < 1) {
+            // Pure time value
+            return Math.round(numVal * 24 * 60);
+        }
+        if(numVal > 40000) {
+            // Date+time serial
+            var timePart = numVal - Math.floor(numVal);
+            return Math.round(timePart * 24 * 60);
+        }
+    }
+    return null;
+}
+
+// ============================================================
+// ANALYSIS (identical logic to Python analyze())
+// ============================================================
+function analyze(name, smart2, ogData) {
+    var s2 = findInDict(smart2, name);
+    if(!s2 || !s2.movs) return null;
+
+    var movStrs = s2.movs.split('|').map(function(s){ return s.trim(); });
+    var movMins = [];
+    for(var i = 0; i < movStrs.length; i++) {
+        var m = hm2min(movStrs[i]);
+        if(m !== null) movMins.push(m);
+    }
+    if(movMins.length < 2) return null;
+
+    var entry = movMins[0], exit = movMins[movMins.length - 1];
+    var hasLunch = movMins.length === 4;
+    var lunchOut = movMins.length >= 3 ? movMins[1] : null;
+    var lunchIn = movMins.length >= 4 ? movMins[2] : null;
+    var totalMin = exit - entry;
+    var lunchBreak = hasLunch ? (lunchIn - lunchOut) : 0;
+    var presence = hasLunch ? totalMin - lunchBreak : totalMin;
+
+    // OG intervals - merge overlaps
+    var ogIntervals = [];
+    var ogList = ogData || [];
+    for(var j = 0; j < ogList.length; j++) {
+        if(ogList[j].inicio !== null && ogList[j].fim !== null) {
+            ogIntervals.push([ogList[j].inicio, ogList[j].fim]);
+        }
+    }
+    var merged = mergeIntervals(ogIntervals);
+    var ogTotal = 0;
+    for(var k = 0; k < merged.length; k++) ogTotal += merged[k][1] - merged[k][0];
+
+    var ogFirst = null, ogLast = null;
+    for(var oi = 0; oi < ogList.length; oi++) {
+        if(ogList[oi].inicio !== null && (ogFirst === null || ogList[oi].inicio < ogFirst)) ogFirst = ogList[oi].inicio;
+        if(ogList[oi].fim !== null && (ogLast === null || ogList[oi].fim > ogLast)) ogLast = ogList[oi].fim;
+    }
+
+    // Calculate ALL dead time gaps between 2Smart periods and merged OG intervals
+    // Working periods: morning [entry→lunchOut], afternoon [lunchIn→exit] (or [entry→exit] if no lunch)
+    var workPeriods = [];
+    if(hasLunch) {
+        workPeriods.push([entry, lunchOut]);
+        workPeriods.push([lunchIn, exit]);
+    } else {
+        workPeriods.push([entry, exit]);
+    }
+
+    var mortoGaps = []; // {from, to, min, label}
+    var totalMorto = 0;
+    for(var wp = 0; wp < workPeriods.length; wp++) {
+        var wpStart = workPeriods[wp][0], wpEnd = workPeriods[wp][1];
+        // Find merged intervals that fall within this work period
+        var periodIntervals = [];
+        for(var mi2 = 0; mi2 < merged.length; mi2++) {
+            var mStart = Math.max(merged[mi2][0], wpStart);
+            var mEnd = Math.min(merged[mi2][1], wpEnd);
+            if(mStart < mEnd) periodIntervals.push([mStart, mEnd]);
+        }
+        // Gaps: from wpStart to first interval, between intervals, from last interval to wpEnd
+        var cursor = wpStart;
+        for(var pi2 = 0; pi2 < periodIntervals.length; pi2++) {
+            var gap = periodIntervals[pi2][0] - cursor;
+            if(gap > 5) {
+                mortoGaps.push({from:cursor, to:periodIntervals[pi2][0], min:gap});
+                totalMorto += gap;
+            }
+            cursor = periodIntervals[pi2][1];
+        }
+        // Gap after last interval to end of work period
+        var lastGap = wpEnd - cursor;
+        if(lastGap > 5) {
+            mortoGaps.push({from:cursor, to:wpEnd, min:lastGap});
+            totalMorto += lastGap;
+        }
+    }
+
+    var extras = Math.max(0, presence - 480);
+
+    // 6 ALERTS
+    var alerts = [];
+    // 1. 2Smart >= 8h
+    if(presence >= 480) alerts.push({type:"ok",cat:"2Smart",msg:"Presença 2Smart: "+fmt(presence)});
+    else alerts.push({type:"danger",cat:"2Smart",msg:"Presença 2Smart: "+fmt(presence)+" — faltam "+fmt(480-presence)+" para as 8h"});
+    // 2. OG >= 6h48
+    if(ogTotal >= 408) alerts.push({type:"ok",cat:"Officegest",msg:"Tempo em intervenções: "+fmt(ogTotal)});
+    else alerts.push({type:"danger",cat:"Officegest",msg:"Tempo em intervenções: "+fmt(ogTotal)+" — faltam "+fmt(408-ogTotal)+" para as 6h 48m"});
+    // 3. Almoço
+    if(hasLunch) alerts.push({type:"ok",cat:"Almoço",msg:"Almoço registado: "+fmtTime(lunchOut)+"-"+fmtTime(lunchIn)+" ("+fmt(lunchBreak)+")"});
+    else if(movMins.length === 3) alerts.push({type:"warn",cat:"Almoço",msg:"Imparidade: 3 picagens ("+s2.movs+") — falta registo"});
+    else if(movMins.length === 2) alerts.push({type:"warn",cat:"Almoço",msg:"Sem picagem de almoço ("+s2.movs+")"});
+    // 4. Almoço > 1h
+    if(hasLunch && lunchBreak > 60) alerts.push({type:"danger",cat:"AlmoçoDuracao",msg:"Almoço superior a 1h: "+fmt(lunchBreak)+" (excesso "+fmt(lunchBreak-60)+")"});
+    // 5. Horas extras
+    if(extras > 0) alerts.push({type:"info",cat:"HorasExtras",msg:"Horas extras: "+fmt(extras)+" além das 8h"});
+    // 6. Tempo morto (all gaps)
+    if(mortoGaps.length > 0) {
+        var gapParts = [];
+        for(var gi = 0; gi < mortoGaps.length; gi++) {
+            gapParts.push(fmtTime(Math.round(mortoGaps[gi].from))+"→"+fmtTime(Math.round(mortoGaps[gi].to))+" ("+fmt(mortoGaps[gi].min)+")");
+        }
+        alerts.push({type:totalMorto>30?"warn":"info",cat:"TempoMorto",msg:"Tempo morto: "+gapParts.join(" | ")+" — Total: "+fmt(totalMorto)});
+    }
+
+    return {
+        name:name, movs:s2.movs, note:s2.note||null,
+        entry:entry, exit:exit, lunchOut:lunchOut, lunchIn:lunchIn,
+        presence:presence, ogTotal:ogTotal, ogFirst:ogFirst, ogLast:ogLast,
+        mortoGaps:mortoGaps, totalMorto:totalMorto, extras:extras,
+        lunchBreak: hasLunch ? lunchBreak : null,
+        nIntv: ogList.length,
+        interventions: ogList,
+        alerts:alerts, hasLunch:hasLunch, nMovs:movMins.length
+    };
+}
+
+function checkSchedule(name, r, horarios) {
+    var sched = horarios[name];
+    if(!sched || !r) return [];
+    var sh = sched.map(hm2min);
+    var actual = [r.entry, r.lunchOut, r.lunchIn, r.exit];
+    var labels = ["Entrada","Saída almoço","Regresso almoço","Saída"];
+    var devs = [];
+    for(var i = 0; i < 4; i++) {
+        if(actual[i] === null || actual[i] === undefined) {
+            devs.push({tipo:labels[i],previsto:sched[i],real:"—",diffMin:null,status:"warn"});
+            continue;
+        }
+        var diff = actual[i] - sh[i];
+        if(Math.abs(diff) > 5) {
+            var sign = diff > 0 ? "+" : "";
+            var isBad = (i===0&&diff>5)||(i===1&&diff<-5)||(i===2&&diff>5)||(i===3&&diff<-5);
+            devs.push({tipo:labels[i],previsto:sched[i],real:fmtTime(actual[i]),diffMin:diff,diffStr:sign+fmt(Math.abs(diff)),status:isBad?"danger":"info"});
+        }
+    }
+    return devs;
+}
+
+// ============================================================
+// HTML GENERATION (copied from Python gen_html, with escaped script tags)
+// ============================================================
+function generateUnitHTML(unitName, smart2, ogData) {
+    var coord = COORDINATORS[unitName];
+    var cfg = UNITS[unitName];
+    var results = [];
+    var specialCases = [];
+    var colabs = cfg.colaboradores.slice().sort();
+
+    for(var ci = 0; ci < colabs.length; ci++) {
+        var cname = colabs[ci];
+        var s2 = findInDict(smart2, cname);
+        if(!s2) { specialCases.push({name:cname,note:"Sem registo 2Smart",type:"sem"}); continue; }
+        if(!s2.movs) {
+            var isFer = (s2.note||'').indexOf('érias') >= 0;
+            specialCases.push({name:cname,note:s2.note||"Sem dados",type:isFer?"ferias":"sem"});
+            continue;
+        }
+        var og = findInDict(ogData, cname) || [];
+        var r = analyze(cname, smart2, og);
+        if(r) {
+            r.schedDevs = checkSchedule(cname, r, cfg.horarios);
+            results.push(r);
+        }
+    }
+    results.sort(function(a,b){ return a.ogTotal - b.ogTotal; });
+
+    var n2s=0,nog=0,nalm=0,nalmd=0,nextra=0,nmorto=0;
+    for(var ri=0;ri<results.length;ri++){
+        var ra=results[ri];
+        if(ra.alerts.some(function(a){return a.cat==="2Smart"&&a.type==="danger";})) n2s++;
+        if(ra.alerts.some(function(a){return a.cat==="Officegest"&&a.type==="danger";})) nog++;
+        if(ra.alerts.some(function(a){return a.cat==="Almoço"&&a.type==="warn";})) nalm++;
+        if(ra.alerts.some(function(a){return a.cat==="AlmoçoDuracao"&&a.type==="danger";})) nalmd++;
+        if(ra.extras>0) nextra++;
+        if(ra.totalMorto>30) nmorto++;
+    }
+
+    // Build HTML string - SAME as Python output
+    var h = '<!DOCTYPE html>\n<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">\n';
+    h += '<title>Validação '+unitName+' - '+DATE_STR+'<\/title>\n';
+    h += '<style>\n';
+    h += '*{margin:0;padding:0;box-sizing:border-box}\n';
+    h += 'body{font-family:"Segoe UI",Arial,sans-serif;background:#f0f2f5;color:#333;padding:20px}\n';
+    h += '.container{max-width:1100px;margin:0 auto}\n';
+    h += 'h1{color:#1a1a2e;font-size:1.5em;margin-bottom:5px}\n';
+    h += '.subtitle{color:#666;font-size:0.9em;margin-bottom:20px}\n';
+    h += '.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:22px}\n';
+    h += '.card{background:white;border-radius:10px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,0.07);text-align:center}\n';
+    h += '.card .lbl{font-size:0.7em;color:#888;text-transform:uppercase;letter-spacing:0.5px}\n';
+    h += '.card .val{font-size:1.2em;font-weight:700;margin-top:3px}\n';
+    h += '.red{color:#e74c3c}.green{color:#27ae60}.blue{color:#2980b9}.orange{color:#e67e22}\n';
+    h += '.section{background:white;border-radius:10px;padding:18px;box-shadow:0 2px 6px rgba(0,0,0,0.07);margin-bottom:18px}\n';
+    h += '.section h2{font-size:1.05em;color:#1a1a2e;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #ddd}\n';
+    h += '.cb{border:1px solid #e0e0e0;border-radius:8px;margin-bottom:14px;overflow:hidden}\n';
+    h += '.ch{cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#f8f9fa}\n';
+    h += '.ch:hover{background:#eef0f2}\n';
+    h += '.ch .name{font-weight:600;font-size:0.95em}.ch .badges{display:flex;gap:5px;flex-wrap:wrap}\n';
+    h += '.cbody{display:none;padding:14px}.cbody.open{display:block}\n';
+    h += '.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:0.72em;font-weight:600}\n';
+    h += '.badge-ok{background:#d4edda;color:#155724}.badge-danger{background:#f8d7da;color:#721c24}\n';
+    h += '.badge-warn{background:#fff3cd;color:#856404}.badge-info{background:#d1ecf1;color:#0c5460}\n';
+    h += '.alert{padding:8px 12px;border-radius:6px;margin-bottom:6px;font-size:0.85em}\n';
+    h += '.alert-ok{background:#d4edda;color:#155724}.alert-danger{background:#f8d7da;color:#721c24}\n';
+    h += '.alert-warn{background:#fff3cd;color:#856404}.alert-info{background:#d1ecf1;color:#0c5460}\n';
+    h += '.info-row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0;font-size:0.86em}\n';
+    h += '.info-row .item{padding:6px 10px;background:#f8f9fa;border-radius:6px}\n';
+    h += '.info-row .item .lbl{font-size:0.73em;color:#888}.info-row .item .val{font-weight:600}\n';
+    h += '.intv-table{width:100%;font-size:0.8em;border-collapse:collapse;margin-top:8px}\n';
+    h += '.intv-table th{background:#1a1a2e;color:white;padding:6px 8px;text-align:left;font-weight:500}\n';
+    h += '.intv-table td{padding:5px 8px;border-bottom:1px solid #eee}\n';
+    h += '.intv-table tr:nth-child(even){background:#fafafa}\n';
+    h += '.sched-row{font-size:0.83em;padding:3px 0}\n';
+    h += '.sched-row .neg{color:#e74c3c;font-weight:600}.sched-row .pos{color:#27ae60}\n';
+    h += '.special{padding:10px 14px;border-radius:6px;margin-bottom:6px;font-size:0.86em}\n';
+    h += '.special.ferias{background:#d4edda;border-left:4px solid #28a745}\n';
+    h += '.special.sem{background:#f8d7da;border-left:4px solid #dc3545}\n';
+    h += '.form-group{margin:10px 0;padding:10px;background:#f0f7ff;border-radius:8px;border:1px solid #b8daff}\n';
+    h += '.form-group label{font-weight:600;font-size:0.85em;color:#004085;display:block;margin-bottom:6px}\n';
+    h += '.form-group select,.form-group input,.form-group textarea{padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.85em;font-family:inherit}\n';
+    h += '.form-group select{min-width:200px}.form-group textarea{width:100%;min-height:50px;margin-top:4px}\n';
+    h += '.form-group .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}\n';
+    h += '.btn-submit{display:block;width:100%;padding:14px;background:#2980b9;color:white;border:none;border-radius:8px;font-size:1.1em;font-weight:700;cursor:pointer;margin-top:20px}\n';
+    h += '.btn-submit:hover{background:#2471a3}\n';
+    h += '.submit-section{background:white;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-top:20px;border:2px solid #2980b9}\n';
+    h += '<\/style><\/head><body>\n';
+    h += '<div class="container">\n';
+    h += '<h1>Validação Diária — '+unitName+'<\/h1>\n';
+    h += '<p class="subtitle">'+DATE_STR+' · Walkingarage, Lda · Coordenador: '+coord.nome+'<\/p>\n';
+
+    // Summary cards
+    h += '<div class="cards">\n';
+    h += '<div class="card"><div class="lbl">Colaboradores<\/div><div class="val blue">'+results.length+'<\/div><\/div>\n';
+    h += '<div class="card"><div class="lbl">2Smart &lt;8h<\/div><div class="val '+(n2s?"red":"green")+'">'+n2s+'<\/div><\/div>\n';
+    h += '<div class="card"><div class="lbl">OG &lt;6h48<\/div><div class="val '+(nog?"red":"green")+'">'+nog+'<\/div><\/div>\n';
+    h += '<div class="card"><div class="lbl">Almoço (picagem)<\/div><div class="val '+(nalm?"orange":"green")+'">'+nalm+'<\/div><\/div>\n';
+    h += '<div class="card"><div class="lbl">Almoço &gt;1h<\/div><div class="val '+(nalmd?"red":"green")+'">'+nalmd+'<\/div><\/div>\n';
+    h += '<div class="card"><div class="lbl">H. Extras<\/div><div class="val '+(nextra?"blue":"green")+'">'+nextra+'<\/div><\/div>\n';
+    h += '<div class="card"><div class="lbl">T. Morto &gt;30m<\/div><div class="val '+(nmorto?"orange":"green")+'">'+nmorto+'<\/div><\/div>\n';
+    h += '<\/div>\n';
+
+    // Special cases
+    if(specialCases.length) {
+        h += '<div class="section"><h2>Casos Especiais<\/h2>\n';
+        for(var si=0;si<specialCases.length;si++){
+            var sc = specialCases[si];
+            h += '<div class="special '+sc.type+'"><strong>'+sc.name+'<\/strong> — '+sc.note;
+            if(sc.type === "sem") {
+                h += '<div class="form-group" style="margin-top:8px">';
+                h += '<label>Correção de falta de registo 2Smart<\/label>';
+                h += '<div class="row"><span style="font-size:0.85em">Horário real:<\/span>';
+                h += '<input type="text" id="special_'+si+'_horario" placeholder="Ex: 08:30 | 12:30 | 13:30 | 17:30" style="width:280px" data-field="horario_correcao" data-name="'+sc.name+'">';
+                h += '<\/div>';
+                h += '<textarea id="special_'+si+'_obs" placeholder="Observações (motivo da falta de registo...)" data-field="obs_sem_registo" data-name="'+sc.name+'"><\/textarea>';
+                h += '<\/div>';
+            }
+            h += '<\/div>\n';
+        }
+        h += '<\/div>\n';
+    }
+
+    // Per collaborator
+    h += '<div class="section"><h2>Análise por Colaborador<\/h2>\n';
+    for(var idx=0;idx<results.length;idx++){
+        var r = results[idx];
+        var cid = "c"+idx;
+        var badges = '';
+        var s2a = r.alerts.find(function(a){return a.cat==="2Smart";});
+        if(s2a) badges += '<span class="badge '+(s2a.type==="ok"?"badge-ok":"badge-danger")+'">2Smart: '+fmt(r.presence)+'<\/span>';
+        var oga = r.alerts.find(function(a){return a.cat==="Officegest";});
+        if(oga) badges += '<span class="badge '+(oga.type==="ok"?"badge-ok":"badge-danger")+'">OG: '+fmt(r.ogTotal)+'<\/span>';
+        if(r.alerts.some(function(a){return a.cat==="Almoço"&&a.type==="warn";})) badges += '<span class="badge badge-warn">Almoço ⚠<\/span>';
+        if(r.alerts.some(function(a){return a.cat==="AlmoçoDuracao"&&a.type==="danger";})) badges += '<span class="badge badge-danger">Almoço &gt;1h<\/span>';
+        if(r.extras > 0) badges += '<span class="badge badge-info">Extras: '+fmt(r.extras)+'<\/span>';
+        if(r.totalMorto > 30) badges += '<span class="badge badge-warn">Morto: '+fmt(r.totalMorto)+'<\/span>';
+
+        h += '<div class="cb">\n';
+        h += '<div class="ch" onclick="this.nextElementSibling.classList.toggle(\'open\')">\n';
+        h += '<span class="name">'+r.name+(r.note?' <span class="badge badge-warn" style="margin-left:6px">'+r.note+'<\/span>':'')+'<\/span>\n';
+        h += '<span class="badges">'+badges+'<\/span><\/div>\n';
+        h += '<div class="cbody">\n';
+
+        // Alerts
+        for(var ai=0;ai<r.alerts.length;ai++){
+            var a = r.alerts[ai];
+            var cls = {ok:"alert-ok",danger:"alert-danger",warn:"alert-warn",info:"alert-info"}[a.type];
+            var icon = {ok:"✓",danger:"✗",warn:"⚠",info:"ℹ"}[a.type];
+            h += '<div class="alert '+cls+'">'+icon+' '+a.msg+'<\/div>\n';
+        }
+
+        // Schedule deviations
+        if(r.schedDevs && r.schedDevs.length) {
+            h += '<div style="margin:8px 0"><strong style="font-size:0.83em;color:#2980b9">Desvios de Horário:<\/strong><br>\n';
+            for(var di=0;di<r.schedDevs.length;di++){
+                var d = r.schedDevs[di];
+                if(d.diffMin===null) h += '<div class="sched-row">⚠ '+d.tipo+': previsto '+d.previsto+', sem registo<\/div>\n';
+                else h += '<div class="sched-row">'+d.tipo+': previsto '+d.previsto+', real '+d.real+' <span class="'+(d.status==="danger"?"neg":"pos")+'">('+d.diffStr+')<\/span><\/div>\n';
+            }
+            h += '<\/div>\n';
+        }
+
+        // Info row
+        h += '<div class="info-row">\n';
+        h += '<div class="item"><div class="lbl">Entrada<\/div><div class="val">'+fmtTime(r.entry)+'<\/div><\/div>\n';
+        h += '<div class="item"><div class="lbl">Saída<\/div><div class="val">'+fmtTime(r.exit)+'<\/div><\/div>\n';
+        h += '<div class="item"><div class="lbl">Picagens 2Smart<\/div><div class="val">'+r.movs+'<\/div><\/div>\n';
+        h += '<div class="item"><div class="lbl">Presença 2Smart<\/div><div class="val">'+fmt(r.presence)+'<\/div><\/div>\n';
+        h += '<div class="item"><div class="lbl">Tempo OG<\/div><div class="val green">'+fmt(r.ogTotal)+'<\/div><\/div>\n';
+        h += '<div class="item"><div class="lbl">Nº Intervenções<\/div><div class="val">'+r.nIntv+'<\/div><\/div><\/div>\n';
+
+        // Horas extras form
+        if(r.extras > 0) {
+            h += '<div class="form-group">\n';
+            h += '<label>Horas Extras: '+fmt(r.extras)+' — Validação<\/label>\n';
+            h += '<div class="row">\n';
+            h += '<select id="'+cid+'_extras" data-field="horas_extras" data-name="'+r.name+'">\n';
+            h += '<option value="">-- Selecionar --<\/option>\n';
+            h += '<option value="Validado">✓ Validar horas extras<\/option>\n';
+            h += '<option value="Não validado">✗ Não validar<\/option>\n';
+            h += '<\/select>\n';
+            h += '<input type="text" id="'+cid+'_extras_obs" placeholder="Justificação (opcional)" style="flex:1" data-field="horas_extras_obs" data-name="'+r.name+'">\n';
+            h += '<\/div><\/div>\n';
+        }
+
+        // Picagem correction form
+        if(r.nMovs !== 4 || !r.hasLunch) {
+            h += '<div class="form-group">\n';
+            h += '<label>Correção de Picagens 2Smart (imparidade / falta de registo almoço)<\/label>\n';
+            h += '<div class="row"><span style="font-size:0.85em">Picagens reais:<\/span>\n';
+            h += '<input type="text" id="'+cid+'_picagem_corr" placeholder="Ex: 08:30 | 12:30 | 13:30 | 17:30" style="width:280px" data-field="picagem_correcao" data-name="'+r.name+'">\n';
+            h += '<\/div>\n';
+            h += '<textarea id="'+cid+'_picagem_obs" placeholder="Motivo da imparidade / correção necessária..." data-field="picagem_obs" data-name="'+r.name+'"><\/textarea>\n';
+            h += '<\/div>\n';
+        }
+
+        // Tempo morto form (all gaps between 2Smart and OG)
+        if(r.totalMorto > 5 && r.mortoGaps && r.mortoGaps.length > 0) {
+            h += '<div class="form-group" style="background:#fff8f0;border-color:#f0c060">\n';
+            h += '<label style="color:#856404">Tempo Morto Total: '+fmt(r.totalMorto)+' ('+r.mortoGaps.length+' períodos) — Justificação<\/label>\n';
+            h += '<div style="font-size:0.83em;color:#666;margin-bottom:6px">';
+            for(var mgi=0;mgi<r.mortoGaps.length;mgi++){
+                var mg = r.mortoGaps[mgi];
+                if(mgi > 0) h += '<br>';
+                h += '• '+fmtTime(Math.round(mg.from))+' → '+fmtTime(Math.round(mg.to))+' ('+fmt(mg.min)+')';
+            }
+            h += '<\/div>\n';
+            h += '<textarea id="'+cid+'_morto_obs" placeholder="Justificação do tempo morto (ex: preparação de material, deslocação, arrumação...)" data-field="tempo_morto_obs" data-name="'+r.name+'"><\/textarea>\n';
+            h += '<\/div>\n';
+        }
+
+        // Faltas/Atrasos observations
+        h += '<div class="form-group" style="background:#f0f0ff;border-color:#b8b8e0">\n';
+        h += '<label style="color:#444">Observações sobre faltas / atrasos de '+r.name.split(' ')[0]+'<\/label>\n';
+        h += '<textarea id="'+cid+'_faltas_obs" placeholder="Registar justificação de faltas, atrasos ou saídas antecipadas..." data-field="faltas_atrasos_obs" data-name="'+r.name+'"><\/textarea>\n';
+        h += '<\/div>\n';
+
+        // Interventions table
+        if(r.interventions.length) {
+            h += '<table class="intv-table"><tr><th>Intervenção<\/th><th>OSV<\/th><th>Início<\/th><th>Fim<\/th><th>Duração<\/th><\/tr>\n';
+            for(var ii=0;ii<r.interventions.length;ii++){
+                var iv = r.interventions[ii];
+                var dur = (iv.inicio!==null&&iv.fim!==null) ? fmt(iv.fim-iv.inicio) : "Em curso";
+                var iniStr = iv.inicio!==null ? fmtTime(Math.round(iv.inicio)) : "—";
+                var fimStr = iv.fim!==null ? fmtTime(Math.round(iv.fim)) : "—";
+                h += '<tr><td>'+iv.intervencao+'<\/td><td>'+iv.osv+'<\/td><td>'+iniStr+'<\/td><td>'+fimStr+'<\/td><td>'+dur+'<\/td><\/tr>\n';
+            }
+            h += '<\/table>\n';
+        }
+
+        // General observations
+        h += '<div class="form-group" style="background:#f8f8f8;border-color:#ddd">\n';
+        h += '<label style="color:#333">Observações gerais sobre '+r.name.split(' ')[0]+'<\/label>\n';
+        h += '<textarea id="'+cid+'_obs_geral" placeholder="Notas adicionais..." data-field="obs_geral" data-name="'+r.name+'"><\/textarea>\n';
+        h += '<\/div>\n';
+        h += '<\/div><\/div>\n';
+    }
+    h += '<\/div>\n';
+
+    // Submit section with embedded script (using string concat to avoid closing outer script)
+    h += '<div class="submit-section">\n';
+    h += '<h2 style="color:#2980b9;margin-bottom:12px">Submeter Validação<\/h2>\n';
+    h += '<p style="font-size:0.9em;color:#666;margin-bottom:15px">Clique no botão para copiar a validação e abrir o Outlook. Depois basta colar (Ctrl+V) no corpo do email e enviar.<\/p>\n';
+    h += '<div id="statusMsg" style="display:none;padding:12px;border-radius:6px;margin-bottom:12px;font-weight:600"><\/div>\n';
+    h += '<button class="btn-submit" onclick="submitValidation()">Copiar e Abrir Email no Outlook<\/button>\n';
+    h += '<\/div>\n';
+
+    // Script for submit validation email
+    h += '<' + 'script>\n';
+    h += 'function submitValidation() {\n';
+    h += '    var fields = document.querySelectorAll("[data-field]");\n';
+    h += '    var body = "VALIDAÇÃO DIÁRIA — '+unitName+'\\n";\n';
+    h += '    body += "Data: '+DATE_STR+'\\n";\n';
+    h += '    body += "Coordenador: '+coord.nome+'\\n";\n';
+    h += '    body += "==================================================\\n\\n";\n';
+    h += '    var byName = {};\n';
+    h += '    fields.forEach(function(f) {\n';
+    h += '        var name = f.dataset.name;\n';
+    h += '        var field = f.dataset.field;\n';
+    h += '        var val = f.value.trim();\n';
+    h += '        if (!byName[name]) byName[name] = {};\n';
+    h += '        if (val) byName[name][field] = val;\n';
+    h += '    });\n';
+    h += '    var hasContent = false;\n';
+    h += '    for (var name in byName) {\n';
+    h += '        var entries = Object.entries(byName[name]);\n';
+    h += '        if (entries.length === 0) continue;\n';
+    h += '        hasContent = true;\n';
+    h += '        body += "▶ " + name + "\\n";\n';
+    h += '        var labels = {"horas_extras":"Horas Extras","horas_extras_obs":"Justificação H. Extras","picagem_correcao":"Picagens Corrigidas","picagem_obs":"Motivo Correção Picagem","obs_geral":"Observações","horario_correcao":"Horário Real (sem registo)","obs_sem_registo":"Obs. Falta Registo","tempo_morto_obs":"Justificação Tempo Morto","faltas_atrasos_obs":"Obs. Faltas/Atrasos"};\n';
+    h += '        for (var i=0;i<entries.length;i++) {\n';
+    h += '            body += "  " + (labels[entries[i][0]] || entries[i][0]) + ": " + entries[i][1] + "\\n";\n';
+    h += '        }\n';
+    h += '        body += "\\n";\n';
+    h += '    }\n';
+    h += '    if (!hasContent) { body += "Sem alterações — tudo validado conforme relatório.\\n"; }\n';
+    h += '    body += "---\\nEnviado automaticamente via Relatório de Divergências Walkingarage";\n';
+    h += '    var statusEl = document.getElementById("statusMsg");\n';
+    h += '    var subject = encodeURIComponent("Validação '+unitName+' — '+DATE_STR+'");\n';
+    h += '    navigator.clipboard.writeText(body).then(function() {\n';
+    h += '        var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);\n';
+    h += '        if (isMobile) {\n';
+    h += '            window.location.href = "ms-outlook://compose?to='+MY_EMAIL+'&cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '        } else {\n';
+    h += '            var mailtoUri = "mailto:'+MY_EMAIL+'?cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '            var outlookUrl = "https://outlook.office365.com/mail/deeplink/compose?mailtouri=" + encodeURIComponent(mailtoUri);\n';
+    h += '            window.open(outlookUrl, "_blank");\n';
+    h += '        }\n';
+    h += '        statusEl.style.display="block"; statusEl.style.background="#d4edda"; statusEl.style.color="#155724";\n';
+    h += '        statusEl.innerHTML = "Validação copiada! Cole (Ctrl+V) no corpo do email no Outlook e envie.";\n';
+    h += '    }).catch(function() {\n';
+    h += '        var ta = document.createElement("textarea"); ta.value = body; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);\n';
+    h += '        var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);\n';
+    h += '        if (isMobile) {\n';
+    h += '            window.location.href = "ms-outlook://compose?to='+MY_EMAIL+'&cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '        } else {\n';
+    h += '            var mailtoUri = "mailto:'+MY_EMAIL+'?cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '            var outlookUrl = "https://outlook.office365.com/mail/deeplink/compose?mailtouri=" + encodeURIComponent(mailtoUri);\n';
+    h += '            window.open(outlookUrl, "_blank");\n';
+    h += '        }\n';
+    h += '        statusEl.style.display="block"; statusEl.style.background="#d4edda"; statusEl.style.color="#155724";\n';
+    h += '        statusEl.innerHTML = "Validação copiada! Cole (Ctrl+V) no corpo do email no Outlook e envie.";\n';
+    h += '    });\n';
+    h += '}\n';
+    h += '<' + '/script>\n';
+    h += '<\/div><\/body><\/html>';
+
+    return h;
+}
+
+// ============================================================
+// MAIN GENERATION FLOW
+// ============================================================
+async function generate() {
+    var btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    document.getElementById('errorMsg').style.display = 'none';
+
+    try {
+        setProgress(10, 'A extrair dados do 2Smart...');
+        var smart2 = await extractPDF(pdfFile);
+
+        setProgress(40, 'A carregar Officegest...');
+        var ogData = await extractExcel(xlsxFile);
+
+        setProgress(60, 'A gerar relatórios...');
+        var htmlFiles = {};
+        for(var unit in UNITS) {
+            htmlFiles[unit] = generateUnitHTML(unit, smart2, ogData);
+        }
+
+        setProgress(90, 'A preparar downloads...');
+        var cardsDiv = document.getElementById('resultCards');
+        cardsDiv.innerHTML = '';
+        for(var unit in UNITS) {
+            var safe = unit.toLowerCase().replace(/ã/g,'a').replace(/é/g,'e').replace(/ /g,'_');
+            var fn = 'validacao_'+safe+'.html';
+            var blob = new Blob([htmlFiles[unit]], {type:'text/html;charset=utf-8'});
+            var url = URL.createObjectURL(blob);
+            var card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = '<div class="info">'+unit+'<br><span>'+COORDINATORS[unit].nome+' · '+fn+'<\/span><\/div>';
+            var dlBtn = document.createElement('button');
+            dlBtn.className = 'btn-download';
+            dlBtn.textContent = 'Descarregar';
+            (function(u,f){ dlBtn.onclick = function(){ var a=document.createElement('a'); a.href=u; a.download=f; a.click(); }; })(url,fn);
+            card.appendChild(dlBtn);
+            cardsDiv.appendChild(card);
+        }
+
+        setProgress(100, 'Concluído!');
+        document.getElementById('uploadScreen').style.display = 'none';
+        document.getElementById('resultsScreen').style.display = 'block';
+
+    } catch(e) {
+        document.getElementById('errorMsg').textContent = 'ERRO: ' + e.message;
+        document.getElementById('errorMsg').style.display = 'block';
+        console.error(e);
+    }
+    btn.disabled = false;
+}
+</script>
+</body></html>
