@@ -1,0 +1,2916 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Relatórios KPIs - DomusCar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #2d3748;
+        }
+
+        /* LAYOUT */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #2d3748;
+            color: white;
+            padding: 24px;
+            overflow-y: auto;
+            border-right: 1px solid #1a202c;
+            display: none;
+        }
+
+        .sidebar.visible {
+            display: block;
+        }
+
+        .sidebar-logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar-section {
+            margin-bottom: 28px;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.6;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-button {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+            transition: background 0.2s;
+        }
+
+        .sidebar-button:hover {
+            background: #5a6b7c;
+        }
+
+        .sidebar-button.active {
+            background: #3182ce;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #1a202c 100%);
+        }
+
+        .upload-page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+        }
+
+        .upload-page-subtitle {
+            font-size: 0.95rem;
+            color: #a0aec0;
+            margin-bottom: 36px;
+        }
+
+        .upload-container {
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .upload-box {
+            background: white;
+            border-radius: 16px;
+            padding: 48px 40px 36px;
+            cursor: pointer;
+            transition: box-shadow 0.3s, transform 0.2s;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+        }
+
+        .upload-box:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .upload-box.dragover {
+            border-color: #3182ce;
+            box-shadow: 0 8px 32px rgba(49,130,206,0.3);
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: #3182ce;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .upload-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+
+        .upload-subtitle {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 24px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 32px;
+            background: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: #2c5aa0;
+        }
+
+        .upload-format-info {
+            margin-top: 20px;
+            background: #f0f4f8;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px 20px;
+            text-align: left;
+        }
+
+        .upload-format-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+
+        .upload-format-text {
+            font-size: 0.82rem;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        .report-container {
+            padding: 40px;
+            display: none;
+        }
+
+        .report-container.visible {
+            display: block;
+        }
+
+        .report-toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            align-items: center;
+        }
+
+        .report-btn {
+            padding: 10px 20px;
+            background: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .report-btn:hover {
+            background: #2c5aa0;
+        }
+
+        .report-btn.secondary {
+            background: #718096;
+        }
+
+        .report-btn.secondary:hover {
+            background: #4a5568;
+        }
+
+        /* REPORT HEADER */
+        .report-header {
+            background: #2d3748;
+            color: white;
+            padding: 40px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .report-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .report-subtitle {
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            opacity: 0.7;
+        }
+
+        .month-badge {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            border: 2px solid;
+            padding: 6px 18px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* SECTION HEADERS */
+        .section-header {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #2d3748;
+            background: #f7f7f7;
+            padding: 8px 12px;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            border-left: 3px solid;
+            padding-left: 12px;
+        }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: #2d3748;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-bottom: 1px solid #1a202c;
+        }
+
+        th:first-child {
+            text-align: left;
+            padding-left: 15px;
+        }
+
+        td {
+            padding: 10px 12px;
+            text-align: center;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td:first-child {
+            text-align: left;
+            padding-left: 15px;
+            font-weight: 500;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .hours-cell {
+            font-weight: 600;
+        }
+
+        .percentage-cell {
+            font-weight: 600;
+        }
+
+        .efficiency-efficient {
+            background: #38a169;
+            color: white;
+        }
+
+        .efficiency-inefficient {
+            background: #c53030;
+            color: white;
+        }
+
+        .utilization-excellent {
+            background: #38a169;
+            color: white;
+        }
+
+        .utilization-good {
+            background: #dd6b20;
+            color: white;
+        }
+
+        .utilization-poor {
+            background: #c53030;
+            color: white;
+        }
+
+        /* GRID LAYOUTS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .tech-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+        }
+
+        .tech-card-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tech-warning {
+            color: #c53030;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .tech-card table {
+            margin: 12px 0;
+        }
+
+        .tech-card th {
+            font-size: 0.7rem;
+            padding: 8px;
+        }
+
+        .tech-card td {
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+
+        .badges-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .badge {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .badge-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+        }
+
+        .badge-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        /* COMPARACAO PAGE */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f7f7f7;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-square {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+
+        .ranking-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .ranking-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* HORAS PICADAS */
+        .horas-table {
+            font-size: 0.75rem;
+            overflow-x: auto;
+        }
+
+        .horas-table table {
+            min-width: 100%;
+        }
+
+        .horas-table th, .horas-table td {
+            padding: 8px 6px;
+            font-size: 0.7rem;
+        }
+
+        .horas-table th:first-child, .horas-table td:first-child {
+            min-width: 120px;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: #2d3748;
+            color: white;
+        }
+
+        .horas-table tbody td:first-child {
+            background: white;
+            color: #2d3748;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .weekend {
+            background: #e2e8f0;
+        }
+
+        .color-productive-high {
+            background: #38a169;
+            color: white;
+            font-weight: 600;
+        }
+
+        .color-productive-medium {
+            background: #dd6b20;
+            color: white;
+            font-weight: 600;
+        }
+
+        .color-productive-low {
+            background: #c53030;
+            color: white;
+            font-weight: 600;
+        }
+
+        .color-no-data {
+            background: #cbd5e0;
+            color: transparent;
+        }
+
+        .color-ferias {
+            background: #319795;
+            color: white;
+            font-weight: 600;
+        }
+
+        .color-falta {
+            background: #9b2c2c;
+            color: white;
+            font-weight: 600;
+        }
+
+        .legenda-horas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 16px;
+            background: #f7f7f7;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 0.8rem;
+        }
+
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legenda-square {
+            min-width: 42px;
+            height: 24px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+
+        .resumo-table th {
+            font-size: 0.75rem;
+        }
+
+        .resumo-table td {
+            font-size: 0.85rem;
+        }
+
+        .ferias-bg {
+            background: #319795;
+            color: white;
+            font-weight: 600;
+        }
+
+        .falta-bg {
+            background: #c53030;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nota-minima {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm 8mm;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            html, body {
+                background: white !important;
+                font-size: 9pt;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .container {
+                display: block;
+            }
+
+            .sidebar, .upload-area, .report-toolbar {
+                display: none !important;
+            }
+
+            .main-content {
+                width: 100%;
+                overflow: visible;
+            }
+
+            .report-container {
+                padding: 0 !important;
+                display: block !important;
+            }
+
+            /* ===== REPORT HEADER ===== */
+            .report-header {
+                border-radius: 0;
+                margin-bottom: 12px;
+                padding: 20px 28px;
+                background: #2d3748 !important;
+                color: white !important;
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            .report-title { font-size: 1.5rem; }
+            .month-badge { top: 20px; right: 28px; }
+
+            /* ===== SECTION HEADERS ===== */
+            .section-header {
+                break-after: avoid;
+                page-break-after: avoid;
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-top: 16px;
+                margin-bottom: 8px;
+                padding: 6px 10px;
+                background: #f7f7f7 !important;
+            }
+
+            /* ===== TABLES (General KPIs, Rankings) ===== */
+            table {
+                box-shadow: none !important;
+                font-size: 8pt;
+                margin-bottom: 12px;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            th {
+                background: #2d3748 !important;
+                color: white !important;
+                padding: 5px 6px;
+                font-size: 7pt;
+            }
+
+            td {
+                padding: 4px 5px;
+                font-size: 8pt;
+            }
+
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            /* ===== TECH CARDS — pairs that never split ===== */
+            .print-pair {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .grid-2 {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+
+            .tech-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+                border-left: 4px solid;
+                padding: 10px 12px;
+                border-radius: 4px;
+            }
+
+            .tech-card-name { font-size: 0.9rem; }
+            .tech-card table { margin: 8px 0; }
+            .tech-card th { padding: 4px 5px; font-size: 6.5pt; }
+            .tech-card td { padding: 4px 5px; font-size: 7.5pt; }
+
+            .badges-row { margin-top: 10px; gap: 8px; }
+            .badge { padding: 5px 6px; }
+            .badge-label { font-size: 0.5rem; }
+            .badge-value { font-size: 0.85rem; }
+
+            /* ===== COLOR PRESERVATION ===== */
+            .efficiency-efficient { background: #38a169 !important; color: white !important; }
+            .efficiency-inefficient { background: #c53030 !important; color: white !important; }
+            .utilization-excellent { background: #38a169 !important; color: white !important; }
+            .utilization-good { background: #dd6b20 !important; color: white !important; }
+            .utilization-poor { background: #c53030 !important; color: white !important; }
+
+            /* ===== HORAS PICADAS TABLE ===== */
+            .horas-table {
+                overflow: visible;
+                font-size: 6pt;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .horas-table table {
+                width: 100%;
+                table-layout: fixed;
+                break-inside: auto;
+                page-break-inside: auto;
+            }
+
+            .horas-table th, .horas-table td {
+                padding: 2px 1px;
+                font-size: 5.5pt;
+                word-break: break-all;
+            }
+
+            .horas-table th:first-child, .horas-table td:first-child {
+                min-width: 70px;
+                width: 70px;
+                position: static;
+                font-size: 5.5pt;
+            }
+
+            .horas-table th:first-child {
+                background: #2d3748 !important;
+                color: white !important;
+            }
+
+            .horas-table tbody td:first-child {
+                background: white !important;
+                color: #2d3748 !important;
+            }
+
+            .color-productive-high { background: #38a169 !important; color: white !important; }
+            .color-productive-medium { background: #dd6b20 !important; color: white !important; }
+            .color-productive-low { background: #c53030 !important; color: white !important; }
+            .color-ferias { background: #319795 !important; color: white !important; }
+            .color-falta { background: #9b2c2c !important; color: white !important; }
+            .color-no-data { background: #cbd5e0 !important; }
+            .weekend { background: #e2e8f0 !important; }
+            .hours-cell { font-weight: 700; }
+
+            /* ===== LEGEND ===== */
+            .legenda-horas {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                padding: 8px;
+                margin: 8px 0;
+                background: #f7f7f7 !important;
+            }
+
+            .legenda-square {
+                min-width: 34px;
+                height: 18px;
+                padding: 1px 3px;
+                font-size: 0.5rem;
+            }
+
+            /* ===== RESUMO TABLE ===== */
+            .resumo-table { break-inside: avoid; page-break-inside: avoid; }
+            .resumo-table th { font-size: 7pt; }
+            .resumo-table td { font-size: 8pt; }
+
+            .ferias-bg { background: #319795 !important; color: white !important; }
+            .falta-bg { background: #c53030 !important; color: white !important; }
+
+            .nota-minima { margin-top: 6px; font-size: 7pt; }
+
+            .total-row { background: #2d3748 !important; color: white !important; }
+            .total-row td { color: white !important; }
+
+            /* ===== COMPARAÇÃO ===== */
+            .legend {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                background: #f7f7f7 !important;
+            }
+
+            .ranking-grid {
+                gap: 12px;
+                break-inside: auto;
+            }
+
+            .ranking-grid > div {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            h4 {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .total-row {
+            background: #2d3748 !important;
+            color: white;
+            font-weight: 700;
+        }
+
+        .total-row td {
+            color: white;
+            border-bottom: none;
+        }
+
+        .medal {
+            font-weight: 700;
+        }
+
+        .colored-text {
+            font-weight: 600;
+        }
+    
+
+        /* === RESULT CARDS (added for iframe module pattern) === */
+        .results-area { padding: 40px; display: none; }
+        .results-area.visible { display: block; }
+        .result-card { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid; }
+        .result-info { display: flex; align-items: center; gap: 12px; }
+        .result-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .result-name { font-size: 14px; font-weight: 600; color: #0f172a; }
+        .result-margin { font-size: 12px; color: #64748b; }
+        .dl-btn { padding: 8px 16px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 600; color: #334155; cursor: pointer; transition: all 0.15s; text-decoration: none; font-family: inherit; }
+        .dl-btn:hover { background: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar is hidden by default in iframe mode -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">DomusCar</div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">RELATÓRIOS</div>
+                <button class="sidebar-button" onclick="showReport('lx')">Mecânica Lisboa</button>
+                <button class="sidebar-button" onclick="showReport('ca')">Mecânica Cacém</button>
+                <button class="sidebar-button" onclick="showReport('co')">Colisão</button>
+                <button class="sidebar-button" onclick="showReport('comparacao')">Comparação Entre Técnicos</button>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">AÇÕES</div>
+                <button class="sidebar-button secondary" onclick="generateAll()" style="background: #38a169;">Gerar Todos os Relatórios</button>
+                <button class="sidebar-button secondary" onclick="resetApp()">Carregar Novo Ficheiro</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-page-title">Gerador de Relatórios KPIs</div>
+                <div class="upload-page-subtitle">Carrega o Excel e gera relatórios individuais por oficina</div>
+                <div class="upload-container">
+                    <div class="upload-box" id="uploadBox" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📊</div>
+                        <div class="upload-title">Carregar Ficheiro Excel</div>
+                        <div class="upload-subtitle">Seleciona o ficheiro .xlsx com os KPIs de Coordenação</div>
+                        <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">📁 Escolher Ficheiro</button>
+                        <div class="upload-format-info">
+                            <div class="upload-format-title">Formato Esperado</div>
+                            <div class="upload-format-text">Ficheiro com as folhas LX KPIs, CA KPIs, CO KPIs e respetivas Horas Picadas, com KPIs gerais semanais/mensais e individuais por técnico.</div>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+                </div>
+            </div>
+
+            <!-- Results area (shown after parsing, BEFORE report view) -->
+            <div class="results-area" id="resultsArea">
+                <div id="resultsContent"></div>
+            </div>
+
+            <div class="report-container" id="reportContainer">
+                <div class="report-toolbar">
+                    <button class="report-btn" onclick="printReport()">🖨️ Imprimir</button>
+                    <button class="report-btn secondary" onclick="backToResults()">⬅️ Voltar aos Resultados</button>
+                    <button class="report-btn secondary" onclick="resetApp()">🔄 Novo Ficheiro</button>
+                </div>
+                <div id="reportContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let workbook = null;
+        let data = {};
+        let currentReport = null;
+
+        const monthNames = {
+            pt: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+            short: ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
+        };
+
+        const themeColors = {
+            lx: '#3182ce',
+            ca: '#38a169',
+            co: '#dd6b20',
+            comparacao: '#2d3748'
+        };
+
+        const techMappings = {
+            lx: {
+                'Emanuel Antonio de Oliveira Alves Gonçalves': 'Emanuel Gonçalves',
+                'Jorge Miguel Alves Silva': 'Jorge Silva',
+                'Sérgio Fernando Migueis Pereira': 'Sérgio Pereira',
+                'Xavier Oliveira Jorge': 'Xavier Jorge'
+            },
+            ca: {
+                'Arnaldo José Carvalho Brites da Cruz': 'Arnaldo Cruz',
+                'Edmilson Jorge Pereira Fernandes': 'Edmilson Fernandes',
+                'Filipe José Reis Bonifácio': 'Filipe Bonifácio',
+                'Gonçalo Miguel Palrinhas Matos': 'Gonçalo Matos'
+            },
+            co: {
+                'Diogo Henrique Gomes Fernandes': 'Diogo Fernandes',
+                'Nuno Alexandre Carvalho Montês': 'Nuno Montês',
+                'Carlos Miguel Fernandes Gonçalves Antunes': 'Carlos Antunes',
+                'Vitor Manuel Vilarinho Soutilha': 'Vitor Soutilha',
+                'Gyanu Pujara': 'Gyanu Pujara',
+                'José Avelino Da Cruz Fernandes': 'José Fernandes',
+                'João Paulo São Pedro Bizarro': 'João Bizarro',
+                'Djeison Miguel Gonçalves Barbosa Amado': 'Djeison Amado',
+                'Diamantino da Silva': 'Diamantino Silva',
+                'José João Ferreira Borges': 'José Borges',
+                'Pedro Filipe de Castro Jana': 'Pedro Jana'
+            }
+        };
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('uploadBox').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            document.getElementById('uploadBox').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('uploadBox').classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                loadFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                loadFile(e.target.files[0]);
+            }
+        }
+
+        let uploadedFileName = '';
+
+        function loadFile(file) {
+            uploadedFileName = file.name || '';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    workbook = XLSX.read(e.target.result, {type: 'array'});
+                    parseWorkbook();
+                    showUploadComplete();
+                } catch (error) {
+                    alert('Erro ao carregar ficheiro: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseWorkbook() {
+            data = {
+                lx: {},
+                ca: {},
+                co: {},
+                lxHoras: {},
+                caHoras: {},
+                coHoras: {}
+            };
+
+            if (workbook.SheetNames.includes('LX KPIs')) {
+                parseLXCA(workbook.Sheets['LX KPIs'], 'lx');
+            }
+            if (workbook.SheetNames.includes('CA KPIs')) {
+                parseLXCA(workbook.Sheets['CA KPIs'], 'ca');
+            }
+            if (workbook.SheetNames.includes('CO KPIs')) {
+                parseCO(workbook.Sheets['CO KPIs'], 'co');
+            }
+            if (workbook.SheetNames.includes('LX Horas Picadas_Ferias_Faltas')) {
+                parseHorasPicadas(workbook.Sheets['LX Horas Picadas_Ferias_Faltas'], 'lxHoras', 'lx');
+            }
+            if (workbook.SheetNames.includes('CA Horas Picadas_Ferias_Faltas')) {
+                parseHorasPicadas(workbook.Sheets['CA Horas Picadas_Ferias_Faltas'], 'caHoras', 'ca');
+            }
+            if (workbook.SheetNames.includes('CO Horas Picadas_Ferias_Faltas')) {
+                parseHorasPicadas(workbook.Sheets['CO Horas Picadas_Ferias_Faltas'], 'coHoras', 'co');
+            }
+        }
+
+        function parseDateValue(dateVal) {
+            if (!dateVal) return null;
+            let date = null;
+            if (typeof dateVal === 'number') {
+                date = new Date((dateVal - 25569) * 86400 * 1000);
+            } else if (dateVal instanceof Date) {
+                date = dateVal;
+            } else if (typeof dateVal === 'string') {
+                date = new Date(dateVal);
+            }
+            if (date && date instanceof Date && !isNaN(date)) {
+                return {
+                    month: monthNames.short[date.getMonth()],
+                    monthFull: monthNames.pt[date.getMonth()],
+                    year: date.getFullYear().toString()
+                };
+            }
+            return null;
+        }
+
+        function getMonthFromSheet(ws) {
+            const arr = XLSX.utils.sheet_to_json(ws, {header: 1, defval: null});
+            // Try row 1 col B (index [0][1]) then col A ([0][0])
+            let result = parseDateValue(arr[0] && arr[0][1]) || parseDateValue(arr[0] && arr[0][0]);
+            if (result) return result;
+
+            // Try row 6 col B (Horas Picadas date headers at index [5][1])
+            result = parseDateValue(arr[5] && arr[5][1]);
+            if (result) return result;
+
+            return null;
+        }
+
+        function getMonthFromFilename() {
+            // Filename pattern: MMYY_*.xlsx e.g. "0326_Coordenação.xlsx" = March 2026
+            const match = uploadedFileName.match(/^(\d{2})(\d{2})/);
+            if (match) {
+                const monthIdx = parseInt(match[1], 10) - 1;
+                const yearShort = parseInt(match[2], 10);
+                const year = yearShort < 50 ? 2000 + yearShort : 1900 + yearShort;
+                if (monthIdx >= 0 && monthIdx < 12) {
+                    return {
+                        month: monthNames.short[monthIdx],
+                        monthFull: monthNames.pt[monthIdx],
+                        year: year.toString()
+                    };
+                }
+            }
+            return {month: 'MESES', monthFull: 'Meses', year: '2026'};
+        }
+
+        function resolveMonth() {
+            // Try all Horas Picadas sheets first (they have dates in B1)
+            const horasSheets = ['LX Horas Picadas_Ferias_Faltas', 'CA Horas Picadas_Ferias_Faltas', 'CO Horas Picadas_Ferias_Faltas'];
+            for (const name of horasSheets) {
+                if (workbook.SheetNames.includes(name)) {
+                    const result = getMonthFromSheet(workbook.Sheets[name]);
+                    if (result) return result;
+                }
+            }
+            // Try KPI sheets
+            const kpiSheets = ['LX KPIs', 'CA KPIs', 'CO KPIs'];
+            for (const name of kpiSheets) {
+                if (workbook.SheetNames.includes(name)) {
+                    const result = getMonthFromSheet(workbook.Sheets[name]);
+                    if (result) return result;
+                }
+            }
+            // Fallback to filename
+            return getMonthFromFilename();
+        }
+
+        function parseLXCA(ws, type) {
+            const arr = XLSX.utils.sheet_to_json(ws, {header: 1, defval: null});
+            const month = resolveMonth();
+
+            data[type].month = month;
+            data[type].technicians = [];
+            data[type].generalKPIs = {};
+
+            // General KPIs (rows 3-7 = indices 2-6)
+            const generalLabels = ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponiveis', 'Horas Faltas', 'Horas Férias'];
+            data[type].generalKPIs.items = [];
+
+            for (let i = 0; i < 5; i++) {
+                const row = arr[i + 2];
+                if (!row) continue;
+                data[type].generalKPIs.items.push({
+                    label: generalLabels[i],
+                    weeks: [row[2], row[3], row[4], row[5], row[6]],
+                    monthly: row[7]
+                });
+            }
+
+            // Efficiency and Utilization (rows 9-10 = indices 8-9)
+            if (arr[8]) {
+                data[type].generalKPIs.efficiency = {
+                    weeks: [arr[8][2], arr[8][3], arr[8][4], arr[8][5], arr[8][6]],
+                    monthly: arr[8][7]
+                };
+            }
+            if (arr[9]) {
+                data[type].generalKPIs.utilization = {
+                    weeks: [arr[9][2], arr[9][3], arr[9][4], arr[9][5], arr[9][6]],
+                    monthly: arr[9][7]
+                };
+            }
+
+            // Parse technicians (starting from row 23 = index 22)
+            const techRows = type === 'lx' ? [23, 33, 43, 53] : [23, 33, 43, 53];
+            const names = type === 'lx'
+                ? ['Emanuel Gonçalves', 'Jorge Silva', 'Sérgio Pereira', 'Xavier Jorge']
+                : ['Arnaldo Cruz', 'Edmilson Fernandes', 'Filipe Bonifácio', 'Gonçalo Matos'];
+
+            for (let idx = 0; idx < techRows.length; idx++) {
+                const startRow = techRows[idx] - 1;
+                const techName = names[idx];
+                let notCountsForKpis = false;
+
+                if (arr[startRow]) {
+                    // Check if this tech should not count for KPIs
+                    for (let c = 10; c < (arr[startRow].length || 0); c++) {
+                        const cell = arr[startRow][c];
+                        if (cell && typeof cell === 'string' && cell.toLowerCase().includes('não') && cell.toLowerCase().includes('kpis')) {
+                            notCountsForKpis = true;
+                            break;
+                        }
+                    }
+                }
+
+                const tech = {
+                    name: techName,
+                    notCountsForKpis: notCountsForKpis,
+                    ht: [],
+                    hd: [],
+                    utilization: [],
+                    htProd: null,
+                    hdProd: null,
+                    hf: null,
+                    totalFaturado: null,
+                    eficienciaGlobal: null,
+                    eficienciaProdutiva: null
+                };
+
+                // HT (row N)
+                if (arr[startRow]) {
+                    tech.ht = [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]];
+                    tech.htMonthly = arr[startRow][7];
+                }
+
+                // HD (row N+1)
+                if (arr[startRow + 1]) {
+                    tech.hd = [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]];
+                    tech.hdMonthly = arr[startRow + 1][7];
+                }
+
+                // Utilización (row N+2)
+                if (arr[startRow + 2]) {
+                    tech.utilization = [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]];
+                    tech.utilizationMonthly = arr[startRow + 2][7];
+                }
+
+                // HT P/ Prod (row N+3, column H only)
+                if (arr[startRow + 3]) {
+                    tech.htProd = arr[startRow + 3][7];
+                }
+
+                // HD P/ Prod (row N+4, column H only)
+                if (arr[startRow + 4]) {
+                    tech.hdProd = arr[startRow + 4][7];
+                }
+
+                // HF (row N+5, column H only)
+                if (arr[startRow + 5]) {
+                    tech.hf = arr[startRow + 5][7];
+                }
+
+                // Total Faturado (row N+6, column H only)
+                if (arr[startRow + 6]) {
+                    tech.totalFaturado = arr[startRow + 6][7];
+                }
+
+                // Eficiencia Global (row N+7, column H only)
+                if (arr[startRow + 7]) {
+                    tech.eficienciaGlobal = arr[startRow + 7][7];
+                }
+
+                // Eficiencia Produtiva (row N+8, column H only)
+                if (arr[startRow + 8]) {
+                    tech.eficienciaProdutiva = arr[startRow + 8][7];
+                }
+
+                data[type].technicians.push(tech);
+            }
+        }
+
+        function parseCO(ws, type) {
+            const arr = XLSX.utils.sheet_to_json(ws, {header: 1, defval: null});
+            const month = resolveMonth();
+
+            data[type].month = month;
+            data[type].technicians = [];
+            data[type].prepPint = {generalKPIs: {}};
+            data[type].chapa = {generalKPIs: {}};
+            data[type].global = {generalKPIs: {}};
+
+            // Parse Prep + Pint (columns B-H)
+            const prepLabels = ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponiveis', 'Horas Faltas', 'Horas Férias'];
+            data[type].prepPint.generalKPIs.items = [];
+
+            for (let i = 0; i < 5; i++) {
+                const row = arr[i + 2];
+                if (!row) continue;
+                data[type].prepPint.generalKPIs.items.push({
+                    label: prepLabels[i],
+                    weeks: [row[2], row[3], row[4], row[5], row[6]],
+                    monthly: row[7]
+                });
+            }
+
+            if (arr[8]) {
+                data[type].prepPint.generalKPIs.efficiency = {
+                    weeks: [arr[8][2], arr[8][3], arr[8][4], arr[8][5], arr[8][6]],
+                    monthly: arr[8][7]
+                };
+            }
+            if (arr[9]) {
+                data[type].prepPint.generalKPIs.utilization = {
+                    weeks: [arr[9][2], arr[9][3], arr[9][4], arr[9][5], arr[9][6]],
+                    monthly: arr[9][7]
+                };
+            }
+
+            // Parse Chapa (columns J-P)
+            data[type].chapa.generalKPIs.items = [];
+
+            for (let i = 0; i < 5; i++) {
+                const row = arr[i + 2];
+                if (!row) continue;
+                data[type].chapa.generalKPIs.items.push({
+                    label: prepLabels[i],
+                    weeks: [row[10], row[11], row[12], row[13], row[14]],
+                    monthly: row[15]
+                });
+            }
+
+            if (arr[8]) {
+                data[type].chapa.generalKPIs.efficiency = {
+                    weeks: [arr[8][10], arr[8][11], arr[8][12], arr[8][13], arr[8][14]],
+                    monthly: arr[8][15]
+                };
+            }
+            if (arr[9]) {
+                data[type].chapa.generalKPIs.utilization = {
+                    weeks: [arr[9][10], arr[9][11], arr[9][12], arr[9][13], arr[9][14]],
+                    monthly: arr[9][15]
+                };
+            }
+
+            // Prep-only technicians (rows 13-21 Prep, 23-31 Chapa with different names)
+            const prepTechs = [{name: 'Diogo Fernandes', row: 13}, {name: 'Nuno Montês', row: 23}];
+            const chapaTechs = [{name: 'José Borges', row: 13}, {name: 'Pedro Jana', row: 23}];
+
+            for (let idx = 0; idx < 2; idx++) {
+                const startRow = prepTechs[idx].row - 1;
+                const tech = {
+                    name: prepTechs[idx].name,
+                    section: 'prep',
+                    ht: [],
+                    hd: [],
+                    utilization: [],
+                    htMonthly: null,
+                    hdMonthly: null,
+                    utilizationMonthly: null,
+                    hf: null,
+                    totalFaturado: null
+                };
+
+                if (arr[startRow]) tech.ht = [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]];
+                if (arr[startRow]) tech.htMonthly = arr[startRow][7];
+                if (arr[startRow + 1]) tech.hd = [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]];
+                if (arr[startRow + 1]) tech.hdMonthly = arr[startRow + 1][7];
+                if (arr[startRow + 2]) tech.utilization = [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]];
+                if (arr[startRow + 2]) tech.utilizationMonthly = arr[startRow + 2][7];
+                if (arr[startRow + 5]) tech.hf = arr[startRow + 5][7];
+                if (arr[startRow + 6]) tech.totalFaturado = arr[startRow + 6][7];
+                if (arr[startRow + 8]) tech.eficienciaProdutiva = arr[startRow + 8][7];
+
+                data[type].technicians.push(tech);
+            }
+
+            for (let idx = 0; idx < 2; idx++) {
+                const startRow = chapaTechs[idx].row - 1;
+                const tech = {
+                    name: chapaTechs[idx].name,
+                    section: 'chapa',
+                    ht: [],
+                    hd: [],
+                    utilization: [],
+                    htMonthly: null,
+                    hdMonthly: null,
+                    utilizationMonthly: null,
+                    hf: null,
+                    totalFaturado: null
+                };
+
+                if (arr[startRow]) tech.ht = [arr[startRow][10], arr[startRow][11], arr[startRow][12], arr[startRow][13], arr[startRow][14]];
+                if (arr[startRow]) tech.htMonthly = arr[startRow][15];
+                if (arr[startRow + 1]) tech.hd = [arr[startRow + 1][10], arr[startRow + 1][11], arr[startRow + 1][12], arr[startRow + 1][13], arr[startRow + 1][14]];
+                if (arr[startRow + 1]) tech.hdMonthly = arr[startRow + 1][15];
+                if (arr[startRow + 2]) tech.utilization = [arr[startRow + 2][10], arr[startRow + 2][11], arr[startRow + 2][12], arr[startRow + 2][13], arr[startRow + 2][14]];
+                if (arr[startRow + 2]) tech.utilizationMonthly = arr[startRow + 2][15];
+                if (arr[startRow + 5]) tech.hf = arr[startRow + 5][15];
+                if (arr[startRow + 6]) tech.totalFaturado = arr[startRow + 6][15];
+                if (arr[startRow + 8]) tech.eficienciaProdutiva = arr[startRow + 8][15];
+
+                data[type].technicians.push(tech);
+            }
+
+            // Mix technicians (rows 43, 53, 63, 73, 83, 93, 103 in columns B-H)
+            const mixRows = [43, 53, 63, 73, 83, 93, 103];
+            const mixNames = ['Carlos Antunes', 'Vitor Soutilha', 'Gyanu Pujara', 'José Fernandes', 'João Bizarro', 'Djeison Amado', 'Diamantino Silva'];
+
+            for (let idx = 0; idx < mixRows.length; idx++) {
+                const startRow = mixRows[idx] - 1;
+                const tech = {
+                    name: mixNames[idx],
+                    section: 'mix',
+                    ht: [],
+                    hd: [],
+                    utilization: [],
+                    htMonthly: null,
+                    hdMonthly: null,
+                    utilizationMonthly: null,
+                    hf: null,
+                    totalFaturado: null
+                };
+
+                if (arr[startRow]) tech.ht = [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]];
+                if (arr[startRow]) tech.htMonthly = arr[startRow][7];
+                if (arr[startRow + 1]) tech.hd = [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]];
+                if (arr[startRow + 1]) tech.hdMonthly = arr[startRow + 1][7];
+                if (arr[startRow + 2]) tech.utilization = [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]];
+                if (arr[startRow + 2]) tech.utilizationMonthly = arr[startRow + 2][7];
+                if (arr[startRow + 5]) tech.hf = arr[startRow + 5][7];
+                if (arr[startRow + 6]) tech.totalFaturado = arr[startRow + 6][7];
+                if (arr[startRow + 8]) tech.eficienciaProdutiva = arr[startRow + 8][7];
+
+                data[type].technicians.push(tech);
+            }
+        }
+
+        function parseHorasPicadas(ws, dataKey, type) {
+            const arr = XLSX.utils.sheet_to_json(ws, {header: 1, defval: null});
+
+            const resolvedMonth = resolveMonth();
+            const monthIdx = monthNames.pt.indexOf(resolvedMonth.monthFull);
+            const month = monthIdx >= 0 ? monthIdx : 0;
+            const year = parseInt(resolvedMonth.year) || 2026;
+            const lastDay = arr[2] && arr[2][1] ? arr[2][1] : 31;
+
+            data[dataKey].month = month;
+            data[dataKey].year = year;
+            data[dataKey].lastDay = lastDay;
+            data[dataKey].technicians = [];
+
+            // Find sections
+            let feriasRow = -1, faltasRow = -1, disponivelRow = -1, produtivosRow = -1;
+
+            for (let i = 5; i < Math.min(arr.length, 60); i++) {
+                const cell = arr[i][0];
+                if (cell && typeof cell === 'string') {
+                    const lower = cell.toLowerCase();
+                    if (feriasRow === -1 && (lower.includes('férias') || lower.includes('ferias'))) feriasRow = i;
+                    if (faltasRow === -1 && (lower.includes('faltas') || lower.includes('falta'))) faltasRow = i;
+                    if (disponivelRow === -1 && (lower.includes('disponiv') || lower.includes('disponív'))) disponivelRow = i;
+                    if (produtivosRow === -1 && lower.includes('produtiv')) produtivosRow = i;
+                }
+            }
+
+            // Parse technician hours from férias section (creates technician list)
+            let currentTech = null;
+
+            if (feriasRow !== -1) {
+                for (let i = feriasRow + 2; i < arr.length; i++) {
+                    const cell = arr[i][0];
+                    if (!cell) continue;
+                    if (typeof cell === 'string' && (cell.includes('Hora') || cell.includes('Total'))) break;
+
+                    const mapping = type === 'lx' ? techMappings.lx : (type === 'ca' ? techMappings.ca : techMappings.co);
+                    const shortName = mapping[cell] || cell;
+
+                    currentTech = {
+                        fullName: cell,
+                        name: shortName,
+                        ferias: {},
+                        faltas: {},
+                        disponiveis: {},
+                        produtivos: {}
+                    };
+
+                    for (let d = 1; d <= lastDay; d++) {
+                        currentTech.ferias[d] = arr[i][d] || 0;
+                    }
+
+                    data[dataKey].technicians.push(currentTech);
+                }
+            }
+
+            // Parse faltas
+            if (faltasRow !== -1) {
+                let techIdx = 0;
+                for (let i = faltasRow + 2; i < arr.length && techIdx < data[dataKey].technicians.length; i++) {
+                    const cell = arr[i][0];
+                    if (!cell) continue;
+                    if (typeof cell === 'string' && (cell.includes('Hora') || cell.includes('Total'))) break;
+
+                    for (let d = 1; d <= lastDay; d++) {
+                        data[dataKey].technicians[techIdx].faltas[d] = arr[i][d] || 0;
+                    }
+                    techIdx++;
+                }
+            }
+
+            // Parse disponiveis
+            if (disponivelRow !== -1) {
+                let techIdx = 0;
+                for (let i = disponivelRow + 2; i < arr.length && techIdx < data[dataKey].technicians.length; i++) {
+                    const cell = arr[i][0];
+                    if (!cell) continue;
+                    if (typeof cell === 'string' && (cell.includes('Hora') || cell.includes('Total'))) break;
+
+                    for (let d = 1; d <= lastDay; d++) {
+                        data[dataKey].technicians[techIdx].disponiveis[d] = arr[i][d] || 0;
+                    }
+                    techIdx++;
+                }
+            }
+
+            // Parse produtivos
+            if (produtivosRow !== -1) {
+                let techIdx = 0;
+                for (let i = produtivosRow + 2; i < arr.length && techIdx < data[dataKey].technicians.length; i++) {
+                    const cell = arr[i][0];
+                    if (!cell) continue;
+                    if (typeof cell === 'string' && (cell.includes('Hora') || cell.includes('Total'))) break;
+
+                    for (let d = 1; d <= lastDay; d++) {
+                        data[dataKey].technicians[techIdx].produtivos[d] = arr[i][d] || 0;
+                    }
+                    techIdx++;
+                }
+            }
+        }
+
+        function showUploadComplete() {
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('sidebar').classList.add('visible');
+            document.getElementById('reportContainer').classList.add('visible');
+            showReport('lx');
+        }
+
+        function formatHours(val) {
+            if (!val && val !== 0) return '—';
+            const num = parseFloat(val);
+            return num === 0 ? '—' : num.toFixed(1) + 'h';
+        }
+
+        function formatPercentage(val) {
+            if (!val && val !== 0) return '—';
+            const num = parseFloat(val) * 100;
+            return Math.round(num).toFixed(1) + '%';
+        }
+
+        function formatEuro(val) {
+            if (!val && val !== 0) return '—';
+            const num = parseFloat(val);
+            return num.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function getEfficiencyClass(val) {
+            if (!val && val !== 0) return '';
+            const num = parseFloat(val) * 100;
+            return num >= 100 ? 'efficiency-efficient' : 'efficiency-inefficient';
+        }
+
+        function getUtilizationClass(val) {
+            if (!val && val !== 0) return '';
+            const num = parseFloat(val) * 100;
+            if (num >= 85) return 'utilization-excellent';
+            if (num >= 81) return 'utilization-good';
+            return 'utilization-poor';
+        }
+
+        function renderReport(reportType) {
+            let html = '';
+
+            if (reportType === 'lx') {
+                html = renderLXCAReport('lx');
+            } else if (reportType === 'ca') {
+                html = renderLXCAReport('ca');
+            } else if (reportType === 'co') {
+                html = renderCOReport();
+            } else if (reportType === 'comparacao') {
+                html = renderComparacao();
+            }
+
+            document.getElementById('reportContent').innerHTML = html;
+        }
+
+        function renderLXCAReport(type) {
+            const d = data[type];
+            if (!d || !d.month) return '';
+
+            const color = themeColors[type];
+            const title = type === 'lx' ? 'Mecânica Lisboa' : 'Mecânica Cacém';
+            const monthStr = d.month.monthFull + ' ' + d.month.year;
+
+            let html = `
+                <div class="report-header">
+                    <div class="report-title">${title.toUpperCase()}</div>
+                    <div class="report-subtitle">KPIs Semanais e Mensais · ${monthStr}</div>
+                    <div class="month-badge" style="border-color: ${color}; color: ${color};">${d.month.month} ${d.month.year}</div>
+                </div>
+
+                <div class="section-header" style="border-left-color: ${color};">KPIs Gerais — ${title.toUpperCase()}</div>
+            `;
+
+            html += renderGeneralKPIsTable(d.generalKPIs, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (Horas Faturadas)</div>`;
+            html += renderRankingHF(d.technicians, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (€)</div>`;
+            html += renderRankingEuro(d.technicians, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Técnicos Individuais</div>`;
+            html += renderTechCardsGrid(d.technicians, color);
+
+            // Append Horas Picadas section
+            const horasKey = type === 'lx' ? 'lxHoras' : 'caHoras';
+            html += renderHorasPicadasInline(horasKey, type, color);
+
+            return html;
+        }
+
+        function renderCOReport() {
+            const d = data.co;
+            if (!d || !d.month) return '';
+
+            const color = themeColors.co;
+            const monthStr = d.month.monthFull + ' ' + d.month.year;
+
+            let html = `
+                <div class="report-header">
+                    <div class="report-title">COLISÃO</div>
+                    <div class="report-subtitle">KPIs Semanais e Mensais · ${monthStr}</div>
+                    <div class="month-badge" style="border-color: ${color}; color: ${color};">${d.month.month} ${d.month.year}</div>
+                </div>
+
+                <div class="section-header" style="border-left-color: ${color};">KPIs Gerais — Prep + Pintura</div>
+            `;
+
+            html += renderGeneralKPIsTable(d.prepPint.generalKPIs, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">KPIs Gerais — Chapa</div>`;
+            html += renderGeneralKPIsTable(d.chapa.generalKPIs, color);
+
+            // Global KPIs
+            const globalKpis = calculateGlobalKPIs(d);
+            html += `<div class="section-header" style="border-left-color: ${color};">KPIs Gerais — Global</div>`;
+            html += renderGeneralKPIsTable(globalKpis, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (Horas Faturadas)</div>`;
+            html += renderRankingHF(d.technicians, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (€)</div>`;
+            html += renderRankingEuro(d.technicians, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Técnicos — KPIs Gerais — Prep + Pintura</div>`;
+            const prepTechs = d.technicians.filter(t => t.section === 'prep');
+            html += renderTechCardsGrid(prepTechs, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Técnicos — KPIs Gerais — Chapa</div>`;
+            const chapaTechs = d.technicians.filter(t => t.section === 'chapa');
+            html += renderTechCardsGrid(chapaTechs, color);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Técnicos — Prep + Pint e Chapa</div>`;
+            const mixTechs = d.technicians.filter(t => t.section === 'mix');
+            html += renderTechCardsGrid(mixTechs, color);
+
+            // Append Horas Picadas section
+            html += renderHorasPicadasInline('coHoras', 'co', color);
+
+            return html;
+        }
+
+        function calculateGlobalKPIs(coData) {
+            const prepItems = coData.prepPint.generalKPIs.items;
+            const chapaItems = coData.chapa.generalKPIs.items;
+
+            const globalItems = [];
+            for (let i = 0; i < prepItems.length; i++) {
+                const prepItem = prepItems[i];
+                const chapaItem = chapaItems[i];
+
+                const weeks = [];
+                for (let w = 0; w < 5; w++) {
+                    const p = parseFloat(prepItem.weeks[w]) || 0;
+                    const c = parseFloat(chapaItem.weeks[w]) || 0;
+                    weeks.push(p + c);
+                }
+
+                const prepMonth = parseFloat(prepItem.monthly) || 0;
+                const chapaMonth = parseFloat(chapaItem.monthly) || 0;
+
+                globalItems.push({
+                    label: prepItem.label,
+                    weeks: weeks,
+                    monthly: prepMonth + chapaMonth
+                });
+            }
+
+            const htMonthly = globalItems[0].monthly || 1;
+            const hvMonthly = globalItems[1].monthly || 0;
+            const hdMonthly = globalItems[2].monthly || 1;
+
+            const effWeeks = [];
+            const utilWeeks = [];
+            for (let w = 0; w < 5; w++) {
+                const htW = globalItems[0].weeks[w] || 0;
+                const hvW = globalItems[1].weeks[w] || 0;
+                const hdW = globalItems[2].weeks[w] || 0;
+                effWeeks.push(htW > 0 ? hvW / htW : null);
+                utilWeeks.push(hdW > 0 ? htW / hdW : null);
+            }
+
+            return {
+                items: globalItems,
+                efficiency: {
+                    weeks: effWeeks,
+                    monthly: hvMonthly / htMonthly
+                },
+                utilization: {
+                    weeks: utilWeeks,
+                    monthly: htMonthly / hdMonthly
+                }
+            };
+        }
+
+        function renderGeneralKPIsTable(kpis, color) {
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>KPI</th>
+                        <th>S1</th>
+                        <th>S2</th>
+                        <th>S3</th>
+                        <th>S4</th>
+                        <th>S5</th>
+                        <th style="background: ${color};">Mês</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            for (const item of kpis.items) {
+                html += `<tr>
+                    <td>${item.label}</td>
+                    <td>${formatHours(item.weeks[0])}</td>
+                    <td>${formatHours(item.weeks[1])}</td>
+                    <td>${formatHours(item.weeks[2])}</td>
+                    <td>${formatHours(item.weeks[3])}</td>
+                    <td>${formatHours(item.weeks[4])}</td>
+                    <td class="hours-cell">${formatHours(item.monthly)}</td>
+                </tr>`;
+            }
+
+            html += `<tr style="border-top: 2px solid #cbd5e0;">
+                <td>Eficiência Produtiva</td>`;
+            for (let i = 0; i < 5; i++) {
+                const v = kpis.efficiency.weeks[i];
+                html += `<td class="percentage-cell ${getEfficiencyClass(v)}">${formatPercentage(v)}</td>`;
+            }
+            html += `<td class="percentage-cell ${getEfficiencyClass(kpis.efficiency.monthly)}">${formatPercentage(kpis.efficiency.monthly)}</td>
+            </tr>
+            <tr>
+                <td>Taxa de Utilização</td>`;
+            for (let i = 0; i < 5; i++) {
+                const v = kpis.utilization.weeks[i];
+                html += `<td class="percentage-cell ${getUtilizationClass(v)}">${formatPercentage(v)}</td>`;
+            }
+            html += `<td class="percentage-cell ${getUtilizationClass(kpis.utilization.monthly)}">${formatPercentage(kpis.utilization.monthly)}</td>
+            </tr>
+            </tbody>
+            </table>`;
+
+            return html;
+        }
+
+        function renderTechCardsGrid(technicians, color) {
+            let html = '';
+            for (let i = 0; i < technicians.length; i += 2) {
+                html += `<div class="grid-2 print-pair">`;
+                html += renderTechCard(technicians[i], color);
+                if (i + 1 < technicians.length) {
+                    html += renderTechCard(technicians[i + 1], color);
+                }
+                html += `</div>`;
+            }
+            return html;
+        }
+
+        function renderTechCard(tech, color) {
+            const efClass = getEfficiencyClass(tech.eficienciaProdutiva);
+            const utilClass = getUtilizationClass(tech.utilizationMonthly);
+
+            let html = `
+                <div class="tech-card" style="border-left-color: ${color};">
+                    <div class="tech-card-name">${tech.name}</div>
+            `;
+
+            if (tech.notCountsForKpis) {
+                html += `<div class="tech-warning">★ NÃO CONTA PARA KPIS GERAIS</div>`;
+            }
+
+            html += `
+                    <table>
+                        <thead>
+                            <tr style="background: ${color};">
+                                <th>Sem.</th>
+                                <th>HT</th>
+                                <th>HD</th>
+                                <th>Util.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let i = 0; i < 5; i++) {
+                const ht = tech.ht[i];
+                const hd = tech.hd[i];
+                const util = tech.utilization[i];
+                const utilClass = getUtilizationClass(util);
+
+                html += `<tr>
+                    <td>S${i + 1}</td>
+                    <td>${formatHours(ht)}</td>
+                    <td>${formatHours(hd)}</td>
+                    <td ${utilClass ? `class="${utilClass}"` : ''}>${formatPercentage(util)}</td>
+                </tr>`;
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="badges-row">
+                        <div class="badge ${getEfficiencyClass(tech.eficienciaProdutiva)}">
+                            <div class="badge-label">Ef. Produtiva</div>
+                            <div class="badge-value">${formatPercentage(tech.eficienciaProdutiva)}</div>
+                        </div>
+                        <div class="badge ${getUtilizationClass(tech.utilizationMonthly)}">
+                            <div class="badge-label">Utilização</div>
+                            <div class="badge-value">${formatPercentage(tech.utilizationMonthly)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function renderRankingHF(technicians, color) {
+            const allForHF = technicians.filter(t => t.hf).sort((a, b) => (parseFloat(b.hf) || 0) - (parseFloat(a.hf) || 0));
+            const medals = ['🥇', '🥈', '🥉'];
+            let html = `<table><thead><tr><th>#</th><th>Técnico</th><th>HF Total (mês)</th></tr></thead><tbody>`;
+            for (let i = 0; i < allForHF.length; i++) {
+                const tech = allForHF[i];
+                const rank = i < 3 ? medals[i] : (i + 1) + 'º';
+                html += `<tr><td class="medal">${rank}</td><td>${tech.name}</td><td style="color: ${color}; font-weight: 600;">${formatHours(tech.hf)}</td></tr>`;
+            }
+            html += `</tbody></table>`;
+            return html;
+        }
+
+        function renderRankingEuro(technicians, color) {
+            const allForEuro = technicians.filter(t => t.totalFaturado).sort((a, b) => (parseFloat(b.totalFaturado) || 0) - (parseFloat(a.totalFaturado) || 0));
+            const medals = ['🥇', '🥈', '🥉'];
+            let html = `<table><thead><tr><th>#</th><th>Técnico</th><th>Total Faturado (mês)</th></tr></thead><tbody>`;
+            for (let i = 0; i < allForEuro.length; i++) {
+                const tech = allForEuro[i];
+                const rank = i < 3 ? medals[i] : (i + 1) + 'º';
+                html += `<tr><td class="medal">${rank}</td><td>${tech.name}</td><td style="color: ${color}; font-weight: 600;">${formatEuro(tech.totalFaturado)} €</td></tr>`;
+            }
+            const totalEuro = allForEuro.reduce((sum, t) => sum + (parseFloat(t.totalFaturado) || 0), 0);
+            html += `<tr class="total-row"><td colspan="2">TOTAL</td><td>${formatEuro(totalEuro)} €</td></tr>`;
+            html += `</tbody></table>`;
+            return html;
+        }
+
+        function renderComparacao() {
+            const monthStr = data.lx.month ? data.lx.month.monthFull + ' ' + data.lx.month.year : 'Período';
+
+            let html = `
+                <div class="report-header">
+                    <div class="report-title">COMPARAÇÃO ENTRE TÉCNICOS</div>
+                    <div class="report-subtitle">KPIs Mensais · Todas as Oficinas · ${monthStr}</div>
+                    <div class="month-badge" style="border-color: #3182ce; color: #3182ce;">${data.lx.month.month} ${data.lx.month.year}</div>
+                </div>
+
+                <div class="section-header" style="border-left-color: #2d3748;">Resumo Por Oficina — Médias dos Técnicos</div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: #3182ce;"></div>
+                        <span>Mecânica Lisboa</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: #90cdf4;"></div>
+                        <span>Lisboa (fora de KPIs Gerais)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: #38a169;"></div>
+                        <span>Mecânica Cacém</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: #dd6b20;"></div>
+                        <span>Colisão – Prep + Pintura</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: #805ad5;"></div>
+                        <span>Colisão – Chapa</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: #e53e3e;"></div>
+                        <span>Colisão Global</span>
+                    </div>
+                </div>
+            `;
+
+            html += renderComparacaoResume();
+
+            html += `<div class="section-header" style="border-left-color: #2d3748;">Rankings Individuais — Eficiência e Utilização</div>`;
+            html += renderComparacaoRankings();
+
+            return html;
+        }
+
+        function renderComparacaoResume() {
+            const lxTechs = data.lx.technicians.filter(t => !t.notCountsForKpis);
+            const lxAllTechs = data.lx.technicians;
+            const caTechs = data.ca.technicians;
+            const coTechs = data.co.technicians;
+
+            const lxEffAvg = lxTechs.length > 0 ? lxTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / lxTechs.length : 0;
+            const lxUtilAvg = lxTechs.length > 0 ? lxTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / lxTechs.length : 0;
+
+            const caEffAvg = caTechs.length > 0 ? caTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / caTechs.length : 0;
+            const caUtilAvg = caTechs.length > 0 ? caTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / caTechs.length : 0;
+
+            const prepTechs = coTechs.filter(t => t.section === 'prep' || t.section === 'mix');
+            const chapaTechs = coTechs.filter(t => t.section === 'chapa' || t.section === 'mix');
+
+            const prepEffAvg = prepTechs.length > 0 ? prepTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / prepTechs.length : 0;
+            const prepUtilAvg = prepTechs.length > 0 ? prepTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / prepTechs.length : 0;
+
+            const chapaEffAvg = chapaTechs.length > 0 ? chapaTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / chapaTechs.length : 0;
+            const chapaUtilAvg = chapaTechs.length > 0 ? chapaTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / chapaTechs.length : 0;
+
+            const globalEff = data.co.global && data.co.global.generalKPIs && data.co.global.generalKPIs.efficiency
+                ? data.co.global.generalKPIs.efficiency.monthly
+                : coTechs.length > 0 ? coTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / coTechs.length : 0;
+            const globalUtil = data.co.global && data.co.global.generalKPIs && data.co.global.generalKPIs.utilization
+                ? data.co.global.generalKPIs.utilization.monthly
+                : coTechs.length > 0 ? coTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / coTechs.length : 0;
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Oficina</th>
+                            <th>Ef. Produtiva (média)</th>
+                            <th>Utilização (média)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mecânica Lisboa</td>
+                            <td class="percentage-cell ${getEfficiencyClass(lxEffAvg)}">${formatPercentage(lxEffAvg)}</td>
+                            <td class="percentage-cell ${getUtilizationClass(lxUtilAvg)}">${formatPercentage(lxUtilAvg)}</td>
+                        </tr>
+                        <tr>
+                            <td>Mecânica Cacém</td>
+                            <td class="percentage-cell ${getEfficiencyClass(caEffAvg)}">${formatPercentage(caEffAvg)}</td>
+                            <td class="percentage-cell ${getUtilizationClass(caUtilAvg)}">${formatPercentage(caUtilAvg)}</td>
+                        </tr>
+                        <tr>
+                            <td>Colisão Prep+Pint</td>
+                            <td class="percentage-cell ${getEfficiencyClass(prepEffAvg)}">${formatPercentage(prepEffAvg)}</td>
+                            <td class="percentage-cell ${getUtilizationClass(prepUtilAvg)}">${formatPercentage(prepUtilAvg)}</td>
+                        </tr>
+                        <tr>
+                            <td>Colisão Chapa</td>
+                            <td class="percentage-cell ${getEfficiencyClass(chapaEffAvg)}">${formatPercentage(chapaEffAvg)}</td>
+                            <td class="percentage-cell ${getUtilizationClass(chapaUtilAvg)}">${formatPercentage(chapaUtilAvg)}</td>
+                        </tr>
+                        <tr>
+                            <td>Colisão Global</td>
+                            <td class="percentage-cell ${getEfficiencyClass(globalEff)}">${formatPercentage(globalEff)}</td>
+                            <td class="percentage-cell ${getUtilizationClass(globalUtil)}">${formatPercentage(globalUtil)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            return html;
+        }
+
+        function renderComparacaoRankings() {
+            const allTechs = [];
+
+            for (const tech of data.lx.technicians) {
+                allTechs.push({...tech, workshop: 'LX', workshopColor: '#3182ce', workshopLabel: 'LX'});
+            }
+            for (const tech of data.ca.technicians) {
+                allTechs.push({...tech, workshop: 'CA', workshopColor: '#38a169', workshopLabel: 'CA'});
+            }
+            for (const tech of data.co.technicians) {
+                const section = tech.section === 'prep' ? 'CO Prep' : (tech.section === 'chapa' ? 'CO Chapa' : 'CO Mix');
+                const sectionColor = tech.section === 'prep' ? '#dd6b20' : (tech.section === 'chapa' ? '#805ad5' : '#e53e3e');
+                allTechs.push({...tech, workshop: section, workshopColor: sectionColor, workshopLabel: section});
+            }
+
+            const byEff = [...allTechs].sort((a, b) => (parseFloat(b.eficienciaProdutiva) || 0) - (parseFloat(a.eficienciaProdutiva) || 0));
+            const byUtil = [...allTechs].sort((a, b) => (parseFloat(b.utilizationMonthly) || 0) - (parseFloat(a.utilizationMonthly) || 0));
+            const byHF = [...allTechs].filter(t => t.hf).sort((a, b) => (parseFloat(b.hf) || 0) - (parseFloat(a.hf) || 0));
+            const byEuro = [...allTechs].filter(t => t.totalFaturado).sort((a, b) => (parseFloat(b.totalFaturado) || 0) - (parseFloat(a.totalFaturado) || 0));
+
+            const medals = ['🥇', '🥈', '🥉'];
+
+            let html = `<div class="ranking-grid">
+                <div>
+                    <h4 style="margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">Ranking Eficiência Produtiva</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Técnico</th>
+                                <th>Oficina</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let i = 0; i < byEff.length; i++) {
+                const tech = byEff[i];
+                const rank = i < 3 ? medals[i] : (i + 1) + 'º';
+                html += `<tr>
+                    <td class="medal">${rank}</td>
+                    <td>${tech.name}</td>
+                    <td><span style="background: ${tech.workshopColor}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; font-weight: 600;">${tech.workshopLabel}</span></td>
+                    <td class="percentage-cell ${getEfficiencyClass(tech.eficienciaProdutiva)}">${formatPercentage(tech.eficienciaProdutiva)}</td>
+                </tr>`;
+            }
+
+            html += `</tbody></table>
+                    <div style="margin-top: 8px; font-size: 0.75rem; color: #718096;">Meta: 100.0%</div>
+                </div>
+
+                <div>
+                    <h4 style="margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">Ranking Taxa de Utilização</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Técnico</th>
+                                <th>Oficina</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let i = 0; i < byUtil.length; i++) {
+                const tech = byUtil[i];
+                const rank = i < 3 ? medals[i] : (i + 1) + 'º';
+                html += `<tr>
+                    <td class="medal">${rank}</td>
+                    <td>${tech.name}</td>
+                    <td><span style="background: ${tech.workshopColor}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; font-weight: 600;">${tech.workshopLabel}</span></td>
+                    <td class="percentage-cell ${getUtilizationClass(tech.utilizationMonthly)}">${formatPercentage(tech.utilizationMonthly)}</td>
+                </tr>`;
+            }
+
+            html += `</tbody></table>
+                    <div style="margin-top: 8px; font-size: 0.75rem; color: #718096;">Meta: 85.0%</div>
+                </div>
+            </div>`;
+
+            html += `<div class="ranking-grid full">
+                <div>
+                    <h4 style="margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">Ranking Horas Faturadas (HF)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Técnico</th>
+                                <th>Oficina</th>
+                                <th>HF (mês)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let i = 0; i < byHF.length; i++) {
+                const tech = byHF[i];
+                const rank = i < 3 ? medals[i] : (i + 1) + 'º';
+                html += `<tr>
+                    <td class="medal">${rank}</td>
+                    <td>${tech.name}</td>
+                    <td><span style="background: ${tech.workshopColor}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; font-weight: 600;">${tech.workshopLabel}</span></td>
+                    <td style="color: #3182ce; font-weight: 600;">${formatHours(tech.hf)}</td>
+                </tr>`;
+            }
+
+            html += `</tbody></table>
+                </div>
+            </div>`;
+
+            html += `<div class="ranking-grid full">
+                <div>
+                    <h4 style="margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">Ranking Total Faturado (€)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Técnico</th>
+                                <th>Oficina</th>
+                                <th>Total Faturado (mês)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let i = 0; i < byEuro.length; i++) {
+                const tech = byEuro[i];
+                const rank = i < 3 ? medals[i] : (i + 1) + 'º';
+                html += `<tr>
+                    <td class="medal">${rank}</td>
+                    <td>${tech.name}</td>
+                    <td><span style="background: ${tech.workshopColor}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; font-weight: 600;">${tech.workshopLabel}</span></td>
+                    <td style="color: #3182ce; font-weight: 600;">${formatEuro(tech.totalFaturado)} €</td>
+                </tr>`;
+            }
+
+            const totalEuro = byEuro.reduce((sum, t) => sum + (parseFloat(t.totalFaturado) || 0), 0);
+            html += `<tr class="total-row">
+                <td colspan="3">TOTAL</td>
+                <td>${formatEuro(totalEuro)} €</td>
+            </tr>`;
+
+            html += `</tbody></table>
+                </div>
+            </div>`;
+
+            return html;
+        }
+
+        function renderHorasPicadas(dataKey, type) {
+            const d = data[dataKey];
+            if (!d || !d.technicians || d.technicians.length === 0) return '';
+
+            const month = monthNames.pt[d.month];
+            const year = d.year;
+            const monthStr = month + ' ' + year;
+            const color = themeColors[type];
+            const workshopName = type === 'lx' ? 'Mecânica Lisboa' : (type === 'ca' ? 'Mecânica Cacém' : 'Colisão');
+
+            let html = `
+                <div class="report-header">
+                    <div class="report-title">HORAS PICADAS</div>
+                    <div class="report-subtitle">${workshopName} · ${monthStr}</div>
+                    <div class="month-badge" style="border-color: ${color}; color: ${color};">HORAS DIÁRIAS</div>
+                </div>
+
+                <div class="section-header" style="border-left-color: ${color};">Horas Produtivas Diárias — ${monthStr.toUpperCase()}</div>
+            `;
+
+            html += renderHorasPicadasTable(d, type, monthStr);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Resumo do Mês</div>`;
+            html += renderHorasPicadasResume(d, type);
+
+            return html;
+        }
+
+        function renderHorasPicadasInline(dataKey, type, color) {
+            const d = data[dataKey];
+            if (!d || !d.technicians || d.technicians.length === 0) return '';
+
+            const month = monthNames.pt[d.month];
+            const year = d.year;
+            const monthStr = month + ' ' + year;
+
+            let html = `<div class="section-header" style="border-left-color: ${color};">Horas Picadas — Horas Produtivas Diárias</div>`;
+            html += renderHorasPicadasTable(d, type, monthStr);
+
+            html += `<div class="section-header" style="border-left-color: ${color};">Horas Picadas — Resumo do Mês</div>`;
+            html += renderHorasPicadasResume(d, type);
+
+            return html;
+        }
+
+        function renderHorasPicadasTable(d, type, monthStr) {
+            let html = `<div class="horas-table"><table>
+                <thead>
+                    <tr>
+                        <th>TÉCNICO</th>
+            `;
+
+            for (let day = 1; day <= d.lastDay; day++) {
+                const date = new Date(d.year, d.month, day);
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                html += `<th${isWeekend ? ' class="weekend"' : ''}>${day}</th>`;
+            }
+
+            html += `<th>TOT</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            for (const tech of d.technicians) {
+                html += `<tr>
+                    <td>${tech.name}</td>
+            `;
+
+                let totalProd = 0;
+
+                for (let day = 1; day <= d.lastDay; day++) {
+                    const prod = tech.produtivos[day] || 0;
+                    const feria = tech.ferias[day] || 0;
+                    const falta = tech.faltas[day] || 0;
+                    const disponivel = tech.disponiveis[day] || 0;
+
+                    const date = new Date(d.year, d.month, day);
+                    const dayOfWeek = date.getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                    let cellClass = '';
+                    let cellText = '';
+
+                    if (feria > 0) {
+                        cellClass = 'color-ferias';
+                        cellText = 'F';
+                    } else if (falta > 0) {
+                        cellClass = 'color-falta';
+                        cellText = 'A';
+                    } else if (disponivel === 0) {
+                        cellClass = 'color-no-data';
+                    } else if (prod >= 6.8) {
+                        cellClass = 'color-productive-high';
+                        cellText = prod.toFixed(1);
+                    } else if (prod >= 5.0) {
+                        cellClass = 'color-productive-medium';
+                        cellText = prod.toFixed(1);
+                    } else if (prod > 0) {
+                        cellClass = 'color-productive-low';
+                        cellText = prod.toFixed(1);
+                    } else if (disponivel > 0) {
+                        cellClass = 'color-no-data';
+                    } else {
+                        if (isWeekend) cellClass = 'weekend';
+                    }
+
+                    html += `<td class="${cellClass}${isWeekend && !cellClass ? ' weekend' : ''}">${cellText}</td>`;
+                    if (prod > 0) totalProd += prod;
+                }
+
+                html += `<td class="hours-cell">${Math.round(totalProd)}h</td>
+                    </tr>
+            `;
+            }
+
+            html += `</tbody>
+            </table></div>`;
+
+            // Legend
+            html += `<div class="legenda-horas">
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #38a169; color: white;">≥6.8h</div>
+                    <span>meta</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #dd6b20; color: white;">5–6.8h</div>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #c53030; color: white;">&lt;5h</div>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #cbd5e0;"></div>
+                    <span>Sem picagem</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #319795; color: white;">F</div>
+                    <span>Férias</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #9b2c2c; color: white;">A</div>
+                    <span>Ausência</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-square" style="background: #e2e8f0;"></div>
+                    <span>Fim de semana</span>
+                </div>
+            </div>`;
+
+            return html;
+        }
+
+        function renderHorasPicadasResume(d, type) {
+            let html = `<table class="resumo-table">
+                <thead>
+                    <tr>
+                        <th>Técnico</th>
+                        <th>H. Produtivas</th>
+                        <th>H. Disponíveis</th>
+                        <th>H. Férias</th>
+                        <th>H. Ausência</th>
+                        <th>Média/dia útil</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            for (const tech of d.technicians) {
+                let totalProd = 0, totalDisp = 0, totalFerias = 0, totalFaltas = 0;
+
+                for (let day = 1; day <= d.lastDay; day++) {
+                    totalProd += tech.produtivos[day] || 0;
+                    totalDisp += tech.disponiveis[day] || 0;
+                    totalFerias += tech.ferias[day] || 0;
+                    totalFaltas += tech.faltas[day] || 0;
+                }
+
+                const workingDays = 0;
+                let daysUsed = 0;
+                for (let day = 1; day <= d.lastDay; day++) {
+                    const disp = tech.disponiveis[day] || 0;
+                    if (disp > 0) daysUsed++;
+                }
+
+                const daysWithWork = daysUsed - Math.ceil(totalFerias / 6.8) - Math.ceil(totalFaltas / 6.8);
+                const avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
+
+                const avgClass = avgPerDay >= 6.8 ? 'color-productive-high' : (avgPerDay >= 5.0 ? 'color-productive-medium' : (avgPerDay > 0 ? 'color-productive-low' : ''));
+
+                html += `<tr>
+                    <td>${tech.name}</td>
+                    <td>${totalProd.toFixed(1)}h</td>
+                    <td>${totalDisp.toFixed(1)}h</td>
+                    <td class="ferias-bg">${totalFerias.toFixed(1)}h</td>
+                    <td class="falta-bg">${totalFaltas.toFixed(1)}h</td>
+                    <td ${avgClass ? `class="${avgClass}"` : ''}>${avgPerDay.toFixed(1)}h</td>
+                </tr>`;
+            }
+
+            html += `</tbody></table>
+                <div class="nota-minima">Mínimo diário para 100% utilização: 6.8h</div>`;
+
+            return html;
+        }
+
+        function showReport(type) {
+            currentReport = type;
+
+            document.querySelectorAll('.sidebar-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const buttons = Array.from(document.querySelectorAll('.sidebar-button'));
+            const reports = {
+                'lx': 0, 'ca': 1, 'co': 2, 'comparacao': 3
+            };
+            if (reports[type] !== undefined) {
+                buttons[reports[type]].classList.add('active');
+            }
+
+            renderReport(type);
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function generateAll() {
+            // Generate all reports in sequence
+            const reports = ['lx', 'ca', 'co', 'comparacao'];
+            let idx = 0;
+
+            function printNext() {
+                if (idx >= reports.length) {
+                    alert('Todos os relatórios foram gerados');
+                    return;
+                }
+                showReport(reports[idx]);
+                setTimeout(() => {
+                    window.print();
+                    idx++;
+                    setTimeout(printNext, 1000);
+                }, 500);
+            }
+
+            printNext();
+        }
+
+        function resetApp() {
+            document.getElementById('uploadArea').style.display = 'flex';
+            document.getElementById('sidebar').classList.remove('visible');
+            document.getElementById('reportContainer').classList.remove('visible');
+            document.getElementById('fileInput').value = '';
+            workbook = null;
+            data = {};
+            currentReport = null;
+        }
+    
+
+    // ============================================================
+    // IFRAME MODULE ADDITIONS (SharePoint + Dashboard integration)
+    // ============================================================
+
+    function getTimestamp() {
+        var d = new Date();
+        return d.getFullYear() + '-' +
+            String(d.getMonth()+1).padStart(2,'0') + '-' +
+            String(d.getDate()).padStart(2,'0') + '_' +
+            String(d.getHours()).padStart(2,'0') +
+            String(d.getMinutes()).padStart(2,'0') +
+            String(d.getSeconds()).padStart(2,'0');
+    }
+
+    function saveFileToSharePoint(file, folderKey, spName) {
+        if (!window.parent || window.parent === window) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            window.parent.postMessage({
+                type: 'saveToSharePoint',
+                folderKey: folderKey,
+                fileName: spName || file.name,
+                fileContent: e.target.result,
+                contentType: file.type
+            }, '*');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveGeneratedHtmlToSharePoint(fileName, htmlContent) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({
+            type: 'saveToSharePoint',
+            folderKey: 'kpis_gerados',
+            fileName: fileName,
+            fileContent: htmlContent,
+            contentType: 'text/html'
+        }, '*');
+    }
+
+    // Listen for save results from parent
+    var spSaveCount = 0, spSaveTotal = 0, spSaveErrors = [];
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'saveToSharePointResult') return;
+        spSaveCount++;
+        if (!event.data.success) {
+            spSaveErrors.push(event.data.fileName + ': ' + event.data.error);
+        }
+        if (spSaveCount >= spSaveTotal && spSaveTotal > 0) {
+            var btn = document.getElementById('publishDashBtn');
+            if (btn) {
+                btn.style.display = 'block';
+                if (spSaveErrors.length === 0) {
+                    btn.textContent = 'Validado, publicado e guardado no SharePoint!';
+                    btn.style.background = '#0d904f';
+                } else {
+                    btn.textContent = 'Publicado mas com erros no SharePoint (' + spSaveErrors.length + ')';
+                    btn.style.background = '#d93025';
+                }
+            }
+        }
+    });
+
+    // Override the showUploadComplete function to show result cards instead
+    function showUploadComplete() {
+        document.getElementById('uploadArea').style.display = 'none';
+        // Show results area with cards (NOT the sidebar-based report view)
+        var resultsArea = document.getElementById('resultsArea');
+        resultsArea.classList.add('visible');
+        showResultCards();
+    }
+
+    function showResultCards() {
+        var resDiv = document.getElementById('resultsContent');
+        resDiv.innerHTML = '';
+
+        var monthInfo = resolveMonth();
+        var periodoLabel = monthInfo.monthFull + ' ' + monthInfo.year;
+
+        var reports = [
+            { key: 'lx', label: 'Mecânica Lisboa', color: '#3182ce', info: getReportSummary('lx') },
+            { key: 'ca', label: 'Mecânica Cacém', color: '#38a169', info: getReportSummary('ca') },
+            { key: 'co', label: 'Colisão', color: '#dd6b20', info: getReportSummary('co') },
+            { key: 'comparacao', label: 'Comparação Entre Técnicos', color: '#2d3748', info: periodoLabel + ' | Todas as oficinas' }
+        ];
+
+        reports.forEach(function(r) {
+            var card = document.createElement('div');
+            card.className = 'result-card';
+            card.style.borderLeftColor = r.color;
+            card.innerHTML = '<div class="result-info"><div class="result-dot" style="background:' + r.color + '"></div><div><div class="result-name">' + r.label + '</div><div class="result-margin">' + r.info + '</div></div></div><button class="dl-btn" onclick="openPrintPreviewKPIs(\'' + r.key + '\')">Pré-visualizar</button>';
+            resDiv.appendChild(card);
+        });
+
+        // Preview All button
+        var allBtn = document.createElement('button');
+        allBtn.style.cssText = 'width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#3498db,#2980b9);color:white;border:none;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;font-family:inherit';
+        allBtn.textContent = 'Pré-visualizar Todos (4 relatórios)';
+        allBtn.addEventListener('click', function() { openPrintPreviewKPIs('all'); });
+        resDiv.appendChild(allBtn);
+
+        // Validate + Dashboard + SharePoint section
+        var dashSection = document.createElement('div');
+        dashSection.style.cssText = 'margin-top:20px;padding:16px;background:#f0f7ff;border:1px solid #b3d4fc;border-radius:10px;';
+        dashSection.innerHTML = '<div style="font-size:14px;font-weight:600;color:#1e3a5f;margin-bottom:8px;">Validar e Publicar</div>' +
+            '<div style="font-size:12px;color:#555;margin-bottom:12px;">Ao confirmar, os dados de KPIs serão apresentados no dashboard da Intranet e os relatórios serão guardados no SharePoint.</div>' +
+            '<div id="dashPreview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;"></div>' +
+            '<button id="publishDashBtn" style="width:100%;padding:12px;background:#0d904f;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Validar, Carregar no Dashboard e Guardar no SharePoint</button>' +
+            '<div id="publishConfirmBox" style="display:none;margin-top:10px;padding:12px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;text-align:center;">' +
+                '<div style="font-size:13px;font-weight:600;color:#856404;margin-bottom:8px;">Confirma que validou os relatórios?</div>' +
+                '<div style="font-size:12px;color:#856404;margin-bottom:10px;">Os dados serão publicados no dashboard e guardados no SharePoint.</div>' +
+                '<button id="publishConfirmYes" style="padding:8px 24px;background:#0d904f;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;font-family:inherit;">Sim, Publicar</button>' +
+                '<button id="publishConfirmNo" style="padding:8px 24px;background:#6c757d;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>' +
+            '</div>';
+        resDiv.appendChild(dashSection);
+
+        // Render preview cards
+        var previewDiv = document.getElementById('dashPreview');
+        var depts = [
+            { label: 'Mec. Lisboa', color: '#3182ce', eff: getEfficiency('lx') },
+            { label: 'Mec. Cacém', color: '#38a169', eff: getEfficiency('ca') },
+            { label: 'Colisão', color: '#dd6b20', eff: getEfficiency('co') }
+        ];
+        depts.forEach(function(dept) {
+            var div = document.createElement('div');
+            div.style.cssText = 'background:white;padding:10px;border-radius:6px;text-align:center;border:1px solid #e0e0e0;';
+            div.innerHTML = '<div style="font-size:11px;font-weight:600;color:#555;">' + dept.label + '</div>' +
+                '<div style="font-size:18px;font-weight:700;color:' + dept.color + ';">' + dept.eff + '</div>' +
+                '<div style="font-size:10px;color:#888;">Ef. Produtiva</div>';
+            previewDiv.appendChild(div);
+        });
+
+        // Bind publish button
+        document.getElementById('publishDashBtn').addEventListener('click', function() {
+            document.getElementById('publishConfirmBox').style.display = 'block';
+            this.style.display = 'none';
+        });
+        document.getElementById('publishConfirmNo').addEventListener('click', function() {
+            document.getElementById('publishConfirmBox').style.display = 'none';
+            document.getElementById('publishDashBtn').style.display = 'block';
+        });
+        document.getElementById('publishConfirmYes').addEventListener('click', function() {
+            document.getElementById('publishConfirmBox').style.display = 'none';
+            var btn = document.getElementById('publishDashBtn');
+            btn.style.display = 'block';
+            btn.textContent = 'A publicar e guardar...';
+            btn.style.background = '#666';
+            btn.disabled = true;
+
+            // Reset SP counters
+            spSaveCount = 0;
+            spSaveTotal = 4; // 4 reports
+            spSaveErrors = [];
+
+            // 1. Build and send KPI dashboard payload
+            var kpiPayload = buildKpiDashboardPayload();
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'kpiDashboardUpdate', payload: kpiPayload }, '*');
+            }
+
+            // 2. Save generated HTML reports to SharePoint
+            var ts = getTimestamp();
+            var reportKeys = ['lx', 'ca', 'co', 'comparacao'];
+            var reportLabels = ['Lisboa', 'Cacem', 'Colisao', 'Comparacao'];
+            reportKeys.forEach(function(key, idx) {
+                var fullHtml = generateStandaloneReportHTML(key);
+                var spGenName = 'KPIs_' + reportLabels[idx] + '_' + ts + '.html';
+                saveGeneratedHtmlToSharePoint(spGenName, fullHtml);
+            });
+        });
+    }
+
+    function getReportSummary(type) {
+        var monthInfo = resolveMonth();
+        var periodoLabel = monthInfo.monthFull + ' ' + monthInfo.year;
+        if (type === 'lx' || type === 'ca') {
+            var d = data[type];
+            if (d && d.generalKPIs && d.generalKPIs.efficiency) {
+                var eff = d.generalKPIs.efficiency.monthly;
+                return periodoLabel + ' | Ef. Produtiva: ' + formatPercentage(eff);
+            }
+        } else if (type === 'co') {
+            var d = data.co;
+            if (d && d.prepPint && d.prepPint.generalKPIs && d.prepPint.generalKPIs.efficiency) {
+                return periodoLabel + ' | Prep+Pint Ef: ' + formatPercentage(d.prepPint.generalKPIs.efficiency.monthly);
+            }
+        }
+        return periodoLabel;
+    }
+
+    function getEfficiency(type) {
+        if (type === 'lx' || type === 'ca') {
+            var d = data[type];
+            if (d && d.generalKPIs && d.generalKPIs.efficiency) return formatPercentage(d.generalKPIs.efficiency.monthly);
+        } else if (type === 'co') {
+            var gk = calculateGlobalKPIs(data.co);
+            if (gk && gk.efficiency) return formatPercentage(gk.efficiency.monthly);
+        }
+        return '—';
+    }
+
+    function openPrintPreviewKPIs(reportKey) {
+        var pw = window.open('', '_blank');
+        if (!pw) { alert('Popup bloqueado.'); return; }
+
+        var reports = reportKey === 'all' ? ['lx', 'ca', 'co', 'comparacao'] : [reportKey];
+        var labels = { lx: 'Mecânica Lisboa', ca: 'Mecânica Cacém', co: 'Colisão', comparacao: 'Comparação Entre Técnicos' };
+
+        pw.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pré-visualização — KPIs</title>');
+        pw.document.write('<style>');
+        pw.document.write('body{font-family:Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}');
+        pw.document.write('.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;}');
+        pw.document.write('.report-header-bar{background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;}');
+        pw.document.write('.report-frame{width:100%;border:none;min-height:600px;}');
+        pw.document.write('.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
+        pw.document.write('.toolbar h1{font-size:18px;margin:0;color:#1e3a5f;}');
+        pw.document.write('.btn-print{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
+        pw.document.write('@media print{.toolbar{display:none;}.report-section{break-inside:avoid;box-shadow:none;}.report-frame{min-height:auto;}}');
+        pw.document.write('</style></head><body>');
+        pw.document.write('<div class="toolbar"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>');
+        pw.document.write('<button class="btn-print" onclick="window.print()">Imprimir Todos</button></div>');
+        
+        reports.forEach(function(key, idx) {
+            pw.document.write('<div class="report-section"><div class="report-header-bar">' + labels[key] + '</div>');
+            pw.document.write('<iframe id="frame_' + idx + '" class="report-frame"></iframe></div>');
+        });
+        pw.document.write('</body></html>');
+        pw.document.close();
+
+        setTimeout(function() {
+            reports.forEach(function(key, idx) {
+                var f = pw.document.getElementById('frame_' + idx);
+                if (f) {
+                    f.srcdoc = generateStandaloneReportHTML(key);
+                    f.onload = function() {
+                        try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch(e) {}
+                    };
+                }
+            });
+        }, 200);
+    }
+
+    function generateStandaloneReportHTML(reportKey) {
+        var reportHtml = '';
+        if (reportKey === 'lx') reportHtml = renderLXCAReport('lx');
+        else if (reportKey === 'ca') reportHtml = renderLXCAReport('ca');
+        else if (reportKey === 'co') reportHtml = renderCOReport();
+        else if (reportKey === 'comparacao') reportHtml = renderComparacao();
+
+        return '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KPIs Report</title>' +
+            '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+            '<style>' + document.querySelector('style').textContent + '</style></head><body style="padding:20px;background:#f5f5f5;">' +
+            reportHtml + '</body></html>';
+    }
+
+    function backToResults() {
+        document.getElementById('reportContainer').classList.remove('visible');
+        document.getElementById('resultsArea').classList.add('visible');
+        document.getElementById('sidebar').classList.remove('visible');
+    }
+
+    // Override original showReport to work from results view
+    var _originalShowReport = showReport;
+    showReport = function(type) {
+        document.getElementById('resultsArea').classList.remove('visible');
+        document.getElementById('reportContainer').classList.add('visible');
+        document.getElementById('sidebar').classList.add('visible');
+        _originalShowReport(type);
+    };
+
+    // Override original resetApp
+    resetApp = function() {
+        document.getElementById('uploadArea').style.display = 'flex';
+        document.getElementById('sidebar').classList.remove('visible');
+        document.getElementById('reportContainer').classList.remove('visible');
+        document.getElementById('resultsArea').classList.remove('visible');
+        document.getElementById('fileInput').value = '';
+        workbook = null;
+        data = {};
+        currentReport = null;
+    };
+
+    // ============================================================
+    // BUILD KPI DASHBOARD PAYLOAD
+    // ============================================================
+    function buildKpiDashboardPayload() {
+        var monthInfo = resolveMonth();
+        var monthBadge = monthInfo.month + ' ' + monthInfo.year;
+        var monthFull = monthInfo.monthFull + ' ' + monthInfo.year;
+
+        return {
+            timestamp: new Date().toLocaleString('pt-PT'),
+            periodo: monthFull,
+            monthBadge: monthBadge,
+            colisao: buildColisaoPayload(),
+            cacém: buildLXCADashPayload('ca'),
+            lisboa: buildLXCADashPayload('lx'),
+            comparacao: buildComparacaoPayload()
+        };
+    }
+
+    function buildLXCADashPayload(type) {
+        var d = data[type];
+        if (!d || !d.month) return null;
+
+        var kpis = [];
+        var labels = ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponíveis', 'Horas Faltas', 'Horas Férias'];
+        if (d.generalKPIs && d.generalKPIs.items) {
+            d.generalKPIs.items.forEach(function(item, i) {
+                kpis.push({ kpi: labels[i] || item.label, s1: item.weeks[0], s2: item.weeks[1], s3: item.weeks[2], s4: item.weeks[3], s5: item.weeks[4], mes: item.monthly, unit: 'h' });
+            });
+        }
+        if (d.generalKPIs && d.generalKPIs.efficiency) {
+            var e = d.generalKPIs.efficiency;
+            kpis.push({ kpi: 'Eficiência Produtiva', s1: pctRound(e.weeks[0]), s2: pctRound(e.weeks[1]), s3: pctRound(e.weeks[2]), s4: pctRound(e.weeks[3]), s5: pctRound(e.weeks[4]), mes: pctRound(e.monthly), unit: '%', colorized: true });
+        }
+        if (d.generalKPIs && d.generalKPIs.utilization) {
+            var u = d.generalKPIs.utilization;
+            kpis.push({ kpi: 'Taxa de Utilização', s1: pctRound(u.weeks[0]), s2: pctRound(u.weeks[1]), s3: pctRound(u.weeks[2]), s4: pctRound(u.weeks[3]), s5: pctRound(u.weeks[4]), mes: pctRound(u.monthly), unit: '%', colorized: true });
+        }
+
+        var ranking_hf = buildRankingHF(d.technicians);
+        var ranking_eur = buildRankingEur(d.technicians);
+        var total_eur = ranking_eur.reduce(function(s, r) { return s + r.value; }, 0);
+        var tecnicos = buildTecnicos(d.technicians);
+        var horas_picadas = buildHorasPicadas(type);
+
+        return { kpis: kpis, ranking_hf: ranking_hf, ranking_eur: ranking_eur, total_eur: total_eur, tecnicos: tecnicos, horas_picadas: horas_picadas };
+    }
+
+    function buildColisaoPayload() {
+        var d = data.co;
+        if (!d || !d.month) return null;
+
+        function buildKPIRows(section) {
+            var kpis = [];
+            var labels = ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponíveis', 'Horas Faltas', 'Horas Férias'];
+            if (section && section.generalKPIs && section.generalKPIs.items) {
+                section.generalKPIs.items.forEach(function(item, i) {
+                    kpis.push({ kpi: labels[i] || item.label, s1: item.weeks[0], s2: item.weeks[1], s3: item.weeks[2], s4: item.weeks[3], s5: item.weeks[4], mes: item.monthly, unit: 'h' });
+                });
+            }
+            if (section && section.generalKPIs && section.generalKPIs.efficiency) {
+                var e = section.generalKPIs.efficiency;
+                kpis.push({ kpi: 'Eficiência Produtiva', s1: pctRound(e.weeks[0]), s2: pctRound(e.weeks[1]), s3: pctRound(e.weeks[2]), s4: pctRound(e.weeks[3]), s5: pctRound(e.weeks[4]), mes: pctRound(e.monthly), unit: '%', colorized: true });
+            }
+            if (section && section.generalKPIs && section.generalKPIs.utilization) {
+                var u = section.generalKPIs.utilization;
+                kpis.push({ kpi: 'Taxa de Utilização', s1: pctRound(u.weeks[0]), s2: pctRound(u.weeks[1]), s3: pctRound(u.weeks[2]), s4: pctRound(u.weeks[3]), s5: pctRound(u.weeks[4]), mes: pctRound(u.monthly), unit: '%', colorized: true });
+            }
+            return kpis;
+        }
+
+        var globalKpis = calculateGlobalKPIs(d);
+
+        var ranking_hf = buildRankingHF(d.technicians);
+        var ranking_eur = buildRankingEur(d.technicians);
+        var tecnicos = buildTecnicosCO(d.technicians);
+        var horas_picadas = buildHorasPicadas('co');
+
+        return {
+            prepPintura: buildKPIRows(d.prepPint),
+            chapa: buildKPIRows(d.chapa),
+            global: buildKPIRows({ generalKPIs: globalKpis }),
+            ranking_hf: ranking_hf,
+            ranking_eur: ranking_eur,
+            tecnicos: tecnicos,
+            horas_picadas: horas_picadas
+        };
+    }
+
+    function buildComparacaoPayload() {
+        var lxTechs = (data.lx && data.lx.technicians) || [];
+        var caTechs = (data.ca && data.ca.technicians) || [];
+        var coTechs = (data.co && data.co.technicians) || [];
+
+        // Resumo oficinas
+        function avgEff(techs) {
+            var valid = techs.filter(function(t) { return t.eficienciaProdutiva; });
+            return valid.length > 0 ? valid.reduce(function(s, t) { return s + pctRound(t.eficienciaProdutiva); }, 0) / valid.length : 0;
+        }
+        function avgUtil(techs) {
+            var valid = techs.filter(function(t) { return t.utilizationMonthly; });
+            return valid.length > 0 ? valid.reduce(function(s, t) { return s + pctRound(t.utilizationMonthly); }, 0) / valid.length : 0;
+        }
+
+        var globalKpis = data.co ? calculateGlobalKPIs(data.co) : null;
+
+        var resumo_oficinas = [
+            { oficina: 'Mecânica Lisboa', ef: Math.round(avgEff(lxTechs) * 10) / 10, ut: Math.round(avgUtil(lxTechs) * 10) / 10 },
+            { oficina: 'Mecânica Cacém', ef: Math.round(avgEff(caTechs) * 10) / 10, ut: Math.round(avgUtil(caTechs) * 10) / 10 },
+            { oficina: 'Colisão Prep+Pint', ef: Math.round(avgEff(coTechs.filter(function(t) { return t.section === 'prep' || t.section === 'mix'; })) * 10) / 10, ut: Math.round(avgUtil(coTechs.filter(function(t) { return t.section === 'prep' || t.section === 'mix'; })) * 10) / 10 },
+            { oficina: 'Colisão Chapa', ef: Math.round(avgEff(coTechs.filter(function(t) { return t.section === 'chapa' || t.section === 'mix'; })) * 10) / 10, ut: Math.round(avgUtil(coTechs.filter(function(t) { return t.section === 'chapa' || t.section === 'mix'; })) * 10) / 10 },
+            { oficina: 'Colisão Global', ef: globalKpis && globalKpis.efficiency ? pctRound(globalKpis.efficiency.monthly) : 0, ut: globalKpis && globalKpis.utilization ? pctRound(globalKpis.utilization.monthly) : 0 }
+        ];
+
+        // All technicians with office info
+        var allTechs = [];
+        lxTechs.forEach(function(t) { allTechs.push({name: t.name, office: t.notCountsForKpis ? 'LX*' : 'LX', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
+        caTechs.forEach(function(t) { allTechs.push({name: t.name, office: 'CA', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
+        coTechs.forEach(function(t) {
+            var sec = t.section === 'prep' ? 'CO Prep' : (t.section === 'chapa' ? 'CO Chapa' : 'CO Mix');
+            allTechs.push({name: t.name, office: sec, ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0});
+        });
+
+        var medals = ['🥇', '🥈', '🥉'];
+        var ranking_ef = allTechs.slice().sort(function(a, b) { return b.ep - a.ep; }).map(function(t, i) {
+            return { rank: i + 1, name: t.name, office: t.office, value: t.ep, medal: i < 3 ? medals[i] : undefined };
+        });
+        var ranking_ut = allTechs.slice().sort(function(a, b) { return b.ut - a.ut; }).map(function(t, i) {
+            return { rank: i + 1, name: t.name, office: t.office, value: t.ut, medal: i < 3 ? medals[i] : undefined };
+        });
+        var ranking_hf = allTechs.filter(function(t) { return t.hf > 0; }).sort(function(a, b) { return b.hf - a.hf; }).map(function(t, i) {
+            return { rank: i + 1, name: t.name, office: t.office, value: t.hf, medal: i < 3 ? medals[i] : undefined };
+        });
+        var ranking_eur = allTechs.filter(function(t) { return t.euro > 0; }).sort(function(a, b) { return b.euro - a.euro; }).map(function(t, i) {
+            return { rank: i + 1, name: t.name, office: t.office, value: t.euro, medal: i < 3 ? medals[i] : undefined };
+        });
+
+        return { resumo_oficinas: resumo_oficinas, ranking_ef: ranking_ef, ranking_ut: ranking_ut, ranking_hf: ranking_hf, ranking_eur: ranking_eur };
+    }
+
+    // Helper functions for payload building
+    function pctRound(val) {
+        if (val === null || val === undefined) return null;
+        var n = parseFloat(val);
+        if (isNaN(n)) return null;
+        // If value is between 0 and 2, it's likely a decimal (0.85 = 85%)
+        if (Math.abs(n) <= 2 && Math.abs(n) > 0) return Math.round(n * 100);
+        return Math.round(n);
+    }
+
+    function buildRankingHF(technicians) {
+        var medals = ['🥇', '🥈', '🥉'];
+        return technicians.filter(function(t) { return t.hf; }).sort(function(a, b) { return (parseFloat(b.hf) || 0) - (parseFloat(a.hf) || 0); }).map(function(t, i) {
+            return { rank: i + 1, name: t.name, value: parseFloat(t.hf) || 0, unit: 'h', medal: i < 3 ? medals[i] : undefined };
+        });
+    }
+
+    function buildRankingEur(technicians) {
+        var medals = ['🥇', '🥈', '🥉'];
+        return technicians.filter(function(t) { return t.totalFaturado; }).sort(function(a, b) { return (parseFloat(b.totalFaturado) || 0) - (parseFloat(a.totalFaturado) || 0); }).map(function(t, i) {
+            return { rank: i + 1, name: t.name, value: parseFloat(t.totalFaturado) || 0, medal: i < 3 ? medals[i] : undefined };
+        });
+    }
+
+    function buildTecnicos(technicians) {
+        return technicians.map(function(t) {
+            return {
+                name: t.name,
+                weeks: (t.ht || []).map(function(ht, i) {
+                    return {
+                        s: i + 1,
+                        ht: ht !== null && ht !== undefined ? parseFloat(ht) : null,
+                        hd: t.hd && t.hd[i] !== null && t.hd[i] !== undefined ? parseFloat(t.hd[i]) : null,
+                        u: t.utilization && t.utilization[i] !== null && t.utilization[i] !== undefined ? pctRound(t.utilization[i]) : null
+                    };
+                }),
+                ep: pctRound(t.eficienciaProdutiva) || 0,
+                ut: pctRound(t.utilizationMonthly) || 0
+            };
+        });
+    }
+
+    function buildTecnicosCO(technicians) {
+        return technicians.map(function(t) {
+            var office = t.section === 'prep' ? 'CO Prep' : (t.section === 'chapa' ? 'CO Chapa' : 'CO Mix');
+            return {
+                name: t.name,
+                office: office,
+                weeks: (t.ht || []).map(function(ht, i) {
+                    return {
+                        s: i + 1,
+                        ht: ht !== null && ht !== undefined ? parseFloat(ht) : null,
+                        hd: t.hd && t.hd[i] !== null && t.hd[i] !== undefined ? parseFloat(t.hd[i]) : null,
+                        u: t.utilization && t.utilization[i] !== null && t.utilization[i] !== undefined ? pctRound(t.utilization[i]) : null
+                    };
+                }),
+                ep: pctRound(t.eficienciaProdutiva) || 0,
+                ut: pctRound(t.utilizationMonthly) || 0
+            };
+        });
+    }
+
+    function buildHorasPicadas(type) {
+        var horasKey = type + 'Horas';
+        var horasData = data[horasKey];
+        if (!horasData || !horasData.technicians) return [];
+        return horasData.technicians.map(function(tech) {
+            var totalProd = 0, totalDisp = 0, totalFerias = 0, totalFaltas = 0;
+            for (var day = 1; day <= horasData.lastDay; day++) {
+                totalProd += tech.produtivos[day] || 0;
+                totalDisp += tech.disponiveis[day] || 0;
+                totalFerias += tech.ferias[day] || 0;
+                totalFaltas += tech.faltas[day] || 0;
+            }
+            var daysUsed = 0;
+            for (var day = 1; day <= horasData.lastDay; day++) {
+                if ((tech.disponiveis[day] || 0) > 0) daysUsed++;
+            }
+            var daysWithWork = daysUsed - Math.ceil(totalFerias / 6.8) - Math.ceil(totalFaltas / 6.8);
+            var avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
+            return {
+                tecnico: tech.name,
+                hp: parseFloat(totalProd.toFixed(1)),
+                hd: parseFloat(totalDisp.toFixed(1)),
+                hf: parseFloat(totalFerias.toFixed(1)),
+                ha: parseFloat(totalFaltas.toFixed(1)),
+                media: parseFloat(avgPerDay.toFixed(1))
+            };
+        });
+    }
+
+    </script>
+</body>
+</html>

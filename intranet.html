@@ -928,6 +928,7 @@
                 <ul id="relatoriosSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
                     <li id="navMargemLi"><a onclick="openModule('margem')" id="navMargem"><span class="nav-icon">💰</span> Margem Provisória</a></li>
                     <li id="navDivergenciasLi"><a onclick="openModule('divergencias')" id="navDivergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
+                    <li id="navKpisCoordLi"><a onclick="openModule('kpis_coord')" id="navKpis_coord"><span class="nav-icon">📈</span> KPIs Coordenação</a></li>
                 </ul>
             </li>
         </ul>
@@ -1104,7 +1105,8 @@
     }
 
     // ======== KPI DATA ========
-    const KPI_DATA = {
+    // KPI_DATA: initialized with hardcoded defaults, replaced by dynamic data from gerador-kpis module
+    var KPI_DATA = {
         colisao: {
             prepPintura: [
                 { kpi: 'Horas Trabalhadas', s1: 248.2, s2: 238.2, s3: 246.0, s4: 296.4, s5: 97.9, mes: 1126.7, unit: 'h' },
@@ -1429,7 +1431,7 @@
 
     function renderColisaoTab() {
         let html = '<div class="kpi-report">';
-        html += '<div class="kpi-page-header colisao">COLISÃO <span class="kpi-badge">MAR 2026</span></div>';
+        html += '<div class="kpi-page-header colisao">COLISÃO <span class="kpi-badge">' + (KPI_DATA._monthBadge || 'MAR 2026') + '</span></div>';
 
         // Prep + Pintura
         html += '<div class="kpi-subsection">';
@@ -1523,7 +1525,8 @@
             html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td>' + formatEuro(row.value) + '</td></tr>';
         });
         html += '</tbody></table>';
-        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: 112.178,85 €</div></div>';
+        var colisaoTotal = KPI_DATA.colisao.ranking_eur.reduce(function(s,r){return s+r.value;},0);
+        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: ' + formatEuro(colisaoTotal) + '</div></div>';
 
         // Técnicos Individuais
         html += '<div class="kpi-subsection">';
@@ -1560,7 +1563,7 @@
 
     function renderCacémTab() {
         let html = '<div class="kpi-report">';
-        html += '<div class="kpi-page-header cacém">MECÂNICA CACÉM <span class="kpi-badge">MAR 2026</span></div>';
+        html += '<div class="kpi-page-header cacém">MECÂNICA CACÉM <span class="kpi-badge">' + (KPI_DATA._monthBadge || 'MAR 2026') + '</span></div>';
 
         // KPIs
         html += '<div class="kpi-subsection">';
@@ -1641,7 +1644,7 @@
 
     function renderLisboaTab() {
         let html = '<div class="kpi-report">';
-        html += '<div class="kpi-page-header lisboa">MECÂNICA LISBOA <span class="kpi-badge">MAR 2026</span></div>';
+        html += '<div class="kpi-page-header lisboa">MECÂNICA LISBOA <span class="kpi-badge">' + (KPI_DATA._monthBadge || 'MAR 2026') + '</span></div>';
 
         // KPIs
         html += '<div class="kpi-subsection">';
@@ -1722,7 +1725,7 @@
 
     function renderComparacaoTab() {
         let html = '<div class="kpi-report">';
-        html += '<div class="kpi-page-header comparacao">COMPARAÇÃO ENTRE TÉCNICOS <span class="kpi-badge">MAR 2026</span></div>';
+        html += '<div class="kpi-page-header comparacao">COMPARAÇÃO ENTRE TÉCNICOS <span class="kpi-badge">' + (KPI_DATA._monthBadge || 'MAR 2026') + '</span></div>';
 
         // Resumo Oficinas
         html += '<div class="kpi-subsection">';
@@ -1770,7 +1773,8 @@
             html += '<tr><td>' + (row.medal || row.rank) + '</td><td style="font-weight: 600;">' + row.name + '</td><td><span class="kpi-office-badge office-' + row.office.replace(/ /g, '-').toLowerCase() + '">' + row.office + '</span></td><td>' + formatEuro(row.value) + '</td></tr>';
         });
         html += '</tbody></table>';
-        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: 281.155,43 €</div></div>';
+        var compTotal = KPI_DATA.comparacao.ranking_eur.reduce(function(s,r){return s+r.value;},0);
+        html += '<div style="text-align: right; margin-top: 8px; font-weight: 700; color: var(--accent-blue);">TOTAL: ' + formatEuro(compTotal) + '</div></div>';
 
         html += '</div>';
         return html;
@@ -1788,11 +1792,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['viaturas','definicoes','kpis','margem','divergencias']
+            modules: ['viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['viaturas','definicoes','kpis','margem','divergencias']
+            modules: ['viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
         },
         '_default': {
             role: 'user', name: '',
@@ -1856,6 +1860,7 @@
         }
 
         renderFeed();
+        loadKpiDashboard();
         renderKpiContent('colisao');
         loadMargemDashboard();
         updateGreeting();
@@ -1929,6 +1934,8 @@
         driveName: 'Documentos',
         folders: {
             kpis: 'Intranet/KPIs',
+            kpis_importados: 'Intranet/KPIs_Coordenacao/Importados',
+            kpis_gerados: 'Intranet/KPIs_Coordenacao/Gerados',
             divergencias_importados: 'Intranet/Divergencias_Picagens/Importados',
             divergencias_gerados: 'Intranet/Divergencias_Picagens/Gerados',
             margem_importados: 'Intranet/Margem_Provisoria/Importados',
@@ -2101,6 +2108,12 @@
         saveMargemDashboard(event.data.payload);
     });
 
+    // Listen for KPI dashboard data from gerador-kpis iframe
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
+        saveKpiDashboard(event.data.payload);
+    });
+
     // Listen for openUrl requests from iframes (popups from sandboxed iframes get blocked)
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'openUrl') return;
@@ -2195,6 +2208,7 @@
         clearActiveNav();
         var navHome = document.getElementById('navHome');
         if (navHome) navHome.classList.add('active');
+        loadKpiDashboard();
         loadMargemDashboard();
     }
 
@@ -2207,7 +2221,8 @@
         const modules = {
             viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
-            divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' }
+            divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
+            kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' }
         };
         const mod = modules[id];
         if (!mod) return;
@@ -2377,6 +2392,49 @@
                 '</div>';
             cardsDiv.appendChild(card);
         });
+    }
+
+    // ============================================
+    // KPI DASHBOARD BLOCK (dynamic from gerador-kpis)
+    // ============================================
+    function loadKpiDashboard() {
+        try {
+            var stored = localStorage.getItem('intranet_kpiDashboard');
+            if (!stored) return;
+            var payload = JSON.parse(stored);
+            applyKpiDashboard(payload);
+        } catch(e) { console.error('loadKpiDashboard:', e); }
+    }
+
+    function saveKpiDashboard(payload) {
+        try {
+            localStorage.setItem('intranet_kpiDashboard', JSON.stringify(payload));
+        } catch(e) { console.error('saveKpiDashboard:', e); }
+        applyKpiDashboard(payload);
+    }
+
+    function applyKpiDashboard(payload) {
+        if (!payload) return;
+        // Replace KPI_DATA with dynamic data
+        if (payload.colisao) KPI_DATA.colisao = payload.colisao;
+        if (payload.cacém) KPI_DATA['cacém'] = payload['cacém'];
+        if (payload.lisboa) KPI_DATA.lisboa = payload.lisboa;
+        if (payload.comparacao) KPI_DATA.comparacao = payload.comparacao;
+        // Update the month badge on all tabs
+        if (payload.monthBadge) {
+            KPI_DATA._monthBadge = payload.monthBadge;
+            KPI_DATA._periodo = payload.periodo;
+            KPI_DATA._timestamp = payload.timestamp;
+        }
+        // Re-render the currently active KPI tab
+        var activeTab = document.querySelector('.kpi-tab.active');
+        if (activeTab) {
+            var tabText = activeTab.textContent.toLowerCase();
+            if (tabText.includes('colisão')) renderKpiContent('colisao');
+            else if (tabText.includes('cacém')) renderKpiContent('cacém');
+            else if (tabText.includes('lisboa')) renderKpiContent('lisboa');
+            else if (tabText.includes('comparação')) renderKpiContent('comparacao');
+        }
     }
 
     var currentSpFolder = null;
