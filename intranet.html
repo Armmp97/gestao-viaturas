@@ -2143,8 +2143,8 @@
                 }).then(function() { return msg; });
             });
         }).then(function(msg) {
-            // Step 5: Open draft in Outlook web
-            var outlookUrl = 'https://outlook.office.com/mail/compose/' + msg.id;
+            // Step 5: Open draft in Outlook web using webLink (Graph API provides the correct URL)
+            var outlookUrl = msg.webLink || ('https://outlook.office.com/mail/compose/' + encodeURIComponent(msg.id));
             window.open(outlookUrl, '_blank');
             event.source.postMessage({ type: 'saveAndDraftResult', success: true }, '*');
         }).catch(function(err) {
