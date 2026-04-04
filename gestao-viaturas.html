@@ -2267,6 +2267,7 @@
             var ext = getExtFromBase64(base64);
             var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
             spUploadFile(bookingId, 'levantamento', name, base64);
+            mirrorToIntranet('gv_docs_assinados_lev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), base64);
         });
         delete uploadedFiles['signedDocPreview'];
         if (b && b.levantamento) b.levantamento.documentoAssinado = true;
@@ -2527,6 +2528,7 @@
             var ext = getExtFromBase64(base64);
             var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
             spUploadFile(bookingId, 'devolucao', name, base64);
+            mirrorToIntranet('gv_docs_assinados_dev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), base64);
         });
         delete uploadedFiles['signedReturnDocPreview'];
         if (b && b.devolucao) b.devolucao.documentoAssinado = true;
@@ -2642,42 +2644,70 @@
         input.value = '';
     }
 
+    // Helper: build standardized filename: YYYY-MM-DD_TipoFicheiro_Matricula_CodigoReserva.ext
+    function buildFileName(date, tipo, matricula, codigo, ext) {
+        var d = date || new Date();
+        var dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        return dateStr + '_' + tipo + '_' + matricula + '_' + codigo + ext;
+    }
+
+    // Mirror file to intranet's Documentos drive via postMessage
+    function mirrorToIntranet(folderKey, fileName, base64Data) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({
+            type: 'saveToSharePoint',
+            folderKey: folderKey,
+            fileName: fileName,
+            fileContent: base64Data,
+            contentType: base64Data.split(',')[0].match(/:(.*?);/)[1]
+        }, '*');
+    }
+
     function saveUploadedFiles(bookingId, stage) {
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId][stage]) fileStore[bookingId][stage] = { fotos: [], docs: [] };
         var b = bookings.find(function(x) { return x.id === bookingId; });
         var mat = b ? b.matricula : bookingId;
         var ts = getTs();
+        var now = new Date();
         if (stage === 'levantamento') {
             var levId = (b && b.levantamento && b.levantamento.id) ? b.levantamento.id : 'LEV';
             if (uploadedFiles['pk_fotosPreview']) {
                 fileStore[bookingId][stage].fotos = uploadedFiles['pk_fotosPreview'];
                 uploadedFiles['pk_fotosPreview'].forEach(function(base64, i) {
-                    spUploadFile(bookingId, stage, mat + '_' + levId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64), base64);
+                    var oldName = mat + '_' + levId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64);
+                    spUploadFile(bookingId, stage, oldName, base64);
+                    // Mirror to intranet with new naming
+                    var newName = buildFileName(now, 'Foto' + (i+1), mat, levId, getExtFromBase64(base64));
+                    mirrorToIntranet('gv_fotos_levantamento', newName, base64);
                 });
             }
             if (uploadedFiles['pk_ccFrentePreview']) {
                 fileStore[bookingId][stage].ccFrente = uploadedFiles['pk_ccFrentePreview'];
                 uploadedFiles['pk_ccFrentePreview'].forEach(function(base64) {
                     spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Frente_' + ts + getExtFromBase64(base64), base64);
+                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'CC_Frente', mat, levId, getExtFromBase64(base64)), base64);
                 });
             }
             if (uploadedFiles['pk_ccVersoPreview']) {
                 fileStore[bookingId][stage].ccVerso = uploadedFiles['pk_ccVersoPreview'];
                 uploadedFiles['pk_ccVersoPreview'].forEach(function(base64) {
                     spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Verso_' + ts + getExtFromBase64(base64), base64);
+                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'CC_Verso', mat, levId, getExtFromBase64(base64)), base64);
                 });
             }
             if (uploadedFiles['pk_cartaFrentePreview']) {
                 fileStore[bookingId][stage].cartaFrente = uploadedFiles['pk_cartaFrentePreview'];
                 uploadedFiles['pk_cartaFrentePreview'].forEach(function(base64) {
                     spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Frente_' + ts + getExtFromBase64(base64), base64);
+                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'Carta_Frente', mat, levId, getExtFromBase64(base64)), base64);
                 });
             }
             if (uploadedFiles['pk_cartaVersoPreview']) {
                 fileStore[bookingId][stage].cartaVerso = uploadedFiles['pk_cartaVersoPreview'];
                 uploadedFiles['pk_cartaVersoPreview'].forEach(function(base64) {
                     spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Verso_' + ts + getExtFromBase64(base64), base64);
+                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'Carta_Verso', mat, levId, getExtFromBase64(base64)), base64);
                 });
             }
             delete uploadedFiles['pk_fotosPreview']; delete uploadedFiles['pk_ccFrentePreview']; delete uploadedFiles['pk_ccVersoPreview']; delete uploadedFiles['pk_cartaFrentePreview']; delete uploadedFiles['pk_cartaVersoPreview'];
@@ -2687,12 +2717,14 @@
                 fileStore[bookingId][stage].fotos = uploadedFiles['rt_fotosPreview'];
                 uploadedFiles['rt_fotosPreview'].forEach(function(base64, i) {
                     spUploadFile(bookingId, stage, mat + '_' + devId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64), base64);
+                    mirrorToIntranet('gv_fotos_devolucao', buildFileName(now, 'Foto' + (i+1), mat, devId, getExtFromBase64(base64)), base64);
                 });
             }
             if (uploadedFiles['rt_orcamentoPreview']) {
                 fileStore[bookingId][stage].orcamento = uploadedFiles['rt_orcamentoPreview'];
                 uploadedFiles['rt_orcamentoPreview'].forEach(function(base64) {
                     spUploadFile(bookingId, stage, mat + '_' + devId + '_Orcamento_' + ts + getExtFromBase64(base64), base64);
+                    mirrorToIntranet('gv_orcamentos', buildFileName(now, 'Orcamento', mat, devId, getExtFromBase64(base64)), base64);
                 });
             }
             delete uploadedFiles['rt_fotosPreview']; delete uploadedFiles['rt_orcamentoPreview'];
