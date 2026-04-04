@@ -1847,29 +1847,61 @@
     let currentMsalUser = null;
     let currentUserPermissions = null;
 
+    function isMobile() {
+        return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent) || window.innerWidth < 768;
+    }
+
+    var msalLoginScopes = ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'];
+
     function initMsal() {
         try {
             msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
-            // Clear any stuck interaction state from previous sessions
-            msalInstance.handleRedirectPromise().catch(function() {});
-            var accounts = msalInstance.getAllAccounts();
-            if (accounts.length > 0) {
-                currentMsalUser = accounts[0];
-                unlockIntranet();
-            }
+            // Handle redirect response (mobile login flow)
+            msalInstance.handleRedirectPromise().then(function(response) {
+                if (response && response.account) {
+                    currentMsalUser = response.account;
+                    unlockIntranet();
+                } else {
+                    var accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        currentMsalUser = accounts[0];
+                        unlockIntranet();
+                    }
+                }
+            }).catch(function(e) {
+                console.warn('MSAL redirect handle error:', e);
+                // Try to recover from stuck interaction
+                var accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    currentMsalUser = accounts[0];
+                    unlockIntranet();
+                }
+            });
         } catch(e) { console.warn('MSAL init error:', e); }
     }
 
     function doLogin() {
         if (!msalInstance) { console.error('MSAL não inicializado'); return; }
-        msalInstance.loginPopup({ scopes: ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'] }).then(function(response) {
-            currentMsalUser = response.account;
-            unlockIntranet();
-        }).catch(function(e) {
-            console.error('Login error:', e);
-            var errEl = document.getElementById('authGateError');
-            if (errEl) { errEl.textContent = 'Erro no login. Tente novamente.'; errEl.style.display = ''; }
-        });
+        var loginRequest = { scopes: msalLoginScopes };
+        if (isMobile()) {
+            // Mobile: use redirect to avoid popup issues with 2FA
+            msalInstance.loginRedirect(loginRequest);
+        } else {
+            // Desktop: use popup
+            msalInstance.loginPopup(loginRequest).then(function(response) {
+                currentMsalUser = response.account;
+                unlockIntranet();
+            }).catch(function(e) {
+                console.error('Login error:', e);
+                // Fallback to redirect if popup fails
+                if (e.message && (e.message.indexOf('popup') > -1 || e.message.indexOf('monitor') > -1 || e.message.indexOf('blocked') > -1)) {
+                    msalInstance.loginRedirect(loginRequest);
+                    return;
+                }
+                var errEl = document.getElementById('authGateError');
+                if (errEl) { errEl.textContent = 'Erro no login. Tente novamente.'; errEl.style.display = ''; }
+            });
+        }
     }
 
     function unlockIntranet() {
@@ -1979,16 +2011,22 @@
     let spSiteId = null;
     let spDriveId = null;
 
+    function acquireTokenInteractive(scopes) {
+        var request = { scopes: scopes, account: currentMsalUser };
+        if (isMobile()) {
+            msalInstance.acquireTokenRedirect(request);
+            return new Promise(function() {}); // redirect will reload the page
+        }
+        return msalInstance.acquireTokenPopup(request);
+    }
+
     function getGraphToken() {
         if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
         return msalInstance.acquireTokenSilent({
             scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
             account: currentMsalUser
         }).catch(function() {
-            return msalInstance.acquireTokenPopup({
-                scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
-                account: currentMsalUser
-            });
+            return acquireTokenInteractive(['Files.ReadWrite.All', 'Sites.ReadWrite.All']);
         }).then(function(resp) { return resp.accessToken; });
     }
 
@@ -1998,10 +2036,7 @@
             scopes: ['Mail.ReadWrite'],
             account: currentMsalUser
         }).catch(function() {
-            return msalInstance.acquireTokenPopup({
-                scopes: ['Mail.ReadWrite'],
-                account: currentMsalUser
-            });
+            return acquireTokenInteractive(['Mail.ReadWrite']);
         }).then(function(resp) { return resp.accessToken; });
     }
 
