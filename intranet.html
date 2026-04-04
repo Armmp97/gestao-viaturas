@@ -1395,6 +1395,43 @@
         return (value / 1).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
     }
 
+    function getKpiScore(key) {
+        var data, ep = 0, ut = 0;
+        if (key === 'colisao') {
+            data = KPI_DATA.colisao && KPI_DATA.colisao.global ? KPI_DATA.colisao.global : [];
+        } else if (key === 'cacém') {
+            data = KPI_DATA['cacém'] && KPI_DATA['cacém'].kpis ? KPI_DATA['cacém'].kpis : [];
+        } else if (key === 'lisboa') {
+            data = KPI_DATA.lisboa && KPI_DATA.lisboa.kpis ? KPI_DATA.lisboa.kpis : [];
+        } else { return -1; }
+        data.forEach(function(r) {
+            if (r.kpi === 'Eficiência Produtiva') ep = r.mes || 0;
+            if (r.kpi === 'Taxa de Utilização') ut = r.mes || 0;
+        });
+        return (ep + ut) / 2;
+    }
+
+    function reorderKpiTabs() {
+        var workshops = [
+            { key: 'colisao', label: 'Colisão' },
+            { key: 'cacém', label: 'Mecânica Cacém' },
+            { key: 'lisboa', label: 'Mecânica Lisboa' }
+        ];
+        workshops.sort(function(a, b) { return getKpiScore(b.key) - getKpiScore(a.key); });
+        workshops.push({ key: 'comparacao', label: 'Comparação' });
+        var tabsContainer = document.querySelector('.kpi-tabs');
+        if (!tabsContainer) return workshops[0].key;
+        tabsContainer.innerHTML = '';
+        workshops.forEach(function(w, i) {
+            var btn = document.createElement('button');
+            btn.className = 'kpi-tab' + (i === 0 ? ' active' : '');
+            btn.textContent = w.label;
+            btn.setAttribute('onclick', "switchKpiTab('" + w.key + "')");
+            tabsContainer.appendChild(btn);
+        });
+        return workshops[0].key;
+    }
+
     function switchKpiTab(tab) {
         document.querySelectorAll('.kpi-tab').forEach(t => {
             t.classList.remove('active');
@@ -1854,7 +1891,8 @@
 
         renderFeed();
         loadKpiDashboard();
-        renderKpiContent('colisao');
+        var firstTab = reorderKpiTabs();
+        renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
         updateGreeting();
         // Hide breadcrumb on home
@@ -2202,6 +2240,8 @@
         var navHome = document.getElementById('navHome');
         if (navHome) navHome.classList.add('active');
         loadKpiDashboard();
+        var firstTab = reorderKpiTabs();
+        renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
     }
 
@@ -2352,7 +2392,8 @@
         updateDiv.textContent = periodoText + 'Atualizado: ' + (data.timestamp || '—');
         cardsDiv.innerHTML = '';
         var colors = { colisao: '#e8710a', cacem: '#1a73e8', lisboa: '#0d904f' };
-        data.departments.forEach(function(dept) {
+        var sorted = data.departments.slice().sort(function(a, b) { return (b.margem || 0) - (a.margem || 0); });
+        sorted.forEach(function(dept) {
             var color = colors[dept.key] || '#333';
             var mpVal = dept.margem !== null && dept.margem !== undefined ? (dept.margem * 100).toFixed(1) + '%' : '—';
             var mpPct = dept.margem ? dept.margem * 100 : 0;
@@ -2432,15 +2473,9 @@
             var periodoText = (KPI_DATA._periodo || payload.periodo) ? ((KPI_DATA._periodo || payload.periodo) + ' | ') : '';
             kpiUpdateDiv.textContent = periodoText + 'Atualizado: ' + (KPI_DATA._timestamp || payload.timestamp || '—');
         }
-        // Re-render the currently active KPI tab
-        var activeTab = document.querySelector('.kpi-tab.active');
-        if (activeTab) {
-            var tabText = activeTab.textContent.toLowerCase();
-            if (tabText.includes('colisão')) renderKpiContent('colisao');
-            else if (tabText.includes('cacém')) renderKpiContent('cacém');
-            else if (tabText.includes('lisboa')) renderKpiContent('lisboa');
-            else if (tabText.includes('comparação')) renderKpiContent('comparacao');
-        }
+        // Reorder tabs and render the best-performing one
+        var firstTab = reorderKpiTabs();
+        renderKpiContent(firstTab || 'colisao');
     }
 
     var currentSpFolder = null;
