@@ -1972,7 +1972,8 @@
             margem_importados: 'Intranet/Margem_Provisoria/Importados',
             margem_gerados: 'Intranet/Margem_Provisoria/Gerados',
             comunicacoes: 'Intranet/Comunicacoes',
-            geral: 'Intranet/Geral'
+            geral: 'Intranet/Geral',
+            dashboard_state: 'Intranet/Dashboard_State'
         }
     };
     let spSiteId = null;
@@ -2034,7 +2035,27 @@
                     spDriveId = target.id;
                     console.log('SharePoint connected. Drive:', spDriveId);
                     updateSpStatus();
-                    return ensureFolderStructure();
+                    return ensureFolderStructure().then(function() {
+                        // After SP is ready, load dashboards from SP if localStorage was empty
+                        if (!localStorage.getItem('intranet_margemDashboard')) {
+                            loadDashboardFromSP('margem_dashboard.json').then(function(data) {
+                                if (data) {
+                                    try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
+                                    renderMargemDashboard(data);
+                                }
+                            });
+                        }
+                        if (!localStorage.getItem('intranet_kpiDashboard')) {
+                            loadDashboardFromSP('kpi_dashboard.json').then(function(data) {
+                                if (data) {
+                                    try { localStorage.setItem('intranet_kpiDashboard', JSON.stringify(data)); } catch(e) {}
+                                    applyKpiDashboard(data);
+                                    var ft = reorderKpiTabs();
+                                    renderKpiContent(ft || 'colisao');
+                                }
+                            });
+                        }
+                    });
                 }
                 throw new Error('Drive "' + SP_CONFIG.driveName + '" not found');
             })
@@ -2363,13 +2384,55 @@
         }
     }
 
+    // === SharePoint Dashboard State Persistence ===
+    function saveDashboardToSP(fileName, data) {
+        if (!spDriveId) return;
+        var json = JSON.stringify(data);
+        var blob = new Blob([json], { type: 'application/json' });
+        var folderPath = SP_CONFIG.folders.dashboard_state;
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        getGraphToken().then(function(token) {
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: blob
+            });
+        }).then(function(resp) {
+            if (resp.ok) console.log('Dashboard state saved to SP:', fileName);
+            else console.warn('SP save failed:', resp.status);
+        }).catch(function(e) { console.warn('saveDashboardToSP error:', e); });
+    }
+
+    function loadDashboardFromSP(fileName) {
+        if (!spDriveId) return Promise.resolve(null);
+        var folderPath = SP_CONFIG.folders.dashboard_state;
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        return getGraphToken().then(function(token) {
+            return fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        }).then(function(resp) {
+            if (!resp.ok) return null;
+            return resp.json();
+        }).catch(function(e) {
+            console.warn('loadDashboardFromSP error:', e);
+            return null;
+        });
+    }
+
     function loadMargemDashboard() {
         try {
             var stored = localStorage.getItem('intranet_margemDashboard');
-            if (!stored) return;
-            var data = JSON.parse(stored);
-            renderMargemDashboard(data);
-        } catch(e) { console.error('loadMargemDashboard:', e); }
+            if (stored) {
+                renderMargemDashboard(JSON.parse(stored));
+                return;
+            }
+        } catch(e) { console.error('loadMargemDashboard localStorage:', e); }
+        // Fallback: load from SharePoint
+        loadDashboardFromSP('margem_dashboard.json').then(function(data) {
+            if (data) {
+                try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
+                renderMargemDashboard(data);
+            }
+        }).catch(function(e) { console.warn('loadMargemDashboard SP fallback:', e); });
     }
 
     function saveMargemDashboard(data) {
@@ -2377,6 +2440,8 @@
             localStorage.setItem('intranet_margemDashboard', JSON.stringify(data));
         } catch(e) { console.error('saveMargemDashboard:', e); }
         renderMargemDashboard(data);
+        // Persist to SharePoint for cross-browser access
+        saveDashboardToSP('margem_dashboard.json', data);
     }
 
     function renderMargemDashboard(data) {
@@ -2441,10 +2506,18 @@
     function loadKpiDashboard() {
         try {
             var stored = localStorage.getItem('intranet_kpiDashboard');
-            if (!stored) return;
-            var payload = JSON.parse(stored);
-            applyKpiDashboard(payload);
-        } catch(e) { console.error('loadKpiDashboard:', e); }
+            if (stored) {
+                applyKpiDashboard(JSON.parse(stored));
+                return;
+            }
+        } catch(e) { console.error('loadKpiDashboard localStorage:', e); }
+        // Fallback: load from SharePoint
+        loadDashboardFromSP('kpi_dashboard.json').then(function(data) {
+            if (data) {
+                try { localStorage.setItem('intranet_kpiDashboard', JSON.stringify(data)); } catch(e) {}
+                applyKpiDashboard(data);
+            }
+        }).catch(function(e) { console.warn('loadKpiDashboard SP fallback:', e); });
     }
 
     function saveKpiDashboard(payload) {
@@ -2452,6 +2525,8 @@
             localStorage.setItem('intranet_kpiDashboard', JSON.stringify(payload));
         } catch(e) { console.error('saveKpiDashboard:', e); }
         applyKpiDashboard(payload);
+        // Persist to SharePoint for cross-browser access
+        saveDashboardToSP('kpi_dashboard.json', payload);
     }
 
     function applyKpiDashboard(payload) {
