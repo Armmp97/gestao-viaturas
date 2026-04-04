@@ -251,15 +251,7 @@
 
         /* ---- Breadcrumb ---- */
         .breadcrumb {
-            position: fixed; top: var(--header-height); left: var(--sidebar-width);
-            right: 0; height: 40px;
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center;
-            padding: 0 24px;
-            font-size: 13px;
-            z-index: 50;
-            transition: left 0.3s ease;
+            display: none !important;
         }
 
         .breadcrumb.sidebar-hidden,
@@ -938,8 +930,8 @@
         </div>
     </nav>
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb" id="breadcrumb">
+    <!-- Breadcrumb (hidden for iframe modules) -->
+    <div class="breadcrumb" id="breadcrumb" style="display:none">
         <a onclick="goHome()">Início</a>
         <span>›</span>
         <span id="breadcrumbCurrent">Página</span>
@@ -949,23 +941,6 @@
     <main class="app-main" id="mainContent">
         <!-- Dashboard -->
         <div class="dashboard" id="dashboardView">
-            <!-- KPI Dashboard -->
-            <div class="kpi-section">
-                <div class="kpi-header">
-                    <div>
-                        <div class="kpi-title"><span>Dashboard KPIs</span><button class="kpi-collapse-btn" onclick="toggleKpiCollapse()">Minimizar</button></div>
-                        <div class="kpi-tabs">
-                            <button class="kpi-tab active" onclick="switchKpiTab('colisao')">Colisão</button>
-                            <button class="kpi-tab" onclick="switchKpiTab('cacém')">Mecânica Cacém</button>
-                            <button class="kpi-tab" onclick="switchKpiTab('lisboa')">Mecânica Lisboa</button>
-                            <button class="kpi-tab" onclick="switchKpiTab('comparacao')">Comparação</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="kpi-content" id="kpiContent">
-                    <!-- KPI content populated by JS -->
-                </div>
-            </div>
             <!-- Margem Provisória Block -->
             <div class="kpi-section" id="margemDashboardBlock" style="display:none;">
                 <div class="kpi-header">
@@ -976,6 +951,24 @@
                 </div>
                 <div id="margemContent" style="padding:16px;">
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;" id="margemCards"></div>
+                </div>
+            </div>
+            <!-- KPI Dashboard -->
+            <div class="kpi-section" id="kpiDashboardBlock">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title"><span>Dashboard KPIs</span><button class="kpi-collapse-btn" onclick="toggleKpiCollapse()">Minimizar</button></div>
+                        <div style="font-size:12px;color:#888;margin-top:4px;" id="kpiLastUpdate"></div>
+                        <div class="kpi-tabs">
+                            <button class="kpi-tab active" onclick="switchKpiTab('colisao')">Colisão</button>
+                            <button class="kpi-tab" onclick="switchKpiTab('cacém')">Mecânica Cacém</button>
+                            <button class="kpi-tab" onclick="switchKpiTab('lisboa')">Mecânica Lisboa</button>
+                            <button class="kpi-tab" onclick="switchKpiTab('comparacao')">Comparação</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-content" id="kpiContent">
+                    <!-- KPI content populated by JS -->
                 </div>
             </div>
         </div>
@@ -2236,17 +2229,12 @@
         document.getElementById('dashboardView').style.display = 'none';
         var sp = document.getElementById('settingsPage');
         if (sp) sp.classList.remove('active');
-        document.getElementById('breadcrumb').style.display = 'block';
-        document.getElementById('breadcrumbCurrent').textContent = mod.title;
+        document.getElementById('breadcrumb').style.display = 'none';
         document.getElementById('headerTitle').textContent = mod.title;
 
         var frame = document.getElementById('moduleFrame');
         frame.src = mod.url + '?v=' + Date.now();
         frame.classList.add('active');
-
-        var bc = document.getElementById('breadcrumb');
-        if (!desktopSidebarVisible) bc.classList.add('full');
-        else bc.classList.remove('full');
 
         clearActiveNav();
         var navEl = document.getElementById('nav' + id.charAt(0).toUpperCase() + id.slice(1));
@@ -2308,8 +2296,8 @@
     }
 
     function toggleKpiCollapse() {
-        var section = document.querySelector('.kpi-section');
-        var btn = document.querySelector('.kpi-collapse-btn');
+        var section = document.getElementById('kpiDashboardBlock');
+        var btn = section.querySelector('.kpi-collapse-btn');
         if (section.classList.contains('collapsed')) {
             section.classList.remove('collapsed');
             btn.textContent = 'Minimizar';
@@ -2425,6 +2413,12 @@
             KPI_DATA._monthBadge = payload.monthBadge;
             KPI_DATA._periodo = payload.periodo;
             KPI_DATA._timestamp = payload.timestamp;
+        }
+        // Update KPI validation date
+        var kpiUpdateDiv = document.getElementById('kpiLastUpdate');
+        if (kpiUpdateDiv) {
+            var periodoText = (KPI_DATA._periodo || payload.periodo) ? ((KPI_DATA._periodo || payload.periodo) + ' | ') : '';
+            kpiUpdateDiv.textContent = periodoText + 'Atualizado: ' + (KPI_DATA._timestamp || payload.timestamp || '—');
         }
         // Re-render the currently active KPI tab
         var activeTab = document.querySelector('.kpi-tab.active');
