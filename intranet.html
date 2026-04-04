@@ -283,6 +283,7 @@
             left: var(--sidebar-width); right: 0;
             bottom: 0;
             overflow-y: auto;
+            overflow-x: hidden;
             background: var(--content-bg);
             transition: left 0.3s ease;
             z-index: 1;
@@ -716,6 +717,7 @@
         .settings-page {
             padding: 24px;
             max-width: 1200px;
+            overflow-x: hidden;
         }
 
         .dashboard-welcome {
@@ -854,6 +856,28 @@
 
             .user-name, .user-role {
                 display: none;
+            }
+
+            .settings-page {
+                padding: 16px;
+            }
+
+            .settings-section {
+                padding: 16px;
+                overflow-x: hidden;
+            }
+
+            #spFileBrowser {
+                margin: 0 -8px;
+            }
+
+            #spFileList {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #spFileList table {
+                min-width: 500px;
             }
         }
     </style>
@@ -1051,12 +1075,13 @@
                 <div id="spStatus" style="margin-bottom: 16px; padding: 12px; border-radius: 8px; background: #e8f0fe; font-size: 13px; color: var(--accent-blue);">
                     A verificar ligação ao SharePoint...
                 </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
-                    <button class="form-button" onclick="browseSharePoint('kpis')">📊 KPIs</button>
-                    <button class="form-button" onclick="browseSharePoint('divergencias_gerados')">⏱️ Divergências</button>
-                    <button class="form-button" onclick="browseSharePoint('margem_gerados')">💰 Margem</button>
-                    <button class="form-button" onclick="browseSharePoint('geral')" style="background: var(--text-secondary);">📁 Geral</button>
+                <!-- Filtro principal: Importados / Gerados -->
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button class="form-button" id="filterImportados" onclick="setFileFilter('importados')" style="background: var(--text-secondary);">📥 Importados</button>
+                    <button class="form-button" id="filterGerados" onclick="setFileFilter('gerados')" style="background: var(--text-secondary);">📤 Gerados</button>
                 </div>
+                <!-- Sub-botões por módulo (aparecem ao selecionar filtro) -->
+                <div id="fileSubButtons" style="display: none; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;"></div>
                 <div id="spFileBrowser" style="display: none; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
                     <div id="spFileBrowserHeader" style="background: #2d3e50; color: white; padding: 12px 16px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
                         <span id="spFolderName">Pasta</span>
@@ -2002,15 +2027,15 @@
         sitePath: '/sites/GestaoViaturas',
         driveName: 'Documentos',
         folders: {
-            kpis: 'Intranet/KPIs',
             kpis_importados: 'Intranet/KPIs_Coordenacao/Importados',
             kpis_gerados: 'Intranet/KPIs_Coordenacao/Gerados',
             divergencias_importados: 'Intranet/Divergencias_Picagens/Importados',
             divergencias_gerados: 'Intranet/Divergencias_Picagens/Gerados',
             margem_importados: 'Intranet/Margem_Provisoria/Importados',
             margem_gerados: 'Intranet/Margem_Provisoria/Gerados',
+            gestao_viaturas_importados: 'Intranet/Gestao_Viaturas/Importados',
+            gestao_viaturas_gerados: 'Intranet/Gestao_Viaturas/Gerados',
             comunicacoes: 'Intranet/Comunicacoes',
-            geral: 'Intranet/Geral',
             dashboard_state: 'Intranet/Dashboard_State'
         }
     };
@@ -2603,6 +2628,42 @@
     }
 
     var currentSpFolder = null;
+    var currentFileFilter = null;
+
+    var FILE_MODULES = {
+        importados: [
+            { key: 'divergencias_importados', icon: '⏱️', label: 'Divergências' },
+            { key: 'margem_importados', icon: '💰', label: 'Margem' },
+            { key: 'kpis_importados', icon: '📈', label: 'KPIs Coordenação' },
+            { key: 'gestao_viaturas_importados', icon: '🚗', label: 'Gestão Viaturas' }
+        ],
+        gerados: [
+            { key: 'divergencias_gerados', icon: '⏱️', label: 'Divergências' },
+            { key: 'margem_gerados', icon: '💰', label: 'Margem' },
+            { key: 'kpis_gerados', icon: '📈', label: 'KPIs Coordenação' },
+            { key: 'gestao_viaturas_gerados', icon: '🚗', label: 'Gestão Viaturas' }
+        ]
+    };
+
+    function setFileFilter(filter) {
+        currentFileFilter = filter;
+        // Update filter button styles
+        var btnImp = document.getElementById('filterImportados');
+        var btnGer = document.getElementById('filterGerados');
+        btnImp.style.background = filter === 'importados' ? 'var(--accent-blue)' : 'var(--text-secondary)';
+        btnGer.style.background = filter === 'gerados' ? 'var(--accent-blue)' : 'var(--text-secondary)';
+        // Build sub-buttons
+        var container = document.getElementById('fileSubButtons');
+        var modules = FILE_MODULES[filter] || [];
+        var html = '';
+        modules.forEach(function(mod) {
+            html += '<button class="form-button" style="font-size: 12px; padding: 8px 14px;" onclick="browseSharePoint(\'' + mod.key + '\')">' + mod.icon + ' ' + mod.label + '</button>';
+        });
+        container.innerHTML = html;
+        container.style.display = 'flex';
+        // Close any open file browser
+        document.getElementById('spFileBrowser').style.display = 'none';
+    }
 
     function browseSharePoint(folderKey) {
         currentSpFolder = folderKey;
@@ -2610,7 +2671,16 @@
         var folderName = document.getElementById('spFolderName');
         var fileList = document.getElementById('spFileList');
 
-        var names = { kpis: '📊 KPIs', divergencias_gerados: '⏱️ Divergências (Gerados)', divergencias_importados: '⏱️ Divergências (Importados)', margem_gerados: '💰 Margem (Gerados)', margem_importados: '💰 Margem (Importados)', geral: '📁 Geral' };
+        var names = {
+            divergencias_gerados: '⏱️ Divergências (Gerados)',
+            divergencias_importados: '⏱️ Divergências (Importados)',
+            margem_gerados: '💰 Margem (Gerados)',
+            margem_importados: '💰 Margem (Importados)',
+            kpis_gerados: '📈 KPIs Coordenação (Gerados)',
+            kpis_importados: '📈 KPIs Coordenação (Importados)',
+            gestao_viaturas_gerados: '🚗 Gestão Viaturas (Gerados)',
+            gestao_viaturas_importados: '🚗 Gestão Viaturas (Importados)'
+        };
         folderName.textContent = names[folderKey] || folderKey;
         browser.style.display = 'block';
         fileList.innerHTML = '<p style="padding: 16px; color: var(--text-secondary); font-size: 13px; text-align: center;">A carregar...</p>';
