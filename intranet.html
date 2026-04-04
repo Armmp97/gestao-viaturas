@@ -186,8 +186,14 @@
         }
 
         @media (max-width: 768px) {
-            .app-sidebar.hidden {
+            .app-sidebar {
                 transform: translateX(-100%);
+            }
+            .app-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .app-main {
+                left: 0 !important;
             }
         }
 
@@ -2262,10 +2268,15 @@
     function toggleSidebar() {
         var sidebar = document.getElementById('sidebar');
         var overlay = document.getElementById('sidebarOverlay');
-        if (isMobile()) {
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('active');
-        }
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('visible');
+    }
+
+    function closeMobileSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('visible');
     }
 
     function toggleSidebarDesktop() {
@@ -2283,6 +2294,7 @@
 
     function goHome() {
         currentModule = null;
+        closeMobileSidebar();
         document.getElementById('dashboardView').style.display = 'flex';
         var frame = document.getElementById('moduleFrame');
         frame.classList.remove('active');
@@ -2322,6 +2334,8 @@
         if (!mod.url) { alert('Este módulo ainda não está disponível'); return; }
 
         currentModule = id;
+        // Close sidebar on mobile
+        closeMobileSidebar();
         document.getElementById('dashboardView').style.display = 'none';
         var sp = document.getElementById('settingsPage');
         if (sp) sp.classList.remove('active');
