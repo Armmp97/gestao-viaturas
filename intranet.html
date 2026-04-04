@@ -958,7 +958,7 @@
                 <div class="kpi-header">
                     <div>
                         <div class="kpi-title"><span>Dashboard KPIs</span><button class="kpi-collapse-btn" onclick="toggleKpiCollapse()">Minimizar</button></div>
-                        <div style="font-size:12px;color:#888;margin-top:4px;" id="kpiLastUpdate"></div>
+                        <div style="font-size:12px;color:#888;margin-top:4px;margin-bottom:12px;" id="kpiLastUpdate"></div>
                         <div class="kpi-tabs">
                             <button class="kpi-tab active" onclick="switchKpiTab('colisao')">Colisão</button>
                             <button class="kpi-tab" onclick="switchKpiTab('cacém')">Mecânica Cacém</button>
@@ -2355,7 +2355,17 @@
         data.departments.forEach(function(dept) {
             var color = colors[dept.key] || '#333';
             var mpVal = dept.margem !== null && dept.margem !== undefined ? (dept.margem * 100).toFixed(1) + '%' : '—';
-            var mpColor = dept.margem >= 0.30 ? '#0d904f' : (dept.margem >= 0.20 ? '#e37400' : '#d93025');
+            var mpPct = dept.margem ? dept.margem * 100 : 0;
+            var mpColor, mpLabel;
+            if (mpPct >= 35) {
+                mpColor = '#0a6e2e'; mpLabel = '3.º patamar atingido';
+            } else if (mpPct >= 28) {
+                mpColor = '#0d904f'; mpLabel = '2.º patamar atingido';
+            } else if (mpPct >= 21) {
+                mpColor = '#34a853'; mpLabel = '1.º patamar atingido';
+            } else {
+                mpColor = '#d93025'; mpLabel = '';
+            }
             var card = document.createElement('div');
             card.style.cssText = 'background:white;border-radius:12px;padding:20px;border-left:4px solid ' + color + ';box-shadow:0 1px 3px rgba(0,0,0,.1);';
             card.innerHTML =
@@ -2364,6 +2374,7 @@
                     '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
                         '<div style="font-size:11px;color:#888;">Margem</div>' +
                         '<div style="font-size:20px;font-weight:700;color:' + mpColor + ';">' + mpVal + '</div>' +
+                        (mpLabel ? '<div style="font-size:10px;font-weight:600;color:' + mpColor + ';margin-top:2px;">' + mpLabel + '</div>' : '') +
                     '</div>' +
                     '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
                         '<div style="font-size:11px;color:#888;">Vendas</div>' +
@@ -2377,7 +2388,8 @@
                         '<div style="font-size:11px;color:#888;">Resultado</div>' +
                         '<div style="font-size:16px;font-weight:600;color:' + mpColor + ';">' + (dept.resultado || '—') + '</div>' +
                     '</div>' +
-                '</div>';
+                '</div>' +
+                '<div style="text-align:center;font-size:10px;color:#999;font-style:italic;margin-top:10px;">Aguarda validação de dados pelo departamento financeiro</div>';
             cardsDiv.appendChild(card);
         });
     }
