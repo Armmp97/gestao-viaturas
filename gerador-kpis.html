@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Gerador Relatórios KPIs - DomusCar</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -637,13 +640,15 @@
 
         /* PRINT STYLES */
         @media print {
-            /* Hide everything except the print preview overlay */
-            #printPreviewOverlay ~ *, .container, .sidebar, .upload-area, .report-toolbar, .results-area {
+            /* When print overlay is active, hide ALL other page content */
+            body > *:not(#printPreviewOverlay) {
                 display: none !important;
             }
             #printPreviewOverlay {
                 position: static !important;
                 overflow: visible !important;
+                width: 100% !important;
+                height: auto !important;
             }
             .print-toolbar {
                 display: none !important;
@@ -2620,13 +2625,10 @@
             '<div style="padding:20px;">' + reportsHtml + '</div>';
 
         printOverlay.style.display = 'block';
+        printOverlay.scrollTop = 0;
 
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
-            // Hide toolbar for printing, then restore
-            var toolbar = printOverlay.querySelector('.print-toolbar');
-            toolbar.style.display = 'none';
             window.print();
-            toolbar.style.display = 'flex';
         });
 
         document.getElementById('printPreviewBackBtn').addEventListener('click', function() {
