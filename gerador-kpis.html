@@ -816,14 +816,19 @@
             .horas-table th, .horas-table td {
                 padding: 2px 1px;
                 font-size: 5.5pt;
-                word-break: break-all;
+                word-break: normal;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .horas-table th:first-child, .horas-table td:first-child {
-                min-width: 70px;
-                width: 70px;
+                min-width: 90px;
+                width: 90px;
                 position: static;
                 font-size: 5.5pt;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .horas-table th:first-child {
@@ -859,6 +864,12 @@
                 height: 18px;
                 padding: 1px 3px;
                 font-size: 0.5rem;
+            }
+
+            /* ===== PRINT SECTION GROUPS — keep header + content together ===== */
+            .print-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
             }
 
             /* ===== RESUMO TABLE ===== */
@@ -1618,17 +1629,19 @@
                     <div class="report-subtitle">KPIs Semanais e Mensais · ${monthStr}</div>
                     <div class="month-badge" style="border-color: ${color}; color: ${color};">${d.month.month} ${d.month.year}</div>
                 </div>
-
-                <div class="section-header" style="border-left-color: ${color};">KPIs Gerais — ${title.toUpperCase()}</div>
             `;
 
+            html += `<div class="print-section"><div class="section-header" style="border-left-color: ${color};">KPIs Gerais — ${title.toUpperCase()}</div>`;
             html += renderGeneralKPIsTable(d.generalKPIs, color);
+            html += `</div>`;
 
-            html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (Horas Faturadas)</div>`;
+            html += `<div class="print-section"><div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (Horas Faturadas)</div>`;
             html += renderRankingHF(d.technicians, color);
+            html += `</div>`;
 
-            html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (€)</div>`;
+            html += `<div class="print-section"><div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (€)</div>`;
             html += renderRankingEuro(d.technicians, color);
+            html += `</div>`;
 
             html += `<div class="section-header" style="border-left-color: ${color};">Técnicos Individuais</div>`;
             html += renderTechCardsGrid(d.technicians, color);
