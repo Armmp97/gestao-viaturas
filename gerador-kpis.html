@@ -991,8 +991,6 @@
                 'Gyanu Pujara': 'Gyanu Pujara',
                 'José Avelino Da Cruz Fernandes': 'José Fernandes',
                 'João Paulo São Pedro Bizarro': 'João Bizarro',
-                'Djeison Miguel Gonçalves Barbosa Amado': 'Djeison Amado',
-                'Diamantino da Silva': 'Diamantino Silva',
                 'José João Ferreira Borges': 'José Borges',
                 'Pedro Filipe de Castro Jana': 'Pedro Jana'
             }
@@ -1177,22 +1175,34 @@
                 };
             }
 
-            // Parse technicians (starting from row 23 = index 22)
-            const techRows = type === 'lx' ? [23, 33, 43, 53] : [23, 33, 43, 53];
-            const names = type === 'lx'
-                ? ['Emanuel Gonçalves', 'Jorge Silva', 'Sérgio Pereira', 'Xavier Jorge']
-                : ['Arnaldo Cruz', 'Edmilson Fernandes', 'Filipe Bonifácio', 'Gonçalo Matos'];
+            // ====== DETEÇÃO DINÂMICA DE TÉCNICOS (LX/CA) ======
+            // Mapeamento de primeiro nome → nome completo para display
+            // Para adicionar um novo técnico: adicionar aqui "PrimeiroNome": "Nome Completo"
+            const TECH_DISPLAY = {
+                'Emanuel': 'Emanuel Gonçalves', 'Jorge': 'Jorge Silva',
+                'Sérgio': 'Sérgio Pereira', 'Xavier': 'Xavier Jorge',
+                'Arnaldo': 'Arnaldo Cruz', 'Edmilson': 'Edmilson Fernandes',
+                'Filipe': 'Filipe Bonifácio', 'Gonçalo': 'Gonçalo Matos'
+            };
 
-            for (let idx = 0; idx < techRows.length; idx++) {
-                const startRow = techRows[idx] - 1;
-                const techName = names[idx];
+            function isHTCellLX(cell) {
+                return cell && typeof cell === 'string' && cell.indexOf('HT ') === 0 && cell.indexOf('=') === -1 && cell.indexOf('P/ Prod') === -1 && cell.indexOf('P/Prod') === -1;
+            }
+
+            // Percorre linhas a partir da 22 (depois dos KPIs gerais e legendas)
+            for (let r = 21; r < arr.length; r++) {
+                const cell = arr[r] && arr[r][1]; // Column B
+                if (!isHTCellLX(cell)) continue;
+
+                const firstName = cell.substring(3).trim();
+                const techName = TECH_DISPLAY[firstName] || firstName;
+                const startRow = r;
                 let notCountsForKpis = false;
 
                 if (arr[startRow]) {
-                    // Check if this tech should not count for KPIs
                     for (let c = 10; c < (arr[startRow].length || 0); c++) {
-                        const cell = arr[startRow][c];
-                        if (cell && typeof cell === 'string' && cell.toLowerCase().includes('não') && cell.toLowerCase().includes('kpis')) {
+                        const cv = arr[startRow][c];
+                        if (cv && typeof cv === 'string' && cv.toLowerCase().includes('não') && cv.toLowerCase().includes('kpis')) {
                             notCountsForKpis = true;
                             break;
                         }
@@ -1202,64 +1212,19 @@
                 const tech = {
                     name: techName,
                     notCountsForKpis: notCountsForKpis,
-                    ht: [],
-                    hd: [],
-                    utilization: [],
-                    htProd: null,
-                    hdProd: null,
-                    hf: null,
-                    totalFaturado: null,
-                    eficienciaGlobal: null,
-                    eficienciaProdutiva: null
+                    ht: arr[startRow] ? [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]] : [],
+                    htMonthly: arr[startRow] ? arr[startRow][7] : null,
+                    hd: arr[startRow + 1] ? [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]] : [],
+                    hdMonthly: arr[startRow + 1] ? arr[startRow + 1][7] : null,
+                    utilization: arr[startRow + 2] ? [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]] : [],
+                    utilizationMonthly: arr[startRow + 2] ? arr[startRow + 2][7] : null,
+                    htProd: arr[startRow + 3] ? arr[startRow + 3][7] : null,
+                    hdProd: arr[startRow + 4] ? arr[startRow + 4][7] : null,
+                    hf: arr[startRow + 5] ? arr[startRow + 5][7] : null,
+                    totalFaturado: arr[startRow + 6] ? arr[startRow + 6][7] : null,
+                    eficienciaGlobal: arr[startRow + 7] ? arr[startRow + 7][7] : null,
+                    eficienciaProdutiva: arr[startRow + 8] ? arr[startRow + 8][7] : null
                 };
-
-                // HT (row N)
-                if (arr[startRow]) {
-                    tech.ht = [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]];
-                    tech.htMonthly = arr[startRow][7];
-                }
-
-                // HD (row N+1)
-                if (arr[startRow + 1]) {
-                    tech.hd = [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]];
-                    tech.hdMonthly = arr[startRow + 1][7];
-                }
-
-                // Utilización (row N+2)
-                if (arr[startRow + 2]) {
-                    tech.utilization = [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]];
-                    tech.utilizationMonthly = arr[startRow + 2][7];
-                }
-
-                // HT P/ Prod (row N+3, column H only)
-                if (arr[startRow + 3]) {
-                    tech.htProd = arr[startRow + 3][7];
-                }
-
-                // HD P/ Prod (row N+4, column H only)
-                if (arr[startRow + 4]) {
-                    tech.hdProd = arr[startRow + 4][7];
-                }
-
-                // HF (row N+5, column H only)
-                if (arr[startRow + 5]) {
-                    tech.hf = arr[startRow + 5][7];
-                }
-
-                // Total Faturado (row N+6, column H only)
-                if (arr[startRow + 6]) {
-                    tech.totalFaturado = arr[startRow + 6][7];
-                }
-
-                // Eficiencia Global (row N+7, column H only)
-                if (arr[startRow + 7]) {
-                    tech.eficienciaGlobal = arr[startRow + 7][7];
-                }
-
-                // Eficiencia Produtiva (row N+8, column H only)
-                if (arr[startRow + 8]) {
-                    tech.eficienciaProdutiva = arr[startRow + 8][7];
-                }
 
                 data[type].technicians.push(tech);
             }
@@ -1328,96 +1293,104 @@
                 };
             }
 
-            // Prep-only technicians (rows 13-21 Prep, 23-31 Chapa with different names)
-            const prepTechs = [{name: 'Diogo Fernandes', row: 13}, {name: 'Nuno Montês', row: 23}];
-            const chapaTechs = [{name: 'José Borges', row: 13}, {name: 'Pedro Jana', row: 23}];
-
-            for (let idx = 0; idx < 2; idx++) {
-                const startRow = prepTechs[idx].row - 1;
-                const tech = {
-                    name: prepTechs[idx].name,
-                    section: 'prep',
-                    ht: [],
-                    hd: [],
-                    utilization: [],
-                    htMonthly: null,
-                    hdMonthly: null,
-                    utilizationMonthly: null,
-                    hf: null,
-                    totalFaturado: null
+            // Parse CO | Geral (columns V-AB = indices 21-27) — leitura direta do Excel
+            data[type].global.generalKPIs.items = [];
+            for (let i = 0; i < 5; i++) {
+                const row = arr[i + 2];
+                if (!row) continue;
+                data[type].global.generalKPIs.items.push({
+                    label: prepLabels[i],
+                    weeks: [row[22], row[23], row[24], row[25], row[26]],
+                    monthly: row[27]
+                });
+            }
+            if (arr[8]) {
+                data[type].global.generalKPIs.efficiency = {
+                    weeks: [arr[8][22], arr[8][23], arr[8][24], arr[8][25], arr[8][26]],
+                    monthly: arr[8][27]
                 };
-
-                if (arr[startRow]) tech.ht = [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]];
-                if (arr[startRow]) tech.htMonthly = arr[startRow][7];
-                if (arr[startRow + 1]) tech.hd = [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]];
-                if (arr[startRow + 1]) tech.hdMonthly = arr[startRow + 1][7];
-                if (arr[startRow + 2]) tech.utilization = [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]];
-                if (arr[startRow + 2]) tech.utilizationMonthly = arr[startRow + 2][7];
-                if (arr[startRow + 5]) tech.hf = arr[startRow + 5][7];
-                if (arr[startRow + 6]) tech.totalFaturado = arr[startRow + 6][7];
-                if (arr[startRow + 8]) tech.eficienciaProdutiva = arr[startRow + 8][7];
-
-                data[type].technicians.push(tech);
+            }
+            if (arr[9]) {
+                data[type].global.generalKPIs.utilization = {
+                    weeks: [arr[9][22], arr[9][23], arr[9][24], arr[9][25], arr[9][26]],
+                    monthly: arr[9][27]
+                };
             }
 
-            for (let idx = 0; idx < 2; idx++) {
-                const startRow = chapaTechs[idx].row - 1;
-                const tech = {
-                    name: chapaTechs[idx].name,
-                    section: 'chapa',
-                    ht: [],
-                    hd: [],
-                    utilization: [],
-                    htMonthly: null,
-                    hdMonthly: null,
-                    utilizationMonthly: null,
-                    hf: null,
-                    totalFaturado: null
-                };
-
-                if (arr[startRow]) tech.ht = [arr[startRow][10], arr[startRow][11], arr[startRow][12], arr[startRow][13], arr[startRow][14]];
-                if (arr[startRow]) tech.htMonthly = arr[startRow][15];
-                if (arr[startRow + 1]) tech.hd = [arr[startRow + 1][10], arr[startRow + 1][11], arr[startRow + 1][12], arr[startRow + 1][13], arr[startRow + 1][14]];
-                if (arr[startRow + 1]) tech.hdMonthly = arr[startRow + 1][15];
-                if (arr[startRow + 2]) tech.utilization = [arr[startRow + 2][10], arr[startRow + 2][11], arr[startRow + 2][12], arr[startRow + 2][13], arr[startRow + 2][14]];
-                if (arr[startRow + 2]) tech.utilizationMonthly = arr[startRow + 2][15];
-                if (arr[startRow + 5]) tech.hf = arr[startRow + 5][15];
-                if (arr[startRow + 6]) tech.totalFaturado = arr[startRow + 6][15];
-                if (arr[startRow + 8]) tech.eficienciaProdutiva = arr[startRow + 8][15];
-
-                data[type].technicians.push(tech);
+            // ====== DETEÇÃO DINÂMICA DE TÉCNICOS ======
+            // Deteta automaticamente os blocos de técnicos pelo padrão "HT [Nome]" na coluna B (prep/mix) e J (chapa)
+            // Cada bloco tem 9 linhas: HT, HD, Utilização, HT P/Prod, HD P/Prod, HF, Total Faturado, Ef. Global, Ef. Produtiva
+            function isHTCell(cell) {
+                return cell && typeof cell === 'string' && cell.indexOf('HT ') === 0 && cell.indexOf('=') === -1 && cell.indexOf('P/ Prod') === -1 && cell.indexOf('P/Prod') === -1;
             }
 
-            // Mix technicians (rows 43, 53, 63, 73, 83, 93, 103 in columns B-H)
-            const mixRows = [43, 53, 63, 73, 83, 93, 103];
-            const mixNames = ['Carlos Antunes', 'Vitor Soutilha', 'Gyanu Pujara', 'José Fernandes', 'João Bizarro', 'Djeison Amado', 'Diamantino Silva'];
+            function extractName(htCell) {
+                return htCell.substring(3).trim();
+            }
 
-            for (let idx = 0; idx < mixRows.length; idx++) {
-                const startRow = mixRows[idx] - 1;
-                const tech = {
-                    name: mixNames[idx],
-                    section: 'mix',
-                    ht: [],
-                    hd: [],
-                    utilization: [],
-                    htMonthly: null,
-                    hdMonthly: null,
-                    utilizationMonthly: null,
-                    hf: null,
-                    totalFaturado: null
+            function parseTechBlock(startRow, colBase) {
+                // colBase: 1 for columns B-H (indices 1-7), 9 for columns J-P (indices 9-15)
+                const wk = [colBase + 1, colBase + 2, colBase + 3, colBase + 4, colBase + 5];
+                const mo = colBase + 6;
+                return {
+                    ht: arr[startRow] ? wk.map(c => arr[startRow][c]) : [],
+                    htMonthly: arr[startRow] ? arr[startRow][mo] : null,
+                    hd: arr[startRow + 1] ? wk.map(c => arr[startRow + 1][c]) : [],
+                    hdMonthly: arr[startRow + 1] ? arr[startRow + 1][mo] : null,
+                    utilization: arr[startRow + 2] ? wk.map(c => arr[startRow + 2][c]) : [],
+                    utilizationMonthly: arr[startRow + 2] ? arr[startRow + 2][mo] : null,
+                    htProd: arr[startRow + 3] ? arr[startRow + 3][mo] : null,
+                    hdProd: arr[startRow + 4] ? arr[startRow + 4][mo] : null,
+                    hf: arr[startRow + 5] ? arr[startRow + 5][mo] : null,
+                    totalFaturado: arr[startRow + 6] ? arr[startRow + 6][mo] : null,
+                    eficienciaGlobal: arr[startRow + 7] ? arr[startRow + 7][mo] : null,
+                    eficienciaProdutiva: arr[startRow + 8] ? arr[startRow + 8][mo] : null
                 };
+            }
 
-                if (arr[startRow]) tech.ht = [arr[startRow][2], arr[startRow][3], arr[startRow][4], arr[startRow][5], arr[startRow][6]];
-                if (arr[startRow]) tech.htMonthly = arr[startRow][7];
-                if (arr[startRow + 1]) tech.hd = [arr[startRow + 1][2], arr[startRow + 1][3], arr[startRow + 1][4], arr[startRow + 1][5], arr[startRow + 1][6]];
-                if (arr[startRow + 1]) tech.hdMonthly = arr[startRow + 1][7];
-                if (arr[startRow + 2]) tech.utilization = [arr[startRow + 2][2], arr[startRow + 2][3], arr[startRow + 2][4], arr[startRow + 2][5], arr[startRow + 2][6]];
-                if (arr[startRow + 2]) tech.utilizationMonthly = arr[startRow + 2][7];
-                if (arr[startRow + 5]) tech.hf = arr[startRow + 5][7];
-                if (arr[startRow + 6]) tech.totalFaturado = arr[startRow + 6][7];
-                if (arr[startRow + 8]) tech.eficienciaProdutiva = arr[startRow + 8][7];
+            // Zona de legendas (entre prep/chapa e mix) — tipicamente linhas 33-41
+            let legendEndRow = 11;
+            for (let r = 11; r < Math.min(arr.length, 50); r++) {
+                const cell = arr[r] && arr[r][1];
+                if (cell && typeof cell === 'string' && (cell.indexOf('HT =') > -1 || cell.indexOf('HD =') > -1)) {
+                    // Encontrou bloco de legendas, avançar até ao fim
+                    let lr = r;
+                    while (lr < arr.length && arr[lr] && arr[lr][1] && typeof arr[lr][1] === 'string' && !isHTCell(arr[lr][1])) {
+                        lr++;
+                    }
+                    legendEndRow = lr;
+                    break;
+                }
+            }
 
-                data[type].technicians.push(tech);
+            // Prep techs: col B (index 1), linhas 12+ até à zona de legendas
+            for (let r = 11; r < legendEndRow; r++) {
+                const cell = arr[r] && arr[r][1];
+                if (isHTCell(cell)) {
+                    const name = extractName(cell);
+                    const vals = parseTechBlock(r, 1);
+                    data[type].technicians.push(Object.assign({ name: name, section: 'prep' }, vals));
+                }
+            }
+
+            // Chapa techs: col J (index 9), linhas 12+ até à zona de legendas
+            for (let r = 11; r < legendEndRow; r++) {
+                const cell = arr[r] && arr[r][9];
+                if (isHTCell(cell)) {
+                    const name = extractName(cell);
+                    const vals = parseTechBlock(r, 9);
+                    data[type].technicians.push(Object.assign({ name: name, section: 'chapa' }, vals));
+                }
+            }
+
+            // Mix techs: col B (index 1), depois da zona de legendas
+            for (let r = legendEndRow; r < arr.length; r++) {
+                const cell = arr[r] && arr[r][1];
+                if (isHTCell(cell)) {
+                    const name = extractName(cell);
+                    const vals = parseTechBlock(r, 1);
+                    data[type].technicians.push(Object.assign({ name: name, section: 'mix' }, vals));
+                }
             }
         }
 
@@ -1637,10 +1610,9 @@
             html += `<div class="section-header" style="border-left-color: ${color};">KPIs Gerais — Chapa</div>`;
             html += renderGeneralKPIsTable(d.chapa.generalKPIs, color);
 
-            // Global KPIs
-            const globalKpis = calculateGlobalKPIs(d);
+            // Global KPIs — lidos diretamente da secção CO | Geral do Excel
             html += `<div class="section-header" style="border-left-color: ${color};">KPIs Gerais — Global</div>`;
-            html += renderGeneralKPIsTable(globalKpis, color);
+            html += renderGeneralKPIsTable(d.global.generalKPIs, color);
 
             html += `<div class="section-header" style="border-left-color: ${color};">Ranking Total Faturado (Horas Faturadas)</div>`;
             html += renderRankingHF(d.technicians, color);
@@ -1895,16 +1867,8 @@
                         <span>Mecânica Cacém</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-square" style="background: #dd6b20;"></div>
-                        <span>Colisão – Prep + Pintura</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-square" style="background: #805ad5;"></div>
-                        <span>Colisão – Chapa</span>
-                    </div>
-                    <div class="legend-item">
                         <div class="legend-square" style="background: #e53e3e;"></div>
-                        <span>Colisão Global</span>
+                        <span>Colisão / CO</span>
                     </div>
                 </div>
             `;
@@ -1966,17 +1930,7 @@
                             <td class="percentage-cell ${getUtilizationClass(caUtilAvg)}">${formatPercentage(caUtilAvg)}</td>
                         </tr>
                         <tr>
-                            <td>Colisão Prep+Pint</td>
-                            <td class="percentage-cell ${getEfficiencyClass(prepEffAvg)}">${formatPercentage(prepEffAvg)}</td>
-                            <td class="percentage-cell ${getUtilizationClass(prepUtilAvg)}">${formatPercentage(prepUtilAvg)}</td>
-                        </tr>
-                        <tr>
-                            <td>Colisão Chapa</td>
-                            <td class="percentage-cell ${getEfficiencyClass(chapaEffAvg)}">${formatPercentage(chapaEffAvg)}</td>
-                            <td class="percentage-cell ${getUtilizationClass(chapaUtilAvg)}">${formatPercentage(chapaUtilAvg)}</td>
-                        </tr>
-                        <tr>
-                            <td>Colisão Global</td>
+                            <td>Colisão / CO</td>
                             <td class="percentage-cell ${getEfficiencyClass(globalEff)}">${formatPercentage(globalEff)}</td>
                             <td class="percentage-cell ${getUtilizationClass(globalUtil)}">${formatPercentage(globalUtil)}</td>
                         </tr>
@@ -2593,7 +2547,7 @@
             var d = data[type];
             if (d && d.generalKPIs && d.generalKPIs.efficiency) return formatPercentage(d.generalKPIs.efficiency.monthly);
         } else if (type === 'co') {
-            var gk = calculateGlobalKPIs(data.co);
+            var gk = data.co && data.co.global && data.co.global.generalKPIs;
             if (gk && gk.efficiency) return formatPercentage(gk.efficiency.monthly);
         }
         return '—';
@@ -2751,8 +2705,6 @@
             return kpis;
         }
 
-        var globalKpis = calculateGlobalKPIs(d);
-
         var ranking_hf = buildRankingHF(d.technicians);
         var ranking_eur = buildRankingEur(d.technicians);
         var tecnicos = buildTecnicosCO(d.technicians);
@@ -2761,7 +2713,7 @@
         return {
             prepPintura: buildKPIRows(d.prepPint),
             chapa: buildKPIRows(d.chapa),
-            global: buildKPIRows({ generalKPIs: globalKpis }),
+            global: buildKPIRows(d.global),
             ranking_hf: ranking_hf,
             ranking_eur: ranking_eur,
             tecnicos: tecnicos,
@@ -2784,14 +2736,12 @@
             return valid.length > 0 ? valid.reduce(function(s, t) { return s + pctRound(t.utilizationMonthly); }, 0) / valid.length : 0;
         }
 
-        var globalKpis = data.co ? calculateGlobalKPIs(data.co) : null;
+        var globalKpis = data.co && data.co.global && data.co.global.generalKPIs ? data.co.global.generalKPIs : null;
 
         var resumo_oficinas = [
             { oficina: 'Mecânica Lisboa', ef: Math.round(avgEff(lxTechs) * 10) / 10, ut: Math.round(avgUtil(lxTechs) * 10) / 10 },
             { oficina: 'Mecânica Cacém', ef: Math.round(avgEff(caTechs) * 10) / 10, ut: Math.round(avgUtil(caTechs) * 10) / 10 },
-            { oficina: 'Colisão Prep+Pint', ef: Math.round(avgEff(coTechs.filter(function(t) { return t.section === 'prep' || t.section === 'mix'; })) * 10) / 10, ut: Math.round(avgUtil(coTechs.filter(function(t) { return t.section === 'prep' || t.section === 'mix'; })) * 10) / 10 },
-            { oficina: 'Colisão Chapa', ef: Math.round(avgEff(coTechs.filter(function(t) { return t.section === 'chapa' || t.section === 'mix'; })) * 10) / 10, ut: Math.round(avgUtil(coTechs.filter(function(t) { return t.section === 'chapa' || t.section === 'mix'; })) * 10) / 10 },
-            { oficina: 'Colisão Global', ef: globalKpis && globalKpis.efficiency ? pctRound(globalKpis.efficiency.monthly) : 0, ut: globalKpis && globalKpis.utilization ? pctRound(globalKpis.utilization.monthly) : 0 }
+            { oficina: 'Colisão / CO', ef: globalKpis && globalKpis.efficiency ? pctRound(globalKpis.efficiency.monthly) : 0, ut: globalKpis && globalKpis.utilization ? pctRound(globalKpis.utilization.monthly) : 0 }
         ];
 
         // All technicians with office info
