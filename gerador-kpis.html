@@ -1507,13 +1507,13 @@
         function formatHours(val) {
             if (!val && val !== 0) return '—';
             const num = parseFloat(val);
-            return num === 0 ? '—' : num.toFixed(1) + 'h';
+            return num === 0 ? '—' : num.toFixed(2) + 'h';
         }
 
         function formatPercentage(val) {
             if (!val && val !== 0) return '—';
             const num = parseFloat(val) * 100;
-            return Math.round(num).toFixed(1) + '%';
+            return num.toFixed(2) + '%';
         }
 
         function formatEuro(val) {
@@ -1887,20 +1887,21 @@
             const caTechs = data.ca.technicians;
             const coTechs = data.co.technicians;
 
-            const lxEffAvg = lxTechs.length > 0 ? lxTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / lxTechs.length : 0;
-            const lxUtilAvg = lxTechs.length > 0 ? lxTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / lxTechs.length : 0;
+            // Use generalKPIs from Excel for LX (same approach as CO)
+            const lxEffAvg = data.lx.generalKPIs && data.lx.generalKPIs.efficiency
+                ? data.lx.generalKPIs.efficiency.monthly
+                : lxTechs.length > 0 ? lxTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / lxTechs.length : 0;
+            const lxUtilAvg = data.lx.generalKPIs && data.lx.generalKPIs.utilization
+                ? data.lx.generalKPIs.utilization.monthly
+                : lxTechs.length > 0 ? lxTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / lxTechs.length : 0;
 
-            const caEffAvg = caTechs.length > 0 ? caTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / caTechs.length : 0;
-            const caUtilAvg = caTechs.length > 0 ? caTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / caTechs.length : 0;
-
-            const prepTechs = coTechs.filter(t => t.section === 'prep' || t.section === 'mix');
-            const chapaTechs = coTechs.filter(t => t.section === 'chapa' || t.section === 'mix');
-
-            const prepEffAvg = prepTechs.length > 0 ? prepTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / prepTechs.length : 0;
-            const prepUtilAvg = prepTechs.length > 0 ? prepTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / prepTechs.length : 0;
-
-            const chapaEffAvg = chapaTechs.length > 0 ? chapaTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / chapaTechs.length : 0;
-            const chapaUtilAvg = chapaTechs.length > 0 ? chapaTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / chapaTechs.length : 0;
+            // Use generalKPIs from Excel for CA
+            const caEffAvg = data.ca.generalKPIs && data.ca.generalKPIs.efficiency
+                ? data.ca.generalKPIs.efficiency.monthly
+                : caTechs.length > 0 ? caTechs.reduce((sum, t) => sum + (parseFloat(t.eficienciaProdutiva) || 0), 0) / caTechs.length : 0;
+            const caUtilAvg = data.ca.generalKPIs && data.ca.generalKPIs.utilization
+                ? data.ca.generalKPIs.utilization.monthly
+                : caTechs.length > 0 ? caTechs.reduce((sum, t) => sum + (parseFloat(t.utilizationMonthly) || 0), 0) / caTechs.length : 0;
 
             const globalEff = data.co.global && data.co.global.generalKPIs && data.co.global.generalKPIs.efficiency
                 ? data.co.global.generalKPIs.efficiency.monthly
@@ -1951,9 +1952,7 @@
                 allTechs.push({...tech, workshop: 'CA', workshopColor: '#38a169', workshopLabel: 'CA'});
             }
             for (const tech of data.co.technicians) {
-                const section = tech.section === 'prep' ? 'CO Prep' : (tech.section === 'chapa' ? 'CO Chapa' : 'CO Mix');
-                const sectionColor = tech.section === 'prep' ? '#dd6b20' : (tech.section === 'chapa' ? '#805ad5' : '#e53e3e');
-                allTechs.push({...tech, workshop: section, workshopColor: sectionColor, workshopLabel: section});
+                allTechs.push({...tech, workshop: 'CO', workshopColor: '#e53e3e', workshopLabel: 'CO'});
             }
 
             const byEff = [...allTechs].sort((a, b) => (parseFloat(b.eficienciaProdutiva) || 0) - (parseFloat(a.eficienciaProdutiva) || 0));
@@ -2177,23 +2176,23 @@
                     let cellClass = '';
                     let cellText = '';
 
-                    if (feria > 0) {
+                    if (feria > 0 && prod === 0) {
                         cellClass = 'color-ferias';
                         cellText = 'F';
-                    } else if (falta > 0) {
+                    } else if (falta > 0 && prod === 0) {
                         cellClass = 'color-falta';
                         cellText = 'A';
-                    } else if (disponivel === 0) {
+                    } else if (disponivel === 0 && prod === 0) {
                         cellClass = 'color-no-data';
                     } else if (prod >= 6.8) {
                         cellClass = 'color-productive-high';
-                        cellText = prod.toFixed(1);
+                        cellText = prod.toFixed(2);
                     } else if (prod >= 5.0) {
                         cellClass = 'color-productive-medium';
-                        cellText = prod.toFixed(1);
+                        cellText = prod.toFixed(2);
                     } else if (prod > 0) {
                         cellClass = 'color-productive-low';
-                        cellText = prod.toFixed(1);
+                        cellText = prod.toFixed(2);
                     } else if (disponivel > 0) {
                         cellClass = 'color-no-data';
                     } else {
@@ -2204,7 +2203,7 @@
                     if (prod > 0) totalProd += prod;
                 }
 
-                html += `<td class="hours-cell">${Math.round(totalProd)}h</td>
+                html += `<td class="hours-cell">${totalProd.toFixed(2)}h</td>
                     </tr>
             `;
             }
@@ -2284,11 +2283,11 @@
 
                 html += `<tr>
                     <td>${tech.name}</td>
-                    <td>${totalProd.toFixed(1)}h</td>
-                    <td>${totalDisp.toFixed(1)}h</td>
-                    <td class="ferias-bg">${totalFerias.toFixed(1)}h</td>
-                    <td class="falta-bg">${totalFaltas.toFixed(1)}h</td>
-                    <td ${avgClass ? `class="${avgClass}"` : ''}>${avgPerDay.toFixed(1)}h</td>
+                    <td>${totalProd.toFixed(2)}h</td>
+                    <td>${totalDisp.toFixed(2)}h</td>
+                    <td class="ferias-bg">${totalFerias.toFixed(2)}h</td>
+                    <td class="falta-bg">${totalFaltas.toFixed(2)}h</td>
+                    <td ${avgClass ? `class="${avgClass}"` : ''}>${avgPerDay.toFixed(2)}h</td>
                 </tr>`;
             }
 
@@ -2737,10 +2736,12 @@
         }
 
         var globalKpis = data.co && data.co.global && data.co.global.generalKPIs ? data.co.global.generalKPIs : null;
+        var lxKpis = data.lx && data.lx.generalKPIs ? data.lx.generalKPIs : null;
+        var caKpis = data.ca && data.ca.generalKPIs ? data.ca.generalKPIs : null;
 
         var resumo_oficinas = [
-            { oficina: 'Mecânica Lisboa', ef: Math.round(avgEff(lxTechs) * 10) / 10, ut: Math.round(avgUtil(lxTechs) * 10) / 10 },
-            { oficina: 'Mecânica Cacém', ef: Math.round(avgEff(caTechs) * 10) / 10, ut: Math.round(avgUtil(caTechs) * 10) / 10 },
+            { oficina: 'Mecânica Lisboa', ef: lxKpis && lxKpis.efficiency ? pctRound(lxKpis.efficiency.monthly) : parseFloat(avgEff(lxTechs).toFixed(2)), ut: lxKpis && lxKpis.utilization ? pctRound(lxKpis.utilization.monthly) : parseFloat(avgUtil(lxTechs).toFixed(2)) },
+            { oficina: 'Mecânica Cacém', ef: caKpis && caKpis.efficiency ? pctRound(caKpis.efficiency.monthly) : parseFloat(avgEff(caTechs).toFixed(2)), ut: caKpis && caKpis.utilization ? pctRound(caKpis.utilization.monthly) : parseFloat(avgUtil(caTechs).toFixed(2)) },
             { oficina: 'Colisão / CO', ef: globalKpis && globalKpis.efficiency ? pctRound(globalKpis.efficiency.monthly) : 0, ut: globalKpis && globalKpis.utilization ? pctRound(globalKpis.utilization.monthly) : 0 }
         ];
 
@@ -2749,8 +2750,7 @@
         lxTechs.forEach(function(t) { allTechs.push({name: t.name, office: t.notCountsForKpis ? 'LX*' : 'LX', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
         caTechs.forEach(function(t) { allTechs.push({name: t.name, office: 'CA', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
         coTechs.forEach(function(t) {
-            var sec = t.section === 'prep' ? 'CO Prep' : (t.section === 'chapa' ? 'CO Chapa' : 'CO Mix');
-            allTechs.push({name: t.name, office: sec, ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0});
+            allTechs.push({name: t.name, office: 'CO', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0});
         });
 
         var medals = ['🥇', '🥈', '🥉'];
@@ -2776,8 +2776,8 @@
         var n = parseFloat(val);
         if (isNaN(n)) return null;
         // If value is between 0 and 2, it's likely a decimal (0.85 = 85%)
-        if (Math.abs(n) <= 2 && Math.abs(n) > 0) return Math.round(n * 100);
-        return Math.round(n);
+        if (Math.abs(n) <= 2 && Math.abs(n) > 0) return parseFloat((n * 100).toFixed(2));
+        return parseFloat(n.toFixed(2));
     }
 
     function buildRankingHF(technicians) {
@@ -2814,7 +2814,7 @@
 
     function buildTecnicosCO(technicians) {
         return technicians.map(function(t) {
-            var office = t.section === 'prep' ? 'CO Prep' : (t.section === 'chapa' ? 'CO Chapa' : 'CO Mix');
+            var office = 'CO';
             return {
                 name: t.name,
                 office: office,
@@ -2852,11 +2852,11 @@
             var avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
             return {
                 tecnico: tech.name,
-                hp: parseFloat(totalProd.toFixed(1)),
-                hd: parseFloat(totalDisp.toFixed(1)),
-                hf: parseFloat(totalFerias.toFixed(1)),
-                ha: parseFloat(totalFaltas.toFixed(1)),
-                media: parseFloat(avgPerDay.toFixed(1))
+                hp: parseFloat(totalProd.toFixed(2)),
+                hd: parseFloat(totalDisp.toFixed(2)),
+                hf: parseFloat(totalFerias.toFixed(2)),
+                ha: parseFloat(totalFaltas.toFixed(2)),
+                media: parseFloat(avgPerDay.toFixed(2))
             };
         });
     }
