@@ -1841,9 +1841,18 @@
             const idx = bookings.findIndex(b => b.id === id);
             if (idx !== -1) { booking.criadoEm = bookings[idx].criadoEm; booking.criadoPor = bookings[idx].criadoPor; booking.levantamento = bookings[idx].levantamento; booking.devolucao = bookings[idx].devolucao; bookings[idx] = booking; }
         }
+        // Visual feedback on button
+        var submitBtn = document.querySelector('#bookingForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '&#9203; A guardar...';
+        }
         saveData();
         showToast(isNew ? 'Agendamento criado com sucesso!' : 'Agendamento atualizado!', 'success');
-        navigate('calendar');
+        setTimeout(function() {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '&#128190; Guardar Agendamento'; }
+            navigate('calendar');
+        }, 300);
     }
 
     function editBooking(id) { closeDayPanel(); navigate('booking', { bookingId: id }); }
@@ -2033,19 +2042,35 @@
         b.estado = 'Levantado';
         b.atualizadoEm = new Date().toISOString();
         b.atualizadoPor = getUserStamp();
+        // Visual feedback on button
+        var submitBtn = document.querySelector('#pickupForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '&#9203; A guardar...';
+        }
         saveUploadedFiles(id, 'levantamento');
         saveData();
+        // Scroll to top so user sees feedback
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showSuccessBanner('Levantamento registado com sucesso! A preparar contrato para impressão...');
         showToast('Levantamento registado com sucesso!', 'success');
-        // Generate printable document
-        printPickupDocument(b);
-        // Show signed document upload
-        document.getElementById('pickupForm').style.display = 'none';
-        document.getElementById('pk_fotosPreview').innerHTML = '';
-        document.getElementById('pk_ccFrentePreview').innerHTML = '';
-        document.getElementById('pk_ccVersoPreview').innerHTML = '';
-        document.getElementById('pk_cartaFrentePreview').innerHTML = '';
-        document.getElementById('pk_cartaVersoPreview').innerHTML = '';
-        showSignedDocUpload(id, 'levantamento');
+        // Generate printable document (with small delay to let user see feedback)
+        setTimeout(function() {
+            printPickupDocument(b);
+            // Show signed document upload
+            document.getElementById('pickupForm').style.display = 'none';
+            document.getElementById('pk_fotosPreview').innerHTML = '';
+            document.getElementById('pk_ccFrentePreview').innerHTML = '';
+            document.getElementById('pk_ccVersoPreview').innerHTML = '';
+            document.getElementById('pk_cartaFrentePreview').innerHTML = '';
+            document.getElementById('pk_cartaVersoPreview').innerHTML = '';
+            showSignedDocUpload(id, 'levantamento');
+            // Re-enable button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '&#128424; Guardar e Imprimir';
+            }
+        }, 600);
     }
 
     function cancelPickup() {
@@ -2124,6 +2149,9 @@
         if (!nome) { showToast('Preencha o nome do cliente.', 'error'); return; }
         if (!matricula) { showToast('Selecione uma viatura.', 'error'); return; }
         if (!tipo) { showToast('Selecione o tipo de serviço.', 'error'); return; }
+        // Visual feedback on button
+        var btn = event && event.target ? event.target : null;
+        if (btn) { btn.disabled = true; btn.innerHTML = '&#9203; A criar marcação...'; }
         // Auto-create booking
         var today = new Date().toISOString().split('T')[0];
         var loc = getSelectedLocation() || 'Colisão';
@@ -2150,6 +2178,8 @@
         showToast('Marcação ' + newBooking.id + ' criada automaticamente.', 'success');
         // Now open pickup form for this new booking
         document.getElementById('quickPickupCard').style.display = 'none';
+        // Re-enable button
+        if (btn) { btn.disabled = false; btn.innerHTML = '&#128663; Criar Marcação e Iniciar Levantamento'; }
         selectBookingForPickup(newBooking);
     }
 
@@ -2157,7 +2187,11 @@
         var lev = b.levantamento;
         var locAddr = LOCATION_ADDRESS[b.localizacao] || '';
         var printWin = window.open('', '_blank');
-        if (!printWin) { showToast('Popup bloqueado pelo browser. Permita popups para imprimir.', 'error'); return; }
+        if (!printWin) {
+            showToast('Popup bloqueado pelo browser. Permita popups para imprimir.', 'error');
+            showSuccessBanner('Levantamento guardado! Popup de impressão bloqueado — permita popups e reimprima no Histórico.');
+            return;
+        }
         printWin.document.write('<!DOCTYPE html><html><head><title>Levantamento - ' + b.matricula + '</title><style>');
         printWin.document.write('body{font-family:"Segoe UI",sans-serif;padding:15px 25px;color:#333;font-size:12px;} h1{font-size:17px;text-align:center;margin-bottom:2px;margin-top:0;} .subtitle{text-align:center;color:#666;margin-bottom:10px;font-size:11px;} .section{margin-bottom:8px;} .section-title{font-size:13px;font-weight:700;border-bottom:2px solid #333;padding-bottom:2px;margin-bottom:6px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;} .field{margin-bottom:2px;} .field label{font-size:10px;color:#666;display:block;margin-bottom:0;} .field span{font-size:11px;font-weight:500;} .conditions{font-size:8.5px;line-height:1.35;padding:6px 8px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;margin-bottom:6px;} .conditions p{margin-bottom:2px;margin-top:0;} .signatures{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:10px;} .sig-block{text-align:center;} .sig-line{border-top:1px solid #333;margin-top:30px;padding-top:4px;font-size:11px;} .sig-label{font-size:9px;color:#666;margin-top:2px;} .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:6px;} .logo-text span.b{font-size:20px;font-weight:800;} .logo-text span.l{font-size:20px;font-weight:300;color:#999;} .header-right{text-align:right;font-size:10px;color:#666;} @media print{body{padding:10px 15px;font-size:11px;} @page{margin:8mm;}}');
         printWin.document.write('</style></head><body>');
@@ -2256,6 +2290,9 @@
             showToast('Carregue o documento assinado antes de guardar.', 'error');
             return;
         }
+        // Visual feedback on button
+        var btn = event && event.target ? event.target : null;
+        if (btn) { btn.disabled = true; btn.innerHTML = '&#9203; A guardar...'; }
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId][stage]) fileStore[bookingId][stage] = {};
         fileStore[bookingId][stage].documentoAssinado = uploadedFiles['signedDocPreview'];
@@ -2401,15 +2438,31 @@
         var dataDevolucaoReal = new Date().toISOString().split('T')[0];
         b.dataSaida = dataDevolucaoReal;
         b.atualizadoEm = new Date().toISOString();
+        // Visual feedback on button
+        var submitBtn = document.querySelector('#returnForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '&#9203; A guardar...';
+        }
         saveUploadedFiles(id, 'devolucao');
         saveData();
+        // Scroll to top so user sees feedback
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showSuccessBanner('Devolução registada com sucesso! A preparar documento para impressão...');
         showToast('Devolução registada com sucesso!', 'success');
-        // Generate printable return document
-        printReturnDocument(b);
-        // Show signed document upload
-        document.getElementById('returnForm').style.display = 'none';
-        document.getElementById('rt_fotosPreview').innerHTML = '';
-        showSignedDocUploadReturn(id);
+        // Generate printable return document (with small delay to let user see feedback)
+        setTimeout(function() {
+            printReturnDocument(b);
+            // Show signed document upload
+            document.getElementById('returnForm').style.display = 'none';
+            document.getElementById('rt_fotosPreview').innerHTML = '';
+            showSignedDocUploadReturn(id);
+            // Re-enable button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '&#128424; Guardar e Imprimir';
+            }
+        }, 600);
     }
 
     function printReturnDocument(b) {
@@ -2417,7 +2470,11 @@
         var lev = b.levantamento || {};
         var locAddr = LOCATION_ADDRESS[b.localizacao] || '';
         var printWin = window.open('', '_blank');
-        if (!printWin) { showToast('Popup bloqueado pelo browser. Permita popups para imprimir.', 'error'); return; }
+        if (!printWin) {
+            showToast('Popup bloqueado pelo browser. Permita popups para imprimir.', 'error');
+            showSuccessBanner('Devolução guardada! Popup de impressão bloqueado — permita popups e reimprima no Histórico.');
+            return;
+        }
         printWin.document.write('<!DOCTYPE html><html><head><title>Devolução - ' + b.matricula + '</title><style>');
         printWin.document.write('body{font-family:"Segoe UI",sans-serif;padding:40px;color:#333;font-size:14px;} h1{font-size:20px;text-align:center;margin-bottom:4px;} .subtitle{text-align:center;color:#666;margin-bottom:24px;font-size:13px;} .section{margin-bottom:18px;} .section-title{font-size:15px;font-weight:700;border-bottom:2px solid #333;padding-bottom:4px;margin-bottom:10px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;} .field{margin-bottom:4px;} .field label{font-size:11px;color:#666;display:block;} .field span{font-size:13px;font-weight:500;} .alert-box{padding:10px;border-radius:4px;margin-top:8px;font-weight:600;font-size:13px;} .alert-danger{background:#fce8e6;color:#d93025;border:1px solid #d93025;} .alert-success{background:#e6f4ea;color:#0d904f;border:1px solid #0d904f;} .signatures{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:40px;} .sig-block{text-align:center;} .sig-line{border-top:1px solid #333;margin-top:60px;padding-top:6px;font-size:12px;} .sig-label{font-size:10px;color:#666;margin-top:2px;} .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;border-bottom:2px solid #333;padding-bottom:12px;} .logo-text span.b{font-size:24px;font-weight:800;} .logo-text span.l{font-size:24px;font-weight:300;color:#999;} .header-right{text-align:right;font-size:11px;color:#666;} @media print{body{padding:15px;font-size:12px;} @page{margin:10mm;}}');
         printWin.document.write('</style></head><body>');
@@ -2517,6 +2574,9 @@
         if (!uploadedFiles['signedReturnDocPreview'] || uploadedFiles['signedReturnDocPreview'].length === 0) {
             showToast('Carregue o documento assinado antes de guardar.', 'error'); return;
         }
+        // Visual feedback on button
+        var btn = event && event.target ? event.target : null;
+        if (btn) { btn.disabled = true; btn.innerHTML = '&#9203; A guardar...'; }
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId].devolucao) fileStore[bookingId].devolucao = {};
         fileStore[bookingId].devolucao.documentoAssinado = uploadedFiles['signedReturnDocPreview'];
@@ -2942,7 +3002,31 @@
         toast.className = 'toast ' + type;
         toast.innerHTML = '<span>' + (type === 'success' ? '&#9989;' : type === 'error' ? '&#10060;' : '&#9888;&#65039;') + '</span> ' + message;
         container.appendChild(toast);
-        setTimeout(function() { toast.remove(); }, 4000);
+        setTimeout(function() { toast.remove(); }, 5000);
+    }
+
+    function showSuccessBanner(message) {
+        // Remove any existing banner
+        var existing = document.getElementById('successBanner');
+        if (existing) existing.remove();
+        var banner = document.createElement('div');
+        banner.id = 'successBanner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#0d904f,#34a853);color:white;padding:16px 24px;text-align:center;font-size:16px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:bannerSlideIn .3s ease;';
+        banner.innerHTML = '<span style="margin-right:8px;">&#9989;</span>' + message;
+        document.body.appendChild(banner);
+        // Add animation keyframes if not present
+        if (!document.getElementById('bannerAnimStyle')) {
+            var style = document.createElement('style');
+            style.id = 'bannerAnimStyle';
+            style.textContent = '@keyframes bannerSlideIn{from{transform:translateY(-100%);opacity:0;}to{transform:translateY(0);opacity:1;}}';
+            document.head.appendChild(style);
+        }
+        setTimeout(function() {
+            banner.style.transition = 'opacity .5s, transform .5s';
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(-100%)';
+            setTimeout(function() { banner.remove(); }, 500);
+        }, 4000);
     }
     function refreshData() { loadData(); if (currentPage === 'calendar') renderCalendar(); if (currentPage === 'fleet') renderFleet(); showToast('Dados atualizados.'); }
 

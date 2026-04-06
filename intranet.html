@@ -1001,7 +1001,7 @@
         <!-- Dashboard -->
         <div class="dashboard" id="dashboardView">
             <!-- Margem Provisória Block -->
-            <div class="kpi-section" id="margemDashboardBlock" style="display:none;">
+            <div class="kpi-section" id="margemDashboardBlock">
                 <div class="kpi-header">
                     <div>
                         <div class="kpi-title"><span>Margem Provisória</span><button class="kpi-collapse-btn" onclick="toggleMargemCollapse()">Minimizar</button></div>
@@ -2551,6 +2551,8 @@
                 return;
             }
         } catch(e) { console.error('loadMargemDashboard localStorage:', e); }
+        // Show placeholder immediately while waiting for SP data
+        renderMargemDashboard(null);
         // Fallback: load from SharePoint
         loadDashboardFromSP('margem_dashboard.json').then(function(data) {
             if (data) {
@@ -2573,11 +2575,12 @@
         var block = document.getElementById('margemDashboardBlock');
         var cardsDiv = document.getElementById('margemCards');
         var updateDiv = document.getElementById('margemLastUpdate');
+        block.style.display = 'block';
         if (!data || !data.departments || data.departments.length === 0) {
-            block.style.display = 'none';
+            cardsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:14px;">A carregar dados de margem provisória...</div>';
+            updateDiv.textContent = '';
             return;
         }
-        block.style.display = 'block';
         var periodoText = data.periodo ? data.periodo + ' | ' : '';
         updateDiv.textContent = periodoText + 'Atualizado: ' + (data.timestamp || '—');
         cardsDiv.innerHTML = '';
