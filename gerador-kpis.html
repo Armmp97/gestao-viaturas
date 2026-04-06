@@ -2656,39 +2656,25 @@
         var printableHtml = reportsHtml;
 
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
-            // Build standalone HTML for print window — NO inline scripts
+            // Same approach as margem-provisoria: open new window with document.write + print button inside
             var pageStyles = document.querySelector('style') ? document.querySelector('style').textContent : '';
-            var fullHtml = '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">' +
-                '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
-                '<style>' + pageStyles + '\n@media print { @page { size: A4 landscape; margin: 10mm 8mm; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; } }</style>' +
-                '</head><body style="padding:20px;background:white;font-family:Inter,sans-serif;">' +
-                printableHtml +
-                '</body></html>';
-            // Use Blob URL — renders properly in Edge (document.write causes blank pages)
-            var blob = new Blob([fullHtml], {type: 'text/html'});
-            var blobUrl = URL.createObjectURL(blob);
-            var printWin = window.open(blobUrl, '_blank');
-            if (printWin) {
-                // Trigger print from opener (no inline scripts needed)
-                var attempts = 0;
-                var checkReady = setInterval(function() {
-                    attempts++;
-                    try {
-                        if (printWin.document.readyState === 'complete' || attempts > 40) {
-                            clearInterval(checkReady);
-                            setTimeout(function() {
-                                printWin.focus();
-                                printWin.print();
-                            }, 1000);
-                        }
-                    } catch(e) {
-                        clearInterval(checkReady);
-                    }
-                }, 150);
-            } else {
-                // Popup blocked — fallback to window.print on current page
-                window.print();
-            }
+            var pw = window.open('', '_blank');
+            if (!pw) { alert('Popup bloqueado. Permita popups para esta página.'); return; }
+            pw.document.write('<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">');
+            pw.document.write('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">');
+            pw.document.write('<style>');
+            pw.document.write(pageStyles);
+            pw.document.write('.print-toolbar-pw{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
+            pw.document.write('.print-toolbar-pw h1{font-size:18px;margin:0;color:#1e3a5f;}');
+            pw.document.write('.btn-print-pw{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
+            pw.document.write('.btn-print-pw:hover{background:#1d4ed8;}');
+            pw.document.write('@media print{.print-toolbar-pw{display:none !important;} @page{size:A4 landscape;margin:10mm 8mm;} *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}}');
+            pw.document.write('</style></head><body style="padding:0;background:#f5f5f5;font-family:Inter,sans-serif;">');
+            pw.document.write('<div class="print-toolbar-pw"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>');
+            pw.document.write('<button class="btn-print-pw" onclick="window.print()">Imprimir</button></div>');
+            pw.document.write('<div style="padding:20px;">' + printableHtml + '</div>');
+            pw.document.write('</body></html>');
+            pw.document.close();
         });
 
         document.getElementById('printPreviewBackBtn').addEventListener('click', function() {
