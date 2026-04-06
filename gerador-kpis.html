@@ -2316,28 +2316,13 @@
         }
 
         function printReport() {
-            window.print();
+            if (currentReport) {
+                openPrintPreviewKPIs(currentReport);
+            }
         }
 
         function generateAll() {
-            // Generate all reports in sequence
-            const reports = ['lx', 'ca', 'co', 'comparacao'];
-            let idx = 0;
-
-            function printNext() {
-                if (idx >= reports.length) {
-                    alert('Todos os relatórios foram gerados');
-                    return;
-                }
-                showReport(reports[idx]);
-                setTimeout(() => {
-                    window.print();
-                    idx++;
-                    setTimeout(printNext, 1000);
-                }, 500);
-            }
-
-            printNext();
+            openPrintPreviewKPIs('all');
         }
 
         function resetApp() {
@@ -2554,56 +2539,50 @@
 
     function openPrintPreviewKPIs(reportKey) {
         var pw = window.open('', '_blank');
-        if (!pw) { alert('Popup bloqueado.'); return; }
+        if (!pw) { alert('Popup bloqueado. Permita popups para este site.'); return; }
 
         var reports = reportKey === 'all' ? ['lx', 'ca', 'co', 'comparacao'] : [reportKey];
         var labels = { lx: 'Mecânica Lisboa', ca: 'Mecânica Cacém', co: 'Colisão', comparacao: 'Comparação Entre Técnicos' };
 
-        pw.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pré-visualização — KPIs</title>');
-        pw.document.write('<style>');
-        pw.document.write('body{font-family:Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}');
-        pw.document.write('.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;}');
-        pw.document.write('.report-header-bar{background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;}');
-        pw.document.write('.report-frame{width:100%;border:none;min-height:600px;}');
-        pw.document.write('.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
-        pw.document.write('.toolbar h1{font-size:18px;margin:0;color:#1e3a5f;}');
-        pw.document.write('.btn-print{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
-        pw.document.write('@media print{.toolbar{display:none;}.report-section{break-inside:avoid;box-shadow:none;}.report-frame{min-height:auto;}}');
-        pw.document.write('</style></head><body>');
-        pw.document.write('<div class="toolbar"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>');
-        pw.document.write('<button class="btn-print" onclick="window.print()">Imprimir Todos</button></div>');
-        
-        reports.forEach(function(key, idx) {
-            pw.document.write('<div class="report-section"><div class="report-header-bar">' + labels[key] + '</div>');
-            pw.document.write('<iframe id="frame_' + idx + '" class="report-frame"></iframe></div>');
+        // Get the page styles
+        var pageStyles = document.querySelector('style').textContent;
+
+        // Build report content directly (no iframes)
+        var reportsHtml = '';
+        reports.forEach(function(key) {
+            var reportContent = '';
+            if (key === 'lx') reportContent = renderLXCAReport('lx');
+            else if (key === 'ca') reportContent = renderLXCAReport('ca');
+            else if (key === 'co') reportContent = renderCOReport();
+            else if (key === 'comparacao') reportContent = renderComparacao();
+
+            reportsHtml += '<div class="report-section">' +
+                '<div class="report-header-bar">' + labels[key] + '</div>' +
+                '<div class="report-body">' + reportContent + '</div>' +
+                '</div>';
         });
-        pw.document.write('</body></html>');
-        pw.document.close();
 
-        setTimeout(function() {
-            reports.forEach(function(key, idx) {
-                var f = pw.document.getElementById('frame_' + idx);
-                if (f) {
-                    f.srcdoc = generateStandaloneReportHTML(key);
-                    f.onload = function() {
-                        try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch(e) {}
-                    };
-                }
-            });
-        }, 200);
-    }
-
-    function generateStandaloneReportHTML(reportKey) {
-        var reportHtml = '';
-        if (reportKey === 'lx') reportHtml = renderLXCAReport('lx');
-        else if (reportKey === 'ca') reportHtml = renderLXCAReport('ca');
-        else if (reportKey === 'co') reportHtml = renderCOReport();
-        else if (reportKey === 'comparacao') reportHtml = renderComparacao();
-
-        return '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KPIs Report</title>' +
+        var fullHtml = '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">' +
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+            '<title>Pré-visualização — KPIs</title>' +
             '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
-            '<style>' + document.querySelector('style').textContent + '</style></head><body style="padding:20px;background:#f5f5f5;">' +
-            reportHtml + '</body></html>';
+            '<style>' + pageStyles + '\n' +
+            'body{font-family:Inter,Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}' +
+            '.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;padding:20px;}' +
+            '.report-header-bar{background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;margin:-20px -20px 20px -20px;}' +
+            '.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}' +
+            '.toolbar h1{font-size:18px;margin:0;color:#1e3a5f;}' +
+            '.btn-print{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}' +
+            '.btn-print:hover{background:#1d4ed8;}' +
+            '@media print{.toolbar{display:none !important;}.report-section{break-inside:avoid;box-shadow:none;page-break-after:always;}.report-section:last-child{page-break-after:auto;}}' +
+            '</style></head><body>' +
+            '<div class="toolbar"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>' +
+            '<button class="btn-print" onclick="window.print()">Imprimir</button></div>' +
+            reportsHtml +
+            '</body></html>';
+
+        pw.document.write(fullHtml);
+        pw.document.close();
     }
 
     function backToResults() {
