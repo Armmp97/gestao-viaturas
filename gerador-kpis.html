@@ -2609,12 +2609,7 @@
             reportHtml + '</body></html>';
     }
 
-    // Cross-browser print via hidden iframe
-    function printReport() {
-        // Uses the main window print with @media print CSS
-        // The overlay is already visible, @media print hides everything else
-        window.print();
-    }
+    // printReport is defined above in the app scope — print button uses inline handler
 
     function openPrintPreviewKPIs(reportKey) {
         var reports = reportKey === 'all' ? ['lx', 'ca', 'co', 'comparacao'] : [reportKey];
@@ -2661,7 +2656,7 @@
         var printableHtml = reportsHtml;
 
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
-            printReport();
+            window.print();
         });
 
         document.getElementById('printPreviewBackBtn').addEventListener('click', function() {
