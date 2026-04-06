@@ -2656,19 +2656,33 @@
         var printableHtml = reportsHtml;
 
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
-            // Build standalone HTML for print window
+            // Build standalone HTML for print window (no inline scripts — Edge blocks them in Blob URLs)
             var pageStyles = document.querySelector('style') ? document.querySelector('style').textContent : '';
             var fullHtml = '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">' +
                 '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
                 '<style>' + pageStyles + '\n@media print { @page { size: A4 landscape; margin: 10mm 8mm; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; } }</style>' +
                 '</head><body style="padding:20px;background:white;font-family:Inter,sans-serif;">' +
                 printableHtml +
-                '<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},600);};<\/script>' +
                 '</body></html>';
-            var blob = new Blob([fullHtml], {type: 'text/html'});
-            var blobUrl = URL.createObjectURL(blob);
-            var printWin = window.open(blobUrl, '_blank');
-            if (!printWin) {
+            // Open new window and write content directly (avoids Blob script restrictions)
+            var printWin = window.open('', '_blank');
+            if (printWin) {
+                printWin.document.open();
+                printWin.document.write(fullHtml);
+                printWin.document.close();
+                // Poll until document is ready, then trigger print
+                var attempts = 0;
+                var checkReady = setInterval(function() {
+                    attempts++;
+                    if (printWin.document.readyState === 'complete' || attempts > 20) {
+                        clearInterval(checkReady);
+                        setTimeout(function() {
+                            printWin.focus();
+                            printWin.print();
+                        }, 300);
+                    }
+                }, 100);
+            } else {
                 // Popup blocked — fallback to window.print on current page
                 window.print();
             }
