@@ -2586,6 +2586,41 @@
         return '—';
     }
 
+    // Cross-browser print via hidden iframe
+    function printViaIframe(htmlContent) {
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+        iframe.id = 'printFrame';
+        document.body.appendChild(iframe);
+
+        var pageStyles = document.querySelector('style').textContent;
+        var fullHtml = '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">' +
+            '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+            '<style>' + pageStyles + '</style>' +
+            '</head><body style="padding:20px;background:white;">' +
+            htmlContent +
+            '</body></html>';
+
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(fullHtml);
+        doc.close();
+
+        // Wait for content to render, then print
+        iframe.onload = function() {
+            setTimeout(function() {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                // Clean up after print dialog closes
+                setTimeout(function() {
+                    if (document.getElementById('printFrame')) {
+                        document.body.removeChild(iframe);
+                    }
+                }, 2000);
+            }, 500);
+        };
+    }
+
     function openPrintPreviewKPIs(reportKey) {
         var reports = reportKey === 'all' ? ['lx', 'ca', 'co', 'comparacao'] : [reportKey];
         var labels = { lx: 'Mecânica Lisboa', ca: 'Mecânica Cacém', co: 'Colisão', comparacao: 'Comparação Entre Técnicos' };
@@ -2599,13 +2634,13 @@
             else if (key === 'co') reportContent = renderCOReport();
             else if (key === 'comparacao') reportContent = renderComparacao();
 
-            reportsHtml += '<div class="print-report-section">' +
-                '<div class="print-report-header-bar">' + labels[key] + '</div>' +
-                '<div class="print-report-body">' + reportContent + '</div>' +
+            reportsHtml += '<div style="margin-bottom:30px;">' +
+                '<div style="background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;border-radius:8px 8px 0 0;">' + labels[key] + '</div>' +
+                '<div style="background:white;padding:20px;border-radius:0 0 8px 8px;box-shadow:0 2px 8px rgba(0,0,0,.1);">' + reportContent + '</div>' +
                 '</div>';
         });
 
-        // Show print preview inline (replace current page content)
+        // Show print preview inline
         var printOverlay = document.getElementById('printPreviewOverlay');
         if (!printOverlay) {
             printOverlay = document.createElement('div');
@@ -2615,7 +2650,7 @@
         }
 
         printOverlay.innerHTML =
-            '<div class="print-toolbar" style="background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);">' +
+            '<div style="background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);">' +
                 '<h1 style="font-size:18px;margin:0;color:#1e3a5f;">KPIs — ' + reports.length + ' Relatório(s)</h1>' +
                 '<div>' +
                     '<button id="printPreviewPrintBtn" style="padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">Imprimir</button>' +
@@ -2627,8 +2662,11 @@
         printOverlay.style.display = 'block';
         printOverlay.scrollTop = 0;
 
+        // Store the HTML for printing
+        var printableHtml = reportsHtml;
+
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
-            window.print();
+            printViaIframe(printableHtml);
         });
 
         document.getElementById('printPreviewBackBtn').addEventListener('click', function() {
