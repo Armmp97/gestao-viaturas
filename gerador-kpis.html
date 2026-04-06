@@ -1070,9 +1070,11 @@
         }
 
         let uploadedFileName = '';
+        let uploadedFileObj = null;
 
         function loadFile(file) {
             uploadedFileName = file.name || '';
+            uploadedFileObj = file;
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -2536,7 +2538,7 @@
 
             // Reset SP counters
             spSaveCount = 0;
-            spSaveTotal = 4; // 4 reports
+            spSaveTotal = 5; // 4 reports + 1 imported Excel
             spSaveErrors = [];
 
             // 1. Build and send KPI dashboard payload
@@ -2545,7 +2547,15 @@
                 window.parent.postMessage({ type: 'kpiDashboardUpdate', payload: kpiPayload }, '*');
             }
 
-            // 2. Save generated HTML reports to SharePoint
+            // 2. Save imported Excel to SharePoint Importados folder
+            if (uploadedFileObj) {
+                saveFileToSharePoint(uploadedFileObj, 'kpis_importados', uploadedFileName);
+            } else {
+                // No file to upload, adjust total
+                spSaveTotal = 4;
+            }
+
+            // 3. Save generated HTML reports to SharePoint
             var ts = getTimestamp();
             var reportKeys = ['lx', 'ca', 'co', 'comparacao'];
             var reportLabels = ['Lisboa', 'Cacem', 'Colisao', 'Comparacao'];
@@ -2584,6 +2594,19 @@
             if (gk && gk.efficiency) return formatPercentage(gk.efficiency.monthly);
         }
         return '—';
+    }
+
+    function generateStandaloneReportHTML(reportKey) {
+        var reportHtml = '';
+        if (reportKey === 'lx') reportHtml = renderLXCAReport('lx');
+        else if (reportKey === 'ca') reportHtml = renderLXCAReport('ca');
+        else if (reportKey === 'co') reportHtml = renderCOReport();
+        else if (reportKey === 'comparacao') reportHtml = renderComparacao();
+
+        return '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KPIs Report</title>' +
+            '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+            '<style>' + document.querySelector('style').textContent + '</style></head><body style="padding:20px;background:#f5f5f5;">' +
+            reportHtml + '</body></html>';
     }
 
     // Cross-browser print via hidden iframe
