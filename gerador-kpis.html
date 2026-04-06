@@ -617,8 +617,52 @@
             color: #718096;
         }
 
+        /* PRINT PREVIEW OVERLAY */
+        .print-report-section {
+            background: white;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            overflow: hidden;
+            padding: 20px;
+        }
+        .print-report-header-bar {
+            background: #1e3a5f;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: -20px -20px 20px -20px;
+        }
+
         /* PRINT STYLES */
         @media print {
+            /* Hide everything except the print preview overlay */
+            #printPreviewOverlay ~ *, .container, .sidebar, .upload-area, .report-toolbar, .results-area {
+                display: none !important;
+            }
+            #printPreviewOverlay {
+                position: static !important;
+                overflow: visible !important;
+            }
+            .print-toolbar {
+                display: none !important;
+            }
+            .print-report-section {
+                break-inside: avoid;
+                box-shadow: none;
+                page-break-after: always;
+                border-radius: 0;
+            }
+            .print-report-section:last-child {
+                page-break-after: auto;
+            }
+            .print-report-header-bar {
+                background: #1e3a5f !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
             @page {
                 size: A4 landscape;
                 margin: 10mm 8mm;
@@ -2538,16 +2582,10 @@
     }
 
     function openPrintPreviewKPIs(reportKey) {
-        var pw = window.open('', '_blank');
-        if (!pw) { alert('Popup bloqueado. Permita popups para este site.'); return; }
-
         var reports = reportKey === 'all' ? ['lx', 'ca', 'co', 'comparacao'] : [reportKey];
         var labels = { lx: 'Mecânica Lisboa', ca: 'Mecânica Cacém', co: 'Colisão', comparacao: 'Comparação Entre Técnicos' };
 
-        // Get the page styles
-        var pageStyles = document.querySelector('style').textContent;
-
-        // Build report content directly (no iframes)
+        // Build report content
         var reportsHtml = '';
         reports.forEach(function(key) {
             var reportContent = '';
@@ -2556,33 +2594,45 @@
             else if (key === 'co') reportContent = renderCOReport();
             else if (key === 'comparacao') reportContent = renderComparacao();
 
-            reportsHtml += '<div class="report-section">' +
-                '<div class="report-header-bar">' + labels[key] + '</div>' +
-                '<div class="report-body">' + reportContent + '</div>' +
+            reportsHtml += '<div class="print-report-section">' +
+                '<div class="print-report-header-bar">' + labels[key] + '</div>' +
+                '<div class="print-report-body">' + reportContent + '</div>' +
                 '</div>';
         });
 
-        var fullHtml = '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">' +
-            '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
-            '<title>Pré-visualização — KPIs</title>' +
-            '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
-            '<style>' + pageStyles + '\n' +
-            'body{font-family:Inter,Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}' +
-            '.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;padding:20px;}' +
-            '.report-header-bar{background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;margin:-20px -20px 20px -20px;}' +
-            '.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}' +
-            '.toolbar h1{font-size:18px;margin:0;color:#1e3a5f;}' +
-            '.btn-print{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}' +
-            '.btn-print:hover{background:#1d4ed8;}' +
-            '@media print{.toolbar{display:none !important;}.report-section{break-inside:avoid;box-shadow:none;page-break-after:always;}.report-section:last-child{page-break-after:auto;}}' +
-            '</style></head><body>' +
-            '<div class="toolbar"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>' +
-            '<button class="btn-print" onclick="window.print()">Imprimir</button></div>' +
-            reportsHtml +
-            '</body></html>';
+        // Show print preview inline (replace current page content)
+        var printOverlay = document.getElementById('printPreviewOverlay');
+        if (!printOverlay) {
+            printOverlay = document.createElement('div');
+            printOverlay.id = 'printPreviewOverlay';
+            printOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:#f5f5f5;overflow-y:auto;';
+            document.body.appendChild(printOverlay);
+        }
 
-        pw.document.write(fullHtml);
-        pw.document.close();
+        printOverlay.innerHTML =
+            '<div class="print-toolbar" style="background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);">' +
+                '<h1 style="font-size:18px;margin:0;color:#1e3a5f;">KPIs — ' + reports.length + ' Relatório(s)</h1>' +
+                '<div>' +
+                    '<button id="printPreviewPrintBtn" style="padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">Imprimir</button>' +
+                    '<button id="printPreviewBackBtn" style="padding:8px 20px;background:#718096;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Voltar</button>' +
+                '</div>' +
+            '</div>' +
+            '<div style="padding:20px;">' + reportsHtml + '</div>';
+
+        printOverlay.style.display = 'block';
+
+        document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
+            // Hide toolbar for printing, then restore
+            var toolbar = printOverlay.querySelector('.print-toolbar');
+            toolbar.style.display = 'none';
+            window.print();
+            toolbar.style.display = 'flex';
+        });
+
+        document.getElementById('printPreviewBackBtn').addEventListener('click', function() {
+            printOverlay.style.display = 'none';
+            printOverlay.innerHTML = '';
+        });
     }
 
     function backToResults() {
