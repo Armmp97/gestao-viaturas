@@ -2596,6 +2596,12 @@
         return '—';
     }
 
+    function getCleanStyles() {
+        // Strip @media print from page styles — they reference #printPreviewOverlay which doesn't exist in standalone pages
+        var raw = document.querySelector('style') ? document.querySelector('style').textContent : '';
+        return raw.replace(/@media\s+print\s*\{[^}]*(?:\{[^}]*\}[^}]*)*\}/g, '');
+    }
+
     function generateStandaloneReportHTML(reportKey) {
         var reportHtml = '';
         if (reportKey === 'lx') reportHtml = renderLXCAReport('lx');
@@ -2603,9 +2609,12 @@
         else if (reportKey === 'co') reportHtml = renderCOReport();
         else if (reportKey === 'comparacao') reportHtml = renderComparacao();
 
+        var cleanStyles = getCleanStyles();
+        var printCss = '@media print{@page{size:A4 landscape;margin:10mm 8mm;} *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;} html,body{background:white !important;font-size:9pt;width:100%;margin:0;padding:0;}}';
+
         return '<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KPIs Report</title>' +
             '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
-            '<style>' + document.querySelector('style').textContent + '</style></head><body style="padding:20px;background:#f5f5f5;">' +
+            '<style>' + cleanStyles + printCss + '</style></head><body style="padding:20px;background:#f5f5f5;">' +
             reportHtml + '</body></html>';
     }
 
@@ -2657,7 +2666,8 @@
 
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
             // Same approach as margem-provisoria: open new window with document.write + print button inside
-            var pageStyles = document.querySelector('style') ? document.querySelector('style').textContent : '';
+            // IMPORTANT: strip @media print from page styles — it hides everything except #printPreviewOverlay which doesn't exist in the new window
+            var pageStyles = getCleanStyles();
             var pw = window.open('', '_blank');
             if (!pw) { alert('Popup bloqueado. Permita popups para esta página.'); return; }
             pw.document.write('<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">');
@@ -2668,7 +2678,7 @@
             pw.document.write('.print-toolbar-pw h1{font-size:18px;margin:0;color:#1e3a5f;}');
             pw.document.write('.btn-print-pw{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
             pw.document.write('.btn-print-pw:hover{background:#1d4ed8;}');
-            pw.document.write('@media print{.print-toolbar-pw{display:none !important;} @page{size:A4 landscape;margin:10mm 8mm;} *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}}');
+            pw.document.write('@media print{.print-toolbar-pw{display:none !important;} @page{size:A4 landscape;margin:10mm 8mm;} *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;} html,body{background:white !important;font-size:9pt;width:100%;margin:0;padding:0;}}');
             pw.document.write('</style></head><body style="padding:0;background:#f5f5f5;font-family:Inter,sans-serif;">');
             pw.document.write('<div class="print-toolbar-pw"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>');
             pw.document.write('<button class="btn-print-pw" onclick="window.print()">Imprimir</button></div>');
