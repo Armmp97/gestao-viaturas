@@ -2665,26 +2665,43 @@
         var printableHtml = reportsHtml;
 
         document.getElementById('printPreviewPrintBtn').addEventListener('click', function() {
-            // Same approach as margem-provisoria: open new window with document.write + print button inside
-            // IMPORTANT: strip @media print from page styles — it hides everything except #printPreviewOverlay which doesn't exist in the new window
-            var pageStyles = getCleanStyles();
+            // Exact same pattern as margem-provisoria: new window + iframes with srcdoc
             var pw = window.open('', '_blank');
             if (!pw) { alert('Popup bloqueado. Permita popups para esta página.'); return; }
             pw.document.write('<!DOCTYPE html><html lang="pt-PT"><head><meta charset="UTF-8">');
-            pw.document.write('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">');
             pw.document.write('<style>');
-            pw.document.write(pageStyles);
-            pw.document.write('.print-toolbar-pw{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
-            pw.document.write('.print-toolbar-pw h1{font-size:18px;margin:0;color:#1e3a5f;}');
-            pw.document.write('.btn-print-pw{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
-            pw.document.write('.btn-print-pw:hover{background:#1d4ed8;}');
-            pw.document.write('@media print{.print-toolbar-pw{display:none !important;} @page{size:A4 landscape;margin:10mm 8mm;} *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;} html,body{background:white !important;font-size:9pt;width:100%;margin:0;padding:0;}}');
-            pw.document.write('</style></head><body style="padding:0;background:#f5f5f5;font-family:Inter,sans-serif;">');
-            pw.document.write('<div class="print-toolbar-pw"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>');
-            pw.document.write('<button class="btn-print-pw" onclick="window.print()">Imprimir</button></div>');
-            pw.document.write('<div style="padding:20px;">' + printableHtml + '</div>');
+            pw.document.write('body{font-family:Segoe UI,sans-serif;margin:0;padding:20px;background:#f5f5f5;}');
+            pw.document.write('.report-section{background:white;margin-bottom:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;}');
+            pw.document.write('.report-header-bar{background:#1e3a5f;color:white;padding:12px 20px;font-size:16px;font-weight:600;}');
+            pw.document.write('.report-frame{width:100%;border:none;min-height:600px;}');
+            pw.document.write('.toolbar{background:white;padding:12px 20px;border-bottom:2px solid #1e3a5f;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1);}');
+            pw.document.write('.toolbar h1{font-size:18px;margin:0;color:#1e3a5f;}');
+            pw.document.write('.btn-print{padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;}');
+            pw.document.write('.btn-print:hover{background:#1d4ed8;}');
+            pw.document.write('@media print{.toolbar{display:none !important;}.report-section{break-inside:avoid;box-shadow:none;}.report-frame{min-height:auto;}}');
+            pw.document.write('</style></head><body>');
+            pw.document.write('<div class="toolbar"><h1>KPIs — ' + reports.length + ' Relatório(s)</h1>');
+            pw.document.write('<button class="btn-print" onclick="window.print()">Imprimir</button></div>');
+            var labels = { lx: 'Mecânica Lisboa', ca: 'Mecânica Cacém', co: 'Colisão', comparacao: 'Comparação Entre Técnicos' };
+            reports.forEach(function(key, idx) {
+                pw.document.write('<div class="report-section"><div class="report-header-bar">' + labels[key] + '</div>');
+                pw.document.write('<iframe id="kpi_frame_' + idx + '" class="report-frame"></iframe></div>');
+            });
             pw.document.write('</body></html>');
             pw.document.close();
+            // Load each report into its iframe via srcdoc (same as margem)
+            setTimeout(function() {
+                reports.forEach(function(key, idx) {
+                    var fullHtml = generateStandaloneReportHTML(key);
+                    var f = pw.document.getElementById('kpi_frame_' + idx);
+                    if (f) {
+                        f.srcdoc = fullHtml;
+                        f.onload = function() {
+                            try { f.style.height = f.contentDocument.documentElement.scrollHeight + 'px'; } catch(e) {}
+                        };
+                    }
+                });
+            }, 100);
         });
 
         document.getElementById('printPreviewBackBtn').addEventListener('click', function() {
