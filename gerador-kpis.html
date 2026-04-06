@@ -2178,8 +2178,9 @@
 
             html += renderHorasPicadasTable(d, type, monthStr);
 
-            html += `<div class="section-header" style="border-left-color: ${color};">Resumo do Mês</div>`;
+            html += `<div class="print-section"><div class="section-header" style="border-left-color: ${color};">Resumo do Mês</div>`;
             html += renderHorasPicadasResume(d, type);
+            html += `</div>`;
 
             return html;
         }
@@ -2195,8 +2196,9 @@
             let html = `<div class="section-header" style="border-left-color: ${color};">Horas Picadas — Horas Produtivas Diárias</div>`;
             html += renderHorasPicadasTable(d, type, monthStr);
 
-            html += `<div class="section-header" style="border-left-color: ${color};">Horas Picadas — Resumo do Mês</div>`;
+            html += `<div class="print-section"><div class="section-header" style="border-left-color: ${color};">Horas Picadas — Resumo do Mês</div>`;
             html += renderHorasPicadasResume(d, type);
+            html += `</div>`;
 
             return html;
         }
