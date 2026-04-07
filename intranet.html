@@ -2555,59 +2555,69 @@
         }).then(function(resp) { return resp.accessToken; });
     }
 
+    // Hardcoded driveId as fallback — this never changes for the GestaoViaturas document library
+    var SP_HARDCODED_DRIVE_ID = 'b!mdw2oqB7DkCZ0NXnFleY4zS_Sr3beMpKpR9JO3oNOeOpAVO6L8U9TpkawXl-2TJn';
+
+    function getDriveId() {
+        return spDriveId || SP_HARDCODED_DRIVE_ID;
+    }
+
     function loadDashboardFromSP(fileName) {
-        if (!spDriveId) return Promise.resolve(null);
+        var driveId = getDriveId();
         var folderPath = SP_CONFIG.folders.dashboard_state;
-        var url = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
 
         // Try with ReadWrite token first, then fallback to Read-only token
-        return getGraphToken().catch(function() {
-            console.log('ReadWrite token failed, trying Read-only for:', fileName);
+        console.log('[SP-Load] Attempting to load:', fileName, 'driveId:', driveId.substring(0, 20) + '...');
+        return getGraphToken().catch(function(e) {
+            console.warn('[SP-Load] ReadWrite token FAILED:', e.errorCode || e.message || e, '— trying Read-only');
             return getGraphReadToken();
         }).then(function(token) {
+            console.log('[SP-Load] Token obtained, fetching file:', fileName);
             return fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
         }).then(function(resp) {
             if (!resp.ok) {
-                console.warn('loadDashboardFromSP response not ok:', resp.status, fileName);
+                console.warn('[SP-Load] HTTP error:', resp.status, resp.statusText, 'for', fileName);
                 return null;
             }
+            console.log('[SP-Load] File loaded OK:', fileName);
             return resp.json();
         }).catch(function(e) {
-            console.warn('loadDashboardFromSP error:', e);
+            console.error('[SP-Load] COMPLETE FAILURE for', fileName, ':', e.errorCode || e.message || e);
             return null;
         });
     }
 
-    var margemLoadedFromSP = false; // track if SP load was attempted with valid driveId
+    var margemLoadedFromSP = false; // track if SP load was attempted
 
     function loadMargemDashboard() {
         // 1. Try localStorage first
         try {
             var stored = localStorage.getItem('intranet_margemDashboard');
             if (stored) {
+                console.log('[Margem] Loaded from localStorage');
                 renderMargemDashboard(JSON.parse(stored));
                 return;
             }
-        } catch(e) { console.error('loadMargemDashboard localStorage:', e); }
+        } catch(e) { console.error('[Margem] localStorage error:', e); }
         // 2. Show loading placeholder
+        console.log('[Margem] No localStorage, loading from SP. driveId:', getDriveId() ? 'available' : 'MISSING');
         renderMargemDashboard(null, true); // true = still loading
-        // 3. If SP is ready, load from SP
-        if (spDriveId) {
-            margemLoadedFromSP = true;
-            loadDashboardFromSP('margem_dashboard.json').then(function(data) {
-                if (data) {
-                    try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
-                    renderMargemDashboard(data);
-                } else {
-                    // SP returned null — no data available
-                    renderMargemDashboard(null, false); // false = done loading, no data
-                }
-            }).catch(function(e) {
-                console.warn('loadMargemDashboard SP fallback:', e);
+        // 3. ALWAYS try to load from SP — use hardcoded driveId as fallback
+        margemLoadedFromSP = true;
+        loadDashboardFromSP('margem_dashboard.json').then(function(data) {
+            if (data) {
+                console.log('[Margem] Loaded from SP successfully:', data.periodo, '- departments:', data.departments ? data.departments.length : 0);
+                try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
+                renderMargemDashboard(data);
+            } else {
+                console.warn('[Margem] SP returned null — no data on SharePoint');
                 renderMargemDashboard(null, false);
-            });
-        }
-        // If SP not ready yet, initSharePoint callback will re-trigger
+            }
+        }).catch(function(e) {
+            console.error('[Margem] SP load FAILED:', e.message || e);
+            renderMargemDashboard(null, false);
+        });
     }
 
     function saveMargemDashboard(data) {
