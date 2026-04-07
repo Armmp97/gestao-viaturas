@@ -2123,7 +2123,11 @@
     }
 
     function graphRequest(url, options) {
-        return getGraphToken().then(function(token) {
+        // Try ReadWrite token first, fallback to Read-only for non-admin users
+        return getGraphToken().catch(function() {
+            console.log('ReadWrite token failed for graphRequest, trying Read-only');
+            return getGraphReadToken();
+        }).then(function(token) {
             var opts = options || {};
             opts.headers = opts.headers || {};
             opts.headers['Authorization'] = 'Bearer ' + token;
@@ -2152,35 +2156,38 @@
                     spDriveId = target.id;
                     console.log('SharePoint connected. Drive:', spDriveId);
                     updateSpStatus();
-                    return ensureFolderStructure().then(function() {
-                        // After SP is ready, ALWAYS try to load margem from SP
-                        // (new users won't have localStorage, and the initial load failed because spDriveId was null)
-                        if (!margemLoadedFromSP) {
-                            loadDashboardFromSP('margem_dashboard.json').then(function(data) {
-                                if (data) {
-                                    try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
-                                    renderMargemDashboard(data);
-                                } else if (!localStorage.getItem('intranet_margemDashboard')) {
-                                    // No data on SP and no localStorage — show final state
-                                    renderMargemDashboard(null, false);
-                                }
-                            }).catch(function(e) {
-                                console.warn('loadMargemDashboard after SP init:', e);
-                                if (!localStorage.getItem('intranet_margemDashboard')) {
-                                    renderMargemDashboard(null, false);
-                                }
-                            });
-                        }
-                        if (!localStorage.getItem('intranet_kpiDashboard')) {
-                            loadDashboardFromSP('kpi_dashboard.json').then(function(data) {
-                                if (data) {
-                                    try { localStorage.setItem('intranet_kpiDashboard', JSON.stringify(data)); } catch(e) {}
-                                    applyKpiDashboard(data);
-                                    var ft = reorderKpiTabs();
-                                    renderKpiContent(ft || 'colisao');
-                                }
-                            });
-                        }
+
+                    // IMMEDIATELY load dashboards from SP — do NOT wait for ensureFolderStructure
+                    // (non-admin users may not have write permissions to create folders)
+                    if (!margemLoadedFromSP) {
+                        loadDashboardFromSP('margem_dashboard.json').then(function(data) {
+                            if (data) {
+                                try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
+                                renderMargemDashboard(data);
+                            } else if (!localStorage.getItem('intranet_margemDashboard')) {
+                                renderMargemDashboard(null, false);
+                            }
+                        }).catch(function(e) {
+                            console.warn('loadMargemDashboard after SP init:', e);
+                            if (!localStorage.getItem('intranet_margemDashboard')) {
+                                renderMargemDashboard(null, false);
+                            }
+                        });
+                    }
+                    if (!localStorage.getItem('intranet_kpiDashboard')) {
+                        loadDashboardFromSP('kpi_dashboard.json').then(function(data) {
+                            if (data) {
+                                try { localStorage.setItem('intranet_kpiDashboard', JSON.stringify(data)); } catch(e) {}
+                                applyKpiDashboard(data);
+                                var ft = reorderKpiTabs();
+                                renderKpiContent(ft || 'colisao');
+                            }
+                        });
+                    }
+
+                    // Create folder structure in background (non-blocking, for admin/write operations)
+                    return ensureFolderStructure().catch(function(e) {
+                        console.warn('ensureFolderStructure failed (non-critical):', e);
                     });
                 }
                 throw new Error('Drive "' + SP_CONFIG.driveName + '" not found');
@@ -2537,14 +2544,33 @@
         }).catch(function(e) { console.warn('saveDashboardToSP error:', e); });
     }
 
+    function getGraphReadToken() {
+        // Try read-only scopes as fallback for non-admin users
+        if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
+        return msalInstance.acquireTokenSilent({
+            scopes: ['Files.Read.All', 'Sites.Read.All'],
+            account: currentMsalUser
+        }).catch(function() {
+            return acquireTokenInteractive(['Files.Read.All', 'Sites.Read.All']);
+        }).then(function(resp) { return resp.accessToken; });
+    }
+
     function loadDashboardFromSP(fileName) {
         if (!spDriveId) return Promise.resolve(null);
         var folderPath = SP_CONFIG.folders.dashboard_state;
         var url = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
-        return getGraphToken().then(function(token) {
+
+        // Try with ReadWrite token first, then fallback to Read-only token
+        return getGraphToken().catch(function() {
+            console.log('ReadWrite token failed, trying Read-only for:', fileName);
+            return getGraphReadToken();
+        }).then(function(token) {
             return fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
         }).then(function(resp) {
-            if (!resp.ok) return null;
+            if (!resp.ok) {
+                console.warn('loadDashboardFromSP response not ok:', resp.status, fileName);
+                return null;
+            }
             return resp.json();
         }).catch(function(e) {
             console.warn('loadDashboardFromSP error:', e);
