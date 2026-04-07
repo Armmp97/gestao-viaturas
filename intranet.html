@@ -1159,6 +1159,19 @@
         document.getElementById('headerLogo').src = LOGO_URL;
     }
 
+    // ======== MARGEM DATA (FALLBACK) ========
+    // Hardcoded fallback — used when SP is unavailable (403, no permissions, etc.)
+    // Updated automatically when admin generates a new report via margem-provisoria module
+    var MARGEM_FALLBACK_DATA = {
+        "timestamp": "03/04/2026, 21:46:42",
+        "periodo": "Março 2026",
+        "departments": [
+            {"key": "lisboa", "label": "Mecânica Lisboa", "margem": 0.25146112363294576, "vendas": "91.969,64 €", "custos": "72.162,11 €", "resultado": "19.807,53 €"},
+            {"key": "cacem", "label": "Mecânica Cacém", "margem": 0.26768862850063163, "vendas": "105.685,98 €", "custos": "77.983,82 €", "resultado": "27.702,16 €"},
+            {"key": "colisao", "label": "Colisão", "margem": 0.18855416493219507, "vendas": "110.888,72 €", "custos": "89.980,19 €", "resultado": "20.908,53 €"}
+        ]
+    };
+
     // ======== KPI DATA ========
     // KPI_DATA: initialized with hardcoded defaults, replaced by dynamic data from gerador-kpis module
     var KPI_DATA = {
@@ -2157,33 +2170,8 @@
                     console.log('SharePoint connected. Drive:', spDriveId);
                     updateSpStatus();
 
-                    // IMMEDIATELY load dashboards from SP — do NOT wait for ensureFolderStructure
-                    // (non-admin users may not have write permissions to create folders)
-                    if (!margemLoadedFromSP) {
-                        loadDashboardFromSP('margem_dashboard.json').then(function(data) {
-                            if (data) {
-                                try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
-                                renderMargemDashboard(data);
-                            } else if (!localStorage.getItem('intranet_margemDashboard')) {
-                                renderMargemDashboard(null, false);
-                            }
-                        }).catch(function(e) {
-                            console.warn('loadMargemDashboard after SP init:', e);
-                            if (!localStorage.getItem('intranet_margemDashboard')) {
-                                renderMargemDashboard(null, false);
-                            }
-                        });
-                    }
-                    if (!localStorage.getItem('intranet_kpiDashboard')) {
-                        loadDashboardFromSP('kpi_dashboard.json').then(function(data) {
-                            if (data) {
-                                try { localStorage.setItem('intranet_kpiDashboard', JSON.stringify(data)); } catch(e) {}
-                                applyKpiDashboard(data);
-                                var ft = reorderKpiTabs();
-                                renderKpiContent(ft || 'colisao');
-                            }
-                        });
-                    }
+                    // Dashboard loading is now handled independently by loadMargemDashboard/loadKpiDashboard
+                    // (they use hardcoded driveId fallback and don't depend on initSharePoint)
 
                     // Create folder structure in background (non-blocking, for admin/write operations)
                     return ensureFolderStructure().catch(function(e) {
@@ -2603,20 +2591,21 @@
         // 2. Show loading placeholder
         console.log('[Margem] No localStorage, loading from SP. driveId:', getDriveId() ? 'available' : 'MISSING');
         renderMargemDashboard(null, true); // true = still loading
-        // 3. ALWAYS try to load from SP — use hardcoded driveId as fallback
+        // 3. Try to load from SP, fallback to hardcoded data if SP fails (403, etc.)
         margemLoadedFromSP = true;
         loadDashboardFromSP('margem_dashboard.json').then(function(data) {
             if (data) {
-                console.log('[Margem] Loaded from SP successfully:', data.periodo, '- departments:', data.departments ? data.departments.length : 0);
+                console.log('[Margem] Loaded from SP successfully:', data.periodo);
                 try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
                 renderMargemDashboard(data);
             } else {
-                console.warn('[Margem] SP returned null — no data on SharePoint');
-                renderMargemDashboard(null, false);
+                // SP returned null (403, file not found, etc.) — use hardcoded fallback
+                console.warn('[Margem] SP unavailable, using FALLBACK data:', MARGEM_FALLBACK_DATA.periodo);
+                renderMargemDashboard(MARGEM_FALLBACK_DATA);
             }
         }).catch(function(e) {
-            console.error('[Margem] SP load FAILED:', e.message || e);
-            renderMargemDashboard(null, false);
+            console.error('[Margem] SP load FAILED, using FALLBACK:', e.message || e);
+            renderMargemDashboard(MARGEM_FALLBACK_DATA);
         });
     }
 
@@ -2624,6 +2613,8 @@
         try {
             localStorage.setItem('intranet_margemDashboard', JSON.stringify(data));
         } catch(e) { console.error('saveMargemDashboard:', e); }
+        // Update in-memory fallback for this session
+        MARGEM_FALLBACK_DATA = data;
         renderMargemDashboard(data);
         // Persist to SharePoint for cross-browser access
         saveDashboardToSP('margem_dashboard.json', data);
