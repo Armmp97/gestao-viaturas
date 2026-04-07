@@ -2153,12 +2153,21 @@
                     console.log('SharePoint connected. Drive:', spDriveId);
                     updateSpStatus();
                     return ensureFolderStructure().then(function() {
-                        // After SP is ready, load dashboards from SP if localStorage was empty
-                        if (!localStorage.getItem('intranet_margemDashboard')) {
+                        // After SP is ready, ALWAYS try to load margem from SP
+                        // (new users won't have localStorage, and the initial load failed because spDriveId was null)
+                        if (!margemLoadedFromSP) {
                             loadDashboardFromSP('margem_dashboard.json').then(function(data) {
                                 if (data) {
                                     try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
                                     renderMargemDashboard(data);
+                                } else if (!localStorage.getItem('intranet_margemDashboard')) {
+                                    // No data on SP and no localStorage — show final state
+                                    renderMargemDashboard(null, false);
+                                }
+                            }).catch(function(e) {
+                                console.warn('loadMargemDashboard after SP init:', e);
+                                if (!localStorage.getItem('intranet_margemDashboard')) {
+                                    renderMargemDashboard(null, false);
                                 }
                             });
                         }
@@ -2543,7 +2552,10 @@
         });
     }
 
+    var margemLoadedFromSP = false; // track if SP load was attempted with valid driveId
+
     function loadMargemDashboard() {
+        // 1. Try localStorage first
         try {
             var stored = localStorage.getItem('intranet_margemDashboard');
             if (stored) {
@@ -2551,15 +2563,25 @@
                 return;
             }
         } catch(e) { console.error('loadMargemDashboard localStorage:', e); }
-        // Show placeholder immediately while waiting for SP data
-        renderMargemDashboard(null);
-        // Fallback: load from SharePoint
-        loadDashboardFromSP('margem_dashboard.json').then(function(data) {
-            if (data) {
-                try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
-                renderMargemDashboard(data);
-            }
-        }).catch(function(e) { console.warn('loadMargemDashboard SP fallback:', e); });
+        // 2. Show loading placeholder
+        renderMargemDashboard(null, true); // true = still loading
+        // 3. If SP is ready, load from SP
+        if (spDriveId) {
+            margemLoadedFromSP = true;
+            loadDashboardFromSP('margem_dashboard.json').then(function(data) {
+                if (data) {
+                    try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
+                    renderMargemDashboard(data);
+                } else {
+                    // SP returned null — no data available
+                    renderMargemDashboard(null, false); // false = done loading, no data
+                }
+            }).catch(function(e) {
+                console.warn('loadMargemDashboard SP fallback:', e);
+                renderMargemDashboard(null, false);
+            });
+        }
+        // If SP not ready yet, initSharePoint callback will re-trigger
     }
 
     function saveMargemDashboard(data) {
@@ -2571,13 +2593,17 @@
         saveDashboardToSP('margem_dashboard.json', data);
     }
 
-    function renderMargemDashboard(data) {
+    function renderMargemDashboard(data, stillLoading) {
         var block = document.getElementById('margemDashboardBlock');
         var cardsDiv = document.getElementById('margemCards');
         var updateDiv = document.getElementById('margemLastUpdate');
         block.style.display = 'block';
         if (!data || !data.departments || data.departments.length === 0) {
-            cardsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:14px;">A carregar dados de margem provisória...</div>';
+            if (stillLoading) {
+                cardsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:14px;"><div style="margin-bottom:8px;">⏳</div>A carregar dados de margem provisória...</div>';
+            } else {
+                cardsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:14px;"><div style="margin-bottom:8px;">📊</div>Sem dados de margem provisória disponíveis.<br><span style="font-size:12px;color:#aaa;">Os dados serão atualizados quando um administrador gerar o relatório mensal.</span></div>';
+            }
             updateDiv.textContent = '';
             return;
         }
