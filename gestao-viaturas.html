@@ -1165,8 +1165,16 @@
             scopes: ['Sites.ReadWrite.All', 'Files.ReadWrite.All'],
             account: account
         }).then(function(r) { return r.accessToken; }).catch(function() {
+            // Fallback 1: popup interativo para ReadWrite
             return msalInstance.acquireTokenPopup({
                 scopes: ['Sites.ReadWrite.All', 'Files.ReadWrite.All']
+            }).then(function(r) { return r.accessToken; });
+        }).catch(function() {
+            // Fallback 2: tentar Read-Only (users sem permissoes de escrita)
+            console.warn('[Auth] ReadWrite falhou, a tentar Read-Only...');
+            return msalInstance.acquireTokenSilent({
+                scopes: ['Sites.Read.All', 'Files.Read.All'],
+                account: account
             }).then(function(r) { return r.accessToken; });
         });
     }
@@ -1333,8 +1341,12 @@
     /* ============================================
        LOAD / SAVE (modo dual: local + SharePoint)
        ============================================ */
+    var _spReady = false;
+    var _spPendingQueue = []; // queue de bookings para gravar quando SP estiver pronto
+    var _spInitPromise = null; // promise da inicializacao SP em curso
+
     function loadData() {
-        // Limpeza única de dados de teste (v1.0 reset)
+        // Limpeza unica de dados de teste (v1.0 reset)
         if (!localStorage.getItem('wg_reset_v1')) {
             localStorage.removeItem('wg_bookings');
             localStorage.removeItem('wg_files');
@@ -1353,21 +1365,112 @@
         loadVehicleLocations();
     }
 
+    function _ensureSpReady() {
+        if (_spReady && spSiteId && spListId) return Promise.resolve();
+        if (_spInitPromise) return _spInitPromise;
+        _spInitPromise = initSharePointIds().then(function() {
+            _spReady = true;
+            console.log('[SP-Sync] SharePoint IDs prontos. SiteId:', spSiteId, 'ListId:', spListId);
+            // Processar queue de operacoes pendentes
+            if (_spPendingQueue.length > 0) {
+                console.log('[SP-Sync] A processar', _spPendingQueue.length, 'operacoes pendentes...');
+                var queue = _spPendingQueue.slice();
+                _spPendingQueue = [];
+                var chain = Promise.resolve();
+                queue.forEach(function(b) {
+                    chain = chain.then(function() { return spSaveBooking(b); }).catch(function(e) {
+                        console.error('[SP-Sync] Erro ao gravar booking pendente:', b.id, e);
+                    });
+                });
+                return chain;
+            }
+        }).catch(function(e) {
+            console.error('[SP-Sync] Falha ao inicializar SharePoint:', e);
+            _spInitPromise = null; // permitir retry na proxima chamada
+            throw e;
+        });
+        return _spInitPromise;
+    }
+
     function loadDataFromSharePoint() {
         if (CONFIG.storageMode !== 'sharepoint') return;
-        initSharePointIds().then(function() {
+        _ensureSpReady().then(function() {
             return spLoadBookings();
         }).then(function(spBookings) {
             if (spBookings && spBookings.length > 0) {
-                bookings = spBookings;
+                // MERGE inteligente: combinar SP com dados locais em vez de substituir
+                var merged = _mergeBookings(bookings, spBookings);
+                bookings = merged;
                 // Atualizar cache local
                 try { localStorage.setItem('wg_bookings', JSON.stringify(bookings)); } catch(e) {}
                 renderCalendar();
+                console.log('[SP-Sync] Merge concluido:', bookings.length, 'reservas totais');
                 showToast('Dados sincronizados com SharePoint.', 'success');
+                // Enviar para SP quaisquer bookings locais que nao tenham _spItemId
+                var locaisOrfas = bookings.filter(function(b) { return !b._spItemId; });
+                if (locaisOrfas.length > 0) {
+                    console.log('[SP-Sync] A enviar', locaisOrfas.length, 'reservas locais orfas para SP...');
+                    var chain = Promise.resolve();
+                    locaisOrfas.forEach(function(b) {
+                        chain = chain.then(function() { return spSaveBooking(b); }).catch(function(e) {
+                            console.error('[SP-Sync] Erro ao enviar booking local para SP:', b.id, e);
+                        });
+                    });
+                    chain.then(function() {
+                        // Atualizar localStorage com os _spItemId novos
+                        try { localStorage.setItem('wg_bookings', JSON.stringify(bookings)); } catch(e) {}
+                    });
+                }
+            } else {
+                // SP vazio — enviar TODOS os dados locais para SP (bootstrap)
+                if (bookings.length > 0) {
+                    console.log('[SP-Sync] SP vazio, a fazer bootstrap com', bookings.length, 'reservas locais...');
+                    var chain = Promise.resolve();
+                    bookings.forEach(function(b) {
+                        if (!b._spItemId) {
+                            chain = chain.then(function() { return spSaveBooking(b); }).catch(function(e) {
+                                console.error('[SP-Sync] Erro bootstrap:', b.id, e);
+                            });
+                        }
+                    });
+                    chain.then(function() {
+                        try { localStorage.setItem('wg_bookings', JSON.stringify(bookings)); } catch(e) {}
+                        showToast('Dados locais enviados para SharePoint.', 'success');
+                    });
+                }
             }
         }).catch(function(e) {
-            console.warn('SharePoint sync failed, using local cache:', e);
+            console.warn('[SP-Sync] Sincronizacao falhou, a usar cache local:', e);
         });
+    }
+
+    function _mergeBookings(localList, spList) {
+        // Cria mapa por booking ID
+        var map = {};
+        // Primeiro: inserir todos os locais
+        (localList || []).forEach(function(b) { if (b && b.id) map[b.id] = b; });
+        // Depois: SP sobrescreve/complementa (SP e a fonte de verdade se ambos existem)
+        (spList || []).forEach(function(spB) {
+            if (!spB || !spB.id) return;
+            var local = map[spB.id];
+            if (!local) {
+                // Existe no SP mas nao localmente — adicionar
+                map[spB.id] = spB;
+            } else {
+                // Existe em ambos — manter a versao mais recente
+                var spDate = spB.atualizadoEm || '';
+                var localDate = local.atualizadoEm || '';
+                if (spDate >= localDate) {
+                    // SP mais recente ou igual — usar SP mas preservar _spItemId
+                    map[spB.id] = spB;
+                } else {
+                    // Local mais recente — manter local mas copiar _spItemId do SP
+                    local._spItemId = spB._spItemId;
+                    map[spB.id] = local;
+                }
+            }
+        });
+        return Object.keys(map).map(function(k) { return map[k]; });
     }
 
     function saveData() {
@@ -1375,25 +1478,54 @@
         try {
             localStorage.setItem('wg_bookings', JSON.stringify(bookings));
         } catch(e) {
-            console.error('saveData bookings error:', e);
+            console.error('[saveData] bookings error:', e);
         }
         try {
             localStorage.setItem('wg_files', JSON.stringify(fileStore));
         } catch(e) {
-            console.error('saveData files error:', e);
+            console.error('[saveData] files error:', e);
         }
-        // Se modo SharePoint ativo, guardar também na cloud
-        if (CONFIG.storageMode === 'sharepoint' && spSiteId) {
-            // Encontrar a booking que foi modificada mais recentemente
+        // Se modo SharePoint ativo, guardar TODAS as bookings que nao tem _spItemId ou foram alteradas
+        if (CONFIG.storageMode === 'sharepoint') {
+            // Encontrar bookings que precisam de sync: sem _spItemId (novas) ou a mais recente (alterada)
+            var toSync = bookings.filter(function(b) { return !b._spItemId; });
+            // Tambem incluir a mais recentemente alterada (pode ter _spItemId mas estar dirty)
             var latest = bookings.reduce(function(a, b) {
                 return (a.atualizadoEm || '') > (b.atualizadoEm || '') ? a : b;
             }, bookings[0]);
-            if (latest) {
-                spSaveBooking(latest).catch(function(e) {
-                    showToast('Erro ao sincronizar com SharePoint. Dados guardados localmente.', 'error');
-                    console.error('SP save error:', e);
-                });
+            if (latest && latest._spItemId && toSync.indexOf(latest) === -1) {
+                toSync.push(latest);
             }
+            if (toSync.length === 0) return;
+
+            if (!_spReady || !spSiteId) {
+                // SP ainda nao esta pronto — adicionar a queue
+                toSync.forEach(function(b) {
+                    var jaEnfileirado = _spPendingQueue.some(function(q) { return q.id === b.id; });
+                    if (!jaEnfileirado) {
+                        _spPendingQueue.push(b);
+                        console.log('[saveData] Booking', b.id, 'adicionada a queue pendente (SP nao pronto)');
+                    }
+                });
+                // Tentar inicializar SP em background
+                _ensureSpReady().catch(function() {});
+                return;
+            }
+
+            // SP pronto — gravar todas
+            var chain = Promise.resolve();
+            toSync.forEach(function(b) {
+                chain = chain.then(function() {
+                    return spSaveBooking(b);
+                }).then(function() {
+                    console.log('[saveData] Booking', b.id, 'gravada no SP com sucesso');
+                    // Atualizar localStorage com _spItemId
+                    try { localStorage.setItem('wg_bookings', JSON.stringify(bookings)); } catch(e) {}
+                }).catch(function(e) {
+                    showToast('Erro ao sincronizar reserva com SharePoint. Dados guardados localmente.', 'error');
+                    console.error('[saveData] SP save error para booking', b.id, ':', e);
+                });
+            });
         }
     }
 
@@ -1402,7 +1534,8 @@
             loadDataFromSharePoint();
         } else {
             loadData();
-            renderCalendar();
+            if (currentPage === 'calendar') renderCalendar();
+            if (currentPage === 'fleet') renderFleet();
             showToast('Dados recarregados.', 'success');
         }
     }
@@ -2945,7 +3078,7 @@
         setTimeout(function() { toast.remove(); }, 5000);
     }
 
-    function refreshData() { loadData(); if (currentPage === 'calendar') renderCalendar(); if (currentPage === 'fleet') renderFleet(); showToast('Dados atualizados.'); }
+    // refreshData() ja definida acima no bloco LOAD/SAVE — removida duplicacao que causava perda de sync SP
 
     function clearAllData() {
         if (!confirm('ATENÇÃO: Tem a certeza que deseja apagar TODOS os dados?\n\n• Todas as marcações do calendário\n• Todos os levantamentos\n• Todas as devoluções\n• Todos os ficheiros associados\n\nEsta ação é irreversível!')) return;
