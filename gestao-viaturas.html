@@ -1318,9 +1318,9 @@
         } catch(e) { return '.bin'; }
     }
 
+    var _spFileQueue = []; // queue de ficheiros para upload quando SP estiver pronto
+
     function spUploadFile(bookingId, stage, fileName, base64Data) {
-        if (!spSiteId || !spDriveId) return Promise.resolve();
-        // fileName already contains descriptive name with timestamp from caller
         // Converter base64 para blob
         var parts = base64Data.split(',');
         var mime = parts[0].match(/:(.*?);/)[1];
@@ -1329,11 +1329,46 @@
         for (var i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
         var blob = new Blob([array], { type: mime });
         var path = bookingId + '/' + stage + '/' + fileName;
+
+        if (!spSiteId || !spDriveId) {
+            // SP nao pronto — adicionar a queue para retry automatico
+            console.log('[SP-Upload] SP nao pronto, ficheiro enfileirado:', fileName);
+            _spFileQueue.push({ path: path, blob: blob, mime: mime, fileName: fileName });
+            // Tentar inicializar SP em background; quando pronto, processar queue
+            _ensureSpReady().then(function() { _processFileQueue(); }).catch(function() {});
+            return Promise.resolve();
+        }
+        return _doSpUpload(path, blob, mime, fileName);
+    }
+
+    function _doSpUpload(path, blob, mime, fileName) {
         return getAccessToken().then(function(token) {
             return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + path + ':/content', {
                 method: 'PUT',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': mime },
                 body: blob
+            });
+        }).then(function(resp) {
+            if (resp && resp.ok) {
+                console.log('[SP-Upload] Ficheiro enviado:', fileName);
+            } else {
+                console.warn('[SP-Upload] Upload falhou para:', fileName, resp ? resp.status : 'no response');
+            }
+            return resp;
+        });
+    }
+
+    function _processFileQueue() {
+        if (_spFileQueue.length === 0 || !spDriveId) return;
+        console.log('[SP-Upload] A processar', _spFileQueue.length, 'ficheiros pendentes...');
+        var queue = _spFileQueue.slice();
+        _spFileQueue = [];
+        var chain = Promise.resolve();
+        queue.forEach(function(item) {
+            chain = chain.then(function() {
+                return _doSpUpload(item.path, item.blob, item.mime, item.fileName);
+            }).catch(function(e) {
+                console.error('[SP-Upload] Erro ao enviar ficheiro pendente:', item.fileName, e);
             });
         });
     }

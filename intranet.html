@@ -2216,10 +2216,20 @@
         });
     }
 
+    var _intranetUploadQueue = []; // queue de uploads pendentes quando SP nao esta pronto
+
     function uploadToSharePoint(folderKey, fileName, fileContent, contentType) {
-        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        var driveId = getDriveId();
+        if (!driveId) {
+            // Nem driveId dinamico nem hardcoded — enfileirar para retry
+            console.log('[SP-Upload] Sem driveId, ficheiro enfileirado:', fileName);
+            _intranetUploadQueue.push({ folderKey: folderKey, fileName: fileName, fileContent: fileContent, contentType: contentType });
+            // Tentar inicializar SP em background
+            initSharePoint().then(function() { _processIntranetUploadQueue(); }).catch(function() {});
+            return Promise.reject('SharePoint not initialized — queued for retry');
+        }
         var folderPath = SP_CONFIG.folders[folderKey] || SP_CONFIG.folders.geral;
-        var uploadUrl = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        var uploadUrl = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
         return graphRequest(uploadUrl, {
             method: 'PUT',
             headers: { 'Content-Type': contentType || 'application/octet-stream' },
@@ -2227,24 +2237,43 @@
         });
     }
 
+    function _processIntranetUploadQueue() {
+        var driveId = getDriveId();
+        if (_intranetUploadQueue.length === 0 || !driveId) return;
+        console.log('[SP-Upload] A processar', _intranetUploadQueue.length, 'uploads pendentes...');
+        var queue = _intranetUploadQueue.slice();
+        _intranetUploadQueue = [];
+        var chain = Promise.resolve();
+        queue.forEach(function(item) {
+            chain = chain.then(function() {
+                return uploadToSharePoint(item.folderKey, item.fileName, item.fileContent, item.contentType);
+            }).catch(function(e) {
+                console.error('[SP-Upload] Erro ao enviar ficheiro pendente:', item.fileName, e);
+            });
+        });
+    }
+
     function listSharePointFiles(folderKey) {
-        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject('SharePoint not initialized');
         var folderPath = SP_CONFIG.folders[folderKey] || SP_CONFIG.folders.geral;
-        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + ':/children?$orderby=lastModifiedDateTime desc&$top=50');
+        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + ':/children?$orderby=lastModifiedDateTime desc&$top=50');
     }
 
     function downloadSharePointFile(fileId) {
-        if (!spDriveId) return Promise.reject('SharePoint not initialized');
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject('SharePoint not initialized');
         return getGraphToken().then(function(token) {
-            return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/items/' + fileId + '/content', {
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId + '/content', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
         });
     }
 
     function deleteSharePointFile(fileId) {
-        if (!spDriveId) return Promise.reject('SharePoint not initialized');
-        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/items/' + fileId, {
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject('SharePoint not initialized');
+        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
             method: 'DELETE'
         });
     }
@@ -2515,11 +2544,12 @@
 
     // === SharePoint Dashboard State Persistence ===
     function saveDashboardToSP(fileName, data) {
-        if (!spDriveId) return;
+        var driveId = getDriveId();
+        if (!driveId) { console.warn('[saveDashboardToSP] Sem driveId, a ignorar save para:', fileName); return; }
         var json = JSON.stringify(data);
         var blob = new Blob([json], { type: 'application/json' });
         var folderPath = SP_CONFIG.folders.dashboard_state;
-        var url = 'https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
         getGraphToken().then(function(token) {
             return fetch(url, {
                 method: 'PUT',
