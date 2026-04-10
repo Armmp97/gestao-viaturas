@@ -964,7 +964,25 @@
         <div class="sidebar-section">Principal</div>
         <ul class="sidebar-nav">
             <li><a onclick="goHome()" id="navHome"><span class="nav-icon">🏠</span> Início</a></li>
-            <li><a onclick="openModule('visao_missao')" id="navVisao_missao"><span class="nav-icon">🎯</span> Visão / Missão</a></li>
+        </ul>
+
+        <div class="sidebar-section">Ongoing Onboarding</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a onclick="toggleOnboardingSubmenu()" id="navOnboarding" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span><span class="nav-icon">📚</span> Conteúdos</span><span id="onboardingArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <ul id="onboardingSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
+                    <li><a onclick="openModule('visao_missao')" id="navVisao_missao"><span class="nav-icon">🎯</span> Visão / Missão</a></li>
+                    <li><a onclick="openModule('estrutura_org')" id="navEstrutura_org"><span class="nav-icon">🏢</span> Estrutura Organizacional</a></li>
+                    <li><a onclick="openModule('normas_regras')" id="navNormas_regras"><span class="nav-icon">📜</span> Normas e Regras Internas</a></li>
+                    <li><a onclick="openModule('qualidade_seguranca')" id="navQualidade_seguranca"><span class="nav-icon">🛡️</span> Qualidade e Segurança</a></li>
+                    <li><a onclick="openModule('doc_tecnica')" id="navDoc_tecnica"><span class="nav-icon">📖</span> Documentação Técnica</a></li>
+                    <li><a onclick="openModule('sistemas_ferramentas')" id="navSistemas_ferramentas"><span class="nav-icon">🔧</span> Sistemas e Ferramentas</a></li>
+                    <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
+                    <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos</a></li>
+                    <li><a onclick="openModule('sugestoes_melhoria')" id="navSugestoes_melhoria"><span class="nav-icon">💡</span> Sugestões e Melhoria</a></li>
+                    <li><a onclick="openModule('processos_op')" id="navProcessos_op"><span class="nav-icon">⚙️</span> Processos Operacionais</a></li>
+                </ul>
+            </li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -1880,15 +1898,15 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['visao_missao','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','processos_op','viaturas','kpis','margem']
         }
     };
 
@@ -2029,6 +2047,19 @@
         if (navHome) navHome.classList.add('active');
         // Initialize SharePoint connection (background)
         setTimeout(function() { initSharePoint(); }, 1000);
+    }
+
+    function toggleOnboardingSubmenu() {
+        var sub = document.getElementById('onboardingSubmenu');
+        var arrow = document.getElementById('onboardingArrow');
+        if (!sub) return;
+        if (sub.style.display === 'none' || !sub.style.display) {
+            sub.style.display = 'block';
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        } else {
+            sub.style.display = 'none';
+            if (arrow) arrow.style.transform = '';
+        }
     }
 
     function toggleRelatoriosSubmenu() {
@@ -2431,6 +2462,15 @@
     function openModule(id) {
         const modules = {
             visao_missao: { title: 'Visão, Missão & Valores', url: 'intranet_visao_missao.html' },
+            estrutura_org: { title: 'Estrutura Organizacional', url: 'estrutura_organizacional.html' },
+            normas_regras: { title: 'Normas e Regras Internas', url: 'normas_regras_internas.html' },
+            qualidade_seguranca: { title: 'Sistema de Qualidade e Segurança', url: 'qualidade_seguranca.html' },
+            doc_tecnica: { title: 'Documentação Técnica', url: 'documentacao_tecnica.html' },
+            sistemas_ferramentas: { title: 'Sistemas e Ferramentas', url: 'sistemas_ferramentas.html' },
+            recursos_humanos: { title: 'Recursos Humanos', url: 'recursos_humanos.html' },
+            indicadores_obj: { title: 'Indicadores e Objetivos', url: 'indicadores_objetivos.html' },
+            sugestoes_melhoria: { title: 'Área de Sugestões e Melhoria', url: 'sugestoes_melhoria.html' },
+            processos_op: { title: 'Processos Operacionais', url: 'processos_operacionais.html' },
             viaturas: { title: 'Serviço de Mobilidade', url: 'gestao-viaturas.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },

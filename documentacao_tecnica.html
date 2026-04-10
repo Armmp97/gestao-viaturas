@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Documentação Técnica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0B2545; --navy-deep: #081C36; --navy-light: #133366;
+  --red: #C8102E; --white: #FFFFFF; --off-white: #F7F8FA;
+  --gray-100: #F0F2F5; --gray-200: #E2E6EB; --gray-400: #9CA3AF;
+  --gray-600: #6B7280; --text-dark: #1E293B; --text-body: #475569;
+  --radius: 16px; --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--off-white); color:var(--text-body); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+.hero {
+  position:relative;
+  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
+  color:var(--white); overflow:hidden; min-height:320px; display:flex; align-items:center;
+}
+.hero::before {
+  content:''; position:absolute; top:-40%; right:-10%;
+  width:700px; height:700px;
+  background:radial-gradient(circle,rgba(200,16,46,.12) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.hero-inner { position:relative; z-index:2; padding:60px 0 50px; }
+.hero h1 {
+  font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
+  line-height:1.15; margin-bottom:16px;
+}
+.hero h1 em { font-style:normal; color:var(--red); }
+.hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
+.hero-bar {
+  position:absolute; bottom:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--red) 0%,var(--red) 70%,var(--navy-light) 70%);
+}
+.placeholder-section {
+  padding:80px 0; text-align:center;
+}
+.placeholder-icon {
+  width:80px; height:80px; margin:0 auto 24px;
+  background:rgba(11,37,69,.06); border-radius:20px;
+  display:flex; align-items:center; justify-content:center;
+}
+.placeholder-icon svg { width:36px; height:36px; color:var(--navy); }
+.placeholder-title {
+  font-size:1.4rem; font-weight:700; color:var(--navy); margin-bottom:12px;
+}
+.placeholder-text {
+  font-size:1rem; color:var(--gray-600); max-width:500px; margin:0 auto;
+}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <h1>Documentação Técnica</h1>
+      <p class="hero-desc">Manuais técnicos, fichas de procedimento e documentação de referência.</p>
+    </div>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+<div class="placeholder-section">
+  <div class="container">
+    <div class="placeholder-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    </div>
+    <div class="placeholder-title">Conteúdo em preparação</div>
+    <p class="placeholder-text">Esta secção está a ser desenvolvida. Em breve estará disponível com informação completa para toda a equipa.</p>
+  </div>
+</div>
+</body>
+</html>
