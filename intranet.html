@@ -964,6 +964,7 @@
         <div class="sidebar-section">Principal</div>
         <ul class="sidebar-nav">
             <li><a onclick="goHome()" id="navHome"><span class="nav-icon">🏠</span> Início</a></li>
+            <li><a onclick="openModule('visao_missao')" id="navVisao_missao"><span class="nav-icon">🎯</span> Visão / Missão</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -1879,15 +1880,15 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
+            modules: ['visao_missao','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
+            modules: ['visao_missao','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['viaturas','kpis','margem']
+            modules: ['visao_missao','viaturas','kpis','margem']
         }
     };
 
@@ -2429,6 +2430,7 @@
 
     function openModule(id) {
         const modules = {
+            visao_missao: { title: 'Visão, Missão & Valores', url: 'intranet_visao_missao.html' },
             viaturas: { title: 'Gestão de Viaturas', url: 'gestao-viaturas.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
