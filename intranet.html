@@ -976,8 +976,13 @@
             <li><a onclick="openModule('sistemas_ferramentas')" id="navSistemas_ferramentas"><span class="nav-icon">🔧</span> Sistemas e Ferramentas</a></li>
             <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
             <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos</a></li>
-            <li><a onclick="openModule('sugestoes_melhoria')" id="navSugestoes_melhoria"><span class="nav-icon">💡</span> Sugestões e Melhoria</a></li>
-            <li><a onclick="openModule('formulario_nc')" id="navFormulario_nc"><span class="nav-icon">⚠️</span> Formulário Não-Conformidade</a></li>
+            <li id="navSugestoesMelhoriaLi">
+                <a onclick="toggleSugestoesSubmenu()" id="navSugestoes_melhoria" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">💡</span> Sugestões e Melhoria</span><span id="sugestoesArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <ul id="sugestoesSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
+                    <li><a onclick="openModule('sugestoes_melhoria')" id="navSugestoes_melhoria_page"><span class="nav-icon">📝</span> Caixa de Sugestões</a></li>
+                    <li><a onclick="openModule('formulario_nc')" id="navFormulario_nc"><span class="nav-icon">⚠️</span> Formulário Não-Conformidade</a></li>
+                </ul>
+            </li>
             <li><a onclick="openModule('processos_op')" id="navProcessos_op"><span class="nav-icon">⚙️</span> Processos Operacionais</a></li>
         </ul>
 
@@ -985,6 +990,7 @@
         <ul class="sidebar-nav">
             <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
             <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Inspeções e Auditorias</a></li>
+            <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -1900,23 +1906,23 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'mario.peres@domuscar.com': {
             role: 'coordenador', name: 'Mário Peres',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         '_default': {
             role: 'user', name: '',
@@ -2079,6 +2085,19 @@
     function toggleRelatoriosSubmenu() {
         var sub = document.getElementById('relatoriosSubmenu');
         var arrow = document.getElementById('relatoriosArrow');
+        if (!sub) return;
+        if (sub.style.display === 'none' || !sub.style.display) {
+            sub.style.display = 'block';
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        } else {
+            sub.style.display = 'none';
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    function toggleSugestoesSubmenu() {
+        var sub = document.getElementById('sugestoesSubmenu');
+        var arrow = document.getElementById('sugestoesArrow');
         if (!sub) return;
         if (sub.style.display === 'none' || !sub.style.display) {
             sub.style.display = 'block';
@@ -2490,8 +2509,9 @@
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
-            coord_divergencias: { title: 'Divergências Picagens', url: 'divergencias-picagens.html' },
-            coord_inspecoes: { title: 'Inspeções e Auditorias', url: 'checklist_auditoria_trimestral.html' }
+            coord_divergencias: { title: 'Divergências Picagens', url: null },
+            coord_inspecoes: { title: 'Inspeções e Auditorias', url: 'checklist_auditoria_trimestral.html' },
+            coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' }
         };
         const mod = modules[id];
         if (!mod) return;
@@ -2499,7 +2519,19 @@
             alert('Não tem permissão para aceder a este módulo');
             return;
         }
-        if (!mod.url) { alert('Este módulo ainda não está disponível'); return; }
+        if (!mod.url) {
+            currentModule = id;
+            closeMobileSidebar();
+            document.getElementById('dashboardView').style.display = 'none';
+            var sp2 = document.getElementById('settingsPage');
+            if (sp2) sp2.classList.remove('active');
+            document.getElementById('breadcrumb').style.display = 'none';
+            document.getElementById('headerTitle').textContent = mod.title;
+            var frame2 = document.getElementById('moduleFrame');
+            frame2.classList.add('active');
+            frame2.srcdoc = '<html><body style="display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:Inter,sans-serif;background:#f5f7fa;"><div style="text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🚧</div><h2 style="color:#003B73;margin:0 0 8px;">Disponível em breve</h2><p style="color:#666;font-size:15px;">Este módulo está em desenvolvimento e será disponibilizado brevemente.</p></div></body></html>';
+            return;
+        }
 
         currentModule = id;
         // Close sidebar on mobile
