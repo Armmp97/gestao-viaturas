@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divergências Picagens — Coordenação</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA; --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF;
+  --gray-600: #6B7280; --text-dark: #1A2A3A; --text-body: #475569;
+  --green: #059669; --green-light: #D1FAE5; --yellow: #D97706; --yellow-light: #FEF3C7;
+  --red: #DC2626; --red-light: #FEE2E2;
+  --radius: 16px; --radius-sm: 12px; --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--off-white); color:var(--text-body); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Hero */
+.hero {
+  position:relative;
+  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
+  color:var(--white); overflow:hidden; padding:40px 0 30px;
+}
+.hero::before {
+  content:''; position:absolute; top:-40%; right:-10%;
+  width:600px; height:600px;
+  background:radial-gradient(circle,rgba(0,123,192,.15) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.hero-inner { position:relative; z-index:2; max-width:1140px; margin:0 auto; padding:0 24px; }
+.hero h1 { font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800; margin-bottom:6px; }
+.hero h1 em { font-style:normal; color:var(--accent-light); }
+.hero-desc { font-size:.95rem; opacity:.8; max-width:600px; }
+.hero-bar { position:absolute; bottom:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 40%,var(--navy-light) 40%); }
+
+/* Container */
+.container { max-width:1140px; margin:0 auto; padding:24px; }
+
+/* Tabs */
+.tab-bar {
+  display:flex; gap:4px; background:var(--white); border-radius:var(--radius-sm);
+  padding:4px; box-shadow:0 1px 4px rgba(0,0,0,.06); margin-bottom:24px;
+}
+.tab-btn {
+  flex:1; padding:12px 16px; border:none; background:transparent; cursor:pointer;
+  font-family:inherit; font-size:.9rem; font-weight:600; color:var(--gray-600);
+  border-radius:10px; transition:var(--transition); display:flex; align-items:center;
+  justify-content:center; gap:8px;
+}
+.tab-btn:hover { background:var(--gray-100); }
+.tab-btn.active { background:var(--navy); color:var(--white); }
+.tab-btn .badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:22px; padding:0 7px; border-radius:11px;
+  font-size:.75rem; font-weight:700;
+}
+.tab-btn.active .badge { background:rgba(255,255,255,.25); color:#fff; }
+.tab-btn:not(.active) .badge { background:var(--gray-200); color:var(--gray-600); }
+.tab-btn:not(.active) .badge.has-items { background:#FEE2E2; color:#DC2626; }
+
+/* Status bar */
+.status-bar {
+  display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;
+}
+.status-chip {
+  display:flex; align-items:center; gap:6px; padding:6px 14px;
+  border-radius:20px; font-size:.8rem; font-weight:600;
+}
+.status-chip.pending { background:var(--yellow-light); color:var(--yellow); }
+.status-chip.done { background:var(--green-light); color:var(--green); }
+
+/* File cards */
+.file-list { display:flex; flex-direction:column; gap:12px; }
+.file-card {
+  background:var(--white); border-radius:var(--radius-sm); padding:18px 20px;
+  box-shadow:0 1px 6px rgba(0,0,0,.06); border-left:4px solid var(--accent);
+  cursor:pointer; transition:var(--transition);
+}
+.file-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.1); transform:translateY(-1px); }
+.file-card.responded { border-left-color:var(--green); }
+.file-card-header { display:flex; justify-content:space-between; align-items:center; }
+.file-card-title { font-weight:700; font-size:.95rem; color:var(--text-dark); }
+.file-card-date { font-size:.8rem; color:var(--gray-400); }
+.file-card-actions { display:flex; gap:8px; margin-top:10px; }
+
+/* Buttons */
+.btn {
+  padding:10px 20px; border:none; border-radius:8px; font-family:inherit;
+  font-size:.85rem; font-weight:600; cursor:pointer; transition:var(--transition);
+  display:inline-flex; align-items:center; gap:6px;
+}
+.btn-primary { background:var(--navy); color:var(--white); }
+.btn-primary:hover { background:var(--navy-deep); }
+.btn-secondary { background:var(--gray-100); color:var(--text-dark); }
+.btn-secondary:hover { background:var(--gray-200); }
+.btn-success { background:var(--green); color:var(--white); }
+.btn-success:hover { background:#047857; }
+.btn-sm { padding:7px 14px; font-size:.8rem; }
+
+/* Empty state */
+.empty-state {
+  text-align:center; padding:60px 20px; color:var(--gray-400);
+}
+.empty-state .icon { font-size:3rem; margin-bottom:12px; opacity:.5; }
+.empty-state p { font-size:.95rem; }
+
+/* Loading */
+.loading { text-align:center; padding:40px; color:var(--gray-400); }
+.loading .spinner {
+  width:32px; height:32px; border:3px solid var(--gray-200); border-top-color:var(--accent);
+  border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 12px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Report viewer overlay */
+.viewer-overlay {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:rgba(0,20,40,.6); backdrop-filter:blur(4px);
+  justify-content:center; align-items:flex-start; padding:30px;
+  overflow-y:auto;
+}
+.viewer-overlay.active { display:flex; }
+.viewer-panel {
+  background:var(--white); border-radius:var(--radius); width:100%; max-width:960px;
+  box-shadow:0 20px 60px rgba(0,0,0,.2); position:relative;
+}
+.viewer-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 24px; border-bottom:1px solid var(--gray-200);
+}
+.viewer-header h3 { font-size:1rem; font-weight:700; color:var(--text-dark); }
+.viewer-close {
+  width:32px; height:32px; border-radius:8px; border:none; background:var(--gray-100);
+  cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+}
+.viewer-close:hover { background:var(--gray-200); }
+.viewer-body { padding:0; }
+.viewer-body iframe {
+  width:100%; min-height:600px; border:none; display:block;
+}
+.viewer-footer {
+  display:flex; justify-content:flex-end; gap:10px;
+  padding:16px 24px; border-top:1px solid var(--gray-200);
+}
+
+/* Notification toast */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:2000;
+  padding:14px 22px; border-radius:10px; font-size:.9rem; font-weight:600;
+  color:var(--white); box-shadow:0 8px 30px rgba(0,0,0,.15);
+  transform:translateY(100px); opacity:0; transition:all .4s ease;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.success { background:var(--green); }
+.toast.error { background:var(--red); }
+
+/* Responsive */
+@media(max-width:600px) {
+  .hero { padding:28px 0 20px; }
+  .hero h1 { font-size:1.4rem; }
+  .container { padding:16px; }
+  .tab-btn { font-size:.8rem; padding:10px 8px; }
+  .viewer-panel { margin:10px; border-radius:12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1>Divergências <em>Picagens</em></h1>
+    <p class="hero-desc">Relatórios de validação enviados pela administração. Analise, valide e responda.</p>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+
+<div class="container">
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-chip pending" id="statusPending">⏳ <span id="countPending">0</span> por responder</div>
+    <div class="status-chip done" id="statusDone">✅ <span id="countDone">0</span> respondidos</div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('pending')" id="tabPending">
+      📋 Por Responder <span class="badge has-items" id="badgePending">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('responded')" id="tabResponded">
+      ✅ Respondidos <span class="badge" id="badgeResponded">0</span>
+    </button>
+  </div>
+
+  <!-- Pending files -->
+  <div id="panelPending">
+    <div class="loading" id="loadingPending">
+      <div class="spinner"></div>
+      <p>A carregar relatórios...</p>
+    </div>
+    <div class="file-list" id="listPending"></div>
+  </div>
+
+  <!-- Responded files -->
+  <div id="panelResponded" style="display:none;">
+    <div class="loading" id="loadingResponded">
+      <div class="spinner"></div>
+      <p>A carregar relatórios...</p>
+    </div>
+    <div class="file-list" id="listResponded"></div>
+  </div>
+</div>
+
+<!-- Report viewer overlay -->
+<div class="viewer-overlay" id="viewerOverlay">
+  <div class="viewer-panel">
+    <div class="viewer-header">
+      <h3 id="viewerTitle">Relatório</h3>
+      <button class="viewer-close" onclick="closeViewer()">✕</button>
+    </div>
+    <div class="viewer-body">
+      <iframe id="viewerFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+    </div>
+    <div class="viewer-footer" id="viewerFooter">
+      <!-- Populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ======== State ========
+    var currentUnit = null;       // 'colisao' | 'mecanica_lisboa' | 'mecanica_cacem'
+    var pendingFiles = [];
+    var respondedFiles = [];
+    var currentTab = 'pending';
+    var currentViewFile = null;   // { id, name, htmlContent, tab }
+
+    // ======== Detect current user's unit ========
+    function detectUnit() {
+        var email = '';
+        try { email = window.parent.getCurrentUserEmail(); } catch(e) {}
+        if (!email) {
+            showError('Não foi possível identificar o utilizador.');
+            return null;
+        }
+        var coordMap;
+        try { coordMap = window.parent.getDivCoordMap(); } catch(e) {}
+        if (!coordMap) {
+            showError('Mapa de coordenadores não disponível.');
+            return null;
+        }
+        // Find unit for current user email
+        for (var unit in coordMap) {
+            if (coordMap[unit].email === email) return unit;
+        }
+        // Admin override: admins can see all — show selector
+        // Check if user is admin by checking permissions
+        var isAdmin = false;
+        try {
+            var perms = window.parent.getCurrentUserPermissions();
+            if (perms && perms.role === 'admin') isAdmin = true;
+        } catch(e) {}
+
+        if (isAdmin) return 'admin';
+
+        showError('O seu email (' + email + ') não está associado a nenhuma unidade de coordenação.');
+        return null;
+    }
+
+    function showError(msg) {
+        document.querySelector('.container').innerHTML =
+            '<div class="empty-state"><div class="icon">⚠️</div><p>' + msg + '</p></div>';
+    }
+
+    // ======== Init ========
+    function init() {
+        currentUnit = detectUnit();
+        if (!currentUnit) return;
+
+        if (currentUnit === 'admin') {
+            // Admin sees all units — load all
+            loadAllUnits();
+        } else {
+            loadUnitFiles(currentUnit);
+        }
+    }
+
+    function loadAllUnits() {
+        var coordMap;
+        try { coordMap = window.parent.getDivCoordMap(); } catch(e) { return; }
+        var units = Object.keys(coordMap);
+        var pendingPromises = [];
+        var respondedPromises = [];
+
+        units.forEach(function(unit) {
+            pendingPromises.push(
+                window.parent.listDivCoordFiles(coordMap[unit].pendente)
+                    .then(function(data) {
+                        return (data.value || []).map(function(f) { f._unit = unit; f._coordName = coordMap[unit].name; return f; });
+                    })
+                    .catch(function() { return []; })
+            );
+            respondedPromises.push(
+                window.parent.listDivCoordFiles(coordMap[unit].respondido)
+                    .then(function(data) {
+                        return (data.value || []).map(function(f) { f._unit = unit; f._coordName = coordMap[unit].name; return f; });
+                    })
+                    .catch(function() { return []; })
+            );
+        });
+
+        Promise.all(pendingPromises).then(function(results) {
+            pendingFiles = [];
+            results.forEach(function(arr) { pendingFiles = pendingFiles.concat(arr); });
+            pendingFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+            renderPending();
+        });
+
+        Promise.all(respondedPromises).then(function(results) {
+            respondedFiles = [];
+            results.forEach(function(arr) { respondedFiles = respondedFiles.concat(arr); });
+            respondedFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+            renderResponded();
+        });
+    }
+
+    function loadUnitFiles(unit) {
+        var coordMap;
+        try { coordMap = window.parent.getDivCoordMap(); } catch(e) { return; }
+        var info = coordMap[unit];
+        if (!info) return;
+
+        // Load pending
+        window.parent.listDivCoordFiles(info.pendente)
+            .then(function(data) {
+                pendingFiles = (data.value || []).map(function(f) { f._unit = unit; return f; });
+                pendingFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+                renderPending();
+            })
+            .catch(function() {
+                pendingFiles = [];
+                renderPending();
+            });
+
+        // Load responded
+        window.parent.listDivCoordFiles(info.respondido)
+            .then(function(data) {
+                respondedFiles = (data.value || []).map(function(f) { f._unit = unit; return f; });
+                respondedFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+                renderResponded();
+            })
+            .catch(function() {
+                respondedFiles = [];
+                renderResponded();
+            });
+    }
+
+    // ======== Rendering ========
+    function renderPending() {
+        var container = document.getElementById('listPending');
+        var loading = document.getElementById('loadingPending');
+        loading.style.display = 'none';
+
+        document.getElementById('countPending').textContent = pendingFiles.length;
+        document.getElementById('badgePending').textContent = pendingFiles.length;
+        var badge = document.getElementById('badgePending');
+        badge.className = 'badge' + (pendingFiles.length > 0 ? ' has-items' : '');
+
+        if (pendingFiles.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">🎉</div><p>Sem relatórios pendentes. Tudo em dia!</p></div>';
+            return;
+        }
+
+        var html = '';
+        pendingFiles.forEach(function(f, i) {
+            var date = formatDate(f.lastModifiedDateTime);
+            var unitLabel = f._coordName ? ' · ' + f._coordName : '';
+            html += '<div class="file-card" onclick="openFile(' + i + ', \'pending\')">' +
+                '<div class="file-card-header">' +
+                    '<div>' +
+                        '<div class="file-card-title">📊 ' + escapeHtml(f.name) + '</div>' +
+                        '<div class="file-card-date">' + date + unitLabel + '</div>' +
+                    '</div>' +
+                    '<span class="status-chip pending" style="font-size:.75rem;padding:4px 10px;">Pendente</span>' +
+                '</div>' +
+                '<div class="file-card-actions">' +
+                    '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openFile(' + i + ', \'pending\')">📝 Abrir e Validar</button>' +
+                '</div>' +
+            '</div>';
+        });
+        container.innerHTML = html;
+    }
+
+    function renderResponded() {
+        var container = document.getElementById('listResponded');
+        var loading = document.getElementById('loadingResponded');
+        loading.style.display = 'none';
+
+        document.getElementById('countDone').textContent = respondedFiles.length;
+        document.getElementById('badgeResponded').textContent = respondedFiles.length;
+
+        if (respondedFiles.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>Ainda não existem relatórios respondidos.</p></div>';
+            return;
+        }
+
+        var html = '';
+        respondedFiles.forEach(function(f, i) {
+            var date = formatDate(f.lastModifiedDateTime);
+            var unitLabel = f._coordName ? ' · ' + f._coordName : '';
+            html += '<div class="file-card responded" onclick="openFile(' + i + ', \'responded\')">' +
+                '<div class="file-card-header">' +
+                    '<div>' +
+                        '<div class="file-card-title">✅ ' + escapeHtml(f.name) + '</div>' +
+                        '<div class="file-card-date">' + date + unitLabel + '</div>' +
+                    '</div>' +
+                    '<span class="status-chip done" style="font-size:.75rem;padding:4px 10px;">Respondido</span>' +
+                '</div>' +
+                '<div class="file-card-actions">' +
+                    '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openFile(' + i + ', \'responded\')">👁️ Visualizar</button>' +
+                '</div>' +
+            '</div>';
+        });
+        container.innerHTML = html;
+    }
+
+    // ======== Tab switching ========
+    window.switchTab = function(tab) {
+        currentTab = tab;
+        document.getElementById('tabPending').classList.toggle('active', tab === 'pending');
+        document.getElementById('tabResponded').classList.toggle('active', tab === 'responded');
+        document.getElementById('panelPending').style.display = tab === 'pending' ? '' : 'none';
+        document.getElementById('panelResponded').style.display = tab === 'responded' ? '' : 'none';
+    };
+
+    // ======== File viewer ========
+    window.openFile = function(index, tab) {
+        var file = tab === 'pending' ? pendingFiles[index] : respondedFiles[index];
+        if (!file) return;
+
+        var overlay = document.getElementById('viewerOverlay');
+        document.getElementById('viewerTitle').textContent = file.name;
+        var footer = document.getElementById('viewerFooter');
+
+        // Show loading in iframe
+        var frame = document.getElementById('viewerFrame');
+        frame.srcdoc = '<html><body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#999;"><p>A carregar...</p></body></html>';
+
+        overlay.classList.add('active');
+
+        // Download file content
+        window.parent.downloadDivCoordFile(file.id).then(function(htmlContent) {
+            currentViewFile = { id: file.id, name: file.name, htmlContent: htmlContent, tab: tab, unit: file._unit };
+
+            if (tab === 'pending') {
+                // Editable: inject into iframe
+                frame.srcdoc = htmlContent;
+                footer.innerHTML =
+                    '<button class="btn btn-secondary" onclick="closeViewer()">Fechar</button>' +
+                    '<button class="btn btn-success" onclick="submitValidation()">✅ Validar e Enviar</button>';
+            } else {
+                // Read-only
+                frame.srcdoc = htmlContent;
+                footer.innerHTML =
+                    '<button class="btn btn-secondary" onclick="closeViewer()">Fechar</button>';
+            }
+        }).catch(function(err) {
+            frame.srcdoc = '<html><body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#DC2626;"><p>Erro ao carregar: ' + err + '</p></body></html>';
+            footer.innerHTML = '<button class="btn btn-secondary" onclick="closeViewer()">Fechar</button>';
+        });
+    };
+
+    window.closeViewer = function() {
+        document.getElementById('viewerOverlay').classList.remove('active');
+        document.getElementById('viewerFrame').srcdoc = '';
+        currentViewFile = null;
+    };
+
+    // ======== Submit validation ========
+    window.submitValidation = function() {
+        if (!currentViewFile) return;
+
+        // Get the (possibly edited) HTML from the iframe
+        var frame = document.getElementById('viewerFrame');
+        var editedHtml = '';
+        try {
+            editedHtml = frame.contentDocument.documentElement.outerHTML;
+        } catch(e) {
+            editedHtml = currentViewFile.htmlContent;
+        }
+
+        // Determine unit
+        var unit = currentViewFile.unit;
+        if (!unit && currentUnit !== 'admin') unit = currentUnit;
+        if (!unit) {
+            showToast('Erro: unidade não identificada.', 'error');
+            return;
+        }
+
+        // Confirmation
+        if (!confirm('Confirma a validação e envio deste relatório?\n\nFicheiro: ' + currentViewFile.name + '\n\nApós validação, o relatório será movido para "Respondidos" e a administração será notificada.')) {
+            return;
+        }
+
+        // Disable button while saving
+        var btns = document.getElementById('viewerFooter').querySelectorAll('.btn-success');
+        btns.forEach(function(b) { b.disabled = true; b.textContent = 'A enviar...'; });
+
+        // Send to parent via postMessage
+        window.parent.postMessage({
+            type: 'divCoordRespond',
+            unit: unit,
+            fileName: currentViewFile.name,
+            htmlContent: '<!DOCTYPE html><html>' + editedHtml + '</html>',
+            originalFileId: currentViewFile.id
+        }, '*');
+    };
+
+    // Listen for response from parent
+    window.addEventListener('message', function(event) {
+        if (!event.data) return;
+        if (event.data.type === 'divCoordRespondResult') {
+            if (event.data.success) {
+                showToast('Relatório validado e enviado com sucesso!', 'success');
+                closeViewer();
+                // Reload files
+                if (currentUnit === 'admin') {
+                    loadAllUnits();
+                } else {
+                    loadUnitFiles(currentUnit);
+                }
+            } else {
+                showToast('Erro ao enviar: ' + (event.data.error || 'desconhecido'), 'error');
+                var btns = document.getElementById('viewerFooter').querySelectorAll('.btn-success');
+                btns.forEach(function(b) { b.disabled = false; b.textContent = '✅ Validar e Enviar'; });
+            }
+        }
+    });
+
+    // ======== Helpers ========
+    function formatDate(isoStr) {
+        if (!isoStr) return '';
+        var d = new Date(isoStr);
+        var day = String(d.getDate()).padStart(2, '0');
+        var mon = String(d.getMonth() + 1).padStart(2, '0');
+        var year = d.getFullYear();
+        var h = String(d.getHours()).padStart(2, '0');
+        var m = String(d.getMinutes()).padStart(2, '0');
+        return day + '/' + mon + '/' + year + ' ' + h + ':' + m;
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function showToast(msg, type) {
+        var toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.className = 'toast ' + (type || 'success');
+        setTimeout(function() { toast.classList.add('show'); }, 10);
+        setTimeout(function() { toast.classList.remove('show'); }, 4000);
+    }
+
+    // ======== Start ========
+    // Small delay to ensure parent is ready
+    setTimeout(init, 300);
+
+})();
+</script>
+</body>
+</html>

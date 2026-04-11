@@ -1927,8 +1927,8 @@
             role: 'coordenador', name: 'José Rodriguez',
             modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
-        'mario.peres@domuscar.com': {
-            role: 'coordenador', name: 'Mário Peres',
+        'mario.perez@domuscar.com': {
+            role: 'coordenador', name: 'Mário Perez',
             modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         '_default': {
@@ -2183,6 +2183,12 @@
             gv_docs_assinados_dev: 'Intranet/Gestao_Viaturas/Devolucoes/Docs_Assinados',
             comunicacoes: 'Intranet/Comunicacoes',
             dashboard_state: 'Intranet/Dashboard_State',
+            div_colisao_pendente: 'Intranet/Divergencias_Coord/Colisao/Pendente',
+            div_colisao_respondido: 'Intranet/Divergencias_Coord/Colisao/Respondido',
+            div_lisboa_pendente: 'Intranet/Divergencias_Coord/MecanicaLisboa/Pendente',
+            div_lisboa_respondido: 'Intranet/Divergencias_Coord/MecanicaLisboa/Respondido',
+            div_cacem_pendente: 'Intranet/Divergencias_Coord/MecanicaCacem/Pendente',
+            div_cacem_respondido: 'Intranet/Divergencias_Coord/MecanicaCacem/Respondido',
             sugestoes: 'Intranet/Sugestoes',
             formularios_nc: 'Intranet/Formularios_Nao_Conformidade',
             inspecoes_diarias: 'Intranet/Inspecoes_Diarias',
@@ -2365,7 +2371,10 @@
         coordenadores: [
             { email: 'fabio.ramalho@domuscar.com', name: 'Fábio Ramalho' },
             { email: 'jose.rodriguez@domuscar.com', name: 'José Rodriguez' },
-            { email: 'mario.peres@domuscar.com', name: 'Mário Peres' }
+            { email: 'mario.perez@domuscar.com', name: 'Mário Perez' }
+        ],
+        rh: [
+            { email: 'claudia.pedro@domuscar.com', name: 'Cláudia Pedro' }
         ]
     };
 
@@ -2555,6 +2564,139 @@
         });
     });
 
+    // ======== DIVERGENCIAS COORD: Save per coordinator + notify ========
+    var DIV_COORD_MAP = {
+        'colisao': { email: 'mario.perez@domuscar.com', name: 'Mário Perez', pendente: 'div_colisao_pendente', respondido: 'div_colisao_respondido' },
+        'mecanica_lisboa': { email: 'fabio.ramalho@domuscar.com', name: 'Fábio Ramalho', pendente: 'div_lisboa_pendente', respondido: 'div_lisboa_respondido' },
+        'mecanica_cacem': { email: 'jose.rodriguez@domuscar.com', name: 'José Rodriguez', pendente: 'div_cacem_pendente', respondido: 'div_cacem_respondido' }
+    };
+
+    // Called from divergencias-picagens.html when admin generates reports
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'saveDivCoord') return;
+        var d = event.data;
+        // d.reports = [ { unit: 'colisao'|'mecanica_lisboa'|'mecanica_cacem', fileName, htmlContent } ]
+        var totalReports = d.reports.length;
+        var savedCount = 0;
+        var errors = [];
+        d.reports.forEach(function(report) {
+            var coordInfo = DIV_COORD_MAP[report.unit];
+            if (!coordInfo) { errors.push('Unit desconhecida: ' + report.unit); savedCount++; return; }
+            var content = new Blob([report.htmlContent], {type: 'text/html'});
+            uploadToSharePoint(coordInfo.pendente, report.fileName, content, 'text/html')
+                .then(function() {
+                    console.log('[DivCoord] Guardado para ' + coordInfo.name + ': ' + report.fileName);
+                    // Send email notification to coordinator
+                    sendEmailOnly([{email: coordInfo.email, name: coordInfo.name}],
+                        '📊 Novo Relatório Divergências Picagens — Para Validação',
+                        '<p>Bom dia ' + coordInfo.name.split(' ')[0] + ',</p>' +
+                        '<p>Foi gerado um novo relatório de divergências de picagens que necessita da sua validação.</p>' +
+                        '<p><strong>Ficheiro:</strong> ' + report.fileName + '</p>' +
+                        '<p>Por favor, aceda à Intranet → Coordenação → Divergências Picagens para validar.</p>' +
+                        '<p style="color:#888;font-size:12px;">Notificação automática — Intranet DomusCar</p>'
+                    );
+                })
+                .catch(function(err) { errors.push(coordInfo.name + ': ' + err.message); })
+                .finally(function() {
+                    savedCount++;
+                    if (savedCount >= totalReports) {
+                        event.source.postMessage({
+                            type: 'saveDivCoordResult',
+                            success: errors.length === 0,
+                            errors: errors
+                        }, '*');
+                    }
+                });
+        });
+    });
+
+    // Called from coord_divergencias.html when coordinator submits validation
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'divCoordRespond') return;
+        var d = event.data;
+        // d = { unit, fileName, htmlContent, originalFileId }
+        var coordInfo = DIV_COORD_MAP[d.unit];
+        if (!coordInfo) return;
+        var content = new Blob([d.htmlContent], {type: 'text/html'});
+        // 1. Save responded version to Respondido folder
+        uploadToSharePoint(coordInfo.respondido, d.fileName, content, 'text/html')
+            .then(function() {
+                // 2. Delete original from Pendente folder
+                if (d.originalFileId) {
+                    return deleteSharePointFile(d.originalFileId).catch(function(e) {
+                        console.warn('[DivCoord] Could not delete original:', e);
+                    });
+                }
+            })
+            .then(function() {
+                // 3. Notify admins + RH via email only
+                var notifRecipients = NOTIF_RECIPIENTS.admins.concat(NOTIF_RECIPIENTS.rh);
+                sendEmailOnly(notifRecipients,
+                    '✅ Validação Divergências Concluída — ' + coordInfo.name,
+                    '<p><strong>Coordenador:</strong> ' + coordInfo.name + '</p>' +
+                    '<p><strong>Ficheiro:</strong> ' + d.fileName + '</p>' +
+                    '<p>O relatório de divergências de picagens foi validado e respondido.</p>' +
+                    '<p style="color:#888;font-size:12px;">Consultar na Intranet > Definições > Gestão de Ficheiros</p>'
+                );
+                event.source.postMessage({ type: 'divCoordRespondResult', success: true }, '*');
+            })
+            .catch(function(err) {
+                event.source.postMessage({ type: 'divCoordRespondResult', success: false, error: err.message }, '*');
+            });
+    });
+
+    // Email-only notification (no Teams chat)
+    function sendEmailOnly(recipients, subject, bodyHtml) {
+        return getNotifToken().then(function(token) {
+            var toRecipients = recipients.map(function(r) {
+                return { emailAddress: { address: r.email, name: r.name } };
+            });
+            return fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: { subject: subject, body: { contentType: 'HTML', content: bodyHtml }, toRecipients: toRecipients },
+                    saveToSentItems: false
+                })
+            });
+        }).then(function(r) {
+            if (!r.ok) throw new Error('Email failed: ' + r.status);
+            console.log('[Notif] Email enviado para: ' + recipients.map(function(r){return r.name;}).join(', '));
+        }).catch(function(e) { console.warn('[Notif] Erro email:', e); });
+    }
+
+    // Delete a file from SharePoint by file ID
+    function deleteSharePointFile(fileId) {
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject('SharePoint not initialized');
+        return getGraphToken().then(function(token) {
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+        }).then(function(resp) {
+            if (!resp.ok && resp.status !== 204) throw new Error('Delete failed: ' + resp.status);
+        });
+    }
+
+    // List SharePoint files (used by coord_divergencias.html)
+    // Exposed globally for iframe access
+    window.listDivCoordFiles = function(folderKey) {
+        return listSharePointFiles(folderKey);
+    };
+    window.downloadDivCoordFile = function(fileId) {
+        return downloadSharePointFile(fileId).then(function(resp) { return resp.text(); });
+    };
+    window.getCurrentUserEmail = function() {
+        return currentMsalUser ? (currentMsalUser.username || '').toLowerCase() : '';
+    };
+    window.getDivCoordMap = function() {
+        return DIV_COORD_MAP;
+    };
+    window.getCurrentUserPermissions = function() {
+        return currentUserPermissions;
+    };
+
     // ======== NAVIGATION ========
     let currentModule = null;
     let desktopSidebarVisible = true;
@@ -2632,7 +2774,7 @@
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
-            coord_divergencias: { title: 'Divergências Picagens', url: null },
+            coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
             coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' }
         };
