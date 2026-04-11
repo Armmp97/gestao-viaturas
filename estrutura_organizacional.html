@@ -8,77 +8,1284 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy: #0B2545; --navy-deep: #081C36; --navy-light: #133366;
-  --red: #C8102E; --white: #FFFFFF; --off-white: #F7F8FA;
-  --gray-100: #F0F2F5; --gray-200: #E2E6EB; --gray-400: #9CA3AF;
-  --gray-600: #6B7280; --text-dark: #1E293B; --text-body: #475569;
-  --radius: 16px; --transition: .3s cubic-bezier(.4,0,.2,1);
+  --navy:        #003B73;
+  --navy-deep:   #002B55;
+  --navy-light:  #00508F;
+  --accent:      #007BC0;
+  --accent-dark: #005A8C;
+  --accent-light:#4DA8DA;
+  --white:       #FFFFFF;
+  --off-white:   #F5F7FA;
+  --gray-100:    #EEF1F5;
+  --gray-200:    #DEE2E8;
+  --gray-400:    #9CA3AF;
+  --gray-600:    #6B7280;
+  --gray-800:    #374151;
+  --text-dark:   #1A2A3A;
+  --text-body:   #475569;
+  --card-shadow: 0 4px 24px rgba(0,59,115,.08);
+  --card-hover:  0 8px 40px rgba(0,59,115,.14);
+  --radius:      16px;
+  --radius-sm:   12px;
+  --transition:  .3s cubic-bezier(.4,0,.2,1);
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; font-size:16px; }
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
 body {
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  background:var(--off-white); color:var(--text-body); line-height:1.7;
-  -webkit-font-smoothing:antialiased;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--off-white);
+  color: var(--text-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
 }
-.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 4px; }
+
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 80px 0; }
+.section:nth-child(even) { background: var(--white); }
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .75rem; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.section-label::before {
+  content: ''; width: 28px; height: 3px;
+  background: var(--accent); border-radius: 2px;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800;
+  color: var(--navy); line-height: 1.2; margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 1.05rem; color: var(--text-body);
+  max-width: 620px; line-height: 1.75;
+}
+
+/* ═══ HERO ═══ */
 .hero {
-  position:relative;
-  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
-  color:var(--white); overflow:hidden; min-height:320px; display:flex; align-items:center;
+  position: relative;
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 50%, var(--navy-light) 100%);
+  color: var(--white); overflow: hidden; min-height: 520px; display: flex; align-items: center;
 }
 .hero::before {
-  content:''; position:absolute; top:-40%; right:-10%;
-  width:700px; height:700px;
-  background:radial-gradient(circle,rgba(200,16,46,.12) 0%,transparent 70%);
-  border-radius:50%; pointer-events:none;
+  content: ''; position: absolute; top: -40%; right: -10%;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(0,123,192,.12) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
 }
-.hero-inner { position:relative; z-index:2; padding:60px 0 50px; }
+.hero::after {
+  content: ''; position: absolute; bottom: -30%; left: -5%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(255,255,255,.04) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 2; padding: 80px 0 60px; }
+
 .hero h1 {
-  font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
-  line-height:1.15; margin-bottom:16px;
+  font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900;
+  line-height: 1.15; margin-bottom: 24px; max-width: 700px;
 }
-.hero h1 em { font-style:normal; color:var(--red); }
-.hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+
+.hero-desc {
+  font-size: 1.1rem; line-height: 1.8; max-width: 640px;
+  opacity: .88; margin-bottom: 36px;
+}
+
+.hero-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.08); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 10px 20px; border-radius: 50px;
+  font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.9);
+}
+.hero-tag svg { width: 16px; height: 16px; flex-shrink: 0; }
+
 .hero-bar {
-  position:absolute; bottom:0; left:0; right:0; height:5px;
-  background:linear-gradient(90deg,var(--red) 0%,var(--red) 70%,var(--navy-light) 70%);
+  position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 40%, var(--navy-light) 40%, var(--navy-light) 100%);
 }
-.placeholder-section {
-  padding:80px 0; text-align:center;
+
+/* ═══ INTRO CARD ═══ */
+.intro-card {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: var(--white); border-radius: var(--radius);
+  padding: 48px 52px; margin-top: 36px;
+  position: relative; overflow: hidden;
 }
-.placeholder-icon {
-  width:80px; height:80px; margin:0 auto 24px;
-  background:rgba(11,37,69,.06); border-radius:20px;
-  display:flex; align-items:center; justify-content:center;
+.intro-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 5px; height: 100%; background: var(--accent);
 }
-.placeholder-icon svg { width:36px; height:36px; color:var(--navy); }
-.placeholder-title {
-  font-size:1.4rem; font-weight:700; color:var(--navy); margin-bottom:12px;
+.intro-card p { font-size: 1.1rem; line-height: 1.8; opacity: .92; max-width: 720px; }
+.intro-tags { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+.intro-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px; border-radius: 50px; font-size: .85rem; font-weight: 600;
+  background: rgba(0,123,192,.15); color: var(--white); border: 1px solid rgba(0,123,192,.3);
 }
-.placeholder-text {
-  font-size:1rem; color:var(--gray-600); max-width:500px; margin:0 auto;
+.intro-tag svg { width: 16px; height: 16px; }
+
+/* ═══ ORGANOGRAMA ═══ */
+.org-top { display: flex; flex-direction: column; align-items: center; margin-top: 48px; }
+.org-vline { width: 2px; height: 24px; background: var(--navy); flex-shrink: 0; }
+.org-top-row {
+  display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+  position: relative;
+}
+
+.org-box {
+  padding: 14px 18px; border-radius: var(--radius-sm);
+  text-align: center; transition: var(--transition); cursor: default;
+}
+.org-box:hover { transform: translateY(-2px); }
+.org-box .org-role { font-size: .88rem; font-weight: 700; display: block; }
+.org-box .org-name { font-size: .75rem; font-weight: 500; display: block; margin-top: 3px; color: var(--gray-600); }
+.org-box .org-year { font-size: .65rem; font-weight: 400; color: var(--gray-400); display: block; margin-top: 2px; }
+
+.org-box.ceo {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color: var(--white); padding: 24px 44px;
+  box-shadow: 0 12px 40px rgba(0,123,192,.3);
+  border: 2px solid rgba(255,255,255,.15);
+  font-size: 1.05em;
+}
+.org-box.ceo .org-role { font-size: 1rem; }
+.org-box.ceo .org-name { color: rgba(255,255,255,.7); font-size: .85rem; }
+.org-box.ceo .org-year { color: rgba(255,255,255,.5); }
+
+.org-box.clevel {
+  min-width: 130px; color: var(--white);
+  border: none;
+}
+.org-box.clevel .org-name { color: rgba(255,255,255,.6); }
+.org-box.clevel .org-year { color: rgba(255,255,255,.45); }
+
+/* Each C-level gets a distinct color */
+.org-box.cl-cfo {
+  background: linear-gradient(135deg, #0E7C61 0%, #065A45 100%);
+  box-shadow: 0 6px 24px rgba(14,124,97,.25);
+}
+.org-box.cl-coo {
+  background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy) 100%);
+  box-shadow: 0 6px 24px rgba(0,59,115,.25);
+}
+.org-box.cl-rh {
+  background: linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%);
+  box-shadow: 0 6px 24px rgba(109,40,217,.25);
+}
+.org-box.cl-comercial {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+  box-shadow: 0 6px 24px rgba(217,119,6,.25);
+}
+.org-box.cl-apoio {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  box-shadow: 0 6px 24px rgba(37,99,235,.25);
+}
+
+/* Branch layout */
+.org-branch {
+  display: flex; flex-direction: column; align-items: center;
+}
+.org-box.cl-admin {
+  background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+  box-shadow: 0 6px 24px rgba(124,58,237,.25);
+  padding: 16px 20px;
+}
+
+/* Fork connector: vertical line + horizontal spread */
+.org-fork {
+  display: flex; flex-direction: column; align-items: center;
+}
+.org-fork-vline {
+  width: 2px; height: 28px; background: var(--navy); flex-shrink: 0;
+}
+.org-fork-children {
+  display: flex; justify-content: center;
+}
+.org-fork-children > .org-branch {
+  padding: 0 32px; position: relative;
+}
+/* Horizontal connector line on each branch */
+.org-fork-children > .org-branch::before {
+  content: ''; position: absolute; top: 0;
+  left: 0; right: 0; height: 2px;
+  background: var(--navy);
+}
+/* First child: line from center → right */
+.org-fork-children > .org-branch:first-child::before { left: 50%; }
+/* Last child: line from left → center */
+.org-fork-children > .org-branch:last-child::before { right: 50%; }
+/* Only child: no horizontal line needed */
+.org-fork-children > .org-branch:only-child::before { display: none; }
+
+/* Traço vertical: sobe de Lisboa até ao fork Fernando/Paulo */
+.coord-link-v {
+  position: absolute; width: 2px; background: var(--navy);
+}
+/* Traço horizontal: liga fork Fernando/Paulo ao traço vertical */
+.coord-link-h {
+  position: absolute; height: 2px; background: var(--navy);
+}
+
+/* Coord connector — links COO to coord-grid */
+.coord-connector {
+  display: flex; flex-direction: column; align-items: center;
+  margin-top: 28px; position: relative;
+}
+.coord-fork-children {
+  display: flex; justify-content: center; width: 100%;
+}
+.coord-fork-children > .coord-drop {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative;
+}
+.coord-fork-children > .coord-drop::before {
+  content: ''; position: absolute; top: 0;
+  left: 0; right: 0; height: 2px;
+  background: var(--navy);
+}
+.coord-fork-children > .coord-drop:first-child::before { left: 50%; }
+.coord-fork-children > .coord-drop:last-child::before { right: 50%; }
+
+/* Coord grid top margin */
+
+/* Coordination cards grid */
+.coord-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-top: 8px; width: 100%;
+}
+.coord-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); overflow: hidden; transition: var(--transition);
+}
+.coord-card:hover { box-shadow: var(--card-shadow); }
+.coord-card-head {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: var(--white); padding: 16px 20px; text-align: center;
+  border-bottom: 3px solid var(--accent);
+}
+.coord-card-head .coord-dept { font-size: .62rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.45); }
+.coord-card-head .coord-name { font-size: .95rem; font-weight: 700; display: block; margin-top: 3px; }
+.coord-card-head .coord-person { font-size: .78rem; font-weight: 400; color: rgba(255,255,255,.6); display: block; margin-top: 4px; }
+
+.coord-card-body { padding: 12px 14px; }
+
+/* Team sections inside coord card */
+.team-section { margin-bottom: 10px; }
+.team-section:last-child { margin-bottom: 0; }
+.team-section-title {
+  font-size: .68rem; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+  padding-left: 4px;
+}
+.team-members { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.team-members li {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: var(--gray-100); border-radius: 6px;
+  font-size: .78rem; color: var(--text-dark);
+}
+.team-members li .tm-name { font-weight: 500; }
+.team-members li .tm-year { font-size: .68rem; color: var(--gray-400); font-weight: 400; }
+
+/* ═══ AREA CARDS ═══ */
+.area-grid {
+  display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 40px;
+}
+.area-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); padding: 40px 44px;
+  position: relative; overflow: hidden; transition: var(--transition);
+}
+.area-card:hover { box-shadow: var(--card-hover); }
+.area-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 5px; height: 100%; background: var(--accent);
+}
+.area-card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.area-icon {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(0,59,115,.06); border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.area-icon svg { width: 24px; height: 24px; color: var(--navy); }
+.area-card h3 { font-size: 1.3rem; font-weight: 700; color: var(--navy); }
+.area-card-subtitle { font-size: .92rem; color: var(--gray-600); font-weight: 500; margin-top: 2px; }
+.area-card p { font-size: 1rem; line-height: 1.8; margin-bottom: 16px; }
+
+.area-resp-title { font-size: .78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.area-resp-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.area-resp-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .95rem; line-height: 1.6; color: var(--text-dark);
+}
+.area-resp-list li svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; color: var(--accent); }
+
+.area-note {
+  padding: 16px 20px; background: var(--gray-100); border-radius: var(--radius-sm);
+  border-left: 3px solid var(--navy); font-size: .9rem; line-height: 1.7; color: var(--text-body);
+}
+.area-note strong { color: var(--navy); }
+
+.area-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 16px; font-size: .88rem; font-weight: 600;
+  color: var(--accent); text-decoration: none; cursor: pointer;
+  transition: var(--transition);
+}
+.area-link:hover { gap: 12px; }
+.area-link svg { width: 16px; height: 16px; }
+
+/* ═══ ROLE CARD ═══ */
+.role-card {
+  background: linear-gradient(145deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: var(--white); border-radius: var(--radius);
+  padding: 32px 36px; position: relative; overflow: hidden;
+  transition: var(--transition); border-left: 4px solid var(--accent);
+}
+.role-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,59,115,.25); }
+.role-card::after {
+  content: ''; position: absolute; bottom: -30px; right: -30px;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(255,255,255,.04), transparent);
+  border-radius: 50%;
+}
+.role-card h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+.role-meta { display: flex; flex-direction: column; gap: 8px; }
+.role-meta-item { display: flex; align-items: flex-start; gap: 20px; font-size: .9rem; line-height: 1.6; }
+.role-meta-label { font-weight: 600; color: rgba(255,255,255,.6); white-space: nowrap; min-width: 140px; }
+.role-meta-value { color: rgba(255,255,255,.92); }
+.role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 36px; }
+
+/* ═══ ESCALADA ═══ */
+.escalada-flow { display: flex; flex-direction: column; gap: 0; margin-top: 36px; }
+.escalada-item {
+  display: flex; align-items: center; gap: 20px; padding: 20px 28px;
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm); transition: var(--transition);
+}
+.escalada-item:hover { border-color: var(--navy); box-shadow: var(--card-shadow); }
+.escalada-arrow {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 0; color: var(--gray-400);
+}
+.escalada-arrow svg { width: 20px; height: 20px; }
+.escalada-problem { font-weight: 600; color: var(--text-dark); flex: 1; }
+.escalada-who {
+  font-size: .85rem; font-weight: 700; color: var(--white);
+  background: var(--navy); padding: 6px 16px; border-radius: 50px;
+  white-space: nowrap;
+}
+
+/* ═══ PRINCIPIOS ═══ */
+.principio-list { margin-top: 36px; display: flex; flex-direction: column; gap: 16px; }
+.principio-item {
+  display: flex; align-items: flex-start; gap: 20px;
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm); padding: 24px 28px; transition: var(--transition);
+}
+.principio-item:hover { border-color: var(--navy); box-shadow: var(--card-shadow); }
+.principio-num {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: var(--navy); color: var(--white); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 700;
+}
+.principio-item p {
+  font-size: 1rem; color: var(--text-dark); font-weight: 500;
+  line-height: 1.6; padding-top: 6px;
+}
+
+/* ═══ CHECKLIST BAR ═══ */
+.checklist-bar {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+  color: var(--white); padding: 48px 0;
+}
+.checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.checklist-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; background: rgba(255,255,255,.05);
+  border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,.08);
+  font-size: .88rem; font-weight: 500;
+}
+.checklist-item svg { width: 20px; height: 20px; color: var(--accent); flex-shrink: 0; }
+
+/* ═══ SIDE NAV ═══ */
+.side-nav {
+  position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+  z-index: 100; display: flex; flex-direction: column; gap: 12px;
+}
+.side-nav a {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(0,59,115,.2); display: block; transition: var(--transition);
+  position: relative;
+}
+.side-nav a:hover, .side-nav a.active { background: var(--accent); transform: scale(1.3); }
+.side-nav a::after {
+  content: attr(data-label); position: absolute; right: 24px; top: 50%;
+  transform: translateY(-50%); white-space: nowrap;
+  font-size: .75rem; font-weight: 600; color: var(--navy);
+  background: var(--white); padding: 4px 12px; border-radius: 6px;
+  box-shadow: var(--card-shadow); opacity: 0; transition: var(--transition);
+  pointer-events: none;
+}
+.side-nav a:hover::after { opacity: 1; }
+
+/* ═══ FOOTER ═══ */
+.footer { background: var(--navy-deep); padding: 32px 0; text-align: center; }
+.footer p { font-size: .82rem; color: rgba(255,255,255,.4); letter-spacing: .5px; }
+.footer strong { color: rgba(255,255,255,.6); font-weight: 600; }
+
+/* ═══ ANIMATIONS ═══ */
+.fade-up { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .section { padding: 56px 0; }
+  .intro-card { padding: 32px 28px; }
+  .area-card { padding: 28px 24px; }
+  .hero-inner { padding: 56px 0 40px; }
+  .side-nav { display: none; }
+  .role-grid { grid-template-columns: 1fr; }
+  .org-top-row { gap: 8px; }
+  .org-box.clevel { min-width: unset; }
+  .coord-grid { grid-template-columns: 1fr; }
+  .escalada-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .escalada-who { align-self: flex-start; }
 }
 </style>
 </head>
 <body>
-<div class="hero">
+
+<!-- SIDE NAVIGATION -->
+<nav class="side-nav" aria-label="Navegação rápida">
+  <a href="#hero" data-label="Início" class="active"></a>
+  <a href="#organograma" data-label="Organograma"></a>
+  <a href="#areas" data-label="Áreas Funcionais"></a>
+  <a href="#papeis" data-label="Papéis e Funções"></a>
+  <a href="#escalada" data-label="Linhas de Decisão"></a>
+  <a href="#principios" data-label="Boas Práticas"></a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. HERO -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="hero" id="hero">
   <div class="container">
     <div class="hero-inner">
-      <h1>Estrutura Organizacional</h1>
-      <p class="hero-desc">Organograma, departamentos e responsabilidades da Walkingarage / DomusCar.</p>
+      <h1>Estrutura <em>Organizacional</em></h1>
+      <p class="hero-desc">Esta estrutura define as funções, responsabilidades e linhas de decisão da empresa, servindo de base aos processos operacionais e à gestão diária.</p>
+      <div class="hero-tags">
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+          Não é burocracia
+        </span>
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          É orientação
+        </span>
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Clareza para todos
+        </span>
+      </div>
     </div>
   </div>
   <div class="hero-bar"></div>
-</div>
-<div class="placeholder-section">
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. ORGANOGRAMA -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="organograma">
   <div class="container">
-    <div class="placeholder-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="8" y="14" width="8" height="7" rx="1"/><line x1="6.5" y1="10" x2="6.5" y2="14"/><line x1="17.5" y1="10" x2="17.5" y2="14"/><line x1="6.5" y1="14" x2="17.5" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/></svg>
+    <div class="fade-up">
+      <div class="section-label">Hierarquia Funcional</div>
+      <h2 class="section-title">Organograma</h2>
+      <p class="section-subtitle">Visão geral da estrutura hierárquica da empresa. Simples e verdadeiro — não bonito e irreal.</p>
     </div>
-    <div class="placeholder-title">Conteúdo em preparação</div>
-    <p class="placeholder-text">Esta secção está a ser desenvolvida. Em breve estará disponível com informação completa para toda a equipa.</p>
+
+    <!-- Topo: CEO -->
+    <div class="org-top fade-up">
+      <div class="org-box ceo">
+        <span class="org-role">CEO — Direção Executiva</span>
+        <span class="org-name">Vanessa Borges</span>
+        <span class="org-year">desde 2013</span>
+      </div>
+      <div class="org-fork-vline"></div>
+
+      <!-- Vanessa → Marta + André -->
+      <div class="org-fork">
+        <div class="org-fork-children">
+          <!-- ══ CFO Branch ══ -->
+          <div class="org-branch">
+            <div class="org-fork-vline"></div>
+            <div class="org-box clevel cl-cfo">
+              <span class="org-role">CFO — Direção Financeira</span>
+              <span class="org-name">Marta Marques</span>
+              <span class="org-year">desde 2024</span>
+            </div>
+            <div class="org-fork-vline"></div>
+            <!-- Marta → Cláudia + Gonçalo -->
+            <div class="org-fork">
+              <div class="org-fork-children">
+                <div class="org-branch">
+                  <div class="org-fork-vline"></div>
+                  <div class="org-box clevel cl-rh">
+                    <span class="org-role">RH — Recursos Humanos</span>
+                    <span class="org-name">Cláudia Pedro</span>
+                    <span class="org-year">desde 2025</span>
+                  </div>
+                </div>
+                <div class="org-branch">
+                  <div class="org-fork-vline"></div>
+                  <div class="org-box clevel cl-admin">
+                    <span class="org-role">Administrativo</span>
+                    <span class="org-name">Gonçalo Faustino<br>Cláudia Pedro</span>
+                    <span class="org-year">desde 2025</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ COO Branch ══ -->
+          <div class="org-branch">
+            <div class="org-fork-vline"></div>
+            <div class="org-box clevel cl-coo">
+              <span class="org-role">COO — Direção de Operações</span>
+              <span class="org-name">André Pereira</span>
+              <span class="org-year">desde 2015</span>
+            </div>
+            <!-- André → Fernando + Paulo -->
+            <div class="org-fork">
+              <div class="org-fork-vline"></div>
+              <div class="org-fork-children">
+                <div class="org-branch">
+                  <div class="org-fork-vline"></div>
+                  <div class="org-box clevel cl-comercial">
+                    <span class="org-role">Comercial</span>
+                    <span class="org-name">Fernando Couto</span>
+                    <span class="org-year">desde 2019</span>
+                  </div>
+                </div>
+                <div class="org-branch">
+                  <div class="org-fork-vline"></div>
+                  <div class="org-box clevel cl-apoio">
+                    <span class="org-role">Apoio Técnico</span>
+                    <span class="org-name">Paulo Ferreira</span>
+                    <span class="org-year">desde 2023</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connector: André → 3 Coordenações -->
+    <div class="coord-connector fade-up">
+      <div class="coord-link-v" id="coordLinkV"></div>
+      <div class="coord-link-h" id="coordLinkH"></div>
+      <div class="coord-fork-children">
+        <div class="coord-drop"><div class="org-fork-vline"></div></div>
+        <div class="coord-drop"><div class="org-fork-vline"></div></div>
+        <div class="coord-drop"><div class="org-fork-vline"></div></div>
+      </div>
+    </div>
+
+    <!-- 3 Coordenações -->
+    <div class="coord-grid fade-up">
+
+      <!-- ═══ MECÂNICA CACÉM ═══ -->
+      <div class="coord-card">
+        <div class="coord-card-head">
+          <div class="coord-dept">Coordenação</div>
+          <span class="coord-name">Mecânica Cacém</span>
+          <span class="coord-person">José Rodriguez · desde 2019</span>
+        </div>
+        <div class="coord-card-body">
+          <div class="team-section">
+            <div class="team-section-title">Receção</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Tomás Figueiredo</span><span class="tm-year">2024</span></li>
+              <li><span class="tm-name">Rúben Nogueira</span><span class="tm-year">2024</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Técnicos Mecânica</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Arnaldo Cruz</span><span class="tm-year">2017</span></li>
+              <li><span class="tm-name">Edmilson Fernandes</span><span class="tm-year">2021</span></li>
+              <li><span class="tm-name">Filipe Bonifácio</span><span class="tm-year">2023</span></li>
+              <li><span class="tm-name">Gonçalo Matos</span><span class="tm-year">2024</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Lavagem</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Eduardo Macedo</span><span class="tm-year">2023</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Peças e Logística</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Inês Peixinho</span><span class="tm-year">2021</span></li>
+              <li><span class="tm-name">Olesya Vieira</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MECÂNICA LISBOA ═══ -->
+      <div class="coord-card">
+        <div class="coord-card-head">
+          <div class="coord-dept">Coordenação</div>
+          <span class="coord-name">Mecânica Lisboa</span>
+          <span class="coord-person">Fábio Ramalho · desde 2019</span>
+        </div>
+        <div class="coord-card-body">
+          <div class="team-section">
+            <div class="team-section-title">Receção</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Ricardo Ferreira</span><span class="tm-year">2025</span></li>
+              <li><span class="tm-name">Pedro Pereira</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Técnicos Mecânica</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Sérgio Pereira</span><span class="tm-year">2010</span></li>
+              <li><span class="tm-name">Jorge Silva</span><span class="tm-year">2023</span></li>
+              <li><span class="tm-name">Emanuel Gonçalves</span><span class="tm-year">2024</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Lavagem</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Ajay Shah</span><span class="tm-year">2022</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Peças e Logística</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Pedro Carvalho</span><span class="tm-year">2008</span></li>
+              <li><span class="tm-name">Gonçalo Faustino</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Estagiários</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Xavier Jorge</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ COLISÃO ═══ -->
+      <div class="coord-card">
+        <div class="coord-card-head">
+          <div class="coord-dept">Coordenação</div>
+          <span class="coord-name">Colisão</span>
+          <span class="coord-person">Mário Peres · desde 2022</span>
+        </div>
+        <div class="coord-card-body">
+          <div class="team-section">
+            <div class="team-section-title">Receção</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Valter Borges</span><span class="tm-year">2021</span></li>
+              <li><span class="tm-name">Paulo Rodrigues</span><span class="tm-year">2024</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Técnicos Chapa</div>
+            <ul class="team-members">
+              <li><span class="tm-name">José Borges</span><span class="tm-year">2024</span></li>
+              <li><span class="tm-name">Pedro Jana</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Técnicos Pintura e Preparação</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Diogo Fernandes</span><span class="tm-year">2022</span></li>
+              <li><span class="tm-name">Nuno Montes</span><span class="tm-year">2023</span></li>
+              <li><span class="tm-name">Vítor Soutilha</span><span class="tm-year">2024</span></li>
+              <li><span class="tm-name">Gyanu Pujara</span><span class="tm-year">2025</span></li>
+              <li><span class="tm-name">João Bizarro</span><span class="tm-year">2025</span></li>
+              <li><span class="tm-name">José Avelino</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+          <div class="team-section">
+            <div class="team-section-title">Peças e Logística</div>
+            <ul class="team-members">
+              <li><span class="tm-name">Inês Peixinho</span><span class="tm-year">2021</span></li>
+              <li><span class="tm-name">Alícia Vieira</span><span class="tm-year">2025</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. ÁREAS FUNCIONAIS -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="areas">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Coração da Estrutura</div>
+      <h2 class="section-title">Áreas Funcionais</h2>
+      <p class="section-subtitle">Cada área define responsabilidades concretas. Toda a responsabilidade aqui atribuída tem reflexo direto nos processos operacionais.</p>
+    </div>
+
+    <div class="area-grid">
+
+      <!-- 3.1 Direção -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          </div>
+          <div>
+            <h3>CEO — Direção Executiva</h3>
+            <div class="area-card-subtitle">Vanessa Borges — CEO e única titular da direção executiva</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Definição de objetivos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Decisões críticas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Definição do rumo e futuro da empresa</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Representação externa</li>
+        </ul>
+        <div class="area-note"><strong>A direção acompanha tudo através dos reports de cada responsável</strong> — não precisa de estar em todo o lado para saber o que se passa a todo o momento e tomar as decisões certas.</div>
+      </div>
+
+      <!-- 3.2b COO — Direção de Operações -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <h3>COO — Direção de Operações</h3>
+            <div class="area-card-subtitle">André Pereira — responsável por todas as operações</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Supervisão de todas as unidades e coordenações</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão de processos e melhoria contínua</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Decisões operacionais e resolução de conflitos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Report à direção executiva</li>
+        </ul>
+        <div class="area-note"><strong>O COO é o ponto de convergência de todas as operações</strong> — garante que a oficina funciona como um todo, não como partes desligadas.</div>
+      </div>
+
+      <!-- 3.8 Direção Financeira -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <div>
+            <h3>Direção Financeira</h3>
+            <div class="area-card-subtitle">Marta Marques — CFO</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Controlo financeiro e tesouraria</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Relação com contabilidade e entidades fiscais</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Análise de rentabilidade e custos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Suporte à direção executiva</li>
+        </ul>
+        <div class="area-note"><strong>Os números contam a verdade que o dia a dia nem sempre mostra</strong> — cabe à direção financeira garantir que a empresa decide com dados, não com intuição.</div>
+      </div>
+
+      <!-- 3.9 Recursos Humanos -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <h3>Recursos Humanos</h3>
+            <div class="area-card-subtitle">Cláudia Pedro — RH</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão contratual e processamento salarial</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Recrutamento e integração de novos colaboradores</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão de assiduidade, férias e ausências</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão de seguros de saúde e acidentes de trabalho</li>
+        </ul>
+        <div class="area-note"><strong>As pessoas são o motor da empresa</strong> — os RH garantem que esse motor tem as condições para funcionar bem.</div>
+      </div>
+
+      <!-- 3.10 Administração -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <h3>Administrativo</h3>
+            <div class="area-card-subtitle">Gonçalo Faustino · Cláudia Pedro</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Suporte administrativo geral</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão documental e arquivo</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Controlo de crédito</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Organização e manutenção de processos internos</li>
+        </ul>
+        <div class="area-note"><strong>A administração é a cola silenciosa da empresa</strong> — quando funciona bem, ninguém nota; quando falha, tudo se sente.</div>
+      </div>
+
+      <!-- 3.11 Comercial -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <div>
+            <h3>Comercial</h3>
+            <div class="area-card-subtitle">Fernando Couto</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Prospeção e captação de novos parceiros</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Acompanhamento de clientes frota</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Acompanhamento de acordos e condições comerciais</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Representação externa da empresa</li>
+        </ul>
+        <div class="area-note"><strong>O comercial abre portas</strong> — mas é a qualidade do trabalho que as mantém abertas.</div>
+      </div>
+
+      <!-- 3.12 Apoio Técnico -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <div>
+            <h3>Apoio Técnico</h3>
+            <div class="area-card-subtitle">Paulo Ferreira — suporte técnico e operacional</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Suporte técnico às unidades</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Suporte operacional às unidades</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Formação técnica</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Resolução de problemas do dia a dia das oficinas</li>
+        </ul>
+        <div class="area-note"><strong>O apoio a oficinas garante que a produção não para</strong> — resolve o que os outros não conseguem resolver sozinhos.</div>
+      </div>
+
+      <!-- 3.2 Operações -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+          <div>
+            <h3>Coordenação</h3>
+            <div class="area-card-subtitle">Responsáveis por guiar e liderar o dia a dia da oficina</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Planeamento de trabalhos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão de recursos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cumprimento de prazos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Qualidade técnica</li>
+        </ul>
+        <div class="area-note"><strong>Quando as operações funcionam, o cliente nota</strong> — por vezes mesmo sem saber porquê.</div>
+        <a class="area-link" onclick="if(window.parent)window.parent.postMessage({action:'openModule',module:'processos_op'},'*');">
+          Ver Processos Operacionais
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+        </a>
+      </div>
+
+      <!-- 3.3 Receção -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          </div>
+          <div>
+            <h3>Receção</h3>
+            <div class="area-card-subtitle">Se a receção falha, o cliente não confia — é aqui que se ganha ou se perde, antes da chave sequer trocar de mão. Quando funciona, o cliente volta.</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Acolhimento do cliente</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Fecho de vendas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Elo de ligação principal entre cliente e oficina</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão administrativa do processo</li>
+        </ul>
+        <div class="area-note"><strong>A receção é o ponto de contacto entre cliente, seguradora, frota, oficina e peças</strong> — tudo passa por aqui antes de chegar a qualquer outro departamento.</div>
+      </div>
+
+      <!-- 3.4 Orçamentação / Peritagem -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div>
+            <h3>Orçamentação / Peritagem</h3>
+            <div class="area-card-subtitle">O orçamento é responsabilidade da receção, as necessidades técnicas são da produção e coordenação</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Levantamento técnico</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Elaboração de orçamentos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Identificação e report de danos ocultos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Comunicação técnica com seguradoras e frotas</li>
+        </ul>
+        <div class="area-note"><strong>O orçamento é responsabilidade técnica da oficina</strong> — termina quando o trabalho está bem fundamentado, não quando é aprovado por quem paga.</div>
+      </div>
+
+      <!-- 3.6 Peças -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div>
+            <h3>Peças e Logística</h3>
+            <div class="area-card-subtitle">Responsável por garantir que nada para</div>
+          </div>
+        </div>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Pedido de peças e conferência</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Garantia de cumprimento de prazos — peças a tempo e horas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Controlo de stock</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão de atrasos e devoluções</li>
+        </ul>
+        <div class="area-note"><strong>Uma boa gestão de peças reduz:</strong> atrasos, custos e stress operacional.</div>
+      </div>
+
+      <!-- 3.5 Produção -->
+      <div class="area-card fade-up">
+        <div class="area-card-header">
+          <div class="area-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/></svg>
+          </div>
+          <div>
+            <h3>Produção — Mecânica, Chapa e Pintura</h3>
+            <div class="area-card-subtitle">Responsável pela execução técnica</div>
+          </div>
+        </div>
+        <p>Áreas: Mecânica, Chapa, Pintura, Preparação e Acabamento.</p>
+        <div class="area-resp-title">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Execução conforme processo</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cumprimento de tempos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Reporte de danos ocultos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Qualidade do trabalho executado</li>
+        </ul>
+        <div class="area-note"><strong>A produção executa, não decide fora do processo</strong> — e tem a responsabilidade de garantir que o trabalho sai bem feito e devidamente documentado, sem exceções.</div>
+      </div>
+
+      <!-- 3.7b Qualidade — destaque visual (dever de todos) -->
+      <div class="area-card fade-up" style="background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%); color: var(--white); border: 2px solid var(--accent); border-left: 5px solid var(--accent);">
+        <div class="area-card-header">
+          <div class="area-icon" style="background: rgba(255,255,255,.1);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <h3 style="color: var(--white);">Qualidade</h3>
+            <div class="area-card-subtitle" style="color: rgba(255,255,255,.7);">Função formal da coordenação, função acumulada por todos</div>
+          </div>
+        </div>
+        <div class="area-resp-title" style="color: var(--accent-light);">Responsabilidades</div>
+        <ul class="area-resp-list">
+          <li style="color: rgba(255,255,255,.92); background: rgba(255,255,255,.06);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Controlo intermédio e final</li>
+          <li style="color: rgba(255,255,255,.92); background: rgba(255,255,255,.06);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Validação antes de entrega</li>
+          <li style="color: rgba(255,255,255,.92); background: rgba(255,255,255,.06);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Gestão de não conformidades</li>
+          <li style="color: rgba(255,255,255,.92); background: rgba(255,255,255,.06);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Preventivo, não só corretivo</li>
+        </ul>
+        <div class="area-note" style="background: rgba(255,255,255,.08); border-left-color: var(--accent); color: rgba(255,255,255,.85);"><strong style="color: var(--accent-light);">Qualidade ≠ policiamento.</strong> Qualidade = proteção da empresa.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. PAPÉIS E FUNÇÕES -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="papeis">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Descrição Clara</div>
+      <h2 class="section-title">Papéis e Funções</h2>
+      <p class="section-subtitle">Cada função relevante define: a quem reporta, as suas responsabilidades e que decisões pode tomar. Isto evita choques de poder e interferências constantes.</p>
+    </div>
+
+    <div class="role-grid fade-up">
+      <div class="role-card">
+        <h4>Coordenador</h4>
+        <div class="role-meta">
+          <div class="role-meta-item"><span class="role-meta-label">Reporta a:</span><span class="role-meta-value">COO</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Responsável por:</span><span class="role-meta-value">Gestão da equipa, distribuição de trabalho, controlo de produtividade e qualidade da unidade</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Autoridade para:</span><span class="role-meta-value">Redistribuir trabalhos, escalar problemas ao COO, validar qualidade antes de entrega</span></div>
+        </div>
+      </div>
+      <div class="role-card">
+        <h4>Rececionista / Orçamentista</h4>
+        <div class="role-meta">
+          <div class="role-meta-item"><span class="role-meta-label">Reporta a:</span><span class="role-meta-value">Coordenador e COO</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Responsável por:</span><span class="role-meta-value">Receção e entrega de viaturas, fecho de vendas, comunicação com cliente, seguradora e frota, levantamento técnico, elaboração de orçamentos, identificação de danos ocultos, comunicação técnica com seguradoras e frotas</span></div>
+        </div>
+      </div>
+      <div class="role-card">
+        <h4>Caixeiro</h4>
+        <div class="role-meta">
+          <div class="role-meta-item"><span class="role-meta-label">Reporta a:</span><span class="role-meta-value">Coordenador e COO</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Responsável por:</span><span class="role-meta-value">Encomenda e conferência de peças, controlo de stock, gestão de devoluções</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Autoridade para:</span><span class="role-meta-value">Selecionar fornecedores, gerir prioridades de encomenda, sinalizar atrasos</span></div>
+        </div>
+      </div>
+      <div class="role-card">
+        <h4>Técnico de Produção</h4>
+        <div class="role-meta">
+          <div class="role-meta-item"><span class="role-meta-label">Reporta a:</span><span class="role-meta-value">Coordenador</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Responsável por:</span><span class="role-meta-value">Execução técnica conforme processo, cumprimento de tempos, report de danos ocultos, sinalização de problemas de qualidade, reporte de necessidade de suplemento</span></div>
+        </div>
+      </div>
+      <div class="role-card">
+        <h4>Controlo de Qualidade (Todos)</h4>
+        <div class="role-meta">
+          <div class="role-meta-item"><span class="role-meta-label">Reporta a:</span><span class="role-meta-value">Coordenador e COO</span></div>
+          <div class="role-meta-item"><span class="role-meta-label">Responsável por:</span><span class="role-meta-value">Inspeção intermédia e final, gestão de não conformidades, bloqueio de entregas quando necessário, exigência de correções antes de saída</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. LINHAS DE DECISÃO E ESCALADA -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="escalada">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Menos Ruído, Mais Rapidez</div>
+      <h2 class="section-title">Linhas de Decisão e Escalada</h2>
+      <p class="section-subtitle">Poucas empresas definem isto — e pagam caro. Saber a quem recorrer reduz dependência da direção para tudo.</p>
+    </div>
+
+    <div class="escalada-flow fade-up">
+      <div class="escalada-item">
+        <div class="escalada-problem">Problema técnico na reparação</div>
+        <div class="escalada-who">Coordenação → Apoio Técnico</div>
+      </div>
+      <div class="escalada-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg></div>
+      <div class="escalada-item">
+        <div class="escalada-problem">Conflito com seguradora ou frota</div>
+        <div class="escalada-who">Coordenação → COO</div>
+      </div>
+      <div class="escalada-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg></div>
+      <div class="escalada-item">
+        <div class="escalada-problem">Exceção financeira ou comercial</div>
+        <div class="escalada-who">CFO</div>
+      </div>
+      <div class="escalada-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg></div>
+      <div class="escalada-item">
+        <div class="escalada-problem">Problema de qualidade na entrega</div>
+        <div class="escalada-who">Coordenação → COO</div>
+      </div>
+      <div class="escalada-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg></div>
+      <div class="escalada-item">
+        <div class="escalada-problem">Atraso de peças ou fornecedores</div>
+        <div class="escalada-who">Caixeiro → Coordenação → COO</div>
+      </div>
+      <div class="escalada-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg></div>
+      <div class="escalada-item">
+        <div class="escalada-problem">Reclamação de cliente</div>
+        <div class="escalada-who">Receção → Coordenação → COO</div>
+      </div>
+    </div>
+
+    <div class="intro-card fade-up" style="margin-top:36px;">
+      <p><strong>Resultado:</strong> Menos ruído, decisões mais rápidas e menos dependência da direção para tudo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. BOAS PRÁTICAS -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="principios">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Princípios Claros</div>
+      <h2 class="section-title">Boas Práticas</h2>
+      <p class="section-subtitle">Regras base que sustentam toda a estrutura organizacional.</p>
+    </div>
+
+    <div class="principio-list fade-up">
+      <div class="principio-item">
+        <div class="principio-num">01</div>
+        <p>A função define responsabilidade, não estatuto. O cargo existe para servir o processo, não o contrário.</p>
+      </div>
+      <div class="principio-item">
+        <div class="principio-num">02</div>
+        <p>Todos seguem os processos, independentemente do cargo. Ninguém está acima do processo definido.</p>
+      </div>
+      <div class="principio-item">
+        <div class="principio-num">03</div>
+        <p>O organograma serve para apoiar, não para bloquear. A estrutura facilita decisões — não as atrasa.</p>
+      </div>
+      <div class="principio-item">
+        <div class="principio-num">04</div>
+        <p>Toda a responsabilidade atribuída tem reflexo direto nos processos operacionais. Sem papéis vagos.</p>
+      </div>
+      <div class="principio-item">
+        <div class="principio-num">05</div>
+        <p>A estrutura deve ser simples, clara e verdadeira. Melhor simples e real do que bonito e irreal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHECKLIST BAR -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="checklist-bar">
+  <div class="container">
+    <div class="checklist-grid">
+      <div class="checklist-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Quem é responsável por cada área
+      </div>
+      <div class="checklist-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Papéis e decisões definidos
+      </div>
+      <div class="checklist-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Apoio aos processos operacionais
+      </div>
+      <div class="checklist-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Simples, clara e verdadeira
+      </div>
+      <div class="checklist-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Sem dependência excessiva de pessoas
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="container">
+    <p><strong>Walkingarage, Lda</strong> — Estrutura Organizacional — Intranet DomusCar</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ═══════════════════════════════════════════ -->
+<script>
+// Fade-up animation on scroll
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(function(el) {
+  observer.observe(el);
+});
+
+// Side nav active state
+var navLinks = document.querySelectorAll('.side-nav a');
+var sectionObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      var active = document.querySelector('.side-nav a[href="#' + entry.target.id + '"]');
+      if (active) {
+        navLinks.forEach(function(l) { l.classList.remove('active'); });
+        active.classList.add('active');
+      }
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('section[id]').forEach(function(section) {
+  sectionObserver.observe(section);
+});
+
+
+// Traços: vline alinhado c/ Lisboa sobe até fork Fernando/Paulo, hline conecta
+function positionCoordLink() {
+  var conn = document.querySelector('.coord-connector');
+  var vEl = document.getElementById('coordLinkV');
+  var hEl = document.getElementById('coordLinkH');
+  var forkKids = conn.querySelector('.coord-fork-children');
+  if (!conn || !vEl || !hEl || !forkKids) return;
+
+  // O fork COO → Comercial/Apoio Técnico
+  var cooFork = document.querySelector('.org-box.cl-coo').closest('.org-branch').querySelector('.org-fork');
+  var cooForkChildren = cooFork.querySelector('.org-fork-children');
+  if (!cooFork || !cooForkChildren) return;
+
+  var cr = conn.getBoundingClientRect();
+
+  // Lisboa = centro do 2º coord-drop (coluna do meio)
+  var lisboaDrop = forkKids.children[1];
+  var lisboaX = lisboaDrop.getBoundingClientRect().left + lisboaDrop.getBoundingClientRect().width / 2 - cr.left;
+
+  // A linha horizontal do fork Comercial/Apoio está no top dos org-fork-children
+  var forkY = cooForkChildren.getBoundingClientRect().top - cr.top;
+
+  // Centro do fork Comercial/Apoio (meio entre os dois branches)
+  var cooForkRect = cooForkChildren.getBoundingClientRect();
+  var fernandoX = cooForkRect.left + cooForkRect.width / 2 - cr.left;
+
+  // Vertical: de forkY até top:0 (fork das coords), alinhado com Lisboa
+  vEl.style.left = (lisboaX - 1) + 'px';
+  vEl.style.top = forkY + 'px';
+  vEl.style.height = (0 - forkY) + 'px';
+
+  // Horizontal: de lisboaX até fernandoX, ao nível do fork
+  var leftX = Math.min(lisboaX, fernandoX);
+  var rightX = Math.max(lisboaX, fernandoX);
+  hEl.style.left = (leftX - 1) + 'px';
+  hEl.style.width = (rightX - leftX + 3) + 'px';
+  hEl.style.top = forkY + 'px';
+}
+window.addEventListener('load', positionCoordLink);
+window.addEventListener('resize', positionCoordLink);
+</script>
 </body>
 </html>
