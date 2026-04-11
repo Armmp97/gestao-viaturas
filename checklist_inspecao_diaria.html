@@ -626,6 +626,18 @@ h2 { color: #007BC0; margin-top: 20px; }
   if (window.parent && window.parent.uploadToSharePoint) {
     try {
       window.parent.uploadToSharePoint('inspecoes_diarias', filename, htmlContent, 'text/html');
+
+      // Notificação (email + Teams chat)
+      if (window.parent.sendNotification) {
+        var notifSubject = '✅ Nova Inspeção Diária — ' + (data.local || 'Sem local');
+        var notifBody = '<p><strong>Data:</strong> ' + (data.data || 'N/A') + '</p>' +
+          '<p><strong>Coordenador:</strong> ' + (data.coordenador || 'N/A') + '</p>' +
+          '<p><strong>Local:</strong> ' + (data.local || 'N/A') + '</p>' +
+          '<p><strong>Resultado:</strong> OK: ' + sOk + ' | NOK: ' + sNok + ' | Pendente: ' + sPend + '</p>' +
+          '<p style="color:#888;font-size:12px;">Consultar detalhes na Intranet > Definições > Gestão de Ficheiros > Inspeções Diárias</p>';
+        window.parent.sendNotification('inspecoes_diarias', notifSubject, notifBody);
+      }
+
       alert(`Inspeção guardada com sucesso!\nFicheiro: ${filename}`);
     } catch (error) {
       alert(`Erro ao guardar a inspeção: ${error.message}`);

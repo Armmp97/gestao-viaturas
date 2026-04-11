@@ -1967,7 +1967,7 @@
         return isMobile() || isSafariOrMacWebKit();
     }
 
-    var msalLoginScopes = ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite'];
+    var msalLoginScopes = ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite', 'Mail.Send', 'Chat.ReadWrite'];
 
     function initMsal() {
         try {
@@ -2353,6 +2353,107 @@
             return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId + '/content', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
+        });
+    }
+
+    // ======== NOTIFICATION SYSTEM (Email + Teams Chat) ========
+    var NOTIF_RECIPIENTS = {
+        admins: [
+            { email: 'andre.pereira@domuscar.com', name: 'André Pereira' },
+            { email: 'vanessa.borges@domuscar.com', name: 'Vanessa Borges' }
+        ],
+        coordenadores: [
+            { email: 'fabio.ramalho@domuscar.com', name: 'Fábio Ramalho' },
+            { email: 'jose.rodriguez@domuscar.com', name: 'José Rodriguez' },
+            { email: 'mario.peres@domuscar.com', name: 'Mário Peres' }
+        ]
+    };
+
+    var NOTIF_CONFIG = {
+        sugestoes:          { recipients: 'admins' },
+        formularios_nc:     { recipients: 'admins' },
+        inspecoes_diarias:  { recipients: 'admins' },
+        auditorias_internas:{ recipients: 'admins+coordenadores' }
+    };
+
+    function getNotifRecipients(type) {
+        var config = NOTIF_CONFIG[type];
+        if (!config) return NOTIF_RECIPIENTS.admins;
+        if (config.recipients === 'admins') return NOTIF_RECIPIENTS.admins;
+        if (config.recipients === 'admins+coordenadores') return NOTIF_RECIPIENTS.admins.concat(NOTIF_RECIPIENTS.coordenadores);
+        return NOTIF_RECIPIENTS.admins;
+    }
+
+    function getNotifToken() {
+        if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
+        return msalInstance.acquireTokenSilent({
+            scopes: ['Mail.Send', 'Chat.ReadWrite'],
+            account: currentMsalUser
+        }).catch(function() {
+            return acquireTokenInteractive(['Mail.Send', 'Chat.ReadWrite']);
+        }).then(function(resp) { return resp.accessToken; });
+    }
+
+    function sendNotification(type, subject, bodyHtml) {
+        var recipients = getNotifRecipients(type);
+        var senderName = currentMsalUser ? currentMsalUser.name || currentMsalUser.username : 'Intranet DomusCar';
+        // Send email + Teams chat in parallel
+        return getNotifToken().then(function(token) {
+            var promises = [];
+            // 1. Send Email
+            var toRecipients = recipients.map(function(r) {
+                return { emailAddress: { address: r.email, name: r.name } };
+            });
+            var emailPayload = {
+                message: {
+                    subject: subject,
+                    body: { contentType: 'HTML', content: bodyHtml },
+                    toRecipients: toRecipients
+                },
+                saveToSentItems: false
+            };
+            promises.push(
+                fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(emailPayload)
+                }).then(function(r) {
+                    if (!r.ok) throw new Error('Email failed: ' + r.status);
+                    console.log('[Notif] Email enviado com sucesso');
+                }).catch(function(e) { console.warn('[Notif] Erro ao enviar email:', e); })
+            );
+            // 2. Send Teams Chat to each recipient individually
+            recipients.forEach(function(recipient) {
+                var chatPromise = fetch('https://graph.microsoft.com/v1.0/chats', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chatType: 'oneOnOne',
+                        members: [
+                            { '@odata.type': '#microsoft.graph.aadUserConversationMember', roles: ['owner'], 'user@odata.bind': 'https://graph.microsoft.com/v1.0/users/' + currentMsalUser.username },
+                            { '@odata.type': '#microsoft.graph.aadUserConversationMember', roles: ['owner'], 'user@odata.bind': 'https://graph.microsoft.com/v1.0/users/' + recipient.email }
+                        ]
+                    })
+                }).then(function(r) {
+                    if (!r.ok) throw new Error('Chat creation failed: ' + r.status);
+                    return r.json();
+                }).then(function(chat) {
+                    return fetch('https://graph.microsoft.com/v1.0/chats/' + chat.id + '/messages', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            body: { contentType: 'html', content: '<strong>📋 ' + subject + '</strong><br>' + bodyHtml }
+                        })
+                    });
+                }).then(function(r) {
+                    if (!r.ok) throw new Error('Teams message failed: ' + r.status);
+                    console.log('[Notif] Teams chat enviado para ' + recipient.name);
+                }).catch(function(e) { console.warn('[Notif] Erro Teams chat para ' + recipient.name + ':', e); });
+                promises.push(chatPromise);
+            });
+            return Promise.all(promises);
+        }).catch(function(e) {
+            console.warn('[Notif] Erro geral notificações:', e);
         });
     }
 

@@ -876,6 +876,19 @@ h2 { color: #007BC0; margin-top: 30px; }
   try {
     if (window.parent && window.parent.uploadToSharePoint) {
       window.parent.uploadToSharePoint('auditorias_internas', filename, htmlContent, 'text/html');
+
+      // Notificação (email + Teams chat) — admins + coordenadores
+      if (window.parent.sendNotification) {
+        var notifSubject = '🔍 Nova Auditoria Interna Trimestral — ' + (local || 'Sem local');
+        var notifBody = '<p><strong>Data:</strong> ' + auditDate + '</p>' +
+          '<p><strong>Trimestre:</strong> ' + trimester + '</p>' +
+          '<p><strong>Auditor:</strong> ' + (auditorName || 'N/A') + '</p>' +
+          '<p><strong>Local:</strong> ' + (local || 'N/A') + '</p>' +
+          '<p><strong>Resultado:</strong> Conforme: ' + totalC + ' | Parcial: ' + totalP + ' | Não Conforme: ' + totalF + '</p>' +
+          '<p style="color:#888;font-size:12px;">Consultar detalhes na Intranet > Definições > Gestão de Ficheiros > Auditorias Internas</p>';
+        window.parent.sendNotification('auditorias_internas', notifSubject, notifBody);
+      }
+
       alert('Auditoria guardada com sucesso: ' + filename);
     } else {
       // Fallback: download the file

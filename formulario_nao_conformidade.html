@@ -586,6 +586,18 @@ h2 { color: #007BC0; margin-top: 20px; }
       });
     }
 
+    // Notificação (email + Teams chat)
+    if (window.parent.sendNotification) {
+      var notifSubject = '⚠️ Novo Formulário Não-Conformidade — ' + (location || 'Sem local');
+      var notifBody = '<p><strong>N.º Registo:</strong> ' + (registoNum || 'N/A') + '</p>' +
+        '<p><strong>Local:</strong> ' + (location || 'N/A') + '</p>' +
+        '<p><strong>Detetado por:</strong> ' + (detectedBy || 'N/A') + '</p>' +
+        '<p><strong>Classificação:</strong> ' + (classification || 'N/A') + ' | <strong>Prioridade:</strong> ' + (priority || 'N/A') + '</p>' +
+        '<p><strong>Descrição:</strong> ' + (description || '').substring(0, 200).replace(/</g,'&lt;') + ((description || '').length > 200 ? '...' : '') + '</p>' +
+        '<p style="color:#888;font-size:12px;">Consultar detalhes na Intranet > Definições > Gestão de Ficheiros > Formulários NC</p>';
+      window.parent.sendNotification('formularios_nc', notifSubject, notifBody);
+    }
+
     alert('Formulário guardado com sucesso!');
   } else {
     // Fallback: download as JSON if parent function not available

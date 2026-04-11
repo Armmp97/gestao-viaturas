@@ -403,6 +403,17 @@ function submitSuggestion() {
     });
   }
 
+  // Notificação (email + Teams chat)
+  if (window.parent && window.parent.sendNotification) {
+    var notifSubject = '💡 Nova Sugestão Submetida — Intranet DomusCar';
+    var notifBody = '<p><strong>Autor:</strong> ' + author + '</p>' +
+      (category ? '<p><strong>Categoria:</strong> ' + category + '</p>' : '') +
+      (priority ? '<p><strong>Prioridade:</strong> ' + priority + '</p>' : '') +
+      '<p><strong>Sugestão:</strong> ' + text.substring(0, 200).replace(/</g,'&lt;') + (text.length > 200 ? '...' : '') + '</p>' +
+      '<p style="color:#888;font-size:12px;">Consultar detalhes na Intranet > Definições > Gestão de Ficheiros > Sugestões</p>';
+    window.parent.sendNotification('sugestoes', notifSubject, notifBody);
+  }
+
   // Reset form
   document.getElementById('sugText').value = '';
   document.getElementById('sugName').value = '';
