@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Auditoria Interna Trimestral</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --warn: #D97706; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.7; }
+
+.page { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+
+/* ═══ HEADER ═══ */
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 36px 40px;
+  margin-bottom: 32px; position: relative; overflow: hidden;
+}
+.doc-header::after {
+  content: ''; position: absolute; top: -30%; right: -5%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
+  border-radius: 50%;
+}
+.doc-header h1 { font-size: 1.6rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .9rem; opacity: .8; margin-top: 8px; position: relative; z-index: 2; }
+.doc-header .doc-ref { font-size: .72rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 12px; position: relative; z-index: 2; }
+
+/* ═══ META FIELDS ═══ */
+.meta-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;
+}
+.meta-field { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 16px 20px; }
+.meta-label { font-size: .72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.meta-input {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: .95rem; padding: 6px 0; color: var(--text-dark);
+  background: transparent; outline: none; transition: border-color .3s;
+}
+.meta-input:focus { border-bottom-color: var(--accent); }
+
+/* ═══ SECTION CARDS ═══ */
+.audit-section {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); margin-bottom: 24px; overflow: hidden;
+}
+.audit-section-header {
+  padding: 20px 28px; border-bottom: 1px solid var(--gray-200);
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; user-select: none;
+}
+.audit-section-header:hover { background: rgba(0,123,192,.02); }
+.section-num {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(0,59,115,.06); display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 800; color: var(--navy); flex-shrink: 0;
+}
+.audit-section-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--navy); }
+.audit-section-header .progress-badge {
+  margin-left: auto; font-size: .75rem; font-weight: 700; padding: 4px 12px;
+  border-radius: 50px; background: var(--gray-100); color: var(--gray-600);
+}
+.audit-section-body { padding: 0; }
+
+/* ═══ CHECKLIST ITEMS ═══ */
+.check-row {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 14px 28px; border-bottom: 1px solid var(--gray-100);
+  transition: background .2s;
+}
+.check-row:last-child { border-bottom: none; }
+.check-row:hover { background: rgba(0,123,192,.02); }
+
+.check-box {
+  width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px;
+  border: 2px solid var(--gray-400); border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; position: relative;
+}
+.check-box.checked { background: var(--success); border-color: var(--success); }
+.check-box.partial { background: var(--warn); border-color: var(--warn); }
+.check-box.fail { background: var(--danger); border-color: var(--danger); }
+.check-box::after {
+  content: '✓'; color: white; font-size: .75rem; font-weight: 800;
+  opacity: 0; transition: opacity .2s;
+}
+.check-box.checked::after { opacity: 1; }
+.check-box.partial::after { content: '~'; opacity: 1; }
+.check-box.fail::after { content: '✕'; opacity: 1; }
+
+.check-content { flex: 1; }
+.check-text { font-size: .9rem; color: var(--text-dark); line-height: 1.5; }
+.check-ref { font-size: .72rem; color: var(--gray-600); margin-top: 2px; }
+
+.check-status {
+  display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px;
+}
+.status-btn {
+  width: 28px; height: 28px; border-radius: 8px; border: 2px solid var(--gray-200);
+  background: var(--white); cursor: pointer; font-size: .7rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; color: var(--gray-400);
+}
+.status-btn:hover { border-color: var(--gray-400); }
+.status-btn.c-active { background: var(--success); border-color: var(--success); color: white; }
+.status-btn.p-active { background: var(--warn); border-color: var(--warn); color: white; }
+.status-btn.f-active { background: var(--danger); border-color: var(--danger); color: white; }
+
+.check-obs {
+  width: 100%; margin-top: 8px; border: 1px solid var(--gray-200); border-radius: 8px;
+  padding: 8px 12px; font-family: inherit; font-size: .82rem; color: var(--text-body);
+  resize: vertical; min-height: 32px; outline: none; transition: border-color .3s;
+}
+.check-obs:focus { border-color: var(--accent); }
+.check-obs::placeholder { color: var(--gray-400); }
+
+/* ═══ SUMMARY BAR ═══ */
+.summary-bar {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 28px 36px;
+  margin-top: 32px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.summary-stat { text-align: center; }
+.summary-stat .num { font-size: 1.8rem; font-weight: 900; }
+.summary-stat .label { font-size: .72rem; letter-spacing: 1px; text-transform: uppercase; opacity: .6; }
+.summary-stat.conf .num { color: #34D399; }
+.summary-stat.parc .num { color: #FBBF24; }
+.summary-stat.nc .num { color: #F87171; }
+.summary-stat.pend .num { color: var(--gray-400); }
+.summary-divider { width: 1px; height: 48px; background: rgba(255,255,255,.15); }
+
+/* ═══ ACTIONS ═══ */
+.actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+.btn {
+  padding: 14px 28px; border-radius: var(--radius-sm); border: none;
+  font-family: inherit; font-size: .9rem; font-weight: 700; cursor: pointer;
+  transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: var(--white); }
+.btn-primary:hover { background: var(--navy); }
+.btn-outline { background: var(--white); color: var(--navy); border: 2px solid var(--gray-200); }
+.btn-outline:hover { border-color: var(--navy); }
+.btn svg { width: 18px; height: 18px; }
+
+/* ═══ OBS FINAL ═══ */
+.obs-final {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); padding: 28px; margin-top: 24px;
+}
+.obs-final h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+.obs-textarea {
+  width: 100%; min-height: 100px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 14px 16px; font-family: inherit; font-size: .9rem; color: var(--text-body);
+  resize: vertical; outline: none;
+}
+.obs-textarea:focus { border-color: var(--accent); }
+
+/* ═══ SIGNATURES ═══ */
+.sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+.sig-box {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); padding: 24px; text-align: center;
+}
+.sig-label { font-size: .72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+.sig-line { border-bottom: 2px solid var(--gray-200); height: 60px; margin-bottom: 8px; }
+.sig-name {
+  width: 100%; border: none; text-align: center; font-family: inherit;
+  font-size: .85rem; color: var(--text-dark); outline: none; background: transparent;
+}
+
+/* ═══ PRINT ═══ */
+@media print {
+  body { background: white; }
+  .page { padding: 20px; max-width: 100%; }
+  .doc-header { break-inside: avoid; }
+  .audit-section { break-inside: avoid; }
+  .actions { display: none; }
+  .check-obs { border: 1px solid #ccc; }
+  .meta-input { border-bottom: 1px solid #ccc; }
+  .summary-bar { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- HEADER -->
+  <div class="doc-header">
+    <h1>Auditoria Interna <em>Trimestral</em></h1>
+    <p>Verificação de conformidade com o regulamento interno, condições de SST, estado dos equipamentos e organização geral.</p>
+    <div class="doc-ref">QS-AIT-001 · Walkingarage, Lda. — Bosch Car Service</div>
+  </div>
+
+  <!-- META -->
+  <div class="meta-grid">
+    <div class="meta-field">
+      <div class="meta-label">Data da Auditoria</div>
+      <input type="date" class="meta-input">
+    </div>
+    <div class="meta-field">
+      <div class="meta-label">Trimestre / Ano</div>
+      <input type="text" class="meta-input" placeholder="Ex: 2.º Trimestre 2026">
+    </div>
+    <div class="meta-field">
+      <div class="meta-label">Auditor(a)</div>
+      <input type="text" class="meta-input" placeholder="Nome do auditor">
+    </div>
+    <div class="meta-field">
+      <div class="meta-label">Local / Oficina</div>
+      <input type="text" class="meta-input" placeholder="Ex: Mecânica Lisboa / Colisão Cacém">
+    </div>
+  </div>
+
+  <!-- SECTION 1: REGULAMENTO INTERNO -->
+  <div class="audit-section" data-section="1">
+    <div class="audit-section-header">
+      <div class="section-num">1</div>
+      <h2>Regulamento Interno e Legislação</h2>
+      <span class="progress-badge">0 / 6</span>
+    </div>
+    <div class="audit-section-body">
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Regulamento interno afixado em local visível e acessível a todos os colaboradores</div>
+          <div class="check-ref">Art.º 99.º CT</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Horário de trabalho afixado conforme art.º 215.º CT</div>
+          <div class="check-ref">Art.º 215.º CT</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Mapa de férias atualizado e afixado</div>
+          <div class="check-ref">Art.º 241.º CT</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Seguro de acidentes de trabalho válido e apólice acessível</div>
+          <div class="check-ref">Lei 98/2009</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Fichas de aptidão médica atualizadas para todos os colaboradores</div>
+          <div class="check-ref">Lei 102/2009 art.º 108.º</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Registos de formação Bosch Car Service atualizados</div>
+          <div class="check-ref">Requisitos rede Bosch</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: SST -->
+  <div class="audit-section" data-section="2">
+    <div class="audit-section-header">
+      <div class="section-num">2</div>
+      <h2>Segurança e Saúde no Trabalho</h2>
+      <span class="progress-badge">0 / 8</span>
+    </div>
+    <div class="audit-section-body">
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Plano de emergência interno afixado e atualizado</div>
+          <div class="check-ref">DL 224/2015</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Plantas de emergência afixadas em todas as zonas de trabalho</div>
+          <div class="check-ref">Portaria 1532/2008</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Extintores dentro da validade, acessíveis, com inspeção anual e manutenção em dia</div>
+          <div class="check-ref">Portaria 1532/2008</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Saídas de emergência desobstruídas, sinalizadas e com iluminação de emergência funcional</div>
+          <div class="check-ref">DL 141/95</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Kit de primeiros socorros completo e acessível</div>
+          <div class="check-ref">Lei 102/2009</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Sinalização de segurança (obrigação, proibição, aviso, emergência) completa e legível</div>
+          <div class="check-ref">DL 141/95, Portaria 1456-A/95</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Fichas de Dados de Segurança (FDS) disponíveis no dossier SST e/ou QR codes afixados</div>
+          <div class="check-ref">Regulamento CLP 1272/2008</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Simulacro de evacuação realizado nos últimos 12 meses</div>
+          <div class="check-ref">DL 224/2015</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: EPI -->
+  <div class="audit-section" data-section="3">
+    <div class="audit-section-header">
+      <div class="section-num">3</div>
+      <h2>Equipamentos de Proteção Individual</h2>
+      <span class="progress-badge">0 / 5</span>
+    </div>
+    <div class="audit-section-body">
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Todos os colaboradores possuem fardamento Bosch completo e em bom estado</div>
+          <div class="check-ref">DL 348/93</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Calçado de segurança, luvas, óculos e proteção auricular disponíveis e em uso efetivo</div>
+          <div class="check-ref">DL 348/93, Portaria 988/93</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Máscaras de proteção respiratória com filtros dentro da validade</div>
+          <div class="check-ref">DL 348/93</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Viseiras de soldadura em bom estado (mecânica e colisão)</div>
+          <div class="check-ref">DL 348/93</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Registo de entrega de EPI atualizado com assinatura dos colaboradores</div>
+          <div class="check-ref">DL 348/93 art.º 8.º</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: EQUIPAMENTOS -->
+  <div class="audit-section" data-section="4">
+    <div class="audit-section-header">
+      <div class="section-num">4</div>
+      <h2>Estado dos Equipamentos</h2>
+      <span class="progress-badge">0 / 7</span>
+    </div>
+    <div class="audit-section-body">
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Elevadores com inspeção periódica válida e autocolante visível</div>
+          <div class="check-ref">DL 50/2005</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Macacos hidráulicos e cavaletes em bom estado de conservação e funcionamento</div>
+          <div class="check-ref">DL 50/2005</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Compressor de ar com manómetro calibrado e válvula de segurança funcional</div>
+          <div class="check-ref">DL 50/2005</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Ferramentas elétricas e pneumáticas sem danos visíveis e com cabos/mangueiras íntegros</div>
+          <div class="check-ref">DL 50/2005</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Equipamento de diagnóstico Bosch calibrado e com software atualizado</div>
+          <div class="check-ref">Requisitos rede Bosch</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Sistema de extração de gases de escape funcional</div>
+          <div class="check-ref">Lei 102/2009</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Instalação elétrica sem cabos expostos, quadro elétrico fechado e identificado</div>
+          <div class="check-ref">RTIEBT</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: RESÍDUOS E AMBIENTE -->
+  <div class="audit-section" data-section="5">
+    <div class="audit-section-header">
+      <div class="section-num">5</div>
+      <h2>Gestão de Resíduos e Ambiente</h2>
+      <span class="progress-badge">0 / 5</span>
+    </div>
+    <div class="audit-section-body">
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Contentores de resíduos identificados e separados por tipo (óleos, filtros, baterias, sucata, embalagens contaminadas)</div>
+          <div class="check-ref">DL 102-D/2020</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Bacias de retenção sob depósitos de óleos usados e produtos químicos, sem derrames visíveis</div>
+          <div class="check-ref">DL 102-D/2020</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Guias de acompanhamento de resíduos (e-GAR) emitidas e arquivadas corretamente</div>
+          <div class="check-ref">DL 102-D/2020</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Pneus usados armazenados corretamente e entregues ao sistema Valorpneu</div>
+          <div class="check-ref">DL 102-D/2020</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Ecopontos (papel, plástico, vidro) disponíveis e utilizados</div>
+          <div class="check-ref">Boas práticas ambientais</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: ORGANIZAÇÃO -->
+  <div class="audit-section" data-section="6">
+    <div class="audit-section-header">
+      <div class="section-num">6</div>
+      <h2>Organização e Limpeza</h2>
+      <span class="progress-badge">0 / 5</span>
+    </div>
+    <div class="audit-section-body">
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Postos de trabalho organizados, sem ferramentas ou peças no chão</div>
+          <div class="check-ref">Regulamento Interno</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Armazém de peças organizado, identificado e sem obstruções nos corredores</div>
+          <div class="check-ref">Regulamento Interno</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Receção e sala de espera limpas, apresentáveis e com informação atualizada</div>
+          <div class="check-ref">Requisitos rede Bosch</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">WC e vestiários limpos e com material de higiene disponível</div>
+          <div class="check-ref">Lei 102/2009</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+      <div class="check-row">
+        <div class="check-status"><button class="status-btn c" title="Conforme">C</button><button class="status-btn p" title="Parcial">P</button><button class="status-btn f" title="NC">F</button></div>
+        <div class="check-content">
+          <div class="check-text">Área exterior limpa, sem acumulação de sucata ou resíduos, imagem profissional mantida</div>
+          <div class="check-ref">Requisitos rede Bosch</div>
+          <textarea class="check-obs" placeholder="Observações..." rows="1"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-stat conf"><div class="num" id="totalC">0</div><div class="label">Conforme</div></div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat parc"><div class="num" id="totalP">0</div><div class="label">Parcial</div></div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat nc"><div class="num" id="totalF">0</div><div class="label">Não Conforme</div></div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat pend"><div class="num" id="totalPend">36</div><div class="label">Pendente</div></div>
+  </div>
+
+  <!-- OBS FINAL -->
+  <div class="obs-final">
+    <h3>Observações Gerais e Plano de Ação</h3>
+    <textarea class="obs-textarea" placeholder="Registar observações gerais, não-conformidades críticas e ações corretivas a implementar com respetivos prazos..."></textarea>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="sig-grid">
+    <div class="sig-box">
+      <div class="sig-label">Auditor(a)</div>
+      <div class="sig-line"></div>
+      <input type="text" class="sig-name" placeholder="Nome e data">
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">Responsável da Oficina</div>
+      <div class="sig-line"></div>
+      <input type="text" class="sig-name" placeholder="Nome e data">
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn btn-primary" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimir
+    </button>
+    <button class="btn btn-outline" onclick="resetAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Limpar tudo
+    </button>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.status-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const row = this.closest('.check-row');
+    const btns = row.querySelectorAll('.status-btn');
+    const type = this.classList.contains('c') ? 'c' : this.classList.contains('p') ? 'p' : 'f';
+    const isActive = this.classList.contains(type + '-active');
+
+    btns.forEach(b => b.className = 'status-btn ' + (b.classList.contains('c') ? 'c' : b.classList.contains('p') ? 'p' : 'f'));
+
+    if (!isActive) {
+      this.classList.add(type + '-active');
+    }
+    updateCounts();
+  });
+});
+
+function updateCounts() {
+  let c = 0, p = 0, f = 0;
+  document.querySelectorAll('.c-active').forEach(() => c++);
+  document.querySelectorAll('.p-active').forEach(() => p++);
+  document.querySelectorAll('.f-active').forEach(() => f++);
+  const total = document.querySelectorAll('.check-row').length;
+
+  document.getElementById('totalC').textContent = c;
+  document.getElementById('totalP').textContent = p;
+  document.getElementById('totalF').textContent = f;
+  document.getElementById('totalPend').textContent = total - c - p - f;
+
+  // Update section badges
+  document.querySelectorAll('.audit-section').forEach(section => {
+    const rows = section.querySelectorAll('.check-row').length;
+    const done = section.querySelectorAll('.c-active, .p-active, .f-active').length;
+    section.querySelector('.progress-badge').textContent = done + ' / ' + rows;
+  });
+}
+
+function resetAll() {
+  if (!confirm('Tem a certeza que pretende limpar toda a auditoria?')) return;
+  document.querySelectorAll('.status-btn').forEach(b => {
+    b.className = 'status-btn ' + (b.classList.contains('c') ? 'c' : b.classList.contains('p') ? 'p' : 'f');
+  });
+  document.querySelectorAll('.check-obs, .obs-textarea').forEach(t => t.value = '');
+  document.querySelectorAll('.meta-input, .sig-name').forEach(i => i.value = '');
+  updateCounts();
+}
+</script>
+
+</body>
+</html>

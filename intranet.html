@@ -977,7 +977,14 @@
             <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
             <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos</a></li>
             <li><a onclick="openModule('sugestoes_melhoria')" id="navSugestoes_melhoria"><span class="nav-icon">💡</span> Sugestões e Melhoria</a></li>
+            <li><a onclick="openModule('formulario_nc')" id="navFormulario_nc"><span class="nav-icon">⚠️</span> Formulário Não-Conformidade</a></li>
             <li><a onclick="openModule('processos_op')" id="navProcessos_op"><span class="nav-icon">⚙️</span> Processos Operacionais</a></li>
+        </ul>
+
+        <div class="sidebar-section">Coordenação</div>
+        <ul class="sidebar-nav">
+            <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
+            <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Inspeções e Auditorias</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -1893,15 +1900,27 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes']
+        },
+        'fabio.ramalho@domuscar.com': {
+            role: 'coordenador', name: 'Fábio Ramalho',
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes']
+        },
+        'jose.rodriguez@domuscar.com': {
+            role: 'coordenador', name: 'José Rodriguez',
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes']
+        },
+        'mario.peres@domuscar.com': {
+            role: 'coordenador', name: 'Mário Peres',
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem']
         }
     };
 
@@ -2469,7 +2488,10 @@
             viaturas: { title: 'Serviço de Mobilidade', url: 'gestao-viaturas.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
-            kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' }
+            kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
+            formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
+            coord_divergencias: { title: 'Divergências Picagens', url: 'divergencias-picagens.html' },
+            coord_inspecoes: { title: 'Inspeções e Auditorias', url: 'checklist_auditoria_trimestral.html' }
         };
         const mod = modules[id];
         if (!mod) return;
