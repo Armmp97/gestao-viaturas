@@ -247,6 +247,19 @@
             display: inline-block;
             width: 16px;
         }
+        .badge-em-breve {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            background: rgba(255,255,255,.1);
+            color: rgba(255,255,255,.35);
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
         .sidebar-footer {
             padding: 16px 20px;
             font-size: 11px; color: var(--text-light);
@@ -972,10 +985,10 @@
             <li><a onclick="openModule('estrutura_org')" id="navEstrutura_org"><span class="nav-icon">🏢</span> Estrutura Organizacional</a></li>
             <li><a onclick="openModule('normas_regras')" id="navNormas_regras"><span class="nav-icon">📜</span> Normas e Regras Internas</a></li>
             <li><a onclick="openModule('qualidade_seguranca')" id="navQualidade_seguranca"><span class="nav-icon">🛡️</span> Qualidade e Segurança</a></li>
-            <li><a onclick="openModule('doc_tecnica')" id="navDoc_tecnica"><span class="nav-icon">📖</span> Documentação Técnica</a></li>
-            <li><a onclick="openModule('sistemas_ferramentas')" id="navSistemas_ferramentas"><span class="nav-icon">🔧</span> Sistemas e Ferramentas</a></li>
-            <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
-            <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos</a></li>
+            <li><a onclick="openModule('doc_tecnica')" id="navDoc_tecnica"><span class="nav-icon">📖</span> Documentação Técnica <span class="badge-em-breve">Em Breve</span></a></li>
+            <li><a onclick="openModule('sistemas_ferramentas')" id="navSistemas_ferramentas"><span class="nav-icon">🔧</span> Sistemas e Ferramentas <span class="badge-em-breve">Em Breve</span></a></li>
+            <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos <span class="badge-em-breve">Em Breve</span></a></li>
+            <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos <span class="badge-em-breve">Em Breve</span></a></li>
             <li id="navSugestoesMelhoriaLi">
                 <a onclick="openSugestoesAndExpand()" id="navSugestoes_melhoria" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">💡</span> Sugestões e Melhoria</span><span id="sugestoesArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="sugestoesSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
