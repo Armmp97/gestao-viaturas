@@ -8,77 +8,1098 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy: #0B2545; --navy-deep: #081C36; --navy-light: #133366;
-  --red: #C8102E; --white: #FFFFFF; --off-white: #F7F8FA;
-  --gray-100: #F0F2F5; --gray-200: #E2E6EB; --gray-400: #9CA3AF;
-  --gray-600: #6B7280; --text-dark: #1E293B; --text-body: #475569;
-  --radius: 16px; --transition: .3s cubic-bezier(.4,0,.2,1);
+  --navy:        #003B73;
+  --navy-deep:   #002B55;
+  --navy-light:  #00508F;
+  --accent:      #007BC0;
+  --accent-dark: #005A8C;
+  --accent-light:#4DA8DA;
+  --white:       #FFFFFF;
+  --off-white:   #F5F7FA;
+  --gray-100:    #EEF1F5;
+  --gray-200:    #DEE2E8;
+  --gray-400:    #9CA3AF;
+  --gray-600:    #6B7280;
+  --gray-800:    #374151;
+  --text-dark:   #1A2A3A;
+  --text-body:   #475569;
+  --card-shadow: 0 4px 24px rgba(0,59,115,.08);
+  --card-hover:  0 8px 40px rgba(0,59,115,.14);
+  --radius:      16px;
+  --radius-sm:   12px;
+  --transition:  .3s cubic-bezier(.4,0,.2,1);
+  --warn:        #D97706;
+  --danger:      #DC2626;
+  --success:     #059669;
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; font-size:16px; }
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
 body {
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  background:var(--off-white); color:var(--text-body); line-height:1.7;
-  -webkit-font-smoothing:antialiased;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--off-white); color: var(--text-body); line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
 }
-.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb { background: var(--navy-light); border-radius: 4px; }
+
+.container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 80px 0; }
+.section:nth-child(even) { background: var(--white); }
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .75rem; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.section-label::before {
+  content: ''; width: 28px; height: 3px;
+  background: var(--accent); border-radius: 2px;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800;
+  color: var(--navy); line-height: 1.2; margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 1.05rem; color: var(--text-body);
+  max-width: 700px; line-height: 1.75;
+}
+
+/* ═══ HERO ═══ */
 .hero {
-  position:relative;
-  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
-  color:var(--white); overflow:hidden; min-height:320px; display:flex; align-items:center;
+  position: relative;
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 50%, var(--navy-light) 100%);
+  color: var(--white); overflow: hidden; min-height: 520px; display: flex; align-items: center;
 }
 .hero::before {
-  content:''; position:absolute; top:-40%; right:-10%;
-  width:700px; height:700px;
-  background:radial-gradient(circle,rgba(200,16,46,.12) 0%,transparent 70%);
-  border-radius:50%; pointer-events:none;
+  content: ''; position: absolute; top: -40%; right: -10%;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(0,123,192,.12) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
 }
-.hero-inner { position:relative; z-index:2; padding:60px 0 50px; }
+.hero::after {
+  content: ''; position: absolute; bottom: -30%; left: -5%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(255,255,255,.04) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 2; padding: 80px 0 60px; }
+
 .hero h1 {
-  font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
-  line-height:1.15; margin-bottom:16px;
+  font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900;
+  line-height: 1.15; margin-bottom: 24px; max-width: 700px;
 }
-.hero h1 em { font-style:normal; color:var(--red); }
-.hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+
+.hero-desc {
+  font-size: 1.1rem; line-height: 1.8; max-width: 640px;
+  opacity: .88; margin-bottom: 36px;
+}
+
+.hero-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.08); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 10px 20px; border-radius: 50px;
+  font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.9);
+}
+.hero-tag svg { width: 16px; height: 16px; flex-shrink: 0; }
+
 .hero-bar {
-  position:absolute; bottom:0; left:0; right:0; height:5px;
-  background:linear-gradient(90deg,var(--red) 0%,var(--red) 70%,var(--navy-light) 70%);
+  position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--danger) 0%, var(--danger) 40%, var(--navy-light) 40%, var(--navy-light) 100%);
 }
-.placeholder-section {
-  padding:80px 0; text-align:center;
+
+/* ═══ INTRO CARD ═══ */
+.intro-card {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: var(--white); border-radius: var(--radius);
+  padding: 48px 52px; margin-top: 36px;
+  position: relative; overflow: hidden;
 }
-.placeholder-icon {
-  width:80px; height:80px; margin:0 auto 24px;
-  background:rgba(11,37,69,.06); border-radius:20px;
-  display:flex; align-items:center; justify-content:center;
+.intro-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 5px; height: 100%; background: var(--danger);
 }
-.placeholder-icon svg { width:36px; height:36px; color:var(--navy); }
-.placeholder-title {
-  font-size:1.4rem; font-weight:700; color:var(--navy); margin-bottom:12px;
+.intro-card p { font-size: 1.1rem; line-height: 1.8; opacity: .92; max-width: 720px; }
+.intro-tags { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+.intro-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px; border-radius: 50px; font-size: .85rem; font-weight: 600;
+  background: rgba(0,123,192,.15); color: var(--white); border: 1px solid rgba(0,123,192,.3);
 }
-.placeholder-text {
-  font-size:1rem; color:var(--gray-600); max-width:500px; margin:0 auto;
+.intro-tag svg { width: 16px; height: 16px; }
+
+/* ═══ NORMA CARDS ═══ */
+.norma-grid {
+  display: grid; grid-template-columns: 1fr; gap: 28px; margin-top: 40px;
+}
+.norma-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); padding: 40px 44px;
+  position: relative; overflow: hidden; transition: var(--transition);
+}
+.norma-card:hover { box-shadow: var(--card-hover); }
+.norma-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 5px; height: 100%; background: var(--accent);
+}
+.norma-card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.norma-icon {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(0,59,115,.06); border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.norma-icon svg { width: 24px; height: 24px; color: var(--navy); }
+.norma-card h3 { font-size: 1.3rem; font-weight: 700; color: var(--navy); }
+.norma-card-subtitle { font-size: .85rem; color: var(--gray-600); font-weight: 500; margin-top: 2px; }
+
+.norma-legal {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .72rem; font-weight: 600; letter-spacing: .5px;
+  color: var(--accent); background: rgba(0,123,192,.06);
+  padding: 4px 12px; border-radius: 50px; margin-bottom: 16px;
+}
+.norma-legal svg { width: 12px; height: 12px; }
+
+.norma-text { font-size: .98rem; line-height: 1.8; margin-bottom: 16px; color: var(--text-body); }
+
+.norma-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.norma-list li {
+  position: relative; padding-left: 28px;
+  font-size: .95rem; line-height: 1.6; color: var(--text-dark);
+}
+.norma-list li svg { width: 18px; height: 18px; position: absolute; left: 0; top: 3px; color: var(--accent); }
+
+.norma-note {
+  padding: 16px 20px; background: var(--gray-100); border-radius: var(--radius-sm);
+  border-left: 3px solid var(--navy); font-size: .9rem; line-height: 1.7; color: var(--text-body);
+}
+.norma-note strong { color: var(--navy); }
+
+.norma-warn {
+  padding: 16px 20px; background: #FEF3C7; border-radius: var(--radius-sm);
+  border-left: 3px solid var(--warn); font-size: .9rem; line-height: 1.7; color: #92400E;
+}
+.norma-warn strong { color: #78350F; }
+
+.norma-danger {
+  padding: 16px 20px; background: #FEE2E2; border-radius: var(--radius-sm);
+  border-left: 3px solid var(--danger); font-size: .9rem; line-height: 1.7; color: #991B1B;
+}
+.norma-danger strong { color: #7F1D1D; }
+
+.norma-sub { font-size: .78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin: 20px 0 12px; }
+
+/* ═══ EPI TABLE ═══ */
+.epi-table {
+  width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .9rem;
+}
+.epi-table thead th {
+  background: var(--navy); color: var(--white); padding: 14px 18px;
+  font-weight: 600; text-align: left; font-size: .8rem;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+.epi-table thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+.epi-table thead th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+.epi-table tbody td {
+  padding: 12px 18px; border-bottom: 1px solid var(--gray-200);
+  color: var(--text-dark); vertical-align: top;
+}
+.epi-table tbody tr:hover { background: rgba(0,123,192,.03); }
+.epi-table tbody tr:last-child td:first-child { border-radius: 0 0 0 var(--radius-sm); }
+.epi-table tbody tr:last-child td:last-child { border-radius: 0 0 var(--radius-sm) 0; }
+.epi-check { color: var(--success); font-weight: 700; text-align: center; }
+.epi-dash { color: var(--gray-400); text-align: center; }
+
+/* ═══ EMERGENCY STEPS ═══ */
+.step-flow { display: flex; flex-direction: column; gap: 0; margin-top: 20px; }
+.step-item {
+  position: relative; padding: 20px 24px 20px 72px;
+  border-left: 3px solid var(--gray-200); margin-left: 24px;
+}
+.step-item:last-child { border-left-color: transparent; }
+.step-number {
+  position: absolute; left: -20px; top: 18px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--navy); color: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; font-weight: 800;
+}
+.step-item h4 { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.step-item p { font-size: .9rem; line-height: 1.7; color: var(--text-body); }
+
+/* ═══ SIGNAL GRID ═══ */
+.signal-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
+.signal-card {
+  padding: 20px 24px 20px 80px; border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200); background: var(--white);
+  position: relative;
+}
+.signal-icon {
+  position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; font-weight: 900;
+}
+.signal-icon.obrig { background: #DBEAFE; color: #1D4ED8; }
+.signal-icon.proib { background: #FEE2E2; color: #DC2626; }
+.signal-icon.aviso { background: #FEF3C7; color: #D97706; }
+.signal-icon.emerg { background: #D1FAE5; color: #059669; }
+.signal-title { font-size: .95rem; font-weight: 700; color: var(--navy); }
+.signal-desc { font-size: .85rem; line-height: 1.6; color: var(--text-body); margin-top: 2px; }
+
+/* ═══ CONTACT GRID ═══ */
+.contact-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 24px; }
+.contact-card {
+  padding: 24px 28px; border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200); background: var(--white);
+  position: relative; overflow: hidden;
+}
+.contact-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+}
+.contact-card.urg::before { background: var(--danger); }
+.contact-card.int::before { background: var(--accent); }
+.contact-card.ext::before { background: var(--success); }
+.contact-name { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.contact-number { font-size: 1.2rem; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+.contact-desc { font-size: .82rem; color: var(--gray-600); margin-top: 4px; }
+
+/* ═══ CHECKLIST BAR ═══ */
+.checklist-bar {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+  color: var(--white); padding: 48px 0;
+}
+.checklist-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.checklist-item {
+  position: relative; padding: 16px 20px 16px 48px;
+  background: rgba(255,255,255,.05);
+  border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,.08);
+  font-size: .88rem; font-weight: 500;
+}
+.checklist-item svg { width: 20px; height: 20px; color: var(--accent); position: absolute; left: 20px; top: 50%; transform: translateY(-50%); }
+
+/* ═══ SIDE NAV ═══ */
+.side-nav {
+  position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+  z-index: 100; display: flex; flex-direction: column; gap: 12px;
+}
+.side-nav a {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(0,59,115,.2); display: block; transition: var(--transition);
+  position: relative;
+}
+.side-nav a:hover, .side-nav a.active { background: var(--accent); transform: scale(1.3); }
+.side-nav a::after {
+  content: attr(data-label); position: absolute; right: 24px; top: 50%;
+  transform: translateY(-50%); white-space: nowrap;
+  font-size: .75rem; font-weight: 600; color: var(--navy);
+  background: var(--white); padding: 4px 12px; border-radius: 6px;
+  box-shadow: var(--card-shadow); opacity: 0; transition: var(--transition);
+  pointer-events: none;
+}
+.side-nav a:hover::after { opacity: 1; }
+
+/* ═══ FOOTER ═══ */
+.footer { background: var(--navy-deep); padding: 32px 0; text-align: center; }
+.footer p { font-size: .82rem; color: rgba(255,255,255,.4); letter-spacing: .5px; }
+.footer strong { color: rgba(255,255,255,.6); font-weight: 600; }
+
+/* ═══ ANIMATIONS ═══ */
+.fade-up { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .section { padding: 56px 0; }
+  .intro-card { padding: 32px 28px; }
+  .norma-card { padding: 28px 24px; }
+  .hero-inner { padding: 56px 0 40px; }
+  .side-nav { display: none; }
+  .epi-table { font-size: .8rem; }
+  .epi-table thead th, .epi-table tbody td { padding: 10px 12px; }
 }
 </style>
 </head>
 <body>
-<div class="hero">
+
+<!-- SIDE NAVIGATION -->
+<nav class="side-nav" aria-label="Navegação rápida">
+  <a href="#hero" data-label="Início" class="active"></a>
+  <a href="#politica" data-label="Política de Qualidade"></a>
+  <a href="#sst" data-label="Segurança no Trabalho"></a>
+  <a href="#epi" data-label="EPI por Função"></a>
+  <a href="#emergencia" data-label="Procedimentos Emergência"></a>
+  <a href="#residuos" data-label="Gestão de Resíduos"></a>
+  <a href="#ergonomia" data-label="Ergonomia e Saúde"></a>
+  <a href="#auditorias" data-label="Auditorias e Melhoria"></a>
+  <a href="#sinalizacao" data-label="Sinalização"></a>
+  <a href="#contactos" data-label="Contactos Emergência"></a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. HERO -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="hero" id="hero">
   <div class="container">
     <div class="hero-inner">
-      <h1>Sistema de Qualidade e Segurança</h1>
-      <p class="hero-desc">Políticas de qualidade, segurança no trabalho e procedimentos de emergência.</p>
+      <h1>Sistema de <em>Qualidade e Segurança</em></h1>
+      <p class="hero-desc">Políticas de qualidade, segurança no trabalho e procedimentos de emergência da Walkingarage, Lda. — Bosch Car Service. Documento de referência para todos os colaboradores, em conformidade com a legislação portuguesa e as normas da rede Bosch.</p>
+      <div class="hero-tags">
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Lei 102/2009 — SST
+        </span>
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+          ISO 9001 — Qualidade
+        </span>
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          DL 50/2005 — Equipamentos
+        </span>
+        <span class="hero-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          Bosch Car Service
+        </span>
+      </div>
     </div>
   </div>
   <div class="hero-bar"></div>
-</div>
-<div class="placeholder-section">
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. POLÍTICA DE QUALIDADE -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="politica">
   <div class="container">
-    <div class="placeholder-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div class="fade-up">
+      <div class="section-label">Compromisso</div>
+      <h2 class="section-title">Política de Qualidade</h2>
+      <p class="section-subtitle">A Walkingarage, Lda. assume o compromisso de prestar serviços de excelência, garantindo a satisfação do cliente e a melhoria contínua dos seus processos.</p>
     </div>
-    <div class="placeholder-title">Conteúdo em preparação</div>
-    <p class="placeholder-text">Esta secção está a ser desenvolvida. Em breve estará disponível com informação completa para toda a equipa.</p>
+
+    <div class="intro-card fade-up">
+      <p>A nossa política de qualidade assenta nos valores da rede Bosch Car Service: competência técnica, transparência, confiança e inovação. Todos os colaboradores são parte ativa deste compromisso — a qualidade não é apenas um departamento, é uma atitude que premeia cada reparação, cada contacto com o cliente e cada processo interno. Trabalhamos para superar as expectativas e garantir que cada viatura sai da oficina em condições ótimas de segurança e funcionamento.</p>
+      <div class="intro-tags">
+        <span class="intro-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+          Excelência técnica
+        </span>
+        <span class="intro-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Satisfação do cliente
+        </span>
+        <span class="intro-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg>
+          Melhoria contínua
+        </span>
+      </div>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <div>
+            <h3>Princípios Orientadores</h3>
+            <div class="norma-card-subtitle">Valores que regem a nossa atividade diária</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Satisfação do cliente</strong> — Superar expectativas com diagnósticos precisos, reparações de qualidade e cumprimento de prazos, mantendo comunicação transparente durante todo o processo</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Competência técnica</strong> — Formação contínua obrigatória através da plataforma Bosch, garantindo que todos os técnicos estão atualizados sobre as mais recentes tecnologias automóveis</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Melhoria contínua</strong> — Análise sistemática de não-conformidades, reclamações e indicadores de desempenho para identificar oportunidades de otimização dos processos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Segurança em primeiro lugar</strong> — Nenhuma pressão de produtividade pode justificar o comprometimento das condições de segurança dos colaboradores, clientes ou instalações</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Responsabilidade ambiental</strong> — Gestão adequada de resíduos, minimização do impacto ambiental e cumprimento rigoroso da legislação ambiental aplicável ao setor</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Trabalho em equipa</strong> — Cooperação entre todos os departamentos (mecânica, colisão, receção, peças) para assegurar um serviço integrado e eficiente</li>
+        </ul>
+      </div>
+
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div>
+            <h3>Objetivos de Qualidade</h3>
+            <div class="norma-card-subtitle">Metas mensuráveis de desempenho</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Manter um índice de satisfação do cliente igual ou superior a <strong>90%</strong> nas avaliações pós-serviço</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Reduzir reclamações de qualidade para menos de <strong>2% do total de intervenções</strong> realizadas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Garantir que <strong>100% dos técnicos</strong> completam o plano de formação Bosch anual</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Atingir <strong>zero acidentes de trabalho graves</strong> por ano</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cumprir <strong>100% dos prazos</strong> de entrega comunicados ao cliente</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Realizar auditorias internas com periodicidade <strong>trimestral</strong> e resolver não-conformidades em <strong>15 dias úteis</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. SEGURANÇA NO TRABALHO -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="sst">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">SST</div>
+      <h2 class="section-title">Segurança e Saúde no Trabalho</h2>
+      <p class="section-subtitle">Obrigações e princípios de segurança aplicáveis a todos os colaboradores, em conformidade com a Lei n.º 102/2009 e o Código do Trabalho.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon" style="background: rgba(220,38,38,.08);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <h3>Principais Riscos na Oficina</h3>
+            <div class="norma-card-subtitle">Identificação e avaliação de perigos</div>
+          </div>
+        </div>
+        <div class="norma-legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Lei n.º 102/2009, art.º 15.º — Obrigações gerais do empregador em matéria de SST</div>
+
+        <div class="norma-sub">Riscos Mecânicos</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Esmagamento por queda de viaturas em elevadores ou macacos — verificar sempre a estabilidade antes de trabalhar sob a viatura</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cortes e perfurações por ferramentas manuais e peças metálicas — utilizar luvas de proteção adequadas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Projeção de partículas no uso de rebarbadoras, esmeris e lixadeiras — óculos de proteção obrigatórios</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Queimaduras por contacto com componentes quentes (escapes, radiadores, travões) — aguardar arrefecimento ou usar luvas térmicas</li>
+        </ul>
+
+        <div class="norma-sub">Riscos Químicos</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Exposição a óleos, solventes, líquido de travões e refrigerantes — consultar fichas de dados de segurança (FDS) antes da utilização</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Inalação de gases de escape, vapores de tinta e poeiras de travões — trabalhar em locais ventilados e usar máscara quando necessário</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Contacto dérmico com produtos químicos — lavar imediatamente com água abundante e consultar FDS para primeiros socorros</li>
+        </ul>
+
+        <div class="norma-sub">Riscos Elétricos e de Incêndio</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Choque elétrico em viaturas híbridas e elétricas — apenas técnicos com formação específica (NR-10/PES) podem intervir em sistemas de alta tensão</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Risco de incêndio por proximidade de combustíveis, solventes e fontes de ignição — é proibido fumar nas instalações e nas imediações de produtos inflamáveis</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Curto-circuitos em instalações elétricas — reportar cabos danificados, tomadas com defeito ou aquecimento anormal imediatamente</li>
+        </ul>
+
+        <div class="norma-sub">Riscos Ergonómicos</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Lesões musculoesqueléticas por posturas forçadas ou movimentos repetitivos — alternar tarefas e usar apoios ergonómicos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Movimentação manual de cargas pesadas (pneus, motores, caixas de velocidades) — utilizar equipamentos de elevação e solicitar ajuda quando o peso exceder 20 kg</li>
+        </ul>
+      </div>
+
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <h3>Obrigações do Colaborador em SST</h3>
+            <div class="norma-card-subtitle">Art.º 17.º da Lei 102/2009</div>
+          </div>
+        </div>
+        <div class="norma-legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> O trabalhador deve cumprir as prescrições de SST e cooperar para a melhoria do sistema de segurança</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cumprir rigorosamente todas as prescrições de segurança e saúde no trabalho, incluindo as instruções específicas de cada equipamento</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Utilizar corretamente e conservar os equipamentos de proteção individual (EPI) fornecidos pela empresa</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Comunicar imediatamente ao coordenador qualquer avaria, deficiência ou situação de perigo que detete no local de trabalho</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Não alterar, danificar ou retirar dispositivos de segurança dos equipamentos, nem modificar os métodos de trabalho sem autorização</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Participar em todas as ações de formação e simulacros de emergência organizados pela empresa</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cooperar ativamente para a melhoria do sistema de segurança e saúde no trabalho, propondo medidas preventivas quando aplicável</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Submeter-se aos exames de saúde periódicos organizados pela empresa, conforme calendário da medicina do trabalho</li>
+        </ul>
+        <div class="norma-warn"><strong>Atenção:</strong> A recusa injustificada em utilizar EPI ou em cumprir regras de segurança constitui infração disciplinar grave e pode resultar em responsabilidade civil e criminal em caso de acidente (art.º 17.º n.º 2 da Lei 102/2009).</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. EQUIPAMENTOS DE PROTEÇÃO INDIVIDUAL -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="epi">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Proteção</div>
+      <h2 class="section-title">Equipamentos de Proteção Individual</h2>
+      <p class="section-subtitle">Matriz de EPI obrigatórios por função, em conformidade com o DL n.º 348/93, Portaria 988/93 e as normas Bosch Car Service.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <h3>Matriz de EPI por Função</h3>
+            <div class="norma-card-subtitle">DL 348/93 e Portaria 988/93</div>
+          </div>
+        </div>
+        <div class="norma-legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> O empregador deve fornecer EPI adequados e em bom estado de conservação</div>
+
+        <table class="epi-table">
+          <thead>
+            <tr>
+              <th>EPI</th>
+              <th>Técnico Mecânica</th>
+              <th>Técnico Colisão</th>
+              <th>Receção / Caixa</th>
+              <th>Peças</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Fato de trabalho / farda Bosch</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+            </tr>
+            <tr>
+              <td><strong>Calçado de segurança (S1P / S3)</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+            <tr>
+              <td><strong>Luvas de proteção mecânica</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-check">✓</td>
+            </tr>
+            <tr>
+              <td><strong>Luvas de proteção química</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+            <tr>
+              <td><strong>Óculos de proteção</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+            <tr>
+              <td><strong>Proteção auricular</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+            <tr>
+              <td><strong>Máscara de proteção respiratória</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+            <tr>
+              <td><strong>Viseira de soldadura</strong></td>
+              <td class="epi-check">✓</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+            <tr>
+              <td><strong>Avental de proteção (pintura)</strong></td>
+              <td class="epi-dash">—</td>
+              <td class="epi-check">✓</td>
+              <td class="epi-dash">—</td>
+              <td class="epi-dash">—</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 20px;"></div>
+        <div class="norma-note"><strong>Importante:</strong> Os EPI devem ser utilizados durante toda a execução das tarefas que o exijam, sem exceção. O colaborador é responsável pela conservação e limpeza dos EPI que lhe são atribuídos. Qualquer EPI danificado deve ser imediatamente reportado ao coordenador para substituição.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. PROCEDIMENTOS DE EMERGÊNCIA -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="emergencia">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Emergência</div>
+      <h2 class="section-title">Procedimentos de Emergência</h2>
+      <p class="section-subtitle">Protocolos de atuação em caso de incêndio, acidente de trabalho e evacuação das instalações.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up" style="border-left-color: var(--danger);">
+        <div class="norma-card-header">
+          <div class="norma-icon" style="background: rgba(220,38,38,.08);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><path d="M12 2c1 3 3 5 3 8a5 5 0 01-10 0c0-3 2-5 3-8l2 2 2-2z"/></svg>
+          </div>
+          <div>
+            <h3>Procedimento em Caso de Incêndio</h3>
+            <div class="norma-card-subtitle">Protocolo de atuação imediata</div>
+          </div>
+        </div>
+        <div class="step-flow">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <h4>Alertar</h4>
+            <p>Acionar o alarme de incêndio mais próximo e gritar "FOGO" para alertar os restantes colaboradores. Não entrar em pânico.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <h4>Comunicar</h4>
+            <p>Ligar imediatamente para o 112 indicando: localização exata, tipo de incêndio, se existem vítimas e o seu nome.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <h4>Combater (se seguro)</h4>
+            <p>Se o incêndio for de pequenas dimensões e tiver formação, utilizar o extintor adequado (ABC para sólidos/líquidos, CO₂ para equipamentos elétricos). Nunca usar água em incêndios elétricos ou com óleo.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <h4>Evacuar</h4>
+            <p>Se o incêndio não for controlável, evacuar pelas saídas de emergência sinalizadas. Dirigir-se ao ponto de encontro designado e aguardar instruções.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">5</div>
+            <h4>Confirmar</h4>
+            <p>O responsável de turno verifica a presença de todos os colaboradores no ponto de encontro. Ninguém regressa ao edifício sem autorização dos bombeiros.</p>
+          </div>
+        </div>
+        <div class="norma-danger"><strong>Proibido:</strong> Utilizar elevadores durante a evacuação, regressar para recolher objetos pessoais ou bloquear saídas de emergência com materiais ou viaturas.</div>
+      </div>
+
+      <div class="norma-card fade-up" style="border-left-color: var(--warn);">
+        <div class="norma-card-header">
+          <div class="norma-icon" style="background: rgba(217,119,6,.08);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div>
+            <h3>Acidente de Trabalho</h3>
+            <div class="norma-card-subtitle">Protocolo de primeiros socorros</div>
+          </div>
+        </div>
+        <div class="step-flow">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <h4>Proteger</h4>
+            <p>Garantir a segurança do local — desligar equipamentos, sinalizar a zona e evitar que outros colaboradores se aproximem do perigo.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <h4>Socorrer</h4>
+            <p>Prestar os primeiros socorros básicos sem mover a vítima (exceto se houver perigo iminente). Utilizar o kit de primeiros socorros disponível na oficina.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <h4>Alertar</h4>
+            <p>Ligar 112 em caso de acidente grave. Em acidentes menores, contactar o coordenador e encaminhar o colaborador ao centro de saúde ou hospital.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <h4>Registar</h4>
+            <p>Preencher o relatório de acidente de trabalho nas 24 horas seguintes, incluindo: descrição, circunstâncias, testemunhas e medidas tomadas. Comunicar à seguradora.</p>
+          </div>
+        </div>
+        <div class="norma-warn"><strong>Lembrete:</strong> Os kits de primeiros socorros devem estar sempre completos e acessíveis. A sua verificação mensal é da responsabilidade do Coordenador.</div>
+      </div>
+
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon" style="background: rgba(5,150,105,.08);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
+          <div>
+            <h3>Plano de Evacuação</h3>
+            <div class="norma-card-subtitle">Procedimento para evacuação segura</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Conhecer as <strong>saídas de emergência</strong> e os caminhos de evacuação sinalizados — plantas de emergência afixadas em cada zona de trabalho</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> O <strong>ponto de encontro</strong> é no parque exterior, junto à entrada principal — todos devem dirigir-se para lá de forma calma e ordenada</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Em caso de evacuação, desligar imediatamente os <strong>equipamentos em funcionamento</strong> se for seguro fazê-lo</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Auxiliar colegas com <strong>mobilidade reduzida</strong> ou que se encontrem em pânico</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Simulacros de evacuação</strong> serão realizados no mínimo 1 vez por ano — a participação é obrigatória para todos</li>
+        </ul>
+        <div class="norma-note"><strong>Responsável de evacuação:</strong> O coordenador de turno é o responsável pela evacuação, verificação de presenças e contacto com as autoridades. Na sua ausência, o colaborador mais antigo assume esta função.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. GESTÃO DE RESÍDUOS E AMBIENTE -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="residuos">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Ambiente</div>
+      <h2 class="section-title">Gestão de Resíduos e Ambiente</h2>
+      <p class="section-subtitle">Procedimentos para a correta separação, armazenamento e encaminhamento de resíduos gerados na atividade oficinal.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon" style="background: rgba(5,150,105,.08);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1014.85-3.36L23 6"/></svg>
+          </div>
+          <div>
+            <h3>Classificação e Separação de Resíduos</h3>
+            <div class="norma-card-subtitle">Regime Geral de Gestão de Resíduos — DL 102-D/2020</div>
+          </div>
+        </div>
+        <div class="norma-legal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> DL 102-D/2020 — Regime unificado dos fluxos específicos de resíduos</div>
+
+        <div class="norma-sub">Óleos Usados</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Recolher todos os óleos usados em recipientes estanques e identificados, armazenados em bacias de retenção com capacidade para 110% do volume</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Nunca misturar óleos usados com solventes, líquidos de travões ou outros resíduos químicos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> A recolha é efetuada por operador licenciado — manter registo das guias de acompanhamento de resíduos (e-GAR)</li>
+        </ul>
+
+        <div class="norma-sub">Baterias e Acumuladores</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Armazenar baterias usadas em local coberto, ventilado e sobre bacia de retenção, com terminais protegidos contra curto-circuito</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Baterias de veículos elétricos/híbridos (alta tensão) requerem procedimentos específicos — apenas técnicos certificados</li>
+        </ul>
+
+        <div class="norma-sub">Filtros, Pastilhas e Pneus</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Filtros de óleo e combustível são resíduos perigosos — colocar nos contentores vermelhos identificados</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Pastilhas de travão com amianto (viaturas antigas) requerem manuseamento com EPI específico e acondicionamento em sacos selados</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Pneus usados devem ser entregues ao sistema de gestão Valorpneu — armazenar empilhados até ao máximo de 8 unidades</li>
+        </ul>
+
+        <div class="norma-sub">Outros Resíduos</div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Embalagens contaminadas</strong> (latas de tinta, spray, solventes) — contentor amarelo de resíduos perigosos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Sucata metálica</strong> (peças substituídas, chapas) — contentor de metais para reciclagem</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Cartão e plástico</strong> (embalagens de peças) — ecopontos respetivos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Líquido de refrigeração e de travões</strong> — contentores específicos, nunca descartar na rede de esgotos</li>
+        </ul>
+
+        <div class="norma-danger"><strong>Proibido:</strong> Descartar qualquer resíduo perigoso na rede pública de esgotos, no solo ou em contentores de resíduos urbanos. A violação constitui contraordenação ambiental muito grave, punível com coimas até 37.500 € (art.º 81.º do DL 102-D/2020).</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 7. ERGONOMIA E SAÚDE OCUPACIONAL -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="ergonomia">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Saúde</div>
+      <h2 class="section-title">Ergonomia e Saúde Ocupacional</h2>
+      <p class="section-subtitle">Boas práticas ergonómicas e medidas de proteção da saúde no ambiente oficinal.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <h3>Posturas e Movimentação de Cargas</h3>
+            <div class="norma-card-subtitle">Prevenção de lesões musculoesqueléticas</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Ao levantar cargas do chão, flectir os joelhos e manter as costas direitas — nunca curvar a coluna para levantar peso</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Para cargas superiores a <strong>20 kg</strong>, solicitar ajuda de um colega ou utilizar equipamentos mecânicos (carro de transporte, macaco, grua de oficina)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Alternar entre tarefas que exijam posturas diferentes para evitar sobrecarga repetitiva das mesmas articulações</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Utilizar bancos de mecânico e apoios ergonómicos quando trabalhar sob viaturas ou em posições de agachamento prolongado</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Os elevadores devem ser ajustados à altura adequada para cada tarefa, evitando trabalhar com os braços acima dos ombros por períodos prolongados</li>
+        </ul>
+      </div>
+
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div>
+            <h3>Exposição a Agentes Nocivos</h3>
+            <div class="norma-card-subtitle">Ruído, vibrações e substâncias químicas</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Ruído</strong> — Em zonas com nível sonoro superior a 85 dB(A), o uso de proteção auricular é obrigatório (DL 182/2006). Inclui zona de chapa, compressores e ferramentas pneumáticas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Vibrações</strong> — Limitar o tempo de exposição a ferramentas vibratórias (rebarbadoras, martelos pneumáticos). Fazer pausas regulares e reportar sintomas de dormência ou formigueiro</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Produtos químicos</strong> — Consultar sempre a Ficha de Dados de Segurança (FDS) antes de utilizar qualquer produto. As FDS estão disponíveis no dossier de segurança da oficina ou nos QR code afixados</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Ventilação</strong> — Manter as portas da oficina abertas durante o funcionamento e utilizar extração localizada quando trabalhar com solventes, tintas ou gases de escape</li>
+        </ul>
+      </div>
+
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+          </div>
+          <div>
+            <h3>Medicina do Trabalho</h3>
+            <div class="norma-card-subtitle">Vigilância da saúde dos trabalhadores</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Exame de admissão</strong> — Obrigatório antes do início de funções ou nos primeiros 15 dias de trabalho</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Exames periódicos</strong> — De 2 em 2 anos para trabalhadores entre 18 e 50 anos; anualmente para menores de 18 ou maiores de 50 anos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Exames ocasionais</strong> — Após ausência superior a 30 dias por doença ou acidente, ou quando o médico do trabalho considerar necessário</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> O colaborador deve informar o médico do trabalho sobre qualquer condição de saúde relevante, medicação em curso ou limitação funcional</li>
+        </ul>
+        <div class="norma-note"><strong>Nota:</strong> A ficha de aptidão emitida pelo médico do trabalho é confidencial. A empresa apenas recebe a indicação de "apto", "apto condicionalmente" ou "inapto", sem acesso ao diagnóstico clínico.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 8. AUDITORIAS E MELHORIA CONTÍNUA -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="auditorias">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Melhoria</div>
+      <h2 class="section-title">Auditorias e Melhoria Contínua</h2>
+      <p class="section-subtitle">Sistema de auditorias internas e gestão de não-conformidades, alinhado com os requisitos Bosch Car Service.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div>
+            <h3>Auditorias Internas</h3>
+            <div class="norma-card-subtitle">Verificação periódica de conformidade</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Auditorias Bosch Car Service</strong> — Auditorias anuais realizadas pela rede Bosch para verificação dos padrões de qualidade, equipamento, formação e processos da oficina</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Auditorias internas trimestrais</strong> — Verificação de conformidade com este regulamento, condições de SST, estado dos equipamentos e organização geral</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> <strong>Inspeções diárias</strong> — O coordenador realiza uma verificação visual das condições de trabalho no início de cada turno (checklist de abertura)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Todos os colaboradores devem cooperar durante as auditorias, respondendo com transparência às questões colocadas</li>
+        </ul>
+      </div>
+
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <div>
+            <h3>Gestão de Não-Conformidades</h3>
+            <div class="norma-card-subtitle">Identificação, registo e resolução</div>
+          </div>
+        </div>
+        <ul class="norma-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Qualquer colaborador pode e deve reportar não-conformidades — desvios de processo, falhas de equipamento, incumprimentos de segurança ou reclamações de clientes</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> O registo é feito através do formulário de não-conformidade (disponível na receção) ou comunicação direta ao coordenador</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Cada não-conformidade deve ter uma <strong>ação corretiva</strong> definida em 5 dias úteis e implementada em 15 dias úteis</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Para não-conformidades recorrentes, deve ser conduzida uma análise de <strong>causa raiz</strong> (método dos 5 Porquês ou Ishikawa) para implementar ações preventivas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> A eficácia das ações corretivas é verificada na auditoria trimestral seguinte</li>
+        </ul>
+        <div class="norma-note"><strong>Cultura de melhoria:</strong> Reportar não-conformidades não é sinónimo de denúncia ou penalização. É uma ferramenta de melhoria que beneficia toda a equipa. A empresa valoriza e encoraja esta prática.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 9. SINALIZAÇÃO DE SEGURANÇA -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="sinalizacao">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Sinalização</div>
+      <h2 class="section-title">Sinalização de Segurança</h2>
+      <p class="section-subtitle">Tipos de sinais obrigatórios nas instalações, conforme o DL n.º 141/95 e a Portaria 1456-A/95.</p>
+    </div>
+
+    <div class="norma-grid">
+      <div class="norma-card fade-up">
+        <div class="norma-card-header">
+          <div class="norma-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <h3>Tipos de Sinalização</h3>
+            <div class="norma-card-subtitle">DL 141/95 e Portaria 1456-A/95</div>
+          </div>
+        </div>
+
+        <div class="signal-grid">
+          <div class="signal-card">
+            <div class="signal-icon obrig">&#9679;</div>
+            <div class="signal-title">Sinais de Obrigação (azuis, circulares)</div>
+            <div class="signal-desc">Indicam comportamentos obrigatórios: uso de óculos de proteção, calçado de segurança, luvas, proteção auricular. Presentes em cada zona de trabalho da oficina.</div>
+          </div>
+          <div class="signal-card">
+            <div class="signal-icon proib">&#8856;</div>
+            <div class="signal-title">Sinais de Proibição (vermelhos, circulares)</div>
+            <div class="signal-desc">Indicam comportamentos proibidos: proibido fumar, proibido foguear, proibida a entrada a pessoas não autorizadas, proibido utilizar telemóvel em zonas de pintura.</div>
+          </div>
+          <div class="signal-card">
+            <div class="signal-icon aviso">&#9650;</div>
+            <div class="signal-title">Sinais de Aviso (amarelos, triangulares)</div>
+            <div class="signal-desc">Alertam para perigos: perigo de eletrocussão, superfícies quentes, substâncias inflamáveis, passagem de viaturas, piso escorregadio.</div>
+          </div>
+          <div class="signal-card">
+            <div class="signal-icon emerg">+</div>
+            <div class="signal-title">Sinais de Emergência e Salvamento (verdes, retangulares)</div>
+            <div class="signal-desc">Indicam saídas de emergência, caminhos de evacuação, localização de extintores, chuveiros de emergência e kits de primeiros socorros.</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px;"></div>
+        <div class="norma-warn"><strong>Importante:</strong> Não é permitido obstruir, danificar ou remover qualquer sinalização de segurança. Sinais danificados ou ilegíveis devem ser imediatamente reportados ao coordenador para substituição.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 10. CONTACTOS DE EMERGÊNCIA -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="section" id="contactos">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label">Contactos</div>
+      <h2 class="section-title">Contactos de Emergência</h2>
+      <p class="section-subtitle">Números essenciais que devem estar afixados em local visível em todas as zonas de trabalho.</p>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-card urg fade-up">
+        <div class="contact-name">Número Europeu de Emergência</div>
+        <div class="contact-number">112</div>
+        <div class="contact-desc">Bombeiros, INEM, PSP/GNR — emergências gerais, incêndios, acidentes graves</div>
+      </div>
+      <div class="contact-card urg fade-up">
+        <div class="contact-name">Centro de Informação Antivenenos (CIAV)</div>
+        <div class="contact-number">800 250 250</div>
+        <div class="contact-desc">Intoxicações por produtos químicos, solventes, combustíveis — chamada gratuita, 24h</div>
+      </div>
+      <div class="contact-card ext fade-up">
+        <div class="contact-name">Autoridade para as Condições do Trabalho (ACT)</div>
+        <div class="contact-number">300 069 300</div>
+        <div class="contact-desc">Informações sobre legislação laboral, acidentes de trabalho e condições de SST</div>
+      </div>
+      <div class="contact-card int fade-up">
+        <div class="contact-name">Coordenação / Responsável de Segurança</div>
+        <div class="contact-number">Contacto interno</div>
+        <div class="contact-desc">Primeiro ponto de contacto para qualquer questão de segurança, acidente ou não-conformidade</div>
+      </div>
+      <div class="contact-card int fade-up">
+        <div class="contact-name">Empresa de SST Externa</div>
+        <div class="contact-number">Contacto no dossier SST</div>
+        <div class="contact-desc">Serviço externo de segurança e saúde no trabalho — medicina do trabalho e consultoria</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHECKLIST BAR -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="checklist-bar">
+  <div class="container">
+    <div class="fade-up">
+      <div class="section-label" style="color: var(--accent-light);">Checklist de Segurança</div>
+      <h2 class="section-title" style="color: var(--white); margin-bottom: 28px;">Verificações diárias obrigatórias</h2>
+    </div>
+    <div class="checklist-grid">
+      <div class="checklist-item fade-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Verificar o bom funcionamento dos elevadores antes de utilizar
+      </div>
+      <div class="checklist-item fade-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Confirmar que os EPI estão em bom estado de conservação
+      </div>
+      <div class="checklist-item fade-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Garantir que as saídas de emergência estão desobstruídas
+      </div>
+      <div class="checklist-item fade-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Verificar a acessibilidade dos extintores e equipamentos de emergência
+      </div>
+      <div class="checklist-item fade-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Confirmar que os contentores de resíduos não estão cheios ou transbordantes
+      </div>
+      <div class="checklist-item fade-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Reportar qualquer anomalia, derrame ou equipamento danificado ao coordenador
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ═══════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <p><strong>Walkingarage, Lda.</strong> — Bosch Car Service · Sistema de Qualidade e Segurança v1.0</p>
+    <p style="margin-top: 4px;">Documento interno — Reprodução proibida · Última atualização: abril 2026</p>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ═══════════════════════════════════════════ -->
+<script>
+// IntersectionObserver for fade-up
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Side nav active state
+const sections = document.querySelectorAll('section[id], div[id]');
+const navLinks = document.querySelectorAll('.side-nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop - 200;
+    if (scrollY >= sectionTop) current = section.getAttribute('id');
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+</script>
+
 </body>
 </html>
