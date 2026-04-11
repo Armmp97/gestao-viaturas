@@ -977,9 +977,9 @@
             <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
             <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos</a></li>
             <li id="navSugestoesMelhoriaLi">
-                <a onclick="toggleSugestoesSubmenu()" id="navSugestoes_melhoria" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">💡</span> Sugestões e Melhoria</span><span id="sugestoesArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <a onclick="openSugestoesAndExpand()" id="navSugestoes_melhoria" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">💡</span> Sugestões e Melhoria</span><span id="sugestoesArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="sugestoesSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
-                    <li><a onclick="openModule('sugestoes_melhoria')" id="navSugestoes_melhoria_page"><span class="nav-icon">📝</span> Caixa de Sugestões</a></li>
+                    <li><a onclick="openModule('caixa_sugestoes')" id="navCaixa_sugestoes"><span class="nav-icon">📝</span> Caixa de Sugestões</a></li>
                     <li><a onclick="openModule('formulario_nc')" id="navFormulario_nc"><span class="nav-icon">⚠️</span> Formulário Não-Conformidade</a></li>
                 </ul>
             </li>
@@ -1906,27 +1906,27 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         'mario.peres@domuscar.com': {
             role: 'coordenador', name: 'Mário Peres',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         }
     };
 
@@ -2106,6 +2106,16 @@
             sub.style.display = 'none';
             if (arrow) arrow.style.transform = 'rotate(0deg)';
         }
+    }
+
+    function openSugestoesAndExpand() {
+        // Abre o HTML de Sugestões e Melhoria
+        openModule('sugestoes_melhoria');
+        // Expande o submenu
+        var sub = document.getElementById('sugestoesSubmenu');
+        var arrow = document.getElementById('sugestoesArrow');
+        if (sub) sub.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
     }
 
     function updateSidebarPermissions() {
@@ -2503,6 +2513,7 @@
             recursos_humanos: { title: 'Recursos Humanos', url: 'recursos_humanos.html' },
             indicadores_obj: { title: 'Indicadores e Objetivos', url: 'indicadores_objetivos.html' },
             sugestoes_melhoria: { title: 'Área de Sugestões e Melhoria', url: 'sugestoes_melhoria.html' },
+            caixa_sugestoes: { title: 'Caixa de Sugestões', url: 'caixa_sugestoes.html' },
             processos_op: { title: 'Processos Operacionais', url: 'processos_operacionais.html' },
             viaturas: { title: 'Serviço de Mobilidade', url: 'gestao-viaturas.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
@@ -2543,6 +2554,7 @@
         document.getElementById('headerTitle').textContent = mod.title;
 
         var frame = document.getElementById('moduleFrame');
+        frame.removeAttribute('srcdoc');
         frame.src = mod.url + '?v=' + Date.now();
         frame.classList.add('active');
 

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Caixa de Sugestões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0B2545; --navy-deep: #081C36; --navy-light: #133366;
+  --accent: #007BC0; --red: #C8102E; --white: #FFFFFF; --off-white: #F7F8FA;
+  --gray-100: #F0F2F5; --gray-200: #E2E6EB; --gray-400: #9CA3AF;
+  --gray-600: #6B7280; --text-dark: #1E293B; --text-body: #475569;
+  --green: #059669; --yellow: #D97706;
+  --radius: 16px; --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--off-white); color:var(--text-body); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+/* Hero */
+.hero {
+  position:relative;
+  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
+  color:var(--white); overflow:hidden; min-height:280px; display:flex; align-items:center;
+}
+.hero::before {
+  content:''; position:absolute; top:-40%; right:-10%;
+  width:700px; height:700px;
+  background:radial-gradient(circle,rgba(200,16,46,.12) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.hero-inner { position:relative; z-index:2; padding:50px 0 40px; }
+.hero h1 {
+  font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
+  line-height:1.15; margin-bottom:12px;
+}
+.hero h1 em { font-style:normal; color:var(--red); }
+.hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
+.hero-bar {
+  position:absolute; bottom:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--red) 0%,var(--red) 70%,var(--navy-light) 70%);
+}
+
+/* Content */
+.content { padding:40px 0 60px; }
+
+/* Cards */
+.card {
+  background:var(--white); border-radius:var(--radius); padding:32px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:24px;
+}
+.card-title {
+  font-size:1.15rem; font-weight:700; color:var(--navy); margin-bottom:20px;
+  display:flex; align-items:center; gap:10px;
+}
+.card-title svg { width:22px; height:22px; color:var(--accent); flex-shrink:0; }
+
+/* Form */
+.form-group { margin-bottom:20px; }
+.form-label {
+  display:block; font-size:.875rem; font-weight:600; color:var(--text-dark);
+  margin-bottom:6px;
+}
+.form-input, .form-textarea, .form-select {
+  width:100%; padding:10px 14px; border:1.5px solid var(--gray-200);
+  border-radius:10px; font-family:inherit; font-size:.925rem;
+  color:var(--text-dark); background:var(--white); transition:var(--transition);
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,123,192,.12);
+}
+.form-textarea { resize:vertical; min-height:120px; }
+
+/* Category chips */
+.category-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip {
+  padding:8px 16px; border-radius:20px; border:1.5px solid var(--gray-200);
+  background:var(--white); font-size:.85rem; font-weight:500; color:var(--text-body);
+  cursor:pointer; transition:var(--transition); user-select:none;
+}
+.chip:hover { border-color:var(--accent); color:var(--accent); }
+.chip.active { background:var(--accent); color:var(--white); border-color:var(--accent); }
+
+/* Priority */
+.priority-bar { display:flex; gap:8px; }
+.priority-btn {
+  flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--gray-200);
+  background:var(--white); font-size:.85rem; font-weight:600; cursor:pointer;
+  transition:var(--transition); text-align:center;
+}
+.priority-btn:hover { opacity:.85; }
+.priority-btn.low { color:var(--green); }
+.priority-btn.low.active { background:var(--green); color:var(--white); border-color:var(--green); }
+.priority-btn.med { color:var(--yellow); }
+.priority-btn.med.active { background:var(--yellow); color:var(--white); border-color:var(--yellow); }
+.priority-btn.high { color:var(--red); }
+.priority-btn.high.active { background:var(--red); color:var(--white); border-color:var(--red); }
+
+/* Anonymous toggle */
+.toggle-row {
+  display:flex; align-items:center; gap:12px; margin-bottom:20px;
+}
+.toggle {
+  width:44px; height:24px; border-radius:12px; background:var(--gray-200);
+  position:relative; cursor:pointer; transition:var(--transition); flex-shrink:0;
+}
+.toggle.active { background:var(--accent); }
+.toggle::after {
+  content:''; position:absolute; top:2px; left:2px;
+  width:20px; height:20px; border-radius:50%; background:var(--white);
+  transition:var(--transition); box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.toggle.active::after { left:22px; }
+.toggle-label { font-size:.9rem; color:var(--text-body); }
+
+/* Submit */
+.btn-submit {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 32px; border-radius:10px; border:none;
+  background:var(--navy); color:var(--white); font-family:inherit;
+  font-size:.95rem; font-weight:600; cursor:pointer; transition:var(--transition);
+}
+.btn-submit:hover { background:var(--navy-light); transform:translateY(-1px); }
+.btn-submit svg { width:18px; height:18px; }
+
+/* Success message */
+.success-msg {
+  display:none; padding:16px 20px; border-radius:12px;
+  background:rgba(5,150,105,.08); border:1.5px solid rgba(5,150,105,.2);
+  color:var(--green); font-weight:600; font-size:.95rem;
+  align-items:center; gap:10px; margin-top:16px;
+}
+.success-msg svg { width:20px; height:20px; flex-shrink:0; }
+
+/* Recent suggestions list */
+.suggestion-item {
+  padding:16px 0; border-bottom:1px solid var(--gray-100);
+}
+.suggestion-item:last-child { border-bottom:none; }
+.suggestion-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:6px; flex-wrap:wrap; gap:8px;
+}
+.suggestion-category {
+  display:inline-block; padding:3px 10px; border-radius:8px;
+  font-size:.75rem; font-weight:600; background:rgba(0,123,192,.08); color:var(--accent);
+}
+.suggestion-date { font-size:.8rem; color:var(--gray-400); }
+.suggestion-text { font-size:.925rem; color:var(--text-body); line-height:1.6; }
+.suggestion-author { font-size:.8rem; color:var(--gray-400); margin-top:4px; font-style:italic; }
+
+/* Info box */
+.info-box {
+  display:flex; gap:12px; padding:16px 20px; border-radius:12px;
+  background:rgba(0,123,192,.05); border:1px solid rgba(0,123,192,.12);
+}
+.info-box svg { width:20px; height:20px; color:var(--accent); flex-shrink:0; margin-top:2px; }
+.info-box p { font-size:.9rem; line-height:1.6; color:var(--text-body); }
+
+@media (max-width:600px) {
+  .card { padding:20px; }
+  .priority-bar { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <h1>Caixa de <em>Sugestões</em></h1>
+      <p class="hero-desc">Partilha as tuas ideias e sugestões de melhoria. Todas as contribuições são valorizadas e analisadas pela equipa de gestão.</p>
+    </div>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+
+<div class="content">
+  <div class="container">
+
+    <!-- Submit suggestion form -->
+    <div class="card" id="formCard">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Submeter Sugestão
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nome (opcional)</label>
+        <input type="text" class="form-input" id="sugName" placeholder="O teu nome...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <div class="category-chips" id="categoryChips">
+          <div class="chip" data-val="Processos">Processos</div>
+          <div class="chip" data-val="Equipamentos">Equipamentos</div>
+          <div class="chip" data-val="Ambiente de Trabalho">Ambiente de Trabalho</div>
+          <div class="chip" data-val="Segurança">Segurança</div>
+          <div class="chip" data-val="Formação">Formação</div>
+          <div class="chip" data-val="Comunicação">Comunicação</div>
+          <div class="chip" data-val="Outro">Outro</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Prioridade sugerida</label>
+        <div class="priority-bar" id="priorityBar">
+          <div class="priority-btn low" data-val="Baixa">Baixa</div>
+          <div class="priority-btn med" data-val="Média">Média</div>
+          <div class="priority-btn high" data-val="Alta">Alta</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">A tua sugestão</label>
+        <textarea class="form-textarea" id="sugText" placeholder="Descreve a tua sugestão ou ideia de melhoria..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Benefício esperado (opcional)</label>
+        <input type="text" class="form-input" id="sugBenefit" placeholder="Que impacto positivo teria esta sugestão?">
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle" id="anonToggle" onclick="this.classList.toggle('active')"></div>
+        <span class="toggle-label">Submeter anonimamente</span>
+      </div>
+
+      <button class="btn-submit" onclick="submitSuggestion()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar Sugestão
+      </button>
+
+      <div class="success-msg" id="successMsg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Sugestão enviada com sucesso! Obrigado pela tua contribuição.
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="card">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <p>Todas as sugestões são analisadas mensalmente pela equipa de gestão. As sugestões implementadas serão comunicadas a toda a equipa e o autor será reconhecido (salvo pedido de anonimato).</p>
+      </div>
+    </div>
+
+    <!-- Recent suggestions -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Sugestões Recentes
+      </div>
+
+      <div id="suggestionsList">
+        <div class="suggestion-item">
+          <div class="suggestion-header">
+            <span class="suggestion-category">Ambiente de Trabalho</span>
+            <span class="suggestion-date">08 Abr 2026</span>
+          </div>
+          <div class="suggestion-text">Instalar ventilação adicional na zona de pintura para melhorar o conforto nos meses de verão.</div>
+          <div class="suggestion-author">— João M.</div>
+        </div>
+        <div class="suggestion-item">
+          <div class="suggestion-header">
+            <span class="suggestion-category">Processos</span>
+            <span class="suggestion-date">02 Abr 2026</span>
+          </div>
+          <div class="suggestion-text">Criar um quadro visual com o estado de cada viatura em serviço, para que toda a equipa saiba o ponto de situação sem ter de perguntar.</div>
+          <div class="suggestion-author">— Anónimo</div>
+        </div>
+        <div class="suggestion-item">
+          <div class="suggestion-header">
+            <span class="suggestion-category">Equipamentos</span>
+            <span class="suggestion-date">28 Mar 2026</span>
+          </div>
+          <div class="suggestion-text">Substituir o elevador 3 da Mecânica Cacém — já apresenta ruídos e atrasa o serviço.</div>
+          <div class="suggestion-author">— Ricardo S.</div>
+        </div>
+        <div class="suggestion-item">
+          <div class="suggestion-header">
+            <span class="suggestion-category">Formação</span>
+            <span class="suggestion-date">20 Mar 2026</span>
+          </div>
+          <div class="suggestion-text">Organizar uma sessão de formação sobre diagnóstico de sistemas ADAS, cada vez temos mais viaturas com estes sistemas.</div>
+          <div class="suggestion-author">— Carlos P.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Category chips (single select)
+document.querySelectorAll('#categoryChips .chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    document.querySelectorAll('#categoryChips .chip').forEach(function(c) { c.classList.remove('active'); });
+    chip.classList.toggle('active');
+  });
+});
+
+// Priority buttons (single select)
+document.querySelectorAll('#priorityBar .priority-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#priorityBar .priority-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.toggle('active');
+  });
+});
+
+function submitSuggestion() {
+  var text = document.getElementById('sugText').value.trim();
+  if (!text) {
+    alert('Por favor, escreve a tua sugestão antes de enviar.');
+    return;
+  }
+
+  var name = document.getElementById('sugName').value.trim();
+  var isAnon = document.getElementById('anonToggle').classList.contains('active');
+  var category = '';
+  var activeChip = document.querySelector('#categoryChips .chip.active');
+  if (activeChip) category = activeChip.getAttribute('data-val');
+  var priority = '';
+  var activePri = document.querySelector('#priorityBar .priority-btn.active');
+  if (activePri) priority = activePri.getAttribute('data-val');
+  var benefit = document.getElementById('sugBenefit').value.trim();
+
+  // Show success
+  var msg = document.getElementById('successMsg');
+  msg.style.display = 'flex';
+
+  // Add to list
+  var list = document.getElementById('suggestionsList');
+  var today = new Date();
+  var dateStr = String(today.getDate()).padStart(2,'0') + ' ' +
+    ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][today.getMonth()] + ' ' +
+    today.getFullYear();
+  var author = isAnon ? 'Anónimo' : (name || 'Colaborador');
+
+  var item = document.createElement('div');
+  item.className = 'suggestion-item';
+  item.innerHTML =
+    '<div class="suggestion-header">' +
+      (category ? '<span class="suggestion-category">' + category + '</span>' : '') +
+      '<span class="suggestion-date">' + dateStr + '</span>' +
+    '</div>' +
+    '<div class="suggestion-text">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
+    '<div class="suggestion-author">— ' + author + '</div>';
+  list.insertBefore(item, list.firstChild);
+
+  // Reset form
+  document.getElementById('sugText').value = '';
+  document.getElementById('sugName').value = '';
+  document.getElementById('sugBenefit').value = '';
+  document.querySelectorAll('#categoryChips .chip').forEach(function(c) { c.classList.remove('active'); });
+  document.querySelectorAll('#priorityBar .priority-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (isAnon) document.getElementById('anonToggle').classList.remove('active');
+
+  setTimeout(function() { msg.style.display = 'none'; }, 4000);
+}
+</script>
+</body>
+</html>
