@@ -181,6 +181,22 @@ select.form-input { cursor:pointer; }
 .file-upload-area:hover { border-color:var(--accent); background:rgba(0,123,192,.02); }
 .file-upload-area input { display:none; }
 .file-upload-area .icon { font-size:1.5rem; margin-bottom:6px; }
+.attached-file {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:var(--gray-100); border-radius:8px; margin-bottom:6px;
+  font-size:.82rem; color:var(--text-dark);
+}
+.attached-file .af-icon { font-size:1rem; flex-shrink:0; }
+.attached-file .af-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.attached-file .af-size { color:var(--gray-400); font-size:.75rem; white-space:nowrap; }
+.attached-file .af-remove {
+  background:none; border:none; cursor:pointer; font-size:.9rem;
+  color:var(--gray-400); padding:2px 4px; border-radius:4px;
+}
+.attached-file .af-remove:hover { color:#DC2626; background:rgba(220,38,38,.08); }
+.attached-file img.af-thumb {
+  width:36px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;
+}
 
 /* Submit button */
 .btn-submit {
@@ -345,12 +361,22 @@ select.form-input { cursor:pointer; }
         </div>
 
         <div class="form-row">
-          <label>Comprovativo (opcional)</label>
-          <div class="file-upload-area" onclick="document.getElementById('faltaFile').click()">
-            <div class="icon">📎</div>
-            <p id="faltaFileLabel">Clique para anexar comprovativo (atestado, declaração, etc.)</p>
-            <input type="file" id="faltaFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="updateFileLabel('faltaFile','faltaFileLabel')">
+          <label>Anexos (opcional)</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="file-upload-area" onclick="document.getElementById('faltaFile').click()">
+              <div class="icon">📎</div>
+              <p>Anexar ficheiro</p>
+              <p style="font-size:.75rem;color:var(--gray-400);margin-top:2px;">PDF, imagem, Word</p>
+              <input type="file" id="faltaFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple onchange="addFaltaFiles(this.files, 'file')">
+            </div>
+            <div class="file-upload-area" onclick="document.getElementById('faltaCamera').click()">
+              <div class="icon">📷</div>
+              <p>Tirar fotografia</p>
+              <p style="font-size:.75rem;color:var(--gray-400);margin-top:2px;">Abre a câmara do dispositivo</p>
+              <input type="file" id="faltaCamera" accept="image/*" capture="environment" onchange="addFaltaFiles(this.files, 'camera')">
+            </div>
           </div>
+          <div id="faltaFileList" style="margin-top:10px;"></div>
         </div>
 
         <button class="btn-submit" onclick="submitFalta()" id="btnFalta">Submeter Justificação</button>
@@ -619,13 +645,58 @@ select.form-input { cursor:pointer; }
     setTimeout(function() { t.classList.remove('show'); }, 4000);
   }
 
+  // ======== FALTA: FILE MANAGEMENT ========
+  var faltaAttachments = []; // Array of { file: File, source: 'file'|'camera', dataUrl: string }
+
+  window.addFaltaFiles = function(files, source) {
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      (function(file, src) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          faltaAttachments.push({ file: file, source: src, dataUrl: e.target.result });
+          renderFaltaFileList();
+        };
+        reader.readAsDataURL(file);
+      })(f, source);
+    }
+    // Reset inputs so the same file can be re-added
+    document.getElementById('faltaFile').value = '';
+    document.getElementById('faltaCamera').value = '';
+  };
+
+  window.removeFaltaFile = function(index) {
+    faltaAttachments.splice(index, 1);
+    renderFaltaFileList();
+  };
+
+  function renderFaltaFileList() {
+    var container = document.getElementById('faltaFileList');
+    if (faltaAttachments.length === 0) { container.innerHTML = ''; return; }
+    var html = '';
+    faltaAttachments.forEach(function(att, i) {
+      var isImage = att.file.type.startsWith('image/');
+      var icon = att.source === 'camera' ? '📷' : '📎';
+      html += '<div class="attached-file">';
+      if (isImage) {
+        html += '<img class="af-thumb" src="' + att.dataUrl + '" alt="">';
+      } else {
+        html += '<span class="af-icon">' + icon + '</span>';
+      }
+      html += '<span class="af-name">' + esc(att.file.name) + '</span>';
+      html += '<span class="af-size">' + formatSize(att.file.size) + '</span>';
+      html += '<button class="af-remove" onclick="removeFaltaFile(' + i + ')" title="Remover">✕</button>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
   // ======== SUBMIT: JUSTIFICAÇÃO DE FALTA ========
   window.submitFalta = function() {
     var nome = document.getElementById('faltaNome').value.trim();
     var data = document.getElementById('faltaData').value.trim();
     var motivo = document.getElementById('faltaMotivo').value;
     var obs = document.getElementById('faltaObs').value.trim();
-    var fileInput = document.getElementById('faltaFile');
 
     if (!nome || !data || !motivo) {
       showToast('Preenche os campos obrigatórios (Nome, Data, Motivo).', 'error');
@@ -637,53 +708,71 @@ select.form-input { cursor:pointer; }
     btn.textContent = 'A submeter...';
 
     var ts = getTimestamp();
-    var fileName = 'JustifFalta_' + ts + '_' + nome.split(' ')[0] + '.html';
+    var baseRef = 'JustifFalta_' + ts + '_' + nome.split(' ')[0];
+    var fileName = baseRef + '.html';
+
+    // Build list of attachment names for reference in the main HTML
+    var attachNames = [];
+    faltaAttachments.forEach(function(att, i) {
+      var ext = att.file.name.split('.').pop();
+      var attName = baseRef + '_Anexo' + (i + 1) + '.' + ext;
+      attachNames.push(attName);
+    });
 
     var htmlContent = '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8">' +
       '<title>Justificação de Falta — ' + esc(nome) + '</title>' +
       '<style>body{font-family:Inter,Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#333;line-height:1.7;}' +
       'h1{color:#003B73;font-size:1.4em;border-bottom:3px solid #007BC0;padding-bottom:10px;}' +
-      '.field{margin:12px 0;}.label{font-weight:700;color:#003B73;font-size:.9em;}.value{margin-top:2px;}</style></head><body>' +
+      '.field{margin:12px 0;}.label{font-weight:700;color:#003B73;font-size:.9em;}.value{margin-top:2px;}' +
+      '.anexos{margin-top:20px;padding:16px;background:#F5F7FA;border-radius:10px;border:1px solid #DEE2E8;}' +
+      '.anexos h3{font-size:.95em;color:#003B73;margin-bottom:8px;}.anexo-item{padding:4px 0;font-size:.88em;}</style></head><body>' +
       '<h1>Justificação de Falta</h1>' +
       '<div class="field"><div class="label">Colaborador:</div><div class="value">' + esc(nome) + '</div></div>' +
       '<div class="field"><div class="label">Data(s) da Falta:</div><div class="value">' + esc(data) + '</div></div>' +
       '<div class="field"><div class="label">Motivo:</div><div class="value">' + esc(motivo) + '</div></div>' +
       (obs ? '<div class="field"><div class="label">Observações:</div><div class="value">' + esc(obs) + '</div></div>' : '') +
-      '<div class="field"><div class="label">Submetido em:</div><div class="value">' + new Date().toLocaleString('pt-PT') + '</div></div>' +
-      '</body></html>';
+      '<div class="field"><div class="label">Submetido em:</div><div class="value">' + new Date().toLocaleString('pt-PT') + '</div></div>';
 
-    // Save to SharePoint
+    if (attachNames.length > 0) {
+      htmlContent += '<div class="anexos"><h3>📎 Anexos (' + attachNames.length + ')</h3>';
+      attachNames.forEach(function(name, i) {
+        htmlContent += '<div class="anexo-item">' + (i + 1) + '. ' + esc(name) + '</div>';
+      });
+      htmlContent += '<p style="margin-top:8px;font-size:.78em;color:#6B7280;">Os anexos encontram-se na pasta <strong>Justificações Faltas — Anexos</strong> nas Definições > Gestão de Ficheiros.</p>';
+      htmlContent += '</div>';
+    }
+
+    htmlContent += '</body></html>';
+
+    // Save main form to SharePoint
     if (window.parent && window.parent.uploadToSharePoint) {
       window.parent.uploadToSharePoint('rh_justificacoes_faltas', fileName, htmlContent, 'text/html');
     }
 
-    // Upload attachment if present
-    if (fileInput.files.length > 0) {
-      var file = fileInput.files[0];
-      var attachName = 'JustifFalta_' + ts + '_' + nome.split(' ')[0] + '_Comprov_' + file.name;
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        if (window.parent && window.parent.postMessage) {
-          window.parent.postMessage({
-            type: 'saveToSharePoint',
-            folderKey: 'rh_justificacoes_faltas',
-            fileName: attachName,
-            fileContent: e.target.result,
-            contentType: file.type
-          }, '*');
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    // Upload attachments to separate annexes folder
+    faltaAttachments.forEach(function(att, i) {
+      var attName = attachNames[i];
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({
+          type: 'saveToSharePoint',
+          folderKey: 'rh_justificacoes_anexos',
+          fileName: attName,
+          fileContent: att.dataUrl,
+          contentType: att.file.type
+        }, '*');
+      }
+    });
 
     // Notify admins + RH
     if (window.parent && window.parent.sendNotification) {
+      var anexosTxt = faltaAttachments.length > 0 ? '<p><strong>Anexos:</strong> ' + faltaAttachments.length + ' ficheiro(s)</p>' : '';
       window.parent.sendNotification('rh_justificacoes',
         '📝 Justificação de Falta — ' + nome,
         '<p><strong>Colaborador:</strong> ' + esc(nome) + '</p>' +
         '<p><strong>Data(s):</strong> ' + esc(data) + '</p>' +
         '<p><strong>Motivo:</strong> ' + esc(motivo) + '</p>' +
         (obs ? '<p><strong>Obs:</strong> ' + esc(obs).substring(0, 200) + '</p>' : '') +
+        anexosTxt +
         '<p style="color:#888;font-size:12px;">Consultar na Intranet > Definições > Gestão de Ficheiros > Justificações de Faltas</p>'
       );
     }
@@ -696,8 +785,10 @@ select.form-input { cursor:pointer; }
       document.getElementById('faltaData').value = '';
       document.getElementById('faltaMotivo').value = '';
       document.getElementById('faltaObs').value = '';
-      fileInput.value = '';
-      document.getElementById('faltaFileLabel').textContent = 'Clique para anexar comprovativo (atestado, declaração, etc.)';
+      document.getElementById('faltaFile').value = '';
+      document.getElementById('faltaCamera').value = '';
+      faltaAttachments = [];
+      renderFaltaFileList();
       btn.disabled = false;
       btn.textContent = 'Submeter Justificação';
     }, 1500);
