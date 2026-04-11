@@ -349,15 +349,14 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
   <div class="sig-row">
     <div class="sig-cell">
       <div class="sl">Coordenador</div>
-      <div class="line"></div>
-      <input type="text" placeholder="Assinatura e hora">
+      <textarea class="sig-textarea" placeholder="Nome, assinatura e observações..." style="width:100%;min-height:60px;border:1.5px solid var(--gray-200);border-radius:8px;padding:10px;font-family:inherit;font-size:.85rem;color:var(--text-dark);resize:vertical;outline:none;margin-top:8px;"></textarea>
     </div>
   </div>
 
   <div class="actions">
-    <button class="btn btn-primary" onclick="window.print()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Imprimir
+    <button class="btn btn-primary" onclick="saveInspecao()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      💾 Guardar
     </button>
     <button class="btn btn-outline" onclick="resetAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
@@ -426,6 +425,224 @@ function resetAll() {
   document.querySelectorAll('.nok-obs').forEach(o => { o.classList.remove('visible'); o.querySelector('textarea').value = ''; });
   document.querySelectorAll('textarea, input').forEach(i => i.value = '');
   updateSummary();
+}
+
+function saveInspecao() {
+  // Collect all data
+  const inputs = document.querySelectorAll('.meta-chip input');
+  const data = {
+    data: inputs[0]?.value || '',
+    turno: inputs[1]?.value || '',
+    coordenador: inputs[2]?.value || '',
+    local: inputs[3]?.value || ''
+  };
+
+  // Get coordinator signature/notes
+  const sigTextarea = document.querySelector('.sig-textarea');
+  const coordenadorNotas = sigTextarea?.value || '';
+
+  // Get general observations
+  const obsTextarea = document.querySelector('.obs-box textarea');
+  const observacoesGerais = obsTextarea?.value || '';
+
+  // Collect checklist items and their status
+  const itens = [];
+  document.querySelectorAll('.qcheck-item').forEach((item, idx) => {
+    const label = item.querySelector('.qcheck-label')?.textContent || '';
+    const isOk = item.classList.contains('ok');
+    const isNok = item.classList.contains('nok');
+    const status = isOk ? 'OK' : (isNok ? 'NOK' : 'Pendente');
+
+    // Get NOK observations if present
+    const nokObs = item.nextElementSibling?.querySelector('textarea')?.value || '';
+
+    itens.push({
+      label: label,
+      status: status,
+      observacoes: nokObs
+    });
+  });
+
+  // Get summary counts
+  const sOk = document.getElementById('sOk')?.textContent || '0';
+  const sNok = document.getElementById('sNok')?.textContent || '0';
+  const sPend = document.getElementById('sPend')?.textContent || '0';
+
+  // Generate filename
+  const coordenadorName = data.coordenador.trim() || 'SemNome';
+  const nomeLimpo = coordenadorName.replace(/\s+/g, '_');
+  const dataParts = data.data ? data.data.split('-') : ['', '', ''];
+  const dataFormatada = dataParts.length === 3 ? `${dataParts[2]}-${dataParts[1]}-${dataParts[0]}` : 'SemData';
+  const filename = `Inspecao_${dataFormatada}_${nomeLimpo}.html`;
+
+  // Generate HTML content
+  const htmlContent = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inspeção Diária - ${data.data}</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; }
+.container { max-width: 900px; margin: 0 auto; padding: 20px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+h1 { color: #003B73; border-bottom: 2px solid #007BC0; padding-bottom: 10px; }
+h2 { color: #007BC0; margin-top: 20px; }
+.meta { background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0; }
+.meta-item { margin: 8px 0; }
+.meta-label { font-weight: bold; color: #003B73; min-width: 120px; display: inline-block; }
+.summary { display: flex; gap: 20px; margin: 20px 0; }
+.summary-item { padding: 15px; background: #f0f0f0; border-radius: 8px; text-align: center; flex: 1; }
+.summary-item .num { font-size: 2rem; font-weight: bold; }
+.summary-item.ok .num { color: #059669; }
+.summary-item.nok .num { color: #DC2626; }
+.summary-item.pend .num { color: #9CA3AF; }
+.summary-item .lbl { font-size: 0.85rem; color: #666; text-transform: uppercase; }
+.checklist { margin: 20px 0; }
+.section { margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+.section-title { background: #003B73; color: white; padding: 12px 15px; font-weight: bold; }
+.item { padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.item:last-child { border-bottom: none; }
+.item-label { flex: 1; }
+.item-status { font-weight: bold; padding: 4px 8px; border-radius: 4px; }
+.item-status.ok { background: #d1fae5; color: #059669; }
+.item-status.nok { background: #fee2e2; color: #DC2626; }
+.item-status.pend { background: #f3f4f6; color: #9CA3AF; }
+.obs { background: #fef3c7; padding: 10px; margin-top: 5px; border-left: 3px solid #f59e0b; font-size: 0.9rem; }
+.notes { background: #eff6ff; padding: 15px; border-left: 3px solid #007BC0; border-radius: 4px; margin: 15px 0; }
+.notes-title { font-weight: bold; color: #003B73; margin-bottom: 8px; }
+.footer { text-align: center; margin-top: 30px; font-size: 0.85rem; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Inspeção Diária de Abertura - Relatório</h1>
+
+  <div class="meta">
+    <div class="meta-item"><span class="meta-label">Data:</span> ${data.data}</div>
+    <div class="meta-item"><span class="meta-label">Turno:</span> ${data.turno}</div>
+    <div class="meta-item"><span class="meta-label">Coordenador:</span> ${data.coordenador}</div>
+    <div class="meta-item"><span class="meta-label">Local:</span> ${data.local}</div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-item ok">
+      <div class="num">${sOk}</div>
+      <div class="lbl">OK</div>
+    </div>
+    <div class="summary-item nok">
+      <div class="num">${sNok}</div>
+      <div class="lbl">NOK</div>
+    </div>
+    <div class="summary-item pend">
+      <div class="num">${sPend}</div>
+      <div class="lbl">Pendente</div>
+    </div>
+  </div>
+
+  <h2>Checklist de Inspeção</h2>
+  <div class="checklist">`;
+
+  // Group items by section
+  const sections = {
+    'seg': { title: 'Segurança', items: [] },
+    'equip': { title: 'Equipamentos', items: [] },
+    'org': { title: 'Organização e Limpeza', items: [] },
+    'epi': { title: 'EPI e Fardamento', items: [] }
+  };
+
+  document.querySelectorAll('.qcheck-section').forEach((sec, idx) => {
+    const header = sec.querySelector('.qcheck-header');
+    const sectionKey = Object.keys(sections)[idx];
+    if (sectionKey && sections[sectionKey]) {
+      sec.querySelectorAll('.qcheck-item').forEach((item) => {
+        const label = item.querySelector('.qcheck-label')?.textContent || '';
+        const isOk = item.classList.contains('ok');
+        const isNok = item.classList.contains('nok');
+        const status = isOk ? 'OK' : (isNok ? 'NOK' : 'Pendente');
+        const nokObs = item.nextElementSibling?.querySelector('textarea')?.value || '';
+
+        sections[sectionKey].items.push({
+          label: label,
+          status: status,
+          observacoes: nokObs
+        });
+      });
+    }
+  });
+
+  // Build sections HTML
+  Object.values(sections).forEach(section => {
+    if (section.items.length > 0) {
+      htmlContent += `<div class="section">
+        <div class="section-title">${section.title}</div>`;
+
+      section.items.forEach(item => {
+        const statusClass = item.status === 'OK' ? 'ok' : (item.status === 'NOK' ? 'nok' : 'pend');
+        htmlContent += `<div class="item">
+          <div class="item-label">${item.label}</div>
+          <div class="item-status ${statusClass}">${item.status}</div>
+        </div>`;
+
+        if (item.observacoes && item.status === 'NOK') {
+          htmlContent += `<div class="obs"><strong>Observação:</strong> ${item.observacoes}</div>`;
+        }
+      });
+
+      htmlContent += `</div>`;
+    }
+  });
+
+  htmlContent += `</div>`;
+
+  // Add observations section
+  if (observacoesGerais) {
+    htmlContent += `<div class="notes">
+      <div class="notes-title">Observações Gerais / Ações Imediatas</div>
+      <div>${observacoesGerais}</div>
+    </div>`;
+  }
+
+  // Add signature section
+  if (coordenadorNotas) {
+    htmlContent += `<div class="notes">
+      <div class="notes-title">Coordenador - Assinatura e Observações</div>
+      <div>${coordenadorNotas}</div>
+    </div>`;
+  }
+
+  // Add footer with generation timestamp
+  const now = new Date();
+  const timestamp = now.toLocaleString('pt-PT');
+  htmlContent += `<div class="footer">
+    <p>Relatório gerado em ${timestamp}</p>
+    <p>Inspeção Diária - QS-IDT-001 · Walkingarage, Lda. — Bosch Car Service</p>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  // Call parent function to upload to SharePoint
+  if (window.parent && window.parent.uploadToSharePoint) {
+    try {
+      window.parent.uploadToSharePoint('inspecoes_diarias', filename, htmlContent, 'text/html');
+      alert(`Inspeção guardada com sucesso!\nFicheiro: ${filename}`);
+    } catch (error) {
+      alert(`Erro ao guardar a inspeção: ${error.message}`);
+    }
+  } else {
+    // Fallback: trigger download as blob
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    alert(`Inspeção guardada com sucesso!\nFicheiro: ${filename}`);
+  }
 }
 </script>
 

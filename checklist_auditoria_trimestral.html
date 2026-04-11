@@ -598,21 +598,19 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
   <div class="sig-grid">
     <div class="sig-box">
       <div class="sig-label">Auditor(a)</div>
-      <div class="sig-line"></div>
-      <input type="text" class="sig-name" placeholder="Nome e data">
+      <textarea class="sig-name" placeholder="Nome, observações e data..." style="width:100%;min-height:60px;border:1.5px solid var(--gray-200);border-radius:8px;padding:10px;font-family:inherit;font-size:.85rem;color:var(--text-dark);resize:vertical;outline:none;margin-top:8px;"></textarea>
     </div>
     <div class="sig-box">
-      <div class="sig-label">Responsável da Oficina</div>
-      <div class="sig-line"></div>
-      <input type="text" class="sig-name" placeholder="Nome e data">
+      <div class="sig-label">Coordenador</div>
+      <textarea class="sig-name" placeholder="Nome, observações e data..." style="width:100%;min-height:60px;border:1.5px solid var(--gray-200);border-radius:8px;padding:10px;font-family:inherit;font-size:.85rem;color:var(--text-dark);resize:vertical;outline:none;margin-top:8px;"></textarea>
     </div>
   </div>
 
   <!-- ACTIONS -->
   <div class="actions">
-    <button class="btn btn-primary" onclick="window.print()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Imprimir
+    <button class="btn btn-primary" onclick="saveAuditoria()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      💾 Guardar
     </button>
     <button class="btn btn-outline" onclick="resetAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
@@ -666,6 +664,234 @@ function resetAll() {
   document.querySelectorAll('.check-obs, .obs-textarea').forEach(t => t.value = '');
   document.querySelectorAll('.meta-input, .sig-name').forEach(i => i.value = '');
   updateCounts();
+}
+
+function saveAuditoria() {
+  // Collect meta data
+  const metaInputs = document.querySelectorAll('.meta-input');
+  const auditDate = metaInputs[0].value || 'SEM-DATA';
+  const trimester = metaInputs[1].value || 'SEM-TRIMESTRE';
+  const auditorName = metaInputs[2].value || 'SEM-AUDITOR';
+  const local = metaInputs[3].value || 'SemLocal';
+
+  // Format date for filename (DD-MM-YYYY)
+  let dateStr = auditDate;
+  if (auditDate && auditDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = auditDate.split('-');
+    dateStr = `${day}-${month}-${year}`;
+  }
+
+  // Format local for filename (replace spaces with underscores)
+  const localForFilename = local.trim().replace(/\s+/g, '_') || 'SemLocal';
+
+  // Generate filename
+  const filename = `Auditoria_${dateStr}_${localForFilename}.html`;
+
+  // Collect checklist data with section structure
+  const sections = [];
+  document.querySelectorAll('.audit-section').forEach(section => {
+    const sectionNum = section.querySelector('.section-num').textContent;
+    const sectionTitle = section.querySelector('h2').textContent;
+    const rows = [];
+
+    section.querySelectorAll('.check-row').forEach(row => {
+      const checkText = row.querySelector('.check-text').textContent;
+      const checkRef = row.querySelector('.check-ref')?.textContent || '';
+      const obs = row.querySelector('.check-obs').value;
+      const status = row.querySelector('.c-active') ? 'Conforme' :
+                     row.querySelector('.p-active') ? 'Parcial' :
+                     row.querySelector('.f-active') ? 'Não Conforme' : 'Pendente';
+
+      rows.push({ text: checkText, ref: checkRef, status: status, obs: obs });
+    });
+
+    sections.push({ num: sectionNum, title: sectionTitle, rows: rows });
+  });
+
+  // Get counts
+  const totalC = document.getElementById('totalC').textContent;
+  const totalP = document.getElementById('totalP').textContent;
+  const totalF = document.getElementById('totalF').textContent;
+  const totalPend = document.getElementById('totalPend').textContent;
+
+  // Get signatures
+  const sigBoxes = document.querySelectorAll('.sig-box');
+  const auditorSig = sigBoxes[0].querySelector('.sig-name').value;
+  const coordinatorSig = sigBoxes[1].querySelector('.sig-name').value;
+
+  // Get general observations
+  const obsGeral = document.querySelector('.obs-textarea').value;
+
+  // Generate HTML content
+  let htmlContent = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria Interna - ${dateStr}</title>
+<style>
+body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 40px; background: #f5f5f5; }
+.container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+h1 { color: #003B73; border-bottom: 3px solid #007BC0; padding-bottom: 10px; }
+h2 { color: #007BC0; margin-top: 30px; }
+.meta-section { background: #f9f9f9; padding: 15px; border-left: 4px solid #007BC0; margin: 20px 0; }
+.meta-item { margin: 8px 0; }
+.meta-label { font-weight: bold; color: #003B73; }
+.summary { background: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0; }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 10px; }
+.summary-card { background: white; padding: 15px; border-radius: 6px; text-align: center; border-left: 4px solid #007BC0; }
+.summary-card.conforme { border-left-color: #059669; }
+.summary-card.parcial { border-left-color: #D97706; }
+.summary-card.nao-conforme { border-left-color: #DC2626; }
+.summary-card.pendente { border-left-color: #9CA3AF; }
+.summary-number { font-size: 28px; font-weight: bold; display: block; }
+.summary-label { font-size: 12px; color: #666; }
+.section-container { margin: 30px 0; }
+.section-header { background: #003B73; color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; }
+.checklist-item { border-left: 3px solid #ddd; padding: 12px; margin: 10px 0; background: #fafafa; }
+.checklist-item.conforme { border-left-color: #059669; background: #f0fdf4; }
+.checklist-item.parcial { border-left-color: #D97706; background: #fffbeb; }
+.checklist-item.nao-conforme { border-left-color: #DC2626; background: #fef2f2; }
+.item-text { font-weight: 500; margin: 5px 0; }
+.item-status { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+.status-conforme { background: #d1fae5; color: #065f46; }
+.status-parcial { background: #fed7aa; color: #92400e; }
+.status-nao-conforme { background: #fee2e2; color: #991b1b; }
+.status-pendente { background: #e5e7eb; color: #374151; }
+.item-ref { font-size: 12px; color: #999; margin: 5px 0; }
+.item-obs { font-size: 13px; color: #666; margin-top: 8px; font-style: italic; background: white; padding: 8px; border-radius: 4px; }
+.signatures { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; }
+.sig-section { display: inline-block; width: 48%; margin-right: 4%; margin-top: 30px; }
+.sig-section:last-child { margin-right: 0; }
+.sig-name { font-weight: 500; margin-top: 20px; }
+.obs-final { margin-top: 30px; padding: 15px; background: #fff3cd; border-left: 4px solid #D97706; border-radius: 4px; }
+.obs-final h3 { color: #D97706; margin-bottom: 10px; }
+.obs-final p { white-space: pre-wrap; }
+.timestamp { text-align: right; font-size: 12px; color: #999; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Auditoria Interna Trimestral</h1>
+
+  <div class="meta-section">
+    <div class="meta-item"><span class="meta-label">Data:</span> ${auditDate || 'N/A'}</div>
+    <div class="meta-item"><span class="meta-label">Trimestre:</span> ${trimester || 'N/A'}</div>
+    <div class="meta-item"><span class="meta-label">Auditor(a):</span> ${auditorName || 'N/A'}</div>
+    <div class="meta-item"><span class="meta-label">Local/Oficina:</span> ${local || 'N/A'}</div>
+  </div>
+
+  <div class="summary">
+    <h2>Resumo Geral</h2>
+    <div class="summary-grid">
+      <div class="summary-card conforme">
+        <span class="summary-number">${totalC}</span>
+        <span class="summary-label">Conforme</span>
+      </div>
+      <div class="summary-card parcial">
+        <span class="summary-number">${totalP}</span>
+        <span class="summary-label">Parcial</span>
+      </div>
+      <div class="summary-card nao-conforme">
+        <span class="summary-number">${totalF}</span>
+        <span class="summary-label">Não Conforme</span>
+      </div>
+      <div class="summary-card pendente">
+        <span class="summary-number">${totalPend}</span>
+        <span class="summary-label">Pendente</span>
+      </div>
+    </div>
+  </div>
+`;
+
+  // Add sections
+  sections.forEach(section => {
+    htmlContent += `
+  <div class="section-container">
+    <div class="section-header">Secção ${section.num} — ${section.title}</div>
+`;
+
+    section.rows.forEach(row => {
+      const statusClass = row.status.toLowerCase().replace(' ', '-');
+      const statusClassForItem = row.status === 'Conforme' ? 'conforme' :
+                                  row.status === 'Parcial' ? 'parcial' :
+                                  row.status === 'Não Conforme' ? 'nao-conforme' : 'pendente';
+      const statusCss = row.status === 'Conforme' ? 'status-conforme' :
+                        row.status === 'Parcial' ? 'status-parcial' :
+                        row.status === 'Não Conforme' ? 'status-nao-conforme' : 'status-pendente';
+
+      htmlContent += `
+    <div class="checklist-item ${statusClassForItem}">
+      <div class="item-text">${row.text}</div>`;
+
+      if (row.ref) {
+        htmlContent += `<div class="item-ref">Ref: ${row.ref}</div>`;
+      }
+
+      htmlContent += `<span class="item-status ${statusCss}">${row.status}</span>`;
+
+      if (row.obs) {
+        htmlContent += `<div class="item-obs"><strong>Observação:</strong> ${row.obs}</div>`;
+      }
+
+      htmlContent += `</div>
+`;
+    });
+
+    htmlContent += `  </div>
+`;
+  });
+
+  // Add general observations
+  if (obsGeral) {
+    htmlContent += `
+  <div class="obs-final">
+    <h3>Observações Gerais e Plano de Ação</h3>
+    <p>${obsGeral}</p>
+  </div>
+`;
+  }
+
+  // Add signatures
+  htmlContent += `
+  <div class="signatures">
+    <div class="sig-section">
+      <strong>Auditor(a)</strong>
+      <div class="sig-name">${auditorSig || '_____________________'}</div>
+    </div>
+    <div class="sig-section">
+      <strong>Coordenador</strong>
+      <div class="sig-name">${coordinatorSig || '_____________________'}</div>
+    </div>
+  </div>
+
+  <div class="timestamp">
+    Documento gerado em: ${new Date().toLocaleString('pt-PT')}
+  </div>
+</div>
+</body>
+</html>`;
+
+  // Call SharePoint upload via parent window
+  try {
+    if (window.parent && window.parent.uploadToSharePoint) {
+      window.parent.uploadToSharePoint('auditorias_internas', filename, htmlContent, 'text/html');
+      alert('Auditoria guardada com sucesso: ' + filename);
+    } else {
+      // Fallback: download the file
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+      alert('Ficheiro guardado: ' + filename);
+    }
+  } catch (error) {
+    console.error('Erro ao guardar auditoria:', error);
+    alert('Erro ao guardar a auditoria: ' + error.message);
+  }
 }
 </script>
 

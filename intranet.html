@@ -989,7 +989,7 @@
         <div class="sidebar-section">Coordenação</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
-            <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Inspeções e Auditorias</a></li>
+            <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Auditoria Interna Trimestral</a></li>
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
         </ul>
 
@@ -1132,9 +1132,16 @@
                     A verificar ligação ao SharePoint...
                 </div>
                 <!-- Filtro principal: Importados / Gerados -->
-                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
                     <button class="form-button" id="filterImportados" onclick="setFileFilter('importados')" style="background: var(--text-secondary);">📥 Importados</button>
                     <button class="form-button" id="filterGerados" onclick="setFileFilter('gerados')" style="background: var(--text-secondary);">📤 Gerados</button>
+                </div>
+                <!-- Tabs diretas por tipo de formulário -->
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <button class="form-button sp-direct-btn" onclick="browseSharePoint('sugestoes')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">💡 Sugestões</button>
+                    <button class="form-button sp-direct-btn" onclick="browseSharePoint('formularios_nc')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">⚠️ Formulários NC</button>
+                    <button class="form-button sp-direct-btn" onclick="browseSharePoint('inspecoes_diarias')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">✅ Inspeções Diárias</button>
+                    <button class="form-button sp-direct-btn" onclick="browseSharePoint('auditorias_internas')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">🔍 Auditorias Internas</button>
                 </div>
                 <!-- Sub-botões por módulo (aparecem ao selecionar filtro) -->
                 <div id="fileSubButtons" style="display: none; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;"></div>
@@ -2175,7 +2182,11 @@
             gv_orcamentos: 'Intranet/Gestao_Viaturas/Devolucoes/Orcamentos',
             gv_docs_assinados_dev: 'Intranet/Gestao_Viaturas/Devolucoes/Docs_Assinados',
             comunicacoes: 'Intranet/Comunicacoes',
-            dashboard_state: 'Intranet/Dashboard_State'
+            dashboard_state: 'Intranet/Dashboard_State',
+            sugestoes: 'Intranet/Sugestoes',
+            formularios_nc: 'Intranet/Formularios_Nao_Conformidade',
+            inspecoes_diarias: 'Intranet/Inspecoes_Diarias',
+            auditorias_internas: 'Intranet/Auditorias_Internas'
         }
     };
     let spSiteId = null;
@@ -2521,7 +2532,7 @@
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: null },
-            coord_inspecoes: { title: 'Inspeções e Auditorias', url: 'checklist_auditoria_trimestral.html' },
+            coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
             coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' }
         };
         const mod = modules[id];

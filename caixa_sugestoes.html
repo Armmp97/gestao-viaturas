@@ -253,11 +253,23 @@ body {
       </div>
     </div>
 
-    <!-- Recent suggestions -->
+    <!-- Recent suggestions (dynamic) -->
     <div class="card">
       <div class="card-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Sugestões Recentes
+      </div>
+
+      <div id="recentSuggestionsList">
+        <p style="color: var(--gray-400); font-style: italic; padding: 16px 0;">Ainda não existem sugestões submetidas.</p>
+      </div>
+    </div>
+
+    <!-- Example suggestions -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Exemplo de Sugestões
       </div>
 
       <div id="suggestionsList">
@@ -337,13 +349,21 @@ function submitSuggestion() {
   var msg = document.getElementById('successMsg');
   msg.style.display = 'flex';
 
-  // Add to list
-  var list = document.getElementById('suggestionsList');
+  // Get current date/time for display and filename
   var today = new Date();
   var dateStr = String(today.getDate()).padStart(2,'0') + ' ' +
     ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][today.getMonth()] + ' ' +
     today.getFullYear();
   var author = isAnon ? 'Anónimo' : (name || 'Colaborador');
+
+  // Add to recent suggestions list
+  var recentList = document.getElementById('recentSuggestionsList');
+
+  // Check if this is the first submission (has empty message)
+  var emptyMsg = recentList.querySelector('p');
+  if (emptyMsg) {
+    emptyMsg.remove();
+  }
 
   var item = document.createElement('div');
   item.className = 'suggestion-item';
@@ -354,7 +374,34 @@ function submitSuggestion() {
     '</div>' +
     '<div class="suggestion-text">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
     '<div class="suggestion-author">— ' + author + '</div>';
-  list.insertBefore(item, list.firstChild);
+  recentList.insertBefore(item, recentList.firstChild);
+
+  // Save to SharePoint
+  var filename = 'Sugestao_' +
+    String(today.getDate()).padStart(2,'0') + '-' +
+    String(today.getMonth() + 1).padStart(2,'0') + '-' +
+    today.getFullYear() + '_' +
+    String(today.getHours()).padStart(2,'0') + 'h' +
+    String(today.getMinutes()).padStart(2,'0');
+
+  var htmlContent = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>Sugestão</title></head>\n<body>\n' +
+    '<h3>Sugestão Submetida</h3>\n' +
+    '<p><strong>Nome:</strong> ' + (isAnon ? 'Anónimo' : (name || 'Não fornecido')) + '</p>\n' +
+    '<p><strong>Categoria:</strong> ' + (category || 'Não selecionada') + '</p>\n' +
+    '<p><strong>Prioridade:</strong> ' + (priority || 'Não selecionada') + '</p>\n' +
+    '<p><strong>Data:</strong> ' + dateStr + '</p>\n' +
+    '<p><strong>Sugestão:</strong></p>\n' +
+    '<p>' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</p>\n' +
+    (benefit ? '<p><strong>Benefício Esperado:</strong></p>\n<p>' + benefit.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</p>\n' : '') +
+    '</body>\n</html>';
+
+  if (window.parent && window.parent.uploadToSharePoint) {
+    window.parent.uploadToSharePoint('sugestoes', filename + '.html', htmlContent, 'text/html', function(success) {
+      if (!success) {
+        alert('Aviso: A sugestão foi registada localmente, mas houve um erro ao guardar no servidor. Por favor, contacte o administrador.');
+      }
+    });
+  }
 
   // Reset form
   document.getElementById('sugText').value = '';

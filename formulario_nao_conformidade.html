@@ -79,6 +79,18 @@ select.field-input {
 
 textarea.field-input { resize: vertical; min-height: 80px; }
 
+/* ═══ FILE INPUT STYLING ═══ */
+label[for="evidenciasFiles"] {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+label[for="evidenciasFiles"]:hover {
+  background: var(--gray-100);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+input[type="file"] { display: none; }
+
 /* ═══ RADIO/CHECK GROUPS ═══ */
 .option-group { display: flex; flex-wrap: wrap; gap: 8px; }
 .option-chip {
@@ -205,7 +217,7 @@ textarea.field-input { resize: vertical; min-height: 80px; }
       <div class="field-row">
         <div class="field">
           <div class="field-label">N.º de Registo</div>
-          <input type="text" class="field-input" placeholder="NC-2026-001">
+          <input type="text" class="field-input" placeholder="NC-01-04-2026">
         </div>
         <div class="field">
           <div class="field-label">Data de Deteção</div>
@@ -274,18 +286,11 @@ textarea.field-input { resize: vertical; min-height: 80px; }
       <div style="height: 16px;"></div>
       <div class="field">
         <div class="field-label">Evidências (fotos, documentos, referências)</div>
-        <textarea class="field-input" style="min-height: 50px;" placeholder="Indicar se existem fotos, registos ou testemunhos que comprovem a NC..."></textarea>
-      </div>
-      <div style="height: 16px;"></div>
-      <div class="field-row">
-        <div class="field">
-          <div class="field-label">Norma/Requisito Incumprido</div>
-          <input type="text" class="field-input" placeholder="Ex: Art.º 17.º Lei 102/2009, Regulamento Interno Cap. 3...">
-        </div>
-        <div class="field">
-          <div class="field-label">Ordem de Serviço (se aplicável)</div>
-          <input type="text" class="field-input" placeholder="Ex: OS-2026-1234">
-        </div>
+        <textarea class="field-input" id="evidenciasText" style="min-height: 50px;" placeholder="Indicar se existem fotos, registos ou testemunhos que comprovem a NC..."></textarea>
+        <label for="evidenciasFiles" style="display: inline-block; margin-top: 8px; padding: 8px 12px; background: var(--off-white); border: 1.5px dashed var(--gray-200); border-radius: 10px; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--text-dark); transition: all 0.3s;">
+          📎 Anexar ficheiros (opcional)
+        </label>
+        <input type="file" id="evidenciasFiles" multiple style="display: none;">
       </div>
     </div>
   </div>
@@ -363,169 +368,28 @@ textarea.field-input { resize: vertical; min-height: 80px; }
     </div>
   </div>
 
-  <!-- 5. ANÁLISE DE CAUSA RAIZ -->
+
+
+
+  <!-- SIGNATURES -->
   <div class="form-section">
     <div class="form-section-header">
       <div class="fs-num">5</div>
-      <h2>Análise de Causa Raiz</h2>
+      <h2>Assinatura</h2>
     </div>
     <div class="form-section-body">
       <div class="field">
-        <div class="field-label">Método utilizado</div>
-        <div class="option-group" data-single="true">
-          <div class="option-chip" data-value="5p">5 Porquês</div>
-          <div class="option-chip" data-value="ishi">Ishikawa</div>
-          <div class="option-chip" data-value="outro">Outro</div>
-        </div>
+        <div class="field-label">Detetado por (Nome, Título e Data)</div>
+        <textarea class="field-input" id="detectedBySignature" placeholder="Nome, título do colaborador e data da deteção"></textarea>
       </div>
-      <div style="height: 16px;"></div>
-      <div class="field">
-        <div class="field-label">Análise — 5 Porquês</div>
-        <div class="timeline">
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">1.º Porquê</div>
-            <textarea class="timeline-text" placeholder="Porque é que a NC aconteceu?"></textarea>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">2.º Porquê</div>
-            <textarea class="timeline-text" placeholder="Porque é que isso aconteceu?"></textarea>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">3.º Porquê</div>
-            <textarea class="timeline-text" placeholder="Porque é que isso aconteceu?"></textarea>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">4.º Porquê</div>
-            <textarea class="timeline-text" placeholder="Porque é que isso aconteceu?"></textarea>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">5.º Porquê — Causa Raiz</div>
-            <textarea class="timeline-text" placeholder="Causa raiz identificada"></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 6. AÇÃO CORRETIVA -->
-  <div class="form-section">
-    <div class="form-section-header">
-      <div class="fs-num">6</div>
-      <h2>Ação Corretiva / Preventiva</h2>
-    </div>
-    <div class="form-section-body">
-      <div class="field">
-        <div class="field-label">Descrição da Ação Corretiva</div>
-        <textarea class="field-input" placeholder="Descrever em detalhe a ação corretiva a implementar para eliminar a causa raiz..."></textarea>
-      </div>
-      <div style="height: 16px;"></div>
-      <div class="field-row">
-        <div class="field">
-          <div class="field-label">Responsável pela Implementação</div>
-          <input type="text" class="field-input" placeholder="Nome">
-        </div>
-        <div class="field">
-          <div class="field-label">Prazo de Implementação</div>
-          <input type="date" class="field-input">
-        </div>
-      </div>
-      <div style="height: 16px;"></div>
-      <div class="field">
-        <div class="field-label">Ação Preventiva (para evitar recorrência)</div>
-        <textarea class="field-input" style="min-height: 60px;" placeholder="Medidas para prevenir que esta NC volte a ocorrer (ex: formação, revisão de processo, sinalização adicional...)"></textarea>
-      </div>
-    </div>
-  </div>
-
-  <!-- 7. VERIFICAÇÃO DE EFICÁCIA -->
-  <div class="form-section">
-    <div class="form-section-header">
-      <div class="fs-num">7</div>
-      <h2>Verificação de Eficácia</h2>
-    </div>
-    <div class="form-section-body">
-      <div class="field-row">
-        <div class="field">
-          <div class="field-label">Data de Verificação</div>
-          <input type="date" class="field-input">
-        </div>
-        <div class="field">
-          <div class="field-label">Verificado por</div>
-          <input type="text" class="field-input" placeholder="Nome">
-        </div>
-      </div>
-      <div style="height: 16px;"></div>
-      <div class="field">
-        <div class="field-label">A ação corretiva foi eficaz?</div>
-        <div class="option-group" data-single="true">
-          <div class="option-chip" data-value="sim">Sim — NC encerrada</div>
-          <div class="option-chip" data-value="parcial">Parcialmente — Requer seguimento</div>
-          <div class="option-chip" data-value="nao">Não — Nova ação necessária</div>
-        </div>
-      </div>
-      <div style="height: 16px;"></div>
-      <div class="field">
-        <div class="field-label">Observações da Verificação</div>
-        <textarea class="field-input" style="min-height: 60px;" placeholder="Conclusões da verificação de eficácia..."></textarea>
-      </div>
-      <div style="height: 16px;"></div>
-      <div class="field">
-        <div class="field-label">Estado do Registo</div>
-        <div class="status-tracker">
-          <div class="st-step" data-step="1">
-            <div class="st-label">Aberta</div>
-            <div class="st-desc">Registada</div>
-          </div>
-          <div class="st-step" data-step="2">
-            <div class="st-label">Em Análise</div>
-            <div class="st-desc">Causa raiz</div>
-          </div>
-          <div class="st-step" data-step="3">
-            <div class="st-label">Em Implementação</div>
-            <div class="st-desc">Ação corretiva</div>
-          </div>
-          <div class="st-step" data-step="4">
-            <div class="st-label">Verificação</div>
-            <div class="st-desc">Eficácia</div>
-          </div>
-          <div class="st-step" data-step="5">
-            <div class="st-label">Encerrada</div>
-            <div class="st-desc">Concluída</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SIGNATURES -->
-  <div class="sig-grid">
-    <div class="sig-box">
-      <div class="sl">Detetado por</div>
-      <div class="line"></div>
-      <input type="text" placeholder="Nome e data">
-    </div>
-    <div class="sig-box">
-      <div class="sl">Coordenador</div>
-      <div class="line"></div>
-      <input type="text" placeholder="Nome e data">
-    </div>
-    <div class="sig-box">
-      <div class="sl">Responsável Qualidade</div>
-      <div class="line"></div>
-      <input type="text" placeholder="Nome e data">
     </div>
   </div>
 
   <!-- ACTIONS -->
   <div class="actions">
-    <button class="btn btn-primary" onclick="window.print()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Imprimir
+    <button class="btn btn-primary" onclick="saveFormNC()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar
     </button>
     <button class="btn btn-outline" onclick="resetAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
@@ -584,6 +448,163 @@ function resetAll() {
   document.querySelectorAll('.option-chip').forEach(c => c.classList.remove('selected', 'selected-danger', 'selected-warn'));
   document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.st-step').forEach(s => s.classList.remove('active', 'done'));
+}
+
+function saveFormNC() {
+  // Get form data
+  const registoNum = document.querySelector('input[placeholder="NC-01-04-2026"]').value;
+  const detectionDate = document.querySelector('input[type="date"]').value;
+  const detectedBy = document.querySelectorAll('input[placeholder="Nome do colaborador"]')[0]?.value || '';
+  const location = document.querySelector('select:nth-of-type(1)').value;
+  const department = document.querySelector('select:nth-of-type(2)').value;
+  const origin = document.querySelector('.option-group[data-single="true"] .option-chip.selected')?.dataset?.value || '';
+  const description = document.querySelector('textarea[placeholder*="Descrever detalhadamente"]').value;
+  const evidenciasText = document.getElementById('evidenciasText').value;
+  const classification = document.querySelectorAll('.option-group[data-single="true"]')[1]?.querySelector('.option-chip.selected')?.dataset?.value || '';
+  const priority = document.querySelector('.prio-btn.active')?.dataset?.prio || '';
+  const impacts = Array.from(document.querySelectorAll('.option-group[data-single="false"] .option-chip.selected')).map(c => c.dataset.value);
+  const immediateAction = document.querySelector('textarea[placeholder*="Descrever a ação tomada"]')?.value || '';
+  const responsibleImmediate = document.querySelectorAll('input[placeholder="Nome"]')[0]?.value || '';
+  const immediateDateTime = document.querySelectorAll('input[type="datetime-local"]')[0]?.value || '';
+  const detectedBySignature = document.getElementById('detectedBySignature')?.value || '';
+
+  // Generate timestamp for filename
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const filename = `NC_${day}-${month}-${year}_${hours}h${minutes}.html`;
+
+  // Build HTML content
+  const htmlContent = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Não-Conformidade - ${registoNum}</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+h1 { color: #003B73; border-bottom: 2px solid #007BC0; padding-bottom: 10px; }
+h2 { color: #007BC0; margin-top: 20px; }
+.field { margin: 10px 0; }
+.label { font-weight: bold; color: #003B73; }
+.value { margin-left: 20px; padding: 8px; background: #f5f7fa; border-left: 3px solid #007BC0; }
+</style>
+</head>
+<body>
+<h1>Formulário de Não-Conformidade</h1>
+<p><strong>Documento:</strong> QS-FNC-001 · DomusCar</p>
+
+<h2>1. Identificação da Não-Conformidade</h2>
+<div class="field">
+  <div class="label">N.º de Registo:</div>
+  <div class="value">${registoNum || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Data de Deteção:</div>
+  <div class="value">${detectionDate || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Detetado por:</div>
+  <div class="value">${detectedBy || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Local / Oficina:</div>
+  <div class="value">${location || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Área / Departamento:</div>
+  <div class="value">${department || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Origem da Não-Conformidade:</div>
+  <div class="value">${origin || '(não preenchido)'}</div>
+</div>
+
+<h2>2. Descrição Detalhada</h2>
+<div class="field">
+  <div class="label">Descrição da Não-Conformidade:</div>
+  <div class="value">${description || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Evidências:</div>
+  <div class="value">${evidenciasText || '(não preenchido)'}</div>
+</div>
+
+<h2>3. Classificação e Prioridade</h2>
+<div class="field">
+  <div class="label">Tipo de Não-Conformidade:</div>
+  <div class="value">${classification || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Prioridade de Resolução:</div>
+  <div class="value">${priority || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Impacto:</div>
+  <div class="value">${impacts.length > 0 ? impacts.join(', ') : '(não preenchido)'}</div>
+</div>
+
+<h2>4. Ação de Contenção Imediata</h2>
+<div class="field">
+  <div class="label">Ação Imediata Tomada:</div>
+  <div class="value">${immediateAction || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Responsável pela Ação Imediata:</div>
+  <div class="value">${responsibleImmediate || '(não preenchido)'}</div>
+</div>
+<div class="field">
+  <div class="label">Data/Hora da Ação:</div>
+  <div class="value">${immediateDateTime || '(não preenchido)'}</div>
+</div>
+
+<h2>5. Assinatura</h2>
+<div class="field">
+  <div class="label">Detetado por (Nome, Título e Data):</div>
+  <div class="value">${detectedBySignature || '(não preenchido)'}</div>
+</div>
+
+<hr style="margin-top: 40px; border: none; border-top: 1px solid #ccc;">
+<p style="font-size: 0.9em; color: #666;">Documento gerado em ${new Date().toLocaleString('pt-PT')} pelo Formulário de Não-Conformidade</p>
+</body>
+</html>`;
+
+  // Check if we can call parent window function
+  if (window.parent && window.parent.uploadToSharePoint) {
+    // Upload the HTML file
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    window.parent.uploadToSharePoint('formularios_nc', filename, blob, 'text/html');
+
+    // Upload attached files
+    const evidenciasInput = document.getElementById('evidenciasFiles');
+    if (evidenciasInput && evidenciasInput.files.length > 0) {
+      Array.from(evidenciasInput.files).forEach(file => {
+        const evidenceFilename = `Evidencia_${day}-${month}-${year}_${file.name}`;
+        window.parent.uploadToSharePoint('formularios_nc', evidenceFilename, file, file.type);
+      });
+    }
+
+    alert('Formulário guardado com sucesso!');
+  } else {
+    // Fallback: download as JSON if parent function not available
+    const data = {
+      filename: filename,
+      registoNum, detectionDate, detectedBy, location, department, origin,
+      description, evidenciasText, classification, priority, impacts,
+      immediateAction, responsibleImmediate, immediateDateTime, detectedBySignature,
+      timestamp: new Date().toISOString()
+    };
+
+    // Create and download HTML file
+    const link = document.createElement('a');
+    link.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
+    link.download = filename;
+    link.click();
+
+    alert('Formulário guardado como ficheiro HTML. Envie-o para a sua pasta de Não-Conformidades.');
+  }
 }
 </script>
 
