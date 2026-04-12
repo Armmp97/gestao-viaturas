@@ -2222,19 +2222,7 @@
     }
 
     function openSugestoesAndExpand() {
-        var sub = document.getElementById('sugestoesSubmenu');
-        var arrow = document.getElementById('sugestoesArrow');
-        if (!sub) return;
-        if (sub.style.display === 'none' || !sub.style.display) {
-            // Expand + open module
-            openModule('sugestoes_melhoria');
-            sub.style.display = 'block';
-            if (arrow) arrow.style.transform = 'rotate(180deg)';
-        } else {
-            // Collapse
-            sub.style.display = 'none';
-            if (arrow) arrow.style.transform = 'rotate(0deg)';
-        }
+        toggleDropdown('sugestoesSubmenu', 'sugestoesArrow');
     }
 
     function updateSidebarPermissions() {
