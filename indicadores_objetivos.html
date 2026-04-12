@@ -6,13 +6,15 @@
 <title>DomusCar — Indicadores e Objetivos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
   --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
   --accent: #007BC0; --accent-light: #4DA8DA; --white: #FFFFFF; --off-white: #F5F7FA;
   --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF;
   --gray-600: #6B7280; --text-dark: #1A2A3A; --text-body: #475569;
-  --radius: 16px; --transition: .3s cubic-bezier(.4,0,.2,1);
+  --green: #059669; --yellow: #D97706; --red: #DC2626;
+  --radius: 16px; --radius-sm: 12px; --transition: .3s cubic-bezier(.4,0,.2,1);
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; font-size:16px; }
@@ -21,11 +23,12 @@ body {
   background:var(--off-white); color:var(--text-body); line-height:1.7;
   -webkit-font-smoothing:antialiased;
 }
-.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+/* Hero */
 .hero {
   position:relative;
   background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
-  color:var(--white); overflow:hidden; min-height:320px; display:flex; align-items:center;
+  color:var(--white); overflow:hidden; padding:44px 0 34px;
 }
 .hero::before {
   content:''; position:absolute; top:-40%; right:-10%;
@@ -33,52 +36,1418 @@ body {
   background:radial-gradient(circle,rgba(0,123,192,.12) 0%,transparent 70%);
   border-radius:50%; pointer-events:none;
 }
-.hero-inner { position:relative; z-index:2; padding:60px 0 50px; }
-.hero h1 {
-  font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
-  line-height:1.15; margin-bottom:16px;
+.hero-inner { position:relative; z-index:2; }
+.hero h1 { font-size:clamp(1.6rem,3.5vw,2.2rem); font-weight:900; margin-bottom:6px; }
+.hero h1 em { font-style:normal; color:var(--accent-light); }
+.hero-desc { font-size:.95rem; opacity:.8; max-width:600px; }
+.hero-bar { position:absolute; bottom:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 40%,var(--navy-light) 40%); }
+
+.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+.section { padding:36px 0; }
+
+/* Breadcrumb */
+.breadcrumb {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:16px 0; font-size:.84rem; color:var(--gray-600);
 }
-.hero h1 em { font-style:normal; color:var(--accent); }
-.hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
-.hero-bar {
-  position:absolute; bottom:0; left:0; right:0; height:5px;
-  background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 70%,var(--navy-light) 70%);
+.breadcrumb a {
+  color:var(--accent); text-decoration:none; font-weight:600; cursor:pointer;
 }
-.placeholder-section {
-  padding:80px 0; text-align:center;
+.breadcrumb a:hover { text-decoration:underline; }
+.breadcrumb .sep { color:var(--gray-400); }
+
+/* Category cards (level 1) */
+.cat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+.cat-card {
+  background:var(--white); border-radius:var(--radius); padding:32px 28px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  cursor:pointer; transition:var(--transition); position:relative; overflow:hidden;
 }
-.placeholder-icon {
-  width:80px; height:80px; margin:0 auto 24px;
-  background:rgba(0,59,115,.06); border-radius:20px;
-  display:flex; align-items:center; justify-content:center;
+.cat-card:hover { box-shadow:0 8px 28px rgba(0,59,115,.12); transform:translateY(-3px); }
+.cat-card::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  background:var(--accent); border-radius:2px 0 0 2px;
 }
-.placeholder-icon svg { width:36px; height:36px; color:var(--navy); }
-.placeholder-title {
-  font-size:1.4rem; font-weight:700; color:var(--navy); margin-bottom:12px;
+.cat-card-icon { font-size:2rem; margin-bottom:14px; }
+.cat-card h3 { font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
+.cat-card p { font-size:.88rem; color:var(--text-body); line-height:1.6; }
+
+/* Year pills (level 2) */
+.year-grid { display:flex; gap:16px; flex-wrap:wrap; }
+.year-card {
+  flex:1; min-width:200px; background:var(--white); border-radius:var(--radius);
+  padding:28px 24px; box-shadow:0 2px 12px rgba(0,59,115,.06);
+  border:1px solid var(--gray-200); cursor:pointer; transition:var(--transition);
+  text-align:center;
 }
-.placeholder-text {
-  font-size:1rem; color:var(--gray-600); max-width:500px; margin:0 auto;
+.year-card:hover { box-shadow:0 6px 24px rgba(0,59,115,.1); transform:translateY(-2px); border-color:var(--accent); }
+.year-card .year-num { font-size:2rem; font-weight:900; color:var(--navy); }
+.year-card p { font-size:.85rem; color:var(--gray-600); margin-top:4px; }
+
+/* Ticket subview pills */
+.subview-grid { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:28px; }
+.subview-card {
+  flex:1; min-width:200px; background:var(--white); border-radius:var(--radius);
+  padding:28px 24px; box-shadow:0 2px 12px rgba(0,59,115,.06);
+  border:1px solid var(--gray-200); cursor:pointer; transition:var(--transition);
+  text-align:center;
+}
+.subview-card:hover { box-shadow:0 6px 24px rgba(0,59,115,.1); transform:translateY(-2px); border-color:var(--accent); }
+.subview-card .sv-icon { font-size:2rem; margin-bottom:10px; }
+.subview-card h4 { font-size:1.1rem; font-weight:700; color:var(--navy); }
+.subview-card p { font-size:.82rem; color:var(--gray-600); margin-top:4px; }
+
+/* Ticket geral dashboard */
+.tg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:24px; }
+.tg-card {
+  background:var(--white); border-radius:var(--radius); padding:24px 22px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  position:relative; overflow:hidden;
+}
+.tg-card::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  border-radius:2px 0 0 2px;
+}
+.tg-card.lisboa::before { background:var(--accent); }
+.tg-card.cacem::before { background:var(--green); }
+.tg-card.colisao::before { background:var(--yellow); }
+.tg-card.domuscar::before { background:var(--navy); }
+.tg-card-title { font-size:.82rem; font-weight:700; color:var(--navy); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.tg-big { font-size:1.8rem; font-weight:900; color:var(--navy); line-height:1; }
+.tg-row { display:flex; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-100); }
+.tg-metric { text-align:center; flex:1; }
+.tg-metric-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.4px; color:var(--gray-600); font-weight:600; }
+.tg-metric-val { font-size:1rem; font-weight:700; color:var(--text-dark); margin-top:2px; }
+.tg-metric-sub { font-size:.72rem; color:var(--gray-400); }
+
+/* Comparativo */
+.comp-section {
+  margin-top:36px; background:var(--white); border-radius:var(--radius);
+  padding:32px 28px; box-shadow:0 2px 12px rgba(0,59,115,.06);
+  border:1px solid var(--gray-200); position:relative; overflow:hidden;
+}
+.comp-section::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  background:linear-gradient(180deg,var(--accent),var(--green)); border-radius:2px 0 0 2px;
+}
+.comp-title { font-size:1.1rem; font-weight:800; color:var(--navy); margin-bottom:4px; }
+.comp-subtitle { font-size:.85rem; color:var(--text-body); margin-bottom:20px; }
+.comp-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:24px; }
+.comp-kpi {
+  background:var(--off-white); border-radius:var(--radius-sm); padding:18px 16px;
+  text-align:center; border:1px solid var(--gray-100);
+}
+.comp-kpi-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-600); font-weight:600; margin-bottom:6px; }
+.comp-kpi-val { font-size:1.35rem; font-weight:800; color:var(--navy); }
+.comp-kpi-sub { font-size:.75rem; color:var(--gray-600); margin-top:4px; }
+.comp-kpi-delta { font-size:.8rem; font-weight:700; margin-top:4px; }
+.comp-kpi-delta.up { color:var(--green); }
+.comp-kpi-delta.down { color:var(--red); }
+.comp-chart-wrap { margin-top:8px; max-height:280px; }
+.comp-table-wrap { margin-top:20px; overflow-x:auto; }
+.comp-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.comp-table th { background:var(--navy); color:var(--white); padding:10px 12px; text-align:center; font-weight:600; font-size:.75rem; text-transform:uppercase; letter-spacing:.3px; }
+.comp-table td { padding:9px 12px; text-align:right; border-bottom:1px solid var(--gray-100); }
+.comp-table tr:hover td { background:rgba(0,123,192,.03); }
+.comp-table td:first-child { text-align:left; font-weight:600; color:var(--navy); }
+
+/* Unit pills (level 3) */
+.unit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.unit-card {
+  background:var(--white); border-radius:var(--radius-sm); padding:24px 22px;
+  box-shadow:0 2px 10px rgba(0,59,115,.05); border:1px solid var(--gray-200);
+  cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:16px;
+}
+.unit-card:hover { box-shadow:0 6px 20px rgba(0,59,115,.1); transform:translateY(-2px); border-color:var(--accent); }
+.unit-icon {
+  width:48px; height:48px; border-radius:var(--radius-sm); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+}
+.unit-icon.lisboa { background:rgba(0,123,192,.08); }
+.unit-icon.cacem { background:rgba(5,150,105,.08); }
+.unit-icon.colisao { background:rgba(217,119,6,.08); }
+.unit-icon.domuscar { background:rgba(0,43,85,.08); }
+.unit-card h4 { font-size:.95rem; font-weight:700; color:var(--navy); }
+.unit-card p { font-size:.8rem; color:var(--gray-600); }
+
+/* Data view (level 4) */
+.data-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:24px; flex-wrap:wrap; gap:12px;
+}
+.data-header h2 { font-size:1.2rem; font-weight:800; color:var(--navy); }
+.data-badge {
+  padding:6px 14px; border-radius:20px; font-size:.78rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.data-badge.placeholder { background:var(--gray-100); color:var(--gray-600); }
+
+.chart-container {
+  background:var(--white); border-radius:var(--radius); padding:24px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  margin-bottom:24px;
+}
+.chart-container canvas { max-height:320px; }
+
+.data-table-wrap {
+  background:var(--white); border-radius:var(--radius); overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+}
+.data-table {
+  width:100%; border-collapse:collapse; font-size:.85rem;
+}
+.data-table th {
+  text-align:left; padding:12px 16px; background:var(--navy);
+  color:var(--white); font-weight:600; font-size:.78rem;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.data-table th:first-child { border-radius:0; }
+.data-table td { padding:10px 16px; border-bottom:1px solid var(--gray-100); }
+.data-table tr:hover td { background:rgba(0,123,192,.02); }
+.data-table .placeholder-val { color:var(--gray-400); font-style:italic; }
+
+/* Back button */
+.btn-back {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 18px; border:1.5px solid var(--gray-200); border-radius:8px;
+  background:var(--white); color:var(--navy); font-family:inherit;
+  font-size:.84rem; font-weight:600; cursor:pointer; transition:var(--transition);
+}
+.btn-back:hover { border-color:var(--accent); background:rgba(0,123,192,.03); }
+
+/* Info banner */
+.info-banner {
+  background:rgba(0,123,192,.06); border:1px solid rgba(0,123,192,.15);
+  border-radius:var(--radius-sm); padding:16px 20px;
+  font-size:.88rem; color:var(--navy); margin-bottom:24px;
+  display:flex; align-items:center; gap:10px;
+}
+
+/* Responsive */
+@media(max-width:600px) {
+  .hero { padding:30px 0 22px; }
+  .cat-grid, .unit-grid { grid-template-columns:1fr; }
+  .year-grid { flex-direction:column; }
 }
 </style>
 </head>
 <body>
+
 <div class="hero">
   <div class="container">
     <div class="hero-inner">
-      <h1>Indicadores e Objetivos</h1>
-      <p class="hero-desc">KPIs da empresa, metas departamentais e acompanhamento de objetivos.</p>
+      <h1>Indicadores e <em>Objetivos</em></h1>
+      <p class="hero-desc">Acompanhamento de KPIs, ticket médio e margem mensal por unidade.</p>
     </div>
   </div>
   <div class="hero-bar"></div>
 </div>
-<div class="placeholder-section">
+
+<div class="section">
   <div class="container">
-    <div class="placeholder-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    </div>
-    <div class="placeholder-title">Conteúdo em preparação</div>
-    <p class="placeholder-text">Esta secção está a ser desenvolvida. Em breve estará disponível com informação completa para toda a equipa.</p>
+    <div id="breadcrumb" class="breadcrumb"></div>
+    <div id="content"></div>
   </div>
 </div>
+
+<script>
+(function() {
+  'use strict';
+
+  var MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var MONTHS_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  var CATEGORIES = [
+    {
+      id: 'kpis',
+      icon: '📈',
+      title: 'KPIs Coordenação',
+      desc: 'Indicadores-chave de desempenho por unidade — horas, eficiência produtiva e utilização.',
+      columns: ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponíveis', 'Eficiência Produtiva (%)', 'Utilização (%)'],
+      chartLabel: 'Eficiência Produtiva (%)',
+      chartIndex: 3
+    },
+    {
+      id: 'ticket',
+      icon: '🎫',
+      title: 'Ticket Médio',
+      desc: 'Valor médio por ordem de serviço — peças, mão-de-obra e total.',
+      columns: ['Ticket Médio Total (€)', 'Peças (€)', 'Mão-de-Obra (€)', 'Nº Ordens Serviço'],
+      chartLabel: 'Ticket Médio Total (€)',
+      chartIndex: 0
+    },
+    {
+      id: 'margem',
+      icon: '💰',
+      title: 'Margem Mensal',
+      desc: 'Margem operacional mensal — vendas, custos fixos/variáveis e resultado líquido.',
+      columns: ['Vendas s/ IVA (€)', 'Vendas MO (€)', 'Vendas Peças (€)', 'Custos Fixos (€)', 'Custos Var. (€)', 'Margem (€)', 'Margem (%)'],
+      chartLabel: 'Margem (%)',
+      chartIndex: 6
+    }
+  ];
+
+  // ══════ DADOS REAIS KPIs 2025 ══════
+  var KPI_DATA = {
+    2025: {
+      mecanica_lisboa: [
+        [312.77, 442.62, 414.80, 141.51, 75.40],
+        [241.08, 355.17, 299.63, 147.32, 80.46],
+        [295.68, 397.34, 340.00, 134.38, 86.96],
+        [266.23, 358.83, 361.25, 134.78, 73.70],
+        [342.02, 653.84, 380.80, 191.17, 89.82],
+        [239.39, 409.51, 346.80, 171.06, 69.03],
+        [373.33, 700.36, 428.40, 187.60, 87.15],
+        [311.39, 625.73, 346.80, 200.95, 89.79],
+        [395.40, 627.40, 439.88, 158.67, 89.89],
+        [526.09, 696.91, 625.60, 132.47, 84.09],
+        [318.33, 660.61, 358.28, 207.52, 88.85],
+        [235.84, 465.43, 272.85, 130.71, 86.43]
+      ],
+      mecanica_cacem: [
+        [575.59, 603.35, 655.10, 104.82, 87.86],
+        [493.88, 549.19, 555.90, 111.20, 88.84],
+        [478.11, 599.70, 532.44, 125.43, 89.80],
+        [421.38, 467.18, 487.90, 110.87, 86.37],
+        [470.19, 671.03, 509.15, 142.71, 92.35],
+        [457.66, 472.23, 527.94, 103.18, 86.69],
+        [621.58, 711.99, 654.50, 114.55, 94.97],
+        [468.31, 644.73, 482.80, 137.67, 97.00],
+        [548.40, 554.78, 567.80, 101.16, 96.58],
+        [625.59, 742.23, 639.20, 118.64, 97.87],
+        [616.11, 658.53, 693.60, 106.89, 88.83],
+        [477.31, 493.99, 529.55, 100.82, 90.13]
+      ],
+      colisao: [
+        [647.86, 654.03, 1054.43, 100.95, 61.44],
+        [894.00, 1110.07, 1175.97, 124.17, 76.02],
+        [784.27, 870.59, 1265.65, 111.01, 61.97],
+        [1043.37, 1031.85, 1163.65, 98.90, 89.66],
+        [1240.39, 921.14, 1360.85, 74.26, 91.15],
+        [1303.79, 1067.16, 1468.80, 81.85, 88.77],
+        [1505.49, 1720.20, 1890.40, 114.26, 79.64],
+        [1117.79, 1218.08, 1626.05, 108.97, 68.74],
+        [1339.53, 1135.57, 1718.70, 84.77, 77.94],
+        [1517.87, 1286.15, 1813.05, 84.73, 83.72],
+        [1178.46, 1097.31, 1431.40, 93.11, 82.33],
+        [1076.45, 777.24, 1190.00, 72.20, 90.46]
+      ]
+    },
+    2026: {
+      mecanica_lisboa: [
+        [344.50, 577.33, 344.68, 139.06, 99.69],
+        [345.68, 561.24, 361.42, 160.05, 95.76],
+        [356.55, 611.89, 322.15, 157.87, 132.37],
+        null, null, null, null, null, null, null, null, null
+      ],
+      mecanica_cacem: [
+        [574.31, 722.18, 610.30, 130.52, 93.90],
+        [499.58, 559.37, 556.75, 130.89, 90.79],
+        [575.80, 768.56, 589.90, 143.55, 97.84],
+        null, null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        [1446.31, 1026.25, 1469.65, 70.96, 98.41],
+        [1094.26, 1085.52, 1388.05, 99.20, 78.83],
+        [1371.22, 1210.26, 1513.00, 88.26, 90.63],
+        null, null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  // ══════ DADOS REAIS MARGEM MENSAL 2025 ══════
+  // [Vendas s/IVA, Vendas MO, Vendas Peças, Custos Fixos, Custos Variáveis, Margem €, Margem %]
+  var MARGEM_DATA = {
+    2025: {
+      mecanica_cacem: [
+        [79036.11, 22834.49, 49985.37, 29424.89, 40481.19, 9130.03, 11.55],
+        [78594.45, 22251.47, 54812.93, 25268.88, 42730.70, 10594.87, 13.48],
+        [77517.61, 23842.22, 51108.85, 24442.62, 45245.63, 7829.36, 10.10],
+        [61354.29, 18668.76, 40294.10, 24562.33, 28246.62, 8545.34, 13.93],
+        [89574.43, 25552.32, 57828.07, 35624.12, 45108.20, 8842.11, 9.87],
+        [62532.14, 19502.06, 41446.41, 24675.16, 24665.14, 13191.84, 21.10],
+        [105498.15, 28878.29, 67186.21, 26016.22, 46860.82, 32621.11, 30.92],
+        [78639.81, 26262.75, 47384.03, 25676.04, 30878.68, 22085.09, 28.08],
+        [75024.39, 23290.76, 50595.29, 27001.91, 44446.91, 3575.57, 4.77],
+        [101584.01, 30230.91, 64002.41, 28891.10, 33716.25, 38976.66, 38.37],
+        [83993.55, 25907.82, 51812.05, 28867.83, 35853.61, 19272.11, 22.94],
+        [67966.71, 20779.07, 44297.33, 30769.53, 32231.39, 4965.62, 7.31]
+      ],
+      colisao: [
+        [48030.75, 12964.71, 31224.94, 47519.95, 38743.70, -38232.90, -79.60],
+        [96513.16, 26114.32, 55111.33, 50496.18, 38553.67, 7463.31, 7.73],
+        [75285.99, 37350.90, 50499.99, 45067.97, 32347.96, -2129.94, -2.83],
+        [73094.68, 25902.19, 51107.34, 47543.73, 34534.90, -8983.95, -12.29],
+        [77744.23, 38973.82, 45465.52, 60488.06, 46743.78, -29487.61, -37.93],
+        [74912.80, 42349.50, 42843.55, 51062.04, 42565.30, -18714.54, -24.98],
+        [115275.86, 74925.60, 52166.49, 53840.90, 53556.45, 7878.51, 6.83],
+        [88996.38, 47877.87, 48988.89, 51933.24, 46830.54, -9767.40, -10.98],
+        [71188.92, 43226.35, 33973.38, 51793.59, 29546.18, -10150.85, -14.26],
+        [88168.56, 50057.00, 39418.70, 53685.38, 33636.16, 847.02, 0.96],
+        [83561.28, 47818.57, 43195.87, 50705.45, 41226.82, -8370.99, -10.02],
+        [58981.63, 34523.13, 22813.40, 51546.04, 26930.63, -19495.04, -33.05]
+      ],
+      mecanica_lisboa: [
+        [66088.46, 18641.19, 47887.88, 29229.06, 29261.41, 7597.99, 11.50],
+        [72142.28, 22708.94, 53174.81, 29018.76, 33492.37, 9631.15, 13.35],
+        [62080.58, 18301.31, 45603.04, 28015.88, 31803.76, 2260.94, 3.64],
+        [65614.02, 17540.86, 45663.18, 30555.07, 27993.59, 7065.36, 10.77],
+        [93795.09, 27204.14, 73091.75, 38007.97, 42708.85, 13078.27, 13.94],
+        [56230.96, 18081.87, 44055.50, 27680.00, 28197.42, 353.54, 0.63],
+        [101717.42, 29446.61, 71826.51, 26122.61, 48136.02, 27458.79, 27.00],
+        [88259.17, 28513.65, 65179.33, 24955.28, 36927.97, 26375.92, 29.88],
+        [91072.38, 29282.05, 72252.80, 28936.07, 41780.82, 20355.49, 22.35],
+        [106135.46, 32048.39, 88956.70, 31524.58, 53925.23, 20685.65, 19.49],
+        [88891.62, 30022.93, 68093.01, 31553.05, 34908.37, 22430.20, 25.23],
+        [72075.80, 21379.08, 57443.03, 30340.70, 30925.99, 13198.42, 18.31]
+      ],
+      domuscar: [
+        [196637.82, 54440.39, 129098.19, 106173.90, 108486.30, -18022.38, -9.17],
+        [264357.36, 71074.73, 163099.06, 104783.82, 114776.74, 44796.80, 16.95],
+        [219123.92, 79494.43, 147211.88, 97526.47, 109397.35, 12200.10, 5.57],
+        [202482.99, 62111.81, 137064.62, 102661.13, 90775.11, 9046.75, 4.47],
+        [263041.25, 91730.28, 176385.34, 134120.15, 134560.83, -5639.73, -2.14],
+        [196120.90, 79933.43, 128345.46, 103417.20, 95427.86, -2724.16, -1.39],
+        [324551.43, 133250.50, 191179.21, 105979.73, 148553.29, 70018.41, 21.57],
+        [258414.37, 102654.27, 161552.25, 102564.56, 114637.19, 41212.62, 15.95],
+        [240855.69, 95799.16, 156821.47, 107731.57, 115773.91, 17350.21, 7.20],
+        [299333.03, 112336.30, 192377.81, 114101.06, 121277.64, 63954.33, 21.37],
+        [259422.95, 103749.32, 163100.93, 111126.33, 111988.80, 36307.82, 14.00],
+        [201464.65, 76681.28, 124553.76, 112656.44, 87698.70, 1109.51, 0.55]
+      ]
+    },
+    2026: {
+      mecanica_cacem: [
+        [101712.88, 31294.81, 61885.40, 33217.88, 44494.83, 24000.17, 23.60],
+        [78585.39, 23995.28, 49771.91, 34944.46, 39849.50, 3791.43, 4.82],
+        null, null, null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        [85435.00, 43757.16, 29047.89, 53366.61, 39861.96, -7793.57, -9.12],
+        [75980.81, 50806.91, 30744.59, 56656.67, 36645.49, -17321.35, -22.80],
+        null, null, null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        [83283.10, 26924.70, 61791.32, 30908.06, 30767.78, 21607.26, 25.94],
+        [82710.86, 26967.17, 64051.11, 33337.17, 25618.28, 23755.41, 28.72],
+        null, null, null, null, null, null, null, null, null, null
+      ],
+      domuscar: [
+        [274820.98, 101976.67, 152724.61, 117492.55, 115124.57, 42203.86, 15.36],
+        [246361.06, 101769.36, 144567.61, 124938.30, 102113.27, 19309.49, 7.84],
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  // ══════ DADOS TICKET MÉDIO ══════
+  // 2025: Geral anual por unidade { osv, vendas, mo, pecas, ticketTotal, ticketMO, ticketPecas }
+  // 2026: Mensal por unidade [OSV, Ticket Peças €, Ticket MO €, Ticket Total €, HorasP/OSV, H.Disponíveis, H.Vendidas, €/H.Vendida]
+  var TICKET_DATA = {
+    2025: {
+      mecanica_cacem:  { osv: 2195, vendas: 961315.65, mo: 288000.92, pecas: 620753.05, ticketTotal: 437.96, ticketMO: 131.21, ticketPecas: 282.80 },
+      mecanica_lisboa: { osv: 2446, vendas: 964103.24, mo: 293171.02, pecas: 733227.54, ticketTotal: 394.16, ticketMO: 119.86, ticketPecas: 299.77 },
+      colisao:         { osv: 1395, vendas: 951754.24, mo: 482083.96, pecas: 516809.40, ticketTotal: 682.26, ticketMO: 345.58, ticketPecas: 370.47 },
+      domuscar:        { osv: 6036, vendas: 2877173.13, mo: 1063255.90, pecas: 1870789.99, ticketTotal: 476.67, ticketMO: 176.15, ticketPecas: 309.94 }
+    },
+    2026: {
+      mecanica_cacem: [
+        [204, 304.87, 154.66, 498.59, 3.51, 610.30, 716.63, 44.03],
+        [187, 268.45, 134.89, 420.24, 2.99, 556.75, 559.37, 45.09],
+        null, null, null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        [132, 256.47, 446.43, 647.23, 6.85, 1202.75, 904.47, 65.15],
+        [95, 325.90, 592.99, 799.80, 11.43, 1388.05, 1085.52, 47.22],
+        null, null, null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        [217, 291.12, 128.47, 383.79, 2.59, 344.68, 561.58, 49.64],
+        [226, 283.41, 121.28, 365.98, 2.48, 361.42, 561.24, 48.84],
+        null, null, null, null, null, null, null, null, null, null
+      ],
+      domuscar: [
+        [553, 276.17, 184.41, 496.96, 3.95, 2157.73, 2182.68, 54.23],
+        [508, 284.58, 200.33, 484.96, 4.34, 2306.22, 2206.13, 51.62],
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  var TICKET_MENSAL_COLS = ['Nº OSV', 'Ticket Peças (€)', 'Ticket MO (€)', 'Ticket Total (€)', 'Horas/OSV', 'H. Disponíveis', 'H. Vendidas', '€/H. Vendida'];
+
+  var YEARS = [2025, 2026];
+
+  var UNITS = [
+    { id: 'mecanica_lisboa', name: 'Mecânica Lisboa', iconClass: 'lisboa' },
+    { id: 'mecanica_cacem', name: 'Mecânica Cacém', iconClass: 'cacem' },
+    { id: 'colisao', name: 'Colisão', iconClass: 'colisao' },
+    { id: 'domuscar', name: 'DomusCar (Empresa)', iconClass: 'domuscar', margemOnly: true }
+  ];
+
+  var state = { category: null, year: null, unit: null, subview: null };
+  var currentChart = null;
+
+  function navigate(category, year, subviewOrUnit, unit) {
+    state.category = category || null;
+    state.year = year || null;
+    // For ticket category, 3rd param can be 'geral' or 'mensal' (subview)
+    if (category === 'ticket' && (subviewOrUnit === 'geral' || subviewOrUnit === 'mensal')) {
+      state.subview = subviewOrUnit;
+      state.unit = unit || null;
+    } else {
+      state.subview = null;
+      state.unit = subviewOrUnit || null;
+    }
+    renderBreadcrumb();
+    render();
+  }
+
+  function renderBreadcrumb() {
+    var bc = document.getElementById('breadcrumb');
+    var parts = ['<a onclick="navigate()">Indicadores</a>'];
+    if (state.category) {
+      var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+      parts.push('<span class="sep">›</span>');
+      parts.push('<a onclick="navigate(\'' + state.category + '\')">' + (cat ? cat.title : state.category) + '</a>');
+    }
+    if (state.year) {
+      parts.push('<span class="sep">›</span>');
+      parts.push('<a onclick="navigate(\'' + state.category + '\',' + state.year + ')">' + state.year + '</a>');
+    }
+    if (state.subview) {
+      parts.push('<span class="sep">›</span>');
+      var svLabel = state.subview === 'geral' ? 'Resumo Geral' : 'Detalhe Mensal';
+      if (state.unit) {
+        parts.push('<a onclick="navigate(\'' + state.category + '\',' + state.year + ',\'' + state.subview + '\')">' + svLabel + '</a>');
+      } else {
+        parts.push('<span>' + svLabel + '</span>');
+      }
+    }
+    if (state.unit) {
+      var u = UNITS.find(function(x) { return x.id === state.unit; });
+      parts.push('<span class="sep">›</span>');
+      parts.push('<span>' + (u ? u.name : state.unit) + '</span>');
+    }
+    bc.innerHTML = parts.join('');
+  }
+
+  function render() {
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+
+    if (!state.category) return renderCategories();
+    if (!state.year) return renderYears();
+
+    // Ticket Médio has special Geral/Mensal subview routing
+    if (state.category === 'ticket') {
+      if (!state.subview) {
+        // 2025: skip straight to geral (no mensal data)
+        if (state.year === 2025) { state.subview = 'geral'; return renderTicketGeral(); }
+        return renderTicketSubview();
+      }
+      if (state.subview === 'geral') return renderTicketGeral();
+      if (state.subview === 'mensal') {
+        if (!state.unit) return renderTicketUnits();
+        return renderTicketMensal();
+      }
+    }
+
+    if (!state.unit) return renderUnits();
+    return renderData();
+  }
+
+  // ══════ Level 1: Categories ══════
+  function renderCategories() {
+    var html = '<div class="cat-grid">';
+    CATEGORIES.forEach(function(cat) {
+      html += '<div class="cat-card" onclick="navigate(\'' + cat.id + '\')">' +
+        '<div class="cat-card-icon">' + cat.icon + '</div>' +
+        '<h3>' + cat.title + '</h3>' +
+        '<p>' + cat.desc + '</p>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Level 2: Years ══════
+  function renderYears() {
+    var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+    var html = '<button class="btn-back" onclick="navigate()">← Voltar</button>' +
+      '<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">' + cat.icon + ' ' + cat.title + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">' + cat.desc + '</p>' +
+      '<div class="year-grid">';
+    YEARS.forEach(function(y) {
+      html += '<div class="year-card" onclick="navigate(\'' + state.category + '\',' + y + ')">' +
+        '<div class="year-num">' + y + '</div>' +
+        '<p>Ver indicadores</p>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    // ══════ Comparativo Empresa (Margem only) ══════
+    if (cat.id === 'margem') {
+      html += renderComparativo();
+    }
+
+    document.getElementById('content').innerHTML = html;
+
+    if (cat.id === 'margem') {
+      setTimeout(function() { renderCompChart(); }, 80);
+    }
+  }
+
+  // ══════ Comparativo Domuscar YoY ══════
+  function renderComparativo() {
+    var d25 = MARGEM_DATA[2025] && MARGEM_DATA[2025].domuscar ? MARGEM_DATA[2025].domuscar : [];
+    var d26 = MARGEM_DATA[2026] && MARGEM_DATA[2026].domuscar ? MARGEM_DATA[2026].domuscar : [];
+
+    // Find common months (both have data)
+    var common = [];
+    for (var i = 0; i < 12; i++) {
+      if (d25[i] && d26[i]) common.push(i);
+    }
+    if (common.length === 0) return '';
+
+    // Sums for common period
+    var sum25 = { vendas: 0, mo: 0, pecas: 0, cf: 0, cv: 0, margem: 0 };
+    var sum26 = { vendas: 0, mo: 0, pecas: 0, cf: 0, cv: 0, margem: 0 };
+    common.forEach(function(i) {
+      sum25.vendas += d25[i][0]; sum25.mo += d25[i][1]; sum25.pecas += d25[i][2];
+      sum25.cf += d25[i][3]; sum25.cv += d25[i][4]; sum25.margem += d25[i][5];
+      sum26.vendas += d26[i][0]; sum26.mo += d26[i][1]; sum26.pecas += d26[i][2];
+      sum26.cf += d26[i][3]; sum26.cv += d26[i][4]; sum26.margem += d26[i][5];
+    });
+    var pct25 = sum25.vendas ? (sum25.margem / sum25.vendas * 100) : 0;
+    var pct26 = sum26.vendas ? (sum26.margem / sum26.vendas * 100) : 0;
+
+    var periodLabel = common.map(function(i) { return MONTHS_SHORT[i]; }).join(' – ');
+
+    function delta(v26, v25) {
+      var d = v26 - v25;
+      var cls = d >= 0 ? 'up' : 'down';
+      var sign = d >= 0 ? '+' : '';
+      return '<div class="comp-kpi-delta ' + cls + '">' + sign + formatEur(d) + '</div>';
+    }
+    function deltaPct(v26, v25) {
+      var d = v26 - v25;
+      var cls = d >= 0 ? 'up' : 'down';
+      var sign = d >= 0 ? '+' : '';
+      return '<div class="comp-kpi-delta ' + cls + '">' + sign + d.toFixed(2) + ' pp</div>';
+    }
+    function pctChange(v26, v25) {
+      if (!v25) return '';
+      var p = ((v26 - v25) / Math.abs(v25)) * 100;
+      var cls = p >= 0 ? 'up' : 'down';
+      var sign = p >= 0 ? '+' : '';
+      return '<div class="comp-kpi-sub">' + sign + p.toFixed(1) + '% vs 2025</div>';
+    }
+
+    var h = '<div class="comp-section">';
+    h += '<div class="comp-title">📊 Comparativo Empresa — 2025 vs 2026</div>';
+    h += '<div class="comp-subtitle">Período homólogo: ' + periodLabel + ' (' + common.length + ' meses com dados em ambos os anos)</div>';
+
+    // KPI summary cards
+    h += '<div class="comp-kpis">';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Vendas 2025</div><div class="comp-kpi-val">' + formatEur(sum25.vendas) + '</div></div>';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Vendas 2026</div><div class="comp-kpi-val">' + formatEur(sum26.vendas) + '</div>' + delta(sum26.vendas, sum25.vendas) + pctChange(sum26.vendas, sum25.vendas) + '</div>';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Margem 2025</div><div class="comp-kpi-val" style="color:' + (sum25.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum25.margem) + '</div><div class="comp-kpi-sub">' + pct25.toFixed(2) + '%</div></div>';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Margem 2026</div><div class="comp-kpi-val" style="color:' + (sum26.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum26.margem) + '</div><div class="comp-kpi-sub">' + pct26.toFixed(2) + '%</div>' + deltaPct(pct26, pct25) + '</div>';
+    h += '</div>';
+
+    // Chart
+    h += '<div class="comp-chart-wrap"><canvas id="compChart"></canvas></div>';
+
+    // Detail table
+    h += '<div class="comp-table-wrap"><table class="comp-table"><thead><tr>';
+    h += '<th>Mês</th><th>Vendas 2025</th><th>Vendas 2026</th><th>Δ Vendas</th><th>Margem 2025</th><th>Margem 2026</th><th>Δ Margem</th><th>% 2025</th><th>% 2026</th>';
+    h += '</tr></thead><tbody>';
+
+    common.forEach(function(i) {
+      var dv = d26[i][0] - d25[i][0];
+      var dm = d26[i][5] - d25[i][5];
+      var dvCls = dv >= 0 ? 'var(--green)' : 'var(--red)';
+      var dmCls = dm >= 0 ? 'var(--green)' : 'var(--red)';
+      h += '<tr><td>' + MONTHS[i] + '</td>';
+      h += '<td>' + formatEur(d25[i][0]) + '</td>';
+      h += '<td>' + formatEur(d26[i][0]) + '</td>';
+      h += '<td style="font-weight:700;color:' + dvCls + ';">' + (dv >= 0 ? '+' : '') + formatEur(dv) + '</td>';
+      h += '<td style="color:' + (d25[i][5] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(d25[i][5]) + '</td>';
+      h += '<td style="color:' + (d26[i][5] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(d26[i][5]) + '</td>';
+      h += '<td style="font-weight:700;color:' + dmCls + ';">' + (dm >= 0 ? '+' : '') + formatEur(dm) + '</td>';
+      h += '<td style="font-weight:600;color:' + (d25[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + d25[i][6].toFixed(2) + '%</td>';
+      h += '<td style="font-weight:600;color:' + (d26[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + d26[i][6].toFixed(2) + '%</td>';
+      h += '</tr>';
+    });
+
+    // Total row
+    var dvT = sum26.vendas - sum25.vendas;
+    var dmT = sum26.margem - sum25.margem;
+    h += '<tr style="background:var(--gray-100);font-weight:700;"><td>Total</td>';
+    h += '<td>' + formatEur(sum25.vendas) + '</td><td>' + formatEur(sum26.vendas) + '</td>';
+    h += '<td style="color:' + (dvT >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + (dvT >= 0 ? '+' : '') + formatEur(dvT) + '</td>';
+    h += '<td style="color:' + (sum25.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum25.margem) + '</td>';
+    h += '<td style="color:' + (sum26.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum26.margem) + '</td>';
+    h += '<td style="color:' + (dmT >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + (dmT >= 0 ? '+' : '') + formatEur(dmT) + '</td>';
+    h += '<td style="color:' + (pct25 >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + pct25.toFixed(2) + '%</td>';
+    h += '<td style="color:' + (pct26 >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + pct26.toFixed(2) + '%</td>';
+    h += '</tr>';
+
+    h += '</tbody></table></div></div>';
+    return h;
+  }
+
+  function renderCompChart() {
+    var canvas = document.getElementById('compChart');
+    if (!canvas) return;
+
+    var d25 = MARGEM_DATA[2025].domuscar;
+    var d26 = MARGEM_DATA[2026].domuscar;
+    var common = [];
+    for (var i = 0; i < 12; i++) { if (d25[i] && d26[i]) common.push(i); }
+
+    var labels = common.map(function(i) { return MONTHS_SHORT[i]; });
+    var vendas25 = common.map(function(i) { return d25[i][0]; });
+    var vendas26 = common.map(function(i) { return d26[i][0]; });
+    var margem25 = common.map(function(i) { return d25[i][6]; });
+    var margem26 = common.map(function(i) { return d26[i][6]; });
+
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    currentChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Vendas 2025',
+            data: vendas25,
+            backgroundColor: 'rgba(0,59,115,.25)',
+            borderColor: 'rgba(0,59,115,.6)',
+            borderWidth: 1,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            label: 'Vendas 2026',
+            data: vendas26,
+            backgroundColor: 'rgba(0,123,192,.35)',
+            borderColor: 'rgba(0,123,192,.7)',
+            borderWidth: 1,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            label: 'Margem % 2025',
+            data: margem25,
+            type: 'line',
+            borderColor: 'rgba(0,59,115,.7)',
+            backgroundColor: 'rgba(0,59,115,.05)',
+            borderWidth: 2.5,
+            borderDash: [6, 3],
+            pointRadius: 5,
+            pointBackgroundColor: 'rgba(0,59,115,.9)',
+            fill: false,
+            yAxisID: 'y1',
+            order: 1
+          },
+          {
+            label: 'Margem % 2026',
+            data: margem26,
+            type: 'line',
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5,150,105,.05)',
+            borderWidth: 2.5,
+            pointRadius: 5,
+            pointBackgroundColor: '#059669',
+            fill: false,
+            yAxisID: 'y1',
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.5,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, padding: 16, font: { size: 11, family: 'Inter' } } },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                if (ctx.dataset.yAxisID === 'y1') return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%';
+                return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('pt-PT', { minimumFractionDigits: 0 }) + ' €';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            position: 'left',
+            title: { display: true, text: 'Vendas (€)', font: { size: 11, family: 'Inter' } },
+            ticks: { callback: function(v) { return (v / 1000).toFixed(0) + 'k €'; }, font: { size: 10 } },
+            grid: { color: 'rgba(0,0,0,.05)' }
+          },
+          y1: {
+            position: 'right',
+            title: { display: true, text: 'Margem (%)', font: { size: 11, family: 'Inter' } },
+            ticks: { callback: function(v) { return v.toFixed(0) + '%'; }, font: { size: 10 } },
+            grid: { drawOnChartArea: false }
+          },
+          x: { ticks: { font: { size: 11, family: 'Inter', weight: 600 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ══════ Ticket Médio: Subview selection (Geral / Mensal) ══════
+  function renderTicketSubview() {
+    var cat = CATEGORIES.find(function(c) { return c.id === 'ticket'; });
+    var html = '<button class="btn-back" onclick="navigate(\'ticket\')">← Voltar</button>' +
+      '<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">' + cat.icon + ' ' + cat.title + ' — ' + state.year + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">Seleciona o tipo de visualização.</p>' +
+      '<div class="subview-grid">' +
+        '<div class="subview-card" onclick="navigate(\'ticket\',' + state.year + ',\'geral\')">' +
+          '<div class="sv-icon">📊</div><h4>Resumo Geral</h4><p>Ticket médio anual por unidade</p>' +
+        '</div>' +
+        '<div class="subview-card" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\')">' +
+          '<div class="sv-icon">📅</div><h4>Detalhe Mensal</h4><p>OSV, ticket, horas e produtividade mês a mês</p>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Ticket Médio: Geral dashboard ══════
+  function renderTicketGeral() {
+    var backTarget = state.year === 2025
+      ? "navigate('ticket')"
+      : "navigate('ticket'," + state.year + ")";
+    var html = '<button class="btn-back" onclick="' + backTarget + '">← Voltar</button>' +
+      '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">🎫 Ticket Médio — Resumo Geral ' + state.year + '</h2>';
+
+    var unitList = [
+      { id: 'mecanica_cacem', name: 'Mecânica Cacém', cls: 'cacem', icon: '⚙️' },
+      { id: 'mecanica_lisboa', name: 'Mecânica Lisboa', cls: 'lisboa', icon: '🔧' },
+      { id: 'colisao', name: 'Colisão', cls: 'colisao', icon: '🚗' },
+      { id: 'domuscar', name: 'DomusCar (Empresa)', cls: 'domuscar', icon: '🏢' }
+    ];
+
+    if (state.year === 2025) {
+      // Direct from TICKET_DATA geral objects
+      var tData = TICKET_DATA[2025];
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Valores anuais calculados a partir do total faturado e nº de OSV finalizadas.</p>';
+      html += '<div class="tg-grid">';
+      unitList.forEach(function(u) {
+        var d = tData[u.id];
+        if (!d) return;
+        html += '<div class="tg-card ' + u.cls + '">' +
+          '<div class="tg-card-title">' + u.icon + ' ' + u.name + '</div>' +
+          '<div class="tg-big">' + formatEur(d.ticketTotal) + '</div>' +
+          '<div style="font-size:.75rem;color:var(--gray-600);margin-top:4px;">' + d.osv.toLocaleString('pt-PT') + ' OSV finalizadas</div>' +
+          '<div class="tg-row">' +
+            '<div class="tg-metric"><div class="tg-metric-label">Peças</div><div class="tg-metric-val">' + formatEur(d.ticketPecas) + '</div></div>' +
+            '<div class="tg-metric"><div class="tg-metric-label">Mão-de-Obra</div><div class="tg-metric-val">' + formatEur(d.ticketMO) + '</div></div>' +
+          '</div>' +
+          '<div class="tg-row">' +
+            '<div class="tg-metric"><div class="tg-metric-label">Total Faturado</div><div class="tg-metric-val">' + formatEur(d.vendas) + '</div></div>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    } else {
+      // 2026+: Aggregate from mensal TICKET_DATA arrays
+      var tData = TICKET_DATA[state.year];
+      if (!tData) { html += '<div class="info-banner">ℹ️ Sem dados de ticket médio para ' + state.year + '.</div>'; document.getElementById('content').innerHTML = html; return; }
+
+      // Calculate aggregated geral per unit
+      var mData = MARGEM_DATA[state.year];
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Valores acumulados dos meses com dados disponíveis.</p>';
+      html += '<div class="tg-grid">';
+      unitList.forEach(function(u) {
+        var monthly = tData[u.id];
+        if (!monthly || !Array.isArray(monthly)) return;
+        var totalOSV = 0, mCount = 0;
+        var sumTicketT = 0, sumTicketP = 0, sumTicketMO = 0;
+        var sumHDisp = 0, sumHVend = 0;
+        for (var i = 0; i < 12; i++) {
+          if (monthly[i]) {
+            totalOSV += monthly[i][0]; mCount++;
+            sumTicketP += monthly[i][0] * monthly[i][1];
+            sumTicketMO += monthly[i][0] * monthly[i][2];
+            sumTicketT += monthly[i][0] * monthly[i][3];
+            sumHDisp += monthly[i][5];
+            sumHVend += monthly[i][6];
+          }
+        }
+        if (totalOSV === 0) return;
+        var avgTicketT = sumTicketT / totalOSV;
+        var avgTicketP = sumTicketP / totalOSV;
+        var avgTicketMO = sumTicketMO / totalOSV;
+        var totalVendas = mData && mData[u.id] ? mData[u.id].reduce(function(s, m) { return s + (m ? m[0] : 0); }, 0) : 0;
+
+        html += '<div class="tg-card ' + u.cls + '">' +
+          '<div class="tg-card-title">' + u.icon + ' ' + u.name + '</div>' +
+          '<div class="tg-big">' + formatEur(avgTicketT) + '</div>' +
+          '<div style="font-size:.75rem;color:var(--gray-600);margin-top:4px;">' + totalOSV.toLocaleString('pt-PT') + ' OSV em ' + mCount + ' meses</div>' +
+          '<div class="tg-row">' +
+            '<div class="tg-metric"><div class="tg-metric-label">Peças</div><div class="tg-metric-val">' + formatEur(avgTicketP) + '</div></div>' +
+            '<div class="tg-metric"><div class="tg-metric-label">Mão-de-Obra</div><div class="tg-metric-val">' + formatEur(avgTicketMO) + '</div></div>' +
+          '</div>' +
+          '<div class="tg-row">' +
+            '<div class="tg-metric"><div class="tg-metric-label">H. Disponíveis</div><div class="tg-metric-val">' + formatNum(sumHDisp) + '</div></div>' +
+            '<div class="tg-metric"><div class="tg-metric-label">H. Vendidas</div><div class="tg-metric-val">' + formatNum(sumHVend) + '</div></div>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Chart: ticket por unidade
+    html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function() { renderTicketGeralChart(); }, 80);
+  }
+
+  function renderTicketGeralChart() {
+    var canvas = document.getElementById('indicadorChart');
+    if (!canvas) return;
+
+    var unitNames = ['Mec. Cacém', 'Mec. Lisboa', 'Colisão', 'DomusCar'];
+    var unitIds = ['mecanica_cacem', 'mecanica_lisboa', 'colisao', 'domuscar'];
+    var pecasVals = [], moVals = [];
+
+    if (state.year === 2025) {
+      var td = TICKET_DATA[2025];
+      unitIds.forEach(function(id) {
+        pecasVals.push(td[id] ? td[id].ticketPecas : 0);
+        moVals.push(td[id] ? td[id].ticketMO : 0);
+      });
+    } else {
+      var td = TICKET_DATA[state.year];
+      unitIds.forEach(function(id) {
+        var monthly = td && td[id];
+        if (!monthly || !Array.isArray(monthly)) { pecasVals.push(0); moVals.push(0); return; }
+        var tOSV = 0, sP = 0, sMO = 0;
+        for (var i = 0; i < 12; i++) { if (monthly[i]) { tOSV += monthly[i][0]; sP += monthly[i][0]*monthly[i][1]; sMO += monthly[i][0]*monthly[i][2]; } }
+        pecasVals.push(tOSV ? sP/tOSV : 0);
+        moVals.push(tOSV ? sMO/tOSV : 0);
+      });
+    }
+
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    currentChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: unitNames,
+        datasets: [
+          { label: 'Ticket Peças (€)', data: pecasVals, backgroundColor: 'rgba(0,123,192,.6)', borderColor: 'rgba(0,123,192,1)', borderWidth: 1, borderRadius: 6 },
+          { label: 'Ticket MO (€)', data: moVals, backgroundColor: 'rgba(5,150,105,.5)', borderColor: 'rgba(5,150,105,1)', borderWidth: 1, borderRadius: 6 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+          tooltip: { backgroundColor: '#002B55', callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; } } }
+        },
+        scales: {
+          y: { beginAtZero: true, stacked: true, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' } },
+          x: { stacked: true, ticks: { font: { family: 'Inter', size: 11, weight: '600' } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ══════ Ticket Médio: Unit selection for Mensal ══════
+  function renderTicketUnits() {
+    var unitIcons = { mecanica_lisboa: '🔧', mecanica_cacem: '⚙️', colisao: '🚗', domuscar: '🏢' };
+    var html = '<button class="btn-back" onclick="navigate(\'ticket\',' + state.year + ')">← Voltar</button>' +
+      '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">🎫 Ticket Médio — Detalhe Mensal ' + state.year + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">Seleciona a unidade para ver os dados mensais detalhados.</p>' +
+      '<div class="unit-grid">';
+    UNITS.forEach(function(u) {
+      html += '<div class="unit-card" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\',\'' + u.id + '\')">' +
+        '<div class="unit-icon ' + u.iconClass + '">' + (unitIcons[u.id] || '📊') + '</div>' +
+        '<div><h4>' + u.name + '</h4><p>Dados ' + state.year + '</p></div>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Ticket Médio: Mensal detail per unit ══════
+  function renderTicketMensal() {
+    var unit = UNITS.find(function(u) { return u.id === state.unit; });
+    var tData = TICKET_DATA[state.year];
+    var monthly = tData && tData[state.unit];
+    var hasData = monthly && Array.isArray(monthly) && monthly.some(function(m) { return m !== null; });
+
+    var html = '<button class="btn-back" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\')">← Voltar</button>';
+    html += '<div class="data-header" style="margin-top:20px;">' +
+      '<h2>🎫 Ticket Médio — ' + (unit ? unit.name : '') + ' ' + state.year + '</h2>';
+    if (hasData) {
+      html += '<span class="data-badge" style="background:rgba(5,150,105,.1);color:#059669;">Dados Reais</span>';
+    } else {
+      html += '<span class="data-badge placeholder">Em Breve</span>';
+    }
+    html += '</div>';
+
+    if (!hasData) {
+      html += '<div class="info-banner">ℹ️ Os dados mensais de ticket médio para esta unidade ainda não foram carregados.</div>';
+      document.getElementById('content').innerHTML = html;
+      return;
+    }
+
+    // Chart
+    html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+    // Table
+    html += '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Mês</th>';
+    TICKET_MENSAL_COLS.forEach(function(col) { html += '<th>' + col + '</th>'; });
+    html += '</tr></thead><tbody>';
+
+    MONTHS.forEach(function(m, i) {
+      html += '<tr><td style="font-weight:600;color:var(--navy);">' + m + '</td>';
+      if (monthly[i]) {
+        html += '<td style="font-weight:700;color:var(--navy);">' + monthly[i][0] + '</td>';
+        html += '<td>' + formatEur(monthly[i][1]) + '</td>';
+        html += '<td>' + formatEur(monthly[i][2]) + '</td>';
+        html += '<td style="font-weight:700;color:var(--accent);">' + formatEur(monthly[i][3]) + '</td>';
+        html += '<td>' + formatNum(monthly[i][4]) + '</td>';
+        html += '<td>' + formatNum(monthly[i][5]) + '</td>';
+        html += '<td>' + formatNum(monthly[i][6]) + '</td>';
+        html += '<td>' + formatEur(monthly[i][7]) + '</td>';
+      } else {
+        TICKET_MENSAL_COLS.forEach(function() { html += '<td class="placeholder-val">—</td>'; });
+      }
+      html += '</tr>';
+    });
+
+    // Totals/Averages row
+    var totalOSV = 0, cnt = 0, sTP = 0, sTM = 0, sTT = 0, sHP = 0, sHD = 0, sHV = 0;
+    for (var i = 0; i < 12; i++) {
+      if (monthly[i]) {
+        totalOSV += monthly[i][0]; cnt++;
+        sTP += monthly[i][0] * monthly[i][1];
+        sTM += monthly[i][0] * monthly[i][2];
+        sTT += monthly[i][0] * monthly[i][3];
+        sHP += monthly[i][0] * monthly[i][4];
+        sHD += monthly[i][5];
+        sHV += monthly[i][6];
+      }
+    }
+    if (totalOSV > 0) {
+      html += '<tr style="background:var(--gray-100);font-weight:700;"><td>Acumulado</td>';
+      html += '<td>' + totalOSV + '</td>';
+      html += '<td>' + formatEur(sTP / totalOSV) + '</td>';
+      html += '<td>' + formatEur(sTM / totalOSV) + '</td>';
+      html += '<td style="color:var(--accent);">' + formatEur(sTT / totalOSV) + '</td>';
+      html += '<td>' + formatNum(sHP / totalOSV) + '</td>';
+      html += '<td>' + formatNum(sHD) + '</td>';
+      html += '<td>' + formatNum(sHV) + '</td>';
+      var avgEurH = sHV > 0 ? (totalOSV * (sTT / totalOSV)) / sHV : 0;
+      // Actually €/H = total vendas / total horas vendidas. Use margem data for total vendas
+      var mData = MARGEM_DATA[state.year] && MARGEM_DATA[state.year][state.unit];
+      var tVendas = 0;
+      if (mData) { for (var j = 0; j < 12; j++) { if (mData[j] && monthly[j]) tVendas += mData[j][1]; } }
+      html += '<td>' + formatEur(tVendas && sHV ? tVendas / sHV : 0) + '</td>';
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function() { renderTicketMensalChart(monthly); }, 80);
+  }
+
+  function renderTicketMensalChart(monthly) {
+    var canvas = document.getElementById('indicadorChart');
+    if (!canvas) return;
+
+    var labels = [], ticketVals = [], osvVals = [];
+    for (var i = 0; i < 12; i++) {
+      if (monthly[i]) {
+        labels.push(MONTHS_SHORT[i]);
+        ticketVals.push(monthly[i][3]);
+        osvVals.push(monthly[i][0]);
+      }
+    }
+
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    currentChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Nº OSV',
+            data: osvVals,
+            backgroundColor: 'rgba(0,59,115,.25)',
+            borderColor: 'rgba(0,59,115,.6)',
+            borderWidth: 1, borderRadius: 6,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Ticket Médio Total (€)',
+            data: ticketVals,
+            type: 'line',
+            borderColor: 'rgba(0,123,192,1)',
+            backgroundColor: 'rgba(0,123,192,.08)',
+            borderWidth: 2.5,
+            pointRadius: 6,
+            pointBackgroundColor: 'rgba(0,123,192,1)',
+            fill: true,
+            tension: 0.3,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+          tooltip: {
+            backgroundColor: '#002B55',
+            callbacks: {
+              label: function(ctx) {
+                if (ctx.dataset.yAxisID === 'y1') return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €';
+                return ctx.dataset.label + ': ' + ctx.parsed.y;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Nº OSV', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { size: 10 } } },
+          y1: { position: 'right', title: { display: true, text: 'Ticket (€)', font: { size: 11 } }, grid: { drawOnChartArea: false }, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '600' } } }
+        }
+      }
+    });
+  }
+
+  // ══════ Level 3: Units ══════
+  function renderUnits() {
+    var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+    var unitIcons = { mecanica_lisboa: '🔧', mecanica_cacem: '⚙️', colisao: '🚗', domuscar: '🏢' };
+    var filteredUnits = UNITS.filter(function(u) {
+      if (u.margemOnly && state.category !== 'margem') return false;
+      return true;
+    });
+    var html = '<button class="btn-back" onclick="navigate(\'' + state.category + '\')">← Voltar</button>' +
+      '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">' + cat.icon + ' ' + cat.title + ' — ' + state.year + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">Seleciona a unidade para ver os dados detalhados.</p>' +
+      '<div class="unit-grid">';
+    filteredUnits.forEach(function(u) {
+      html += '<div class="unit-card" onclick="navigate(\'' + state.category + '\',' + state.year + ',\'' + u.id + '\')">' +
+        '<div class="unit-icon ' + u.iconClass + '">' + (unitIcons[u.id] || '📊') + '</div>' +
+        '<div><h4>' + u.name + '</h4><p>Dados ' + state.year + '</p></div>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Level 4: Data (chart + table) ══════
+  function renderData() {
+    var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+    var unit = UNITS.find(function(u) { return u.id === state.unit; });
+
+    // Check if we have real data
+    var hasRealData = false;
+    var realData = null;
+    if (cat.id === 'kpis' && KPI_DATA[state.year] && KPI_DATA[state.year][state.unit]) {
+      hasRealData = true;
+      realData = KPI_DATA[state.year][state.unit];
+    } else if (cat.id === 'margem' && MARGEM_DATA[state.year] && MARGEM_DATA[state.year][state.unit]) {
+      hasRealData = true;
+      realData = MARGEM_DATA[state.year][state.unit];
+    }
+
+    var html = '<button class="btn-back" onclick="navigate(\'' + state.category + '\',' + state.year + ')">← Voltar</button>';
+
+    html += '<div class="data-header" style="margin-top:20px;">' +
+      '<h2>' + cat.icon + ' ' + cat.title + ' — ' + unit.name + ' ' + state.year + '</h2>';
+    if (hasRealData) {
+      html += '<span class="data-badge" style="background:rgba(5,150,105,.1);color:#059669;">Dados Reais</span>';
+    } else {
+      html += '<span class="data-badge placeholder">Em Breve</span>';
+    }
+    html += '</div>';
+
+    if (!hasRealData) {
+      html += '<div class="info-banner">ℹ️ Os dados para esta categoria/ano ainda não foram carregados.</div>';
+    }
+
+    // Chart
+    html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+    // Table
+    html += '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Mês</th>';
+    cat.columns.forEach(function(col) {
+      html += '<th>' + col + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    var tableData = hasRealData ? realData : generatePlaceholder(cat.id);
+    MONTHS.forEach(function(m, i) {
+      html += '<tr><td style="font-weight:600;color:var(--navy);">' + m + '</td>';
+      if (hasRealData && tableData[i] !== null) {
+        if (cat.id === 'kpis') {
+          html += '<td>' + formatNum(tableData[i][0]) + '</td>';
+          html += '<td>' + formatNum(tableData[i][1]) + '</td>';
+          html += '<td>' + formatNum(tableData[i][2]) + '</td>';
+          html += '<td style="font-weight:700;color:' + efColor(tableData[i][3]) + ';">' + tableData[i][3].toFixed(1) + '%</td>';
+          html += '<td style="font-weight:700;color:' + utColor(tableData[i][4]) + ';">' + tableData[i][4].toFixed(1) + '%</td>';
+        } else if (cat.id === 'margem') {
+          html += '<td>' + formatEur(tableData[i][0]) + '</td>';
+          html += '<td>' + formatEur(tableData[i][1]) + '</td>';
+          html += '<td>' + formatEur(tableData[i][2]) + '</td>';
+          html += '<td>' + formatEur(tableData[i][3]) + '</td>';
+          html += '<td>' + formatEur(tableData[i][4]) + '</td>';
+          var mVal = tableData[i][5];
+          html += '<td style="font-weight:700;color:' + (mVal >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(mVal) + '</td>';
+          html += '<td style="font-weight:700;color:' + (tableData[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + tableData[i][6].toFixed(2) + '%</td>';
+        } else {
+          tableData[i].forEach(function(v) { html += '<td>' + (v !== null ? v : '—') + '</td>'; });
+        }
+      } else {
+        cat.columns.forEach(function() {
+          html += '<td class="placeholder-val">—</td>';
+        });
+      }
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+
+    document.getElementById('content').innerHTML = html;
+
+    // Render chart
+    setTimeout(function() { renderChart(cat, tableData, hasRealData); }, 50);
+  }
+
+  function formatNum(v) {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatEur(v) {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+
+  // Eficiência Produtiva color: <100 red, 100-104 yellow, 105+ green
+  function efColor(v) {
+    if (v < 100) return 'var(--red)';
+    if (v < 105) return 'var(--yellow)';
+    return 'var(--green)';
+  }
+
+  // Utilização color: <80 red, 80-84 yellow, 85+ green
+  function utColor(v) {
+    if (v < 80) return 'var(--red)';
+    if (v < 85) return 'var(--yellow)';
+    return 'var(--green)';
+  }
+
+  function isMonthPast(year, monthIndex) {
+    var now = new Date();
+    if (year < now.getFullYear()) return true;
+    if (year === now.getFullYear() && monthIndex < now.getMonth()) return true;
+    return false;
+  }
+
+  function generatePlaceholder(catId) {
+    var data = [];
+    for (var i = 0; i < 12; i++) {
+      if (catId === 'kpis') {
+        data.push([
+          (75 + Math.random() * 20).toFixed(1),
+          (70 + Math.random() * 25).toFixed(1),
+          (1 + Math.random() * 5).toFixed(1),
+          Math.floor(120 + Math.random() * 80),
+          Math.floor(160 + Math.random() * 40)
+        ]);
+      } else if (catId === 'ticket') {
+        var pecas = Math.floor(150 + Math.random() * 200);
+        var mao = Math.floor(80 + Math.random() * 120);
+        data.push([
+          pecas + mao,
+          pecas,
+          mao,
+          Math.floor(80 + Math.random() * 60)
+        ]);
+      } else {
+        var fat = Math.floor(30000 + Math.random() * 20000);
+        var cust = Math.floor(fat * (0.55 + Math.random() * 0.2));
+        var marg = fat - cust;
+        data.push([
+          fat,
+          cust,
+          marg,
+          ((marg / fat) * 100).toFixed(1)
+        ]);
+      }
+    }
+    return data;
+  }
+
+  function renderChart(cat, data, hasRealData) {
+    var canvas = document.getElementById('indicadorChart');
+    if (!canvas) return;
+
+    if (hasRealData && cat.id === 'margem') {
+      // Bar chart: Vendas vs Custos Totais, line for Margem %
+      var vendasVals = data.map(function(r) { return r !== null ? r[0] : null; });
+      var custosVals = data.map(function(r) { return r !== null ? (r[3] + r[4]) : null; });
+      var margemPctVals = data.map(function(r) { return r !== null ? r[6] : null; });
+
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: MONTHS_SHORT,
+          datasets: [
+            {
+              label: 'Vendas s/ IVA (€)',
+              data: vendasVals,
+              backgroundColor: 'rgba(0,123,192,.6)',
+              borderColor: 'rgba(0,123,192,1)',
+              borderWidth: 1, borderRadius: 6, barPercentage: 0.4,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Custos Totais (€)',
+              data: custosVals,
+              backgroundColor: 'rgba(220,38,38,.5)',
+              borderColor: 'rgba(220,38,38,1)',
+              borderWidth: 1, borderRadius: 6, barPercentage: 0.4,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Margem (%)',
+              data: margemPctVals,
+              type: 'line',
+              borderColor: 'rgba(5,150,105,1)',
+              backgroundColor: 'rgba(5,150,105,.1)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointBackgroundColor: function(ctx) {
+                var v = ctx.parsed ? ctx.parsed.y : 0;
+                return v >= 0 ? 'rgba(5,150,105,1)' : 'rgba(220,38,38,1)';
+              },
+              fill: false, tension: 0.3,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+            tooltip: { backgroundColor: '#002B55', titleFont: { family: 'Inter', weight: '600' }, bodyFont: { family: 'Inter' }, cornerRadius: 8, padding: 12 }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              position: 'left',
+              grid: { color: 'rgba(0,0,0,.04)' },
+              ticks: { font: { family: 'Inter', size: 10 }, callback: function(v) { return (v/1000).toFixed(0) + 'k €'; } }
+            },
+            y1: {
+              position: 'right',
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 10 }, callback: function(v) { return v + '%'; } }
+            },
+            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '500' } } }
+          }
+        }
+      });
+    } else if (hasRealData && cat.id === 'kpis') {
+      // Two-line chart: Eficiência Produtiva + Utilização
+      var efValues = data.map(function(r) { return r !== null ? r[3] : null; });
+      var utValues = data.map(function(r) { return r !== null ? r[4] : null; });
+
+      currentChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: MONTHS_SHORT,
+          datasets: [
+            {
+              label: 'Eficiência Produtiva (%)',
+              data: efValues,
+              borderColor: 'rgba(0,123,192,1)',
+              backgroundColor: 'rgba(0,123,192,.1)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointBackgroundColor: 'rgba(0,123,192,1)',
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: 'Utilização (%)',
+              data: utValues,
+              borderColor: 'rgba(5,150,105,1)',
+              backgroundColor: 'rgba(5,150,105,.1)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointBackgroundColor: 'rgba(5,150,105,1)',
+              fill: false,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, padding: 20 } },
+            tooltip: {
+              backgroundColor: '#002B55',
+              titleFont: { family: 'Inter', weight: '600' },
+              bodyFont: { family: 'Inter' },
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'; } }
+            },
+            annotation: undefined
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              suggestedMin: 50,
+              suggestedMax: 220,
+              grid: { color: 'rgba(0,0,0,.04)' },
+              ticks: { font: { family: 'Inter', size: 11 }, callback: function(v) { return v + '%'; } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 11, weight: '500' } }
+            }
+          }
+        }
+      });
+    } else {
+      // Placeholder: empty chart with message
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: { labels: MONTHS_SHORT, datasets: [{ label: '—', data: [], backgroundColor: 'rgba(0,123,192,.15)' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' } }, x: { grid: { display: false } } }
+        }
+      });
+    }
+  }
+
+  // Expose navigate globally
+  window.navigate = navigate;
+
+  // Init
+  navigate();
+
+})();
+</script>
 </body>
 </html>
