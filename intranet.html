@@ -986,22 +986,32 @@
 
         <div class="sidebar-section">Ongoing Onboarding</div>
         <ul class="sidebar-nav">
-            <li><a onclick="openModule('visao_missao')" id="navVisao_missao"><span class="nav-icon">🎯</span> Visão / Missão</a></li>
-            <li><a onclick="openModule('estrutura_org')" id="navEstrutura_org"><span class="nav-icon">🏢</span> Estrutura Organizacional</a></li>
-            <li><a onclick="openModule('normas_regras')" id="navNormas_regras"><span class="nav-icon">📜</span> Normas e Regras Internas</a></li>
-            <li><a onclick="openModule('qualidade_seguranca')" id="navQualidade_seguranca"><span class="nav-icon">🛡️</span> Qualidade e Segurança</a></li>
-            <li><a onclick="openModule('doc_tecnica')" id="navDoc_tecnica"><span class="nav-icon">📖</span> Documentação Técnica <span class="badge-em-breve">Em Breve</span></a></li>
-            <li><a onclick="openModule('sistemas_ferramentas')" id="navSistemas_ferramentas"><span class="nav-icon">🔧</span> Sistemas e Ferramentas <span class="badge-em-breve">Em Breve</span></a></li>
-            <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
-            <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos <span class="badge-em-breve">Em Breve</span></a></li>
+            <li>
+                <a onclick="toggleDropdown('empresaSubmenu','empresaArrow')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span><span class="nav-icon">🏢</span> Empresa e Cultura</span><span id="empresaArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <ul id="empresaSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
+                    <li><a onclick="openModule('visao_missao')" id="navVisao_missao"><span class="nav-icon">🎯</span> Visão / Missão</a></li>
+                    <li><a onclick="openModule('estrutura_org')" id="navEstrutura_org"><span class="nav-icon">🏢</span> Estrutura Organizacional</a></li>
+                    <li><a onclick="openModule('normas_regras')" id="navNormas_regras"><span class="nav-icon">📜</span> Normas e Regras Internas</a></li>
+                </ul>
+            </li>
+            <li>
+                <a onclick="toggleDropdown('conhecimentoSubmenu','conhecimentoArrow')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span><span class="nav-icon">📚</span> Conhecimento e Ferramentas</span><span id="conhecimentoArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <ul id="conhecimentoSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
+                    <li><a onclick="openModule('qualidade_seguranca')" id="navQualidade_seguranca"><span class="nav-icon">🛡️</span> Qualidade e Segurança</a></li>
+                    <li><a onclick="openModule('doc_tecnica')" id="navDoc_tecnica"><span class="nav-icon">📖</span> Documentação Técnica <span class="badge-em-breve">Em Breve</span></a></li>
+                    <li><a onclick="openModule('sistemas_ferramentas')" id="navSistemas_ferramentas"><span class="nav-icon">🔧</span> Sistemas e Ferramentas <span class="badge-em-breve">Em Breve</span></a></li>
+                    <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
+                    <li><a onclick="openModule('indicadores_obj')" id="navIndicadores_obj"><span class="nav-icon">📊</span> Indicadores e Objetivos <span class="badge-em-breve">Em Breve</span></a></li>
+                </ul>
+            </li>
             <li id="navSugestoesMelhoriaLi">
-                <a onclick="openSugestoesAndExpand()" id="navSugestoes_melhoria" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">💡</span> Sugestões e Melhoria</span><span id="sugestoesArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
+                <a onclick="openSugestoesAndExpand()" id="navSugestoes_melhoria" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">💡</span> Qualidade e Melhoria</span><span id="sugestoesArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="sugestoesSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
                     <li><a onclick="openModule('caixa_sugestoes')" id="navCaixa_sugestoes"><span class="nav-icon">📝</span> Caixa de Sugestões</a></li>
                     <li><a onclick="openModule('formulario_nc')" id="navFormulario_nc"><span class="nav-icon">⚠️</span> Formulário Não-Conformidade</a></li>
+                    <li><a onclick="openModule('processos_op')" id="navProcessos_op"><span class="nav-icon">⚙️</span> Processos Operacionais</a></li>
                 </ul>
             </li>
-            <li><a onclick="openModule('processos_op')" id="navProcessos_op"><span class="nav-icon">⚙️</span> Processos Operacionais</a></li>
         </ul>
 
         <div class="sidebar-section">Coordenação</div>
@@ -2195,8 +2205,12 @@
     }
 
     function toggleSugestoesSubmenu() {
-        var sub = document.getElementById('sugestoesSubmenu');
-        var arrow = document.getElementById('sugestoesArrow');
+        toggleDropdown('sugestoesSubmenu', 'sugestoesArrow');
+    }
+
+    function toggleDropdown(subId, arrowId) {
+        var sub = document.getElementById(subId);
+        var arrow = document.getElementById(arrowId);
         if (!sub) return;
         if (sub.style.display === 'none' || !sub.style.display) {
             sub.style.display = 'block';
@@ -2208,13 +2222,19 @@
     }
 
     function openSugestoesAndExpand() {
-        // Abre o HTML de Sugestões e Melhoria
-        openModule('sugestoes_melhoria');
-        // Expande o submenu
         var sub = document.getElementById('sugestoesSubmenu');
         var arrow = document.getElementById('sugestoesArrow');
-        if (sub) sub.style.display = 'block';
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
+        if (!sub) return;
+        if (sub.style.display === 'none' || !sub.style.display) {
+            // Expand + open module
+            openModule('sugestoes_melhoria');
+            sub.style.display = 'block';
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+        } else {
+            // Collapse
+            sub.style.display = 'none';
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
     }
 
     function updateSidebarPermissions() {
