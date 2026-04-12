@@ -979,6 +979,11 @@
             <li><a onclick="goHome()" id="navHome"><span class="nav-icon">🏠</span> Início</a></li>
         </ul>
 
+        <div class="sidebar-section">Operações</div>
+        <ul class="sidebar-nav">
+            <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Serviço de Mobilidade</a></li>
+        </ul>
+
         <div class="sidebar-section">Ongoing Onboarding</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('visao_missao')" id="navVisao_missao"><span class="nav-icon">🎯</span> Visão / Missão</a></li>
@@ -1002,18 +1007,13 @@
         <div class="sidebar-section">Coordenação</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
-            <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Auditoria Interna Trimestral</a></li>
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
-        </ul>
-
-        <div class="sidebar-section">Operações</div>
-        <ul class="sidebar-nav">
-            <li><a onclick="openModule('viaturas')" id="navViaturas"><span class="nav-icon">🚗</span> Serviço de Mobilidade</a></li>
         </ul>
 
         <div class="sidebar-section" id="adminSection" style="display: none;">Administração</div>
         <ul class="sidebar-nav" id="adminNav" style="display: none;">
             <li><a onclick="openSettings()" id="navDefinicoes"><span class="nav-icon">⚙️</span> Definições</a></li>
+            <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Auditoria Interna Trimestral</a></li>
             <li id="navGerarRelatoriosLi">
                 <a onclick="toggleRelatoriosSubmenu()" id="navGerarRelatorios" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">📋</span> Gerar Relatórios</span><span id="relatoriosArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="relatoriosSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
@@ -1937,15 +1937,15 @@
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria']
         },
         'mario.perez@domuscar.com': {
             role: 'coordenador', name: 'Mário Perez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria']
         },
         'diogolj009@gmail.com': {
             role: 'colaborador', name: 'Diogo Henrique Gomes Fernandes',
@@ -2469,7 +2469,7 @@
             { email: 'mario.perez@domuscar.com', name: 'Mário Perez' }
         ],
         rh: [
-            { email: 'claudia.pedro@domuscar.com', name: 'Cláudia Pedro' }
+            { email: 'recursoshumanos@domuscar.com', name: 'Cláudia Pedro' }
         ]
     };
 

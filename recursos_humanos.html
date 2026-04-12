@@ -277,7 +277,7 @@ select.form-input { cursor:pointer; }
         <div class="rh-contact-info">
           <div class="rh-contact-name">Cláudia Pedro</div>
           <div class="rh-contact-role">Responsável de Recursos Humanos</div>
-          <div class="rh-contact-email"><a href="mailto:claudia.pedro@domuscar.com">claudia.pedro@domuscar.com</a></div>
+          <div class="rh-contact-email"><a href="mailto:recursoshumanos@domuscar.com">recursoshumanos@domuscar.com</a></div>
         </div>
       </div>
     </div>
@@ -290,7 +290,7 @@ select.form-input { cursor:pointer; }
   <div class="container">
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('ferias')">Férias e Faltas</button>
-      <button class="tab-btn" onclick="switchTab('formacao')">Formação</button>
+      <button class="tab-btn" onclick="switchTab('formacao')" id="tabFormacao">Formação</button>
       <button class="tab-btn" onclick="switchTab('documentos')">Documentos</button>
       <button class="tab-btn" onclick="switchTab('info')">Informações Úteis</button>
     </div>
@@ -546,7 +546,7 @@ select.form-input { cursor:pointer; }
           <div class="info-card-icon green">🏥</div>
           <h3>Seguro de Acidentes de Trabalho</h3>
           <p>Todos os colaboradores estão cobertos pelo seguro de acidentes de trabalho. Em caso de acidente, comunica imediatamente ao teu coordenador e aos Recursos Humanos.</p>
-          <p style="margin-top:10px; font-size:.82rem; color:var(--gray-600);">Para mais informações, contacta: <strong>claudia.pedro@domuscar.com</strong></p>
+          <p style="margin-top:10px; font-size:.82rem; color:var(--gray-600);">Para mais informações, contacta: <strong>recursoshumanos@domuscar.com</strong></p>
         </div>
 
         <div class="info-card">
@@ -882,6 +882,18 @@ select.form-input { cursor:pointer; }
     });
   }
   markPassedHolidays();
+
+  // ======== RESTRICT FORMAÇÃO TAB ========
+  // Only visible to admins and coordenadores
+  setTimeout(function() {
+    try {
+      var perms = window.parent.getCurrentUserPermissions();
+      if (perms && perms.role !== 'admin' && perms.role !== 'coordenador') {
+        var tabBtn = document.getElementById('tabFormacao');
+        if (tabBtn) tabBtn.style.display = 'none';
+      }
+    } catch(e) {}
+  }, 300);
 
 })();
 </script>
