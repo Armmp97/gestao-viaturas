@@ -454,12 +454,14 @@ body {
         pendingFiles.forEach(function(f, i) {
             var date = formatDate(f.lastModifiedDateTime);
             var unitLabel = f._coordName ? ' · ' + f._coordName : '';
+            var refDate = extractRefDate(f.name);
+            var refBadge = refDate ? '<span style="display:inline-block;background:#e8f0fe;color:#1a73e8;font-weight:700;font-size:.75rem;padding:3px 8px;border-radius:4px;margin-left:6px;">📅 ' + refDate + '</span>' : '';
             var deleteBtn = isAdmin ? '<button class="btn btn-sm" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;" onclick="event.stopPropagation(); deleteSinglePending(' + i + ', this)">🗑️ Eliminar</button>' : '';
             html += '<div class="file-card" id="pendingCard' + i + '" onclick="openFile(' + i + ', \'pending\')">' +
                 '<div class="file-card-header">' +
                     '<div>' +
                         '<div class="file-card-title">📊 ' + escapeHtml(f.name) + '</div>' +
-                        '<div class="file-card-date">' + date + unitLabel + '</div>' +
+                        '<div class="file-card-date">' + date + unitLabel + refBadge + '</div>' +
                     '</div>' +
                     '<span class="status-chip pending" style="font-size:.75rem;padding:4px 10px;">Pendente</span>' +
                 '</div>' +
@@ -489,11 +491,13 @@ body {
         respondedFiles.forEach(function(f, i) {
             var date = formatDate(f.lastModifiedDateTime);
             var unitLabel = f._coordName ? ' · ' + f._coordName : '';
+            var refDate = extractRefDate(f.name);
+            var refBadge = refDate ? '<span style="display:inline-block;background:#e6f4ea;color:#0d904f;font-weight:700;font-size:.75rem;padding:3px 8px;border-radius:4px;margin-left:6px;">📅 ' + refDate + '</span>' : '';
             html += '<div class="file-card responded" onclick="openFile(' + i + ', \'responded\')">' +
                 '<div class="file-card-header">' +
                     '<div>' +
                         '<div class="file-card-title">✅ ' + escapeHtml(f.name) + '</div>' +
-                        '<div class="file-card-date">' + date + unitLabel + '</div>' +
+                        '<div class="file-card-date">' + date + unitLabel + refBadge + '</div>' +
                     '</div>' +
                     '<span class="status-chip done" style="font-size:.75rem;padding:4px 10px;">Respondido</span>' +
                 '</div>' +
@@ -628,6 +632,13 @@ body {
         var h = String(d.getHours()).padStart(2, '0');
         var m = String(d.getMinutes()).padStart(2, '0');
         return day + '/' + mon + '/' + year + ' ' + h + ':' + m;
+    }
+
+    function extractRefDate(fileName) {
+        // Extract reference date from filename pattern: Validacao_Unit_Ref_DDMMYYYY_timestamp.html
+        var m = fileName.match(/Ref_(\d{2})(\d{2})(\d{4})/);
+        if (m) return m[1] + '/' + m[2] + '/' + m[3];
+        return null;
     }
 
     function escapeHtml(str) {

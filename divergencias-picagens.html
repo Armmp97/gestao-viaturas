@@ -871,9 +871,10 @@ async function generate() {
             btn.disabled = true;
 
             var ts = getTimestamp();
+            var ref = getRefDateTag();
             var payload = [{
                 unit: unitToCoord[report.unit] || report.safe,
-                fileName: 'Validacao_' + report.safe.charAt(0).toUpperCase() + report.safe.slice(1) + '_' + ts + '.html',
+                fileName: 'Validacao_' + report.safe.charAt(0).toUpperCase() + report.safe.slice(1) + '_' + ref + ts + '.html',
                 htmlContent: report.html
             }];
 
@@ -907,10 +908,11 @@ async function generate() {
             document.querySelectorAll('.btn-send-individual').forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; });
 
             var ts = getTimestamp();
+            var ref = getRefDateTag();
             var payload = generatedReports.map(function(r) {
                 return {
                     unit: unitToCoord[r.unit] || r.safe,
-                    fileName: 'Validacao_' + r.safe.charAt(0).toUpperCase() + r.safe.slice(1) + '_' + ts + '.html',
+                    fileName: 'Validacao_' + r.safe.charAt(0).toUpperCase() + r.safe.slice(1) + '_' + ref + ts + '.html',
                     htmlContent: r.html
                 };
             });
@@ -1053,6 +1055,14 @@ function openPrintPreview(reports) {
 // ============================================================
 // SHAREPOINT INTEGRATION via postMessage to parent (intranet.html)
 // ============================================================
+function getRefDateTag() {
+    // Returns reference date from DATE_STR (DD/MM/YYYY) as "Ref_DDMMYYYY"
+    if (!DATE_STR) return '';
+    var parts = DATE_STR.split('/');
+    if (parts.length === 3) return 'Ref_' + parts[0] + parts[1] + parts[2] + '_';
+    return '';
+}
+
 function getTimestamp() {
     var d = new Date();
     return d.getFullYear() + '-' +
