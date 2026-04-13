@@ -1221,12 +1221,18 @@ select.form-input { cursor:pointer; }
     try {
       window.parent.downloadDivCoordFile(fileId).then(function(htmlContent) {
         // Inject read-only styles to block any editing
+        // Force all <details> open and add read-only styles
+        var processed = htmlContent
+          .replace(/<details\b/gi, '<details open')
+          .replace(/<details\s+open\s+open/gi, '<details open');
         var readOnlyWrapper = '<!DOCTYPE html><html><head><style>' +
           '*, *::before, *::after { pointer-events: none !important; user-select: text !important; }' +
           'input, textarea, select, button, [contenteditable] { pointer-events: none !important; opacity: 0.7 !important; }' +
           'button, input[type="submit"], input[type="button"], a[onclick] { display: none !important; }' +
           'form { pointer-events: none !important; }' +
-          '</style></head><body>' + htmlContent + '</body></html>';
+          'details > summary { pointer-events: none !important; }' +
+          'details { open: true; }' +
+          '</style></head><body>' + processed + '</body></html>';
         frame.srcdoc = readOnlyWrapper;
       }).catch(function(err) {
         frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro ao carregar</h2><p>' + (err.message || err) + '</p></body></html>';
