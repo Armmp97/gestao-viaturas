@@ -2595,8 +2595,15 @@
     function deleteSharePointFile(fileId) {
         var driveId = getDriveId();
         if (!driveId) return Promise.reject('SharePoint not initialized');
-        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
-            method: 'DELETE'
+        // DELETE requires write token — do NOT fallback to read-only
+        return getGraphToken().then(function(token) {
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+        }).then(function(resp) {
+            if (!resp.ok && resp.status !== 204) throw new Error('Delete failed: ' + resp.status);
+            console.log('[SP-Delete] Ficheiro eliminado: ' + fileId);
         });
     }
 
@@ -2697,7 +2704,7 @@
         'mecanica_cacem': { email: 'jose.rodriguez@domuscar.com', name: 'José Rodriguez', pendente: 'div_cacem_pendente', respondido: 'div_cacem_respondido' }
     };
 
-    var INTRANET_URL = 'https://intranet.domuscar.com';
+    var INTRANET_URL = 'https://intranet.domuscar.com/intranet.html';
 
     // Called from divergencias-picagens.html when admin sends reports (all or individual)
     window.addEventListener('message', function(event) {
@@ -2811,20 +2818,6 @@
         }).catch(function(e) { console.warn('[Notif] Erro email:', e); });
     }
 
-    // Delete a file from SharePoint by file ID
-    function deleteSharePointFile(fileId) {
-        var driveId = getDriveId();
-        if (!driveId) return Promise.reject('SharePoint not initialized');
-        return getGraphToken().then(function(token) {
-            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-        }).then(function(resp) {
-            if (!resp.ok && resp.status !== 204) throw new Error('Delete failed: ' + resp.status);
-        });
-    }
-
     // List SharePoint files (used by coord_divergencias.html)
     // Exposed globally for iframe access
     window.listDivCoordFiles = function(folderKey) {
@@ -2849,6 +2842,11 @@
     // Handler: delete all pending div coord files (called from coord_divergencias.html admin action)
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'deleteAllPendingDiv') return;
+        // Double-check: only admins can delete all pending
+        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
+            event.source.postMessage({ type: 'deleteAllPendingDivResult', success: false, error: 'Sem permissão (apenas administradores)' }, '*');
+            return;
+        }
         var units = Object.keys(DIV_COORD_MAP);
         var allDeletes = [];
         var chain = Promise.resolve();
