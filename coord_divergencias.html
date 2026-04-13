@@ -226,7 +226,7 @@ body {
       <button class="viewer-close" onclick="closeViewer()">✕</button>
     </div>
     <div class="viewer-body">
-      <iframe id="viewerFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+      <iframe id="viewerFrame" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
     </div>
     <div class="viewer-footer" id="viewerFooter">
       <!-- Populated dynamically -->
@@ -566,10 +566,41 @@ body {
         if (!currentViewFile) return;
 
         // Get the (possibly edited) HTML from the iframe
+        // IMPORTANT: Sync DOM property values to HTML attributes before capturing outerHTML
+        // because outerHTML only reflects original attribute values, not user changes
         var frame = document.getElementById('viewerFrame');
         var editedHtml = '';
         try {
-            editedHtml = frame.contentDocument.documentElement.outerHTML;
+            var doc = frame.contentDocument;
+            // Sync all select elements: set 'selected' attribute on the chosen option
+            var selects = doc.querySelectorAll('select');
+            for (var si = 0; si < selects.length; si++) {
+                var sel = selects[si];
+                for (var oi = 0; oi < sel.options.length; oi++) {
+                    if (oi === sel.selectedIndex) {
+                        sel.options[oi].setAttribute('selected', 'selected');
+                    } else {
+                        sel.options[oi].removeAttribute('selected');
+                    }
+                }
+            }
+            // Sync all input elements: set 'value' attribute to current value
+            var inputs = doc.querySelectorAll('input');
+            for (var ii = 0; ii < inputs.length; ii++) {
+                var inp = inputs[ii];
+                if (inp.type === 'checkbox' || inp.type === 'radio') {
+                    if (inp.checked) inp.setAttribute('checked', 'checked');
+                    else inp.removeAttribute('checked');
+                } else {
+                    inp.setAttribute('value', inp.value);
+                }
+            }
+            // Sync all textarea elements: set inner text to current value
+            var textareas = doc.querySelectorAll('textarea');
+            for (var ti = 0; ti < textareas.length; ti++) {
+                textareas[ti].textContent = textareas[ti].value;
+            }
+            editedHtml = doc.documentElement.outerHTML;
         } catch(e) {
             editedHtml = currentViewFile.htmlContent;
         }
