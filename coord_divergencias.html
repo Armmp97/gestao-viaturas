@@ -286,7 +286,7 @@ body {
     }
 
     // ======== Delete All Pending (admin only) ========
-    function deleteAllPending() {
+    window.deleteAllPending = function() {
         var count = document.getElementById('countPending').textContent || '0';
         if (!confirm('Tem a certeza que quer eliminar TODOS os ' + count + ' relatórios pendentes de todas as unidades?\n\nEsta ação é irreversível.')) return;
         var btn = document.getElementById('adminDeleteAllBtn');
@@ -314,7 +314,7 @@ body {
             }
             window.addEventListener('message', onDeleteResult);
         }
-    }
+    };
 
     // ======== Init ========
     function init() {
