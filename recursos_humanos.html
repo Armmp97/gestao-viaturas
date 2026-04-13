@@ -253,6 +253,51 @@ select.form-input { cursor:pointer; }
 .tab-panel { display:none; }
 .tab-panel.active { display:block; }
 
+/* Validações Divergências Tab */
+.val-stats-bar { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px; }
+.val-stat { flex:1; min-width:140px; background:var(--white); border-radius:var(--radius-sm); padding:18px; text-align:center; box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200); }
+.val-stat-num { font-size:1.8rem; font-weight:800; color:var(--navy); }
+.val-stat-label { font-size:.72rem; color:var(--gray-600); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.val-filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+.val-filter-bar select, .val-filter-bar input { padding:10px 14px; border:1px solid var(--gray-200); border-radius:var(--radius-sm); font-family:inherit; font-size:.88rem; background:var(--white); }
+.val-filter-bar select:focus, .val-filter-bar input:focus { outline:none; border-color:var(--accent); }
+.val-tabs { display:flex; gap:4px; margin-bottom:20px; }
+.val-tab-btn { padding:8px 18px; border:2px solid var(--gray-200); background:var(--white); border-radius:8px; font-family:inherit; font-size:.82rem; font-weight:600; color:var(--gray-600); cursor:pointer; transition:var(--transition); }
+.val-tab-btn:hover { border-color:var(--accent); color:var(--accent); }
+.val-tab-btn.active { border-color:var(--navy); background:var(--navy); color:var(--white); }
+.val-card { background:var(--white); border-radius:var(--radius-sm); padding:16px 20px; margin-bottom:10px; box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200); border-left:4px solid var(--green); transition:var(--transition); }
+.val-card:hover { box-shadow:0 4px 20px rgba(0,59,115,.1); transform:translateY(-1px); }
+.val-card.pendente { border-left-color:var(--yellow); }
+.val-card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.val-card-title { font-weight:700; font-size:.92rem; color:var(--text-dark); }
+.val-card-meta { font-size:.78rem; color:var(--gray-400); margin-top:2px; }
+.val-card-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.val-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+.val-badge-colisao { background:#fce8e6; color:#d93025; }
+.val-badge-cacem { background:#e8f0fe; color:#1a73e8; }
+.val-badge-lisboa { background:#fef7e0; color:#e37400; }
+.val-badge-ref { display:inline-block; background:rgba(5,150,105,.08); color:var(--green); font-weight:700; font-size:.73rem; padding:3px 8px; border-radius:4px; }
+.val-badge-status { display:inline-block; padding:3px 10px; border-radius:20px; font-size:.7rem; font-weight:700; letter-spacing:.5px; }
+.val-badge-validado { background:rgba(5,150,105,.08); color:var(--green); }
+.val-badge-pendente { background:var(--yellow-light); color:var(--yellow); }
+.val-btn { padding:7px 14px; border:none; border-radius:8px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; transition:var(--transition); }
+.val-btn-view { background:var(--accent); color:var(--white); }
+.val-btn-view:hover { background:var(--navy); }
+.val-btn-validate { background:var(--green); color:var(--white); }
+.val-btn-validate:hover { background:#047857; }
+.val-btn-outline { background:transparent; border:1.5px solid var(--gray-200); color:var(--gray-600); }
+.val-btn-outline:hover { border-color:var(--navy); color:var(--navy); }
+.val-empty { text-align:center; padding:50px 20px; color:var(--gray-400); }
+.val-empty .icon { font-size:40px; margin-bottom:10px; }
+.val-view-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:1000; justify-content:center; align-items:center; }
+.val-view-panel.active { display:flex; }
+.val-view-inner { background:var(--white); width:95%; max-width:1000px; height:90vh; border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+.val-view-header { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--navy); color:var(--white); }
+.val-view-header h3 { font-size:.95rem; font-weight:700; }
+.val-view-close { background:none; border:none; color:var(--white); font-size:1.3rem; cursor:pointer; padding:4px 8px; }
+.val-view-body { flex:1; overflow:hidden; }
+.val-view-body iframe { width:100%; height:100%; border:none; }
+
 /* Responsive */
 @media(max-width:700px) {
   .hero { min-height:auto; }
@@ -261,6 +306,9 @@ select.form-input { cursor:pointer; }
   .form-row-inline { grid-template-columns:1fr; }
   .grid-2, .grid-3 { grid-template-columns:1fr; }
   .rh-contact { flex-direction:column; text-align:center; }
+  .val-stats-bar { gap:8px; }
+  .val-stat { min-width:100px; padding:12px; }
+  .val-stat-num { font-size:1.4rem; }
 }
 </style>
 </head>
@@ -293,6 +341,7 @@ select.form-input { cursor:pointer; }
       <button class="tab-btn" onclick="switchTab('formacao')" id="tabFormacao">Formação</button>
       <button class="tab-btn" onclick="switchTab('documentos')">Documentos</button>
       <button class="tab-btn" onclick="switchTab('info')">Informações Úteis</button>
+      <button class="tab-btn" onclick="switchTab('validacoes')" id="tabValidacoes" style="display:none;">Validações Divergências</button>
     </div>
   </div>
 </div>
@@ -574,6 +623,58 @@ select.form-input { cursor:pointer; }
   </div>
 </div>
 
+<!-- ══════ TAB: VALIDAÇÕES DIVERGÊNCIAS ══════ -->
+<div class="tab-panel" id="panelValidacoes">
+  <div class="section">
+    <div class="container">
+      <div class="section-label">Validações</div>
+      <div class="section-title">Relatórios de Divergências Validados</div>
+      <p class="section-subtitle">Relatórios validados pelos coordenadores. Revise e marque como tratados.</p>
+
+      <!-- Stats -->
+      <div class="val-stats-bar">
+        <div class="val-stat"><div class="val-stat-num" id="valStatTotal">—</div><div class="val-stat-label">Total</div></div>
+        <div class="val-stat"><div class="val-stat-num" id="valStatPendente">—</div><div class="val-stat-label">Por Tratar</div></div>
+        <div class="val-stat"><div class="val-stat-num" id="valStatTratado">—</div><div class="val-stat-label">Tratados</div></div>
+      </div>
+
+      <!-- Sub-tabs: Por Tratar / Tratados -->
+      <div class="val-tabs">
+        <button class="val-tab-btn active" onclick="valSwitchView('pendente')" id="valTabPendente">Por Tratar</button>
+        <button class="val-tab-btn" onclick="valSwitchView('tratado')" id="valTabTratado">Tratados</button>
+        <button class="val-tab-btn" onclick="valSwitchView('todos')" id="valTabTodos">Todos</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="val-filter-bar">
+        <select id="valFilterUnit" onchange="valApplyFilters()">
+          <option value="all">Todas as Unidades</option>
+          <option value="colisao">Colisão</option>
+          <option value="mecanica_cacem">Mecânica Cacém</option>
+          <option value="mecanica_lisboa">Mecânica Lisboa</option>
+        </select>
+        <input type="text" id="valFilterSearch" placeholder="Pesquisar..." oninput="valApplyFilters()">
+      </div>
+
+      <!-- File List -->
+      <div id="valFileList"><div class="val-empty"><div class="icon">⏳</div><p>A carregar relatórios...</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- View Panel (Validações) -->
+<div class="val-view-panel" id="valViewPanel">
+  <div class="val-view-inner">
+    <div class="val-view-header">
+      <h3 id="valViewTitle">Relatório</h3>
+      <button class="val-view-close" onclick="valCloseView()">✕</button>
+    </div>
+    <div class="val-view-body">
+      <iframe id="valViewFrame" sandbox="allow-same-origin"></iframe>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -586,14 +687,18 @@ select.form-input { cursor:pointer; }
     ferias: 'panelFerias',
     formacao: 'panelFormacao',
     documentos: 'panelDocumentos',
-    info: 'panelInfo'
+    info: 'panelInfo',
+    validacoes: 'panelValidacoes'
   };
 
   window.switchTab = function(key) {
     // Update buttons
-    document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
-      var keys = Object.keys(tabs);
-      btn.classList.toggle('active', keys[i] === key);
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      var btnKey = btn.getAttribute('onclick');
+      if (btnKey) {
+        var m = btnKey.match(/switchTab\('(\w+)'\)/);
+        if (m) btn.classList.toggle('active', m[1] === key);
+      }
     });
     // Update panels
     for (var k in tabs) {
@@ -602,6 +707,10 @@ select.form-input { cursor:pointer; }
         panel.classList.toggle('active', k === key);
         panel.style.display = k === key ? 'block' : 'none';
       }
+    }
+    // Load validations data when tab is opened
+    if (key === 'validacoes' && !valDataLoaded) {
+      valLoadAll();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -894,6 +1003,247 @@ select.form-input { cursor:pointer; }
       }
     } catch(e) {}
   }, 300);
+
+  // ======== RESTRICT VALIDAÇÕES TAB ========
+  // Only visible to admin + rh (claudia.pedro)
+  var valAllowedEmails = ['andre.pereira@domuscar.com','vanessa.borges@domuscar.com','claudia.pedro@domuscar.com'];
+  var valUserRole = null;
+  var valUserEmail = null;
+  setTimeout(function() {
+    try {
+      var perms = window.parent.getCurrentUserPermissions();
+      var email = (window.parent.getCurrentUserEmail && window.parent.getCurrentUserEmail()) || '';
+      valUserEmail = email.toLowerCase();
+      valUserRole = perms ? perms.role : null;
+      if (perms && (perms.role === 'admin' || perms.role === 'rh' || valAllowedEmails.indexOf(valUserEmail) >= 0)) {
+        var tabBtn = document.getElementById('tabValidacoes');
+        if (tabBtn) tabBtn.style.display = '';
+      }
+    } catch(e) {}
+  }, 300);
+
+  // ======== VALIDAÇÕES DIVERGÊNCIAS ========
+  var valAllFiles = [];
+  var valTreatedIds = {}; // { fileId: true }
+  var valDataLoaded = false;
+  var valCurrentView = 'pendente'; // 'pendente', 'tratado', 'todos'
+  var VAL_TRACKER_FILE = 'rh_validacoes_tracker.json';
+  var VAL_TRACKER_FOLDER = 'div_colisao_respondido'; // store tracker alongside reports
+
+  var VAL_UNIT_MAP = {
+    'colisao':         { label: 'Colisão',         coord: 'Mário Perez',    badgeClass: 'val-badge-colisao',  folderKey: 'div_colisao_respondido' },
+    'mecanica_lisboa': { label: 'Mecânica Lisboa',  coord: 'Fábio Ramalho',  badgeClass: 'val-badge-lisboa',   folderKey: 'div_lisboa_respondido' },
+    'mecanica_cacem':  { label: 'Mecânica Cacém',   coord: 'José Rodriguez', badgeClass: 'val-badge-cacem',    folderKey: 'div_cacem_respondido' }
+  };
+
+  function valExtractRefDate(name) {
+    var m = name.match(/Ref_(\d{2})(\d{2})(\d{4})/);
+    if (m) return m[1] + '/' + m[2] + '/' + m[3];
+    return null;
+  }
+
+  function valFormatDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    return String(d.getDate()).padStart(2,'0') + '/' +
+           String(d.getMonth()+1).padStart(2,'0') + '/' +
+           d.getFullYear() + ' ' +
+           String(d.getHours()).padStart(2,'0') + ':' +
+           String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function valLoadTracker() {
+    // Try to load the tracker JSON from SharePoint
+    return window.parent.listDivCoordFiles(VAL_TRACKER_FOLDER)
+      .then(function(data) {
+        var files = data.value || [];
+        var trackerFile = null;
+        for (var i = 0; i < files.length; i++) {
+          if (files[i].name === VAL_TRACKER_FILE) {
+            trackerFile = files[i];
+            break;
+          }
+        }
+        if (!trackerFile) return {};
+        return window.parent.downloadDivCoordFile(trackerFile.id)
+          .then(function(content) {
+            try { return JSON.parse(content); }
+            catch(e) { return {}; }
+          });
+      })
+      .catch(function() { return {}; });
+  }
+
+  function valSaveTracker() {
+    // Save tracker JSON to SharePoint
+    var json = JSON.stringify(valTreatedIds);
+    if (window.parent && window.parent.uploadToSharePoint) {
+      window.parent.uploadToSharePoint(VAL_TRACKER_FOLDER, VAL_TRACKER_FILE, json, 'application/json');
+    }
+  }
+
+  function valLoadAll() {
+    var units = Object.keys(VAL_UNIT_MAP);
+    var promises = [];
+    units.forEach(function(unit) {
+      var info = VAL_UNIT_MAP[unit];
+      promises.push(
+        window.parent.listDivCoordFiles(info.folderKey)
+          .then(function(data) {
+            return (data.value || []).filter(function(f) {
+              return f.name !== VAL_TRACKER_FILE;
+            }).map(function(f) {
+              f._unit = unit;
+              f._unitLabel = info.label;
+              f._coord = info.coord;
+              f._badgeClass = info.badgeClass;
+              f._refDate = valExtractRefDate(f.name);
+              return f;
+            });
+          })
+          .catch(function() { return []; })
+      );
+    });
+
+    // Also load tracker
+    var trackerPromise = valLoadTracker();
+
+    Promise.all([Promise.all(promises), trackerPromise]).then(function(results) {
+      var fileResults = results[0];
+      valTreatedIds = results[1] || {};
+      valAllFiles = [];
+      fileResults.forEach(function(arr) { valAllFiles = valAllFiles.concat(arr); });
+      valAllFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+      valDataLoaded = true;
+      valUpdateStats();
+      valApplyFilters();
+    });
+  }
+
+  function valUpdateStats() {
+    var total = valAllFiles.length;
+    var tratado = 0;
+    valAllFiles.forEach(function(f) { if (valTreatedIds[f.id]) tratado++; });
+    document.getElementById('valStatTotal').textContent = total;
+    document.getElementById('valStatPendente').textContent = total - tratado;
+    document.getElementById('valStatTratado').textContent = tratado;
+  }
+
+  window.valSwitchView = function(view) {
+    valCurrentView = view;
+    document.getElementById('valTabPendente').classList.toggle('active', view === 'pendente');
+    document.getElementById('valTabTratado').classList.toggle('active', view === 'tratado');
+    document.getElementById('valTabTodos').classList.toggle('active', view === 'todos');
+    valApplyFilters();
+  };
+
+  window.valApplyFilters = function() {
+    var unit = document.getElementById('valFilterUnit').value;
+    var search = document.getElementById('valFilterSearch').value.toLowerCase();
+    var filtered = valAllFiles.filter(function(f) {
+      if (unit !== 'all' && f._unit !== unit) return false;
+      if (search && f.name.toLowerCase().indexOf(search) < 0 && (f._unitLabel || '').toLowerCase().indexOf(search) < 0) return false;
+      if (valCurrentView === 'pendente' && valTreatedIds[f.id]) return false;
+      if (valCurrentView === 'tratado' && !valTreatedIds[f.id]) return false;
+      return true;
+    });
+    valRenderFiles(filtered);
+  };
+
+  function valRenderFiles(files) {
+    var container = document.getElementById('valFileList');
+    if (files.length === 0) {
+      var msg = valCurrentView === 'pendente' ? 'Todos os relatórios foram tratados.' : (valCurrentView === 'tratado' ? 'Nenhum relatório tratado ainda.' : 'Nenhum relatório encontrado.');
+      container.innerHTML = '<div class="val-empty"><div class="icon">📂</div><p>' + msg + '</p></div>';
+      return;
+    }
+
+    var canValidate = valUserRole === 'admin' || valUserRole === 'rh' || (valUserEmail && valAllowedEmails.indexOf(valUserEmail) >= 0);
+    var html = '';
+    files.forEach(function(f) {
+      var date = valFormatDate(f.lastModifiedDateTime);
+      var info = VAL_UNIT_MAP[f._unit] || {};
+      var refBadge = f._refDate ? ' <span class="val-badge-ref">📅 ' + f._refDate + '</span>' : '';
+      var unitBadge = '<span class="val-badge ' + (info.badgeClass || '') + '">' + (info.label || '—') + '</span>';
+      var isTreated = !!valTreatedIds[f.id];
+      var statusBadge = isTreated ?
+        '<span class="val-badge-status val-badge-validado">✅ Tratado</span>' :
+        '<span class="val-badge-status val-badge-pendente">⏳ Por Tratar</span>';
+      var cardClass = 'val-card' + (isTreated ? '' : ' pendente');
+
+      var validateBtn = '';
+      if (canValidate) {
+        if (isTreated) {
+          validateBtn = '<button class="val-btn val-btn-outline" onclick="event.stopPropagation(); valMarkAs(\'' + f.id + '\', false)">↩ Desmarcar</button>';
+        } else {
+          validateBtn = '<button class="val-btn val-btn-validate" onclick="event.stopPropagation(); valMarkAs(\'' + f.id + '\', true)">✅ Marcar como Tratado</button>';
+        }
+      }
+
+      var safeId = f.id.replace(/'/g, "\\'");
+      var safeName = f.name.replace(/'/g, "\\'");
+      html += '<div class="' + cardClass + '">' +
+        '<div class="val-card-header">' +
+          '<div>' +
+            '<div class="val-card-title">' + f.name + '</div>' +
+            '<div class="val-card-meta">' + date + ' · ' + (info.coord || '') + refBadge + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' + statusBadge + ' ' + unitBadge + '</div>' +
+        '</div>' +
+        '<div class="val-card-actions">' +
+          '<button class="val-btn val-btn-view" onclick="event.stopPropagation(); valOpenFile(\'' + safeId + '\', \'' + safeName + '\')">👁️ Visualizar</button>' +
+          validateBtn +
+        '</div>' +
+      '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  window.valMarkAs = function(fileId, treated) {
+    if (treated) {
+      valTreatedIds[fileId] = true;
+    } else {
+      delete valTreatedIds[fileId];
+    }
+    valSaveTracker();
+    valUpdateStats();
+    valApplyFilters();
+    showToast(treated ? 'Relatório marcado como tratado.' : 'Relatório desmarcado.', 'success');
+  };
+
+  window.valOpenFile = function(fileId, fileName) {
+    var panel = document.getElementById('valViewPanel');
+    var frame = document.getElementById('valViewFrame');
+    document.getElementById('valViewTitle').textContent = fileName;
+    frame.srcdoc = '';
+    panel.classList.add('active');
+
+    try {
+      window.parent.downloadDivCoordFile(fileId).then(function(htmlContent) {
+        // Inject read-only styles to block any editing
+        var readOnlyWrapper = '<!DOCTYPE html><html><head><style>' +
+          '*, *::before, *::after { pointer-events: none !important; user-select: text !important; }' +
+          'input, textarea, select, button, [contenteditable] { pointer-events: none !important; opacity: 0.7 !important; }' +
+          'button, input[type="submit"], input[type="button"], a[onclick] { display: none !important; }' +
+          'form { pointer-events: none !important; }' +
+          '</style></head><body>' + htmlContent + '</body></html>';
+        frame.srcdoc = readOnlyWrapper;
+      }).catch(function(err) {
+        frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro ao carregar</h2><p>' + (err.message || err) + '</p></body></html>';
+      });
+    } catch(e) {
+      frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro</h2><p>' + e.message + '</p></body></html>';
+    }
+  };
+
+  window.valCloseView = function() {
+    document.getElementById('valViewPanel').classList.remove('active');
+    document.getElementById('valViewFrame').srcdoc = '';
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') valCloseView();
+  });
 
 })();
 </script>
