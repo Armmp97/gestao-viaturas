@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Taxa Retenção Viaturas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:#003B73;--navy-deep:#002B55;--navy-light:#00508F;
+  --accent:#007BC0;--accent-light:#4DA8DA;--white:#FFFFFF;--off-white:#F5F7FA;
+  --gray-100:#EEF1F5;--gray-200:#DEE2E8;--gray-400:#9CA3AF;--gray-600:#6B7280;
+  --text-dark:#1A2A3A;--text-body:#475569;
+  --green:#059669;--green-light:#D1FAE5;--red:#DC2626;--red-light:#FEE2E2;
+  --yellow:#D97706;--yellow-light:#FEF3C7;
+  --radius:16px;--radius-sm:12px;--transition:.3s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--off-white);color:var(--text-body);line-height:1.7}
+
+.hero{position:relative;background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);color:var(--white);overflow:hidden;padding:40px 0 36px}
+.hero::before{content:'';position:absolute;top:-40%;right:-10%;width:700px;height:700px;background:radial-gradient(circle,rgba(0,123,192,.12) 0%,transparent 70%);border-radius:50%}
+.hero-inner{position:relative;z-index:2}
+.hero h1{font-size:clamp(1.5rem,3.5vw,2.1rem);font-weight:900;line-height:1.15;margin-bottom:6px}
+.hero h1 em{font-style:normal;color:var(--accent-light)}
+.hero p{font-size:.9rem;opacity:.8;max-width:600px}
+.hero-bar{position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent) 0%,var(--green) 100%)}
+
+.container{max-width:1140px;margin:0 auto;padding:0 24px}
+
+/* Tab bar */
+.tab-bar{display:flex;gap:4px;background:var(--white);border-radius:var(--radius-sm);padding:4px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:24px 0 28px}
+.tab-btn{flex:1;padding:12px 14px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600;color:var(--gray-600);border-radius:10px;transition:var(--transition);text-align:center;white-space:nowrap}
+.tab-btn:hover{background:var(--gray-100)}
+.tab-btn.active{background:var(--navy);color:var(--white)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:28px}
+.kpi-card{background:var(--white);border-radius:var(--radius-sm);padding:18px 16px;box-shadow:0 2px 12px rgba(0,59,115,.06);border:1px solid var(--gray-200);text-align:center;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;border-radius:12px 12px 0 0}
+.kpi-card.blue::before{background:var(--accent)}.kpi-card.green::before{background:var(--green)}
+.kpi-card.yellow::before{background:var(--yellow)}.kpi-card.red::before{background:var(--red)}
+.kpi-card.navy::before{background:var(--navy)}
+.kpi-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;font-weight:700;color:var(--gray-600);margin-bottom:6px}
+.kpi-value{font-size:1.6rem;font-weight:900;color:var(--navy)}
+.kpi-sub{font-size:.72rem;color:var(--gray-400);margin-top:3px}
+
+/* Charts */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px}
+.chart-box{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(0,59,115,.06);border:1px solid var(--gray-200)}
+.chart-title{font-size:.92rem;font-weight:700;color:var(--navy);margin-bottom:14px}
+.chart-wrap{position:relative;max-height:280px}
+
+/* Insights */
+.insights-box{background:var(--white);border-radius:var(--radius);padding:20px 24px;box-shadow:0 2px 12px rgba(0,59,115,.06);border:1px solid var(--gray-200);margin-bottom:28px;border-left:4px solid var(--accent)}
+.insights-title{font-size:.92rem;font-weight:700;color:var(--navy);margin-bottom:10px}
+.insight-item{padding:4px 0;font-size:.84rem;color:var(--text-body);line-height:1.6}
+.insight-item strong{color:var(--navy)}
+
+/* Table */
+.table-box{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(0,59,115,.06);border:1px solid var(--gray-200);overflow-x:auto;margin-bottom:28px}
+.table-title{font-size:.92rem;font-weight:700;color:var(--navy);margin-bottom:14px}
+.data-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.data-table th{background:var(--navy);color:var(--white);padding:10px 12px;text-align:center;font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.data-table th:first-child{border-radius:8px 0 0 0;text-align:left}
+.data-table th:last-child{border-radius:0 8px 0 0}
+.data-table td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--gray-100);white-space:nowrap}
+.data-table tr:hover td{background:rgba(0,123,192,.03)}
+.data-table td:first-child{text-align:left;font-weight:700;color:var(--navy)}
+.data-table .hl{background:rgba(0,123,192,.04);font-weight:700}
+.badge-up{display:inline-block;background:var(--green-light);color:var(--green);font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:4px}
+.badge-down{display:inline-block;background:var(--red-light);color:var(--red);font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:4px}
+.badge-na{display:inline-block;background:var(--gray-100);color:var(--gray-600);font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:4px}
+
+/* Sub-sections in tab 2 and 3 */
+.sub-section{margin-bottom:32px}
+.sub-title{font-size:1.05rem;font-weight:800;color:var(--navy);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--gray-200)}
+
+@media(max-width:768px){.charts-row{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}.tab-btn{font-size:.75rem;padding:10px 8px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <h1>Análise Taxa Retenção <em>Viaturas</em></h1>
+      <p>Crescimento, retenção e evolução de matrículas e clientes — 2019 a 2025</p>
+    </div>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+
+<div class="container">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('matriculas')">Crescimento Matrículas</button>
+    <button class="tab-btn" onclick="switchTab('csVsEmp')">Matrículas: Consumidor vs Empresa</button>
+    <button class="tab-btn" onclick="switchTab('clientes')">Crescimento Clientes</button>
+  </div>
+
+  <!-- ═══ TAB 1: Crescimento Matrículas ═══ -->
+  <div class="tab-panel active" id="panelMatriculas">
+    <div class="kpi-grid" id="kpi1"></div>
+    <div class="charts-row"><div class="chart-box"><div class="chart-title">Evolução Matrículas Únicas</div><div class="chart-wrap"><canvas id="c1a"></canvas></div></div><div class="chart-box"><div class="chart-title">Composição: Novas vs Regressadas</div><div class="chart-wrap"><canvas id="c1b"></canvas></div></div></div>
+    <div class="charts-row"><div class="chart-box"><div class="chart-title">Taxa de Retenção Anual</div><div class="chart-wrap"><canvas id="c1c"></canvas></div></div><div class="chart-box"><div class="chart-title">Crescimento Líquido</div><div class="chart-wrap"><canvas id="c1d"></canvas></div></div></div>
+    <div class="insights-box" id="ins1"></div>
+    <div class="table-box"><div class="table-title">Dados Completos por Ano</div><table class="data-table"><thead><tr><th>Ano</th><th>Total Ordens</th><th>Matr. Únicas</th><th>Novas</th><th>Regressaram</th><th>Perdidas</th><th>Taxa Ret.</th><th>Cresc. Líq.</th><th>Cresc. %</th></tr></thead><tbody id="tb1"></tbody></table></div>
+  </div>
+
+  <!-- ═══ TAB 2: Consumidor vs Empresa (Matrículas) ═══ -->
+  <div class="tab-panel" id="panelCsVsEmp">
+    <div class="kpi-grid" id="kpi2"></div>
+    <div class="charts-row"><div class="chart-box"><div class="chart-title">Evolução: Consumidor Final vs Empresa</div><div class="chart-wrap"><canvas id="c2a"></canvas></div></div><div class="chart-box"><div class="chart-title">Crescimento %: Consumidor vs Empresa</div><div class="chart-wrap"><canvas id="c2b"></canvas></div></div></div>
+    <div class="sub-section"><div class="sub-title">Consumidor Final</div><div class="table-box"><table class="data-table"><thead><tr><th>Ano</th><th>Matr. Únicas</th><th>Novas</th><th>Regressaram</th><th>Perdidas</th><th>Taxa Ret.</th><th>Cresc. Líq.</th><th>Cresc. %</th></tr></thead><tbody id="tb2a"></tbody></table></div></div>
+    <div class="sub-section"><div class="sub-title">Empresa / Entidade</div><div class="table-box"><table class="data-table"><thead><tr><th>Ano</th><th>Matr. Únicas</th><th>Novas</th><th>Regressaram</th><th>Perdidas</th><th>Taxa Ret.</th><th>Cresc. Líq.</th><th>Cresc. %</th></tr></thead><tbody id="tb2b"></tbody></table></div></div>
+    <div class="insights-box" id="ins2"></div>
+  </div>
+
+  <!-- ═══ TAB 3: Crescimento Clientes ═══ -->
+  <div class="tab-panel" id="panelClientes">
+    <div class="kpi-grid" id="kpi3"></div>
+    <div class="charts-row"><div class="chart-box"><div class="chart-title">Evolução Clientes Únicos</div><div class="chart-wrap"><canvas id="c3a"></canvas></div></div><div class="chart-box"><div class="chart-title">Composição: Consumidores vs Empresas</div><div class="chart-wrap"><canvas id="c3b"></canvas></div></div></div>
+    <div class="charts-row"><div class="chart-box"><div class="chart-title">Taxa de Retenção: Consumidor vs Empresa</div><div class="chart-wrap"><canvas id="c3c"></canvas></div></div><div class="chart-box"><div class="chart-title">Crescimento Líquido Total</div><div class="chart-wrap"><canvas id="c3d"></canvas></div></div></div>
+    <div class="sub-section"><div class="sub-title">Todos os Clientes</div><div class="table-box"><table class="data-table"><thead><tr><th>Ano</th><th>Clientes Únicos</th><th>Novos</th><th>Regressaram</th><th>Perdidos</th><th>Taxa Ret.</th><th>Cresc. Líq.</th><th>Cresc. %</th></tr></thead><tbody id="tb3a"></tbody></table></div></div>
+    <div class="sub-section"><div class="sub-title">Consumidor Final</div><div class="table-box"><table class="data-table"><thead><tr><th>Ano</th><th>Clientes Únicos</th><th>Novos</th><th>Regressaram</th><th>Perdidos</th><th>Taxa Ret.</th><th>Cresc. Líq.</th><th>Cresc. %</th></tr></thead><tbody id="tb3b"></tbody></table></div></div>
+    <div class="sub-section"><div class="sub-title">Empresa / Entidade</div><div class="table-box"><table class="data-table"><thead><tr><th>Ano</th><th>Clientes Únicos</th><th>Novos</th><th>Regressaram</th><th>Perdidos</th><th>Taxa Ret.</th><th>Cresc. Líq.</th><th>Cresc. %</th></tr></thead><tbody id="tb3c"></tbody></table></div></div>
+    <div class="insights-box" id="ins3"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+var tabs = { matriculas:'panelMatriculas', csVsEmp:'panelCsVsEmp', clientes:'panelClientes' };
+var chartsInit = {};
+
+window.switchTab = function(key) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) {
+    var m = b.getAttribute('onclick').match(/switchTab\('(\w+)'\)/);
+    if (m) b.classList.toggle('active', m[1] === key);
+  });
+  for (var k in tabs) {
+    var p = document.getElementById(tabs[k]);
+    if (p) { p.classList.toggle('active', k === key); p.style.display = k === key ? 'block' : 'none'; }
+  }
+  if (!chartsInit[key]) { chartsInit[key] = true; initTab(key); }
+};
+
+var C = { accent:'#007BC0', navy:'#003B73', green:'#059669', red:'#DC2626', yellow:'#D97706', accentLight:'#4DA8DA',
+  blueL:'rgba(0,123,192,.15)', greenL:'rgba(5,150,105,.15)', redL:'rgba(220,38,38,.15)' };
+var cOpts = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'Inter', size:11 }, usePointStyle:true } } } };
+
+function pct(v) { return v !== null ? (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%' : '—'; }
+function num(v) { return v !== null ? v.toLocaleString('pt-PT') : '—'; }
+function badge(v) { if (v === null) return '<span class="badge-na">—</span>'; return v >= 0 ? '<span class="badge-up">'+pct(v)+'</span>' : '<span class="badge-down">'+pct(v)+'</span>'; }
+function retStr(v) { return v !== null ? (v*100).toFixed(1)+'%' : '—'; }
+
+function kpiHtml(arr) { return arr.map(function(k) { return '<div class="kpi-card '+k.c+'"><div class="kpi-label">'+k.l+'</div><div class="kpi-value">'+k.v+'</div><div class="kpi-sub">'+k.s+'</div></div>'; }).join(''); }
+function insHtml(title, arr) { return '<div class="insights-title">'+title+'</div>' + arr.map(function(t) { return '<div class="insight-item">'+t+'</div>'; }).join(''); }
+function tableRows(data, hl) {
+  return data.map(function(d) {
+    var cls = hl && hl.indexOf(d.ano) >= 0 ? ' class="hl"' : '';
+    return '<tr'+cls+'><td>'+d.ano+'</td><td>'+num(d.col1)+'</td><td>'+num(d.novas)+'</td><td>'+num(d.regr)+'</td><td>'+num(d.perd)+'</td><td>'+retStr(d.ret)+'</td><td>'+(d.cliq !== null ? (d.cliq >= 0 ? '+' : '')+num(d.cliq) : '—')+'</td><td>'+badge(d.cpct)+'</td></tr>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+
+// Tab 1
+var D1 = [
+  {ano:2019,ordens:500,col1:398,novas:398,regr:0,perd:0,ret:null,cliq:null,cpct:null},
+  {ano:2020,ordens:1004,col1:670,novas:548,regr:122,perd:276,ret:.3065,cliq:272,cpct:.6834},
+  {ano:2021,ordens:1428,col1:998,novas:756,regr:219,perd:451,ret:.3269,cliq:328,cpct:.4896},
+  {ano:2022,ordens:2090,col1:1524,novas:1169,regr:294,perd:704,ret:.2946,cliq:526,cpct:.5271},
+  {ano:2023,ordens:5085,col1:3028,novas:2379,regr:553,perd:971,ret:.3629,cliq:1504,cpct:.9869},
+  {ano:2024,ordens:5422,col1:3000,novas:1673,regr:1227,perd:1801,ret:.4052,cliq:-28,cpct:-.0092},
+  {ano:2025,ordens:5973,col1:3984,novas:2642,regr:1151,perd:1849,ret:.3837,cliq:984,cpct:.328}
+];
+
+// Tab 2
+var D2cs = [
+  {ano:2019,col1:201,novas:201,regr:0,perd:0,ret:null,cliq:null,cpct:null},
+  {ano:2020,col1:281,novas:220,regr:61,perd:140,ret:.3035,cliq:80,cpct:.398},
+  {ano:2021,col1:413,novas:288,regr:111,perd:170,ret:.3950,cliq:132,cpct:.4698},
+  {ano:2022,col1:811,novas:633,regr:143,perd:270,ret:.3462,cliq:398,cpct:.9637},
+  {ano:2023,col1:1393,novas:1079,regr:280,perd:531,ret:.3453,cliq:582,cpct:.7176},
+  {ano:2024,col1:1238,novas:668,regr:528,perd:865,ret:.3790,cliq:-155,cpct:-.1113},
+  {ano:2025,col1:1348,novas:738,regr:524,perd:714,ret:.4233,cliq:110,cpct:.0889}
+];
+var D2emp = [
+  {ano:2019,col1:197,novas:197,regr:0,perd:0,ret:null,cliq:null,cpct:null},
+  {ano:2020,col1:393,novas:334,regr:59,perd:138,ret:.2995,cliq:196,cpct:.9949},
+  {ano:2021,col1:590,novas:472,regr:108,perd:285,ret:.2748,cliq:197,cpct:.5013},
+  {ano:2022,col1:734,novas:568,regr:143,perd:447,ret:.2424,cliq:144,cpct:.2441},
+  {ano:2023,col1:1662,novas:1376,regr:241,perd:493,ret:.3283,cliq:928,cpct:1.2643},
+  {ano:2024,col1:1787,novas:1048,regr:699,perd:875,ret:.4440,cliq:125,cpct:.0752},
+  {ano:2025,col1:2658,novas:1930,regr:627,perd:1160,ret:.3510,cliq:871,cpct:.4874}
+];
+
+// Tab 3
+var D3all = [
+  {ano:2019,col1:235,novas:235,regr:0,perd:0,ret:null,cliq:null,cpct:null},
+  {ano:2020,col1:309,novas:209,regr:100,perd:135,ret:.4255,cliq:74,cpct:.3149},
+  {ano:2021,col1:421,novas:253,regr:155,perd:154,ret:.5016,cliq:112,cpct:.3625},
+  {ano:2022,col1:778,novas:532,regr:203,perd:218,ret:.4822,cliq:357,cpct:.8480},
+  {ano:2023,col1:1419,novas:997,regr:375,perd:403,ret:.4820,cliq:641,cpct:.8239},
+  {ano:2024,col1:1344,novas:623,regr:668,perd:751,ret:.4708,cliq:-75,cpct:-.0529},
+  {ano:2025,col1:1397,novas:634,regr:654,perd:690,ret:.4866,cliq:53,cpct:.0394}
+];
+var D3cs = [
+  {ano:2019,col1:176,novas:176,regr:0,perd:0,ret:null,cliq:null,cpct:null},
+  {ano:2020,col1:227,novas:163,regr:64,perd:112,ret:.3636,cliq:51,cpct:.2898},
+  {ano:2021,col1:311,novas:195,regr:105,perd:122,ret:.4626,cliq:84,cpct:.3700},
+  {ano:2022,col1:616,novas:444,regr:137,perd:174,ret:.4405,cliq:305,cpct:.9807},
+  {ano:2023,col1:1125,novas:816,regr:271,perd:345,ret:.4399,cliq:509,cpct:.8263},
+  {ano:2024,col1:1037,novas:498,regr:497,perd:628,ret:.4427,cliq:-88,cpct:-.0782},
+  {ano:2025,col1:1098,novas:488,regr:518,perd:519,ret:.4706,cliq:61,cpct:.0588}
+];
+var D3emp = [
+  {ano:2019,col1:59,novas:59,regr:0,perd:0,ret:null,cliq:null,cpct:null},
+  {ano:2020,col1:82,novas:46,regr:36,perd:23,ret:.6102,cliq:23,cpct:.3898},
+  {ano:2021,col1:110,novas:58,regr:50,perd:32,ret:.6098,cliq:28,cpct:.3415},
+  {ano:2022,col1:162,novas:88,regr:66,perd:44,ret:.6000,cliq:52,cpct:.4727},
+  {ano:2023,col1:294,novas:181,regr:104,perd:58,ret:.6420,cliq:132,cpct:.8148},
+  {ano:2024,col1:307,novas:125,regr:171,perd:123,ret:.5782,cliq:13,cpct:.0442},
+  {ano:2025,col1:299,novas:146,regr:136,perd:171,ret:.5407,cliq:-8,cpct:-.0261}
+];
+
+// ═══════════════════════════════════════════════
+// INIT TABS
+// ═══════════════════════════════════════════════
+
+function initTab(key) {
+  if (key === 'matriculas') initTab1();
+  else if (key === 'csVsEmp') initTab2();
+  else if (key === 'clientes') initTab3();
+}
+
+// ─── Tab 1 ───
+function initTab1() {
+  var anos = D1.map(function(d){return d.ano});
+  document.getElementById('kpi1').innerHTML = kpiHtml([
+    {l:'Total Ordens 2019–2025',v:'21.502',s:'7 anos',c:'navy'},
+    {l:'Matrículas Únicas 2025',v:'3.984',s:'Recorde',c:'blue'},
+    {l:'CAGR Matrículas',v:'46.8%',s:'2019→2025',c:'green'},
+    {l:'Média Retenção',v:'34.7%',s:'2020–2025',c:'yellow'},
+    {l:'Pico Crescimento',v:'+98.7%',s:'2023',c:'green'},
+    {l:'Pior Ano',v:'-0.9%',s:'2024',c:'red'}
+  ]);
+  // Table
+  document.getElementById('tb1').innerHTML = D1.map(function(d) {
+    var cls = d.ano===2023||d.ano===2025?' class="hl"':'';
+    return '<tr'+cls+'><td>'+d.ano+'</td><td>'+num(d.ordens)+'</td><td>'+num(d.col1)+'</td><td>'+num(d.novas)+'</td><td>'+num(d.regr)+'</td><td>'+num(d.perd)+'</td><td>'+retStr(d.ret)+'</td><td>'+(d.cliq!==null?(d.cliq>=0?'+':'')+num(d.cliq):'—')+'</td><td>'+badge(d.cpct)+'</td></tr>';
+  }).join('');
+  document.getElementById('ins1').innerHTML = insHtml('Insights Chave', [
+    'Crescimento massivo em <strong>2023 (+98.7%)</strong>, duplicando a base de matrículas.',
+    '<strong>2024</strong> foi o único ano com perda líquida (<strong>-28 matrículas, -0.9%</strong>).',
+    'Recuperação forte em <strong>2025 (+984 matrículas, +32.8%)</strong>.',
+    'Taxa de retenção média de <strong>~34.7%</strong> — maioria dos clientes não regressa no ano seguinte.',
+    'Crescimento impulsionado por <strong>matrículas novas</strong> (não por retenção).',
+    'CAGR de <strong>~46.8%</strong> em matrículas únicas entre 2019 e 2025.'
+  ]);
+  // Charts
+  new Chart(document.getElementById('c1a'),{type:'line',data:{labels:anos,datasets:[{label:'Matrículas Únicas',data:D1.map(function(d){return d.col1}),borderColor:C.navy,backgroundColor:C.blueL,fill:true,tension:.3,pointRadius:5,pointBackgroundColor:C.navy,borderWidth:2.5},{label:'Total Ordens',data:D1.map(function(d){return d.ordens}),borderColor:C.accent,backgroundColor:'transparent',borderDash:[6,3],tension:.3,pointRadius:4,pointBackgroundColor:C.accent,borderWidth:2}]},options:cOpts});
+  new Chart(document.getElementById('c1b'),{type:'bar',data:{labels:anos,datasets:[{label:'Novas',data:D1.map(function(d){return d.novas}),backgroundColor:C.accent,borderRadius:4},{label:'Regressaram',data:D1.map(function(d){return d.regr}),backgroundColor:C.green,borderRadius:4}]},options:Object.assign({},cOpts,{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}})});
+  new Chart(document.getElementById('c1c'),{type:'bar',data:{labels:anos.slice(1),datasets:[{label:'Taxa Retenção (%)',data:D1.slice(1).map(function(d){return+(d.ret*100).toFixed(1)}),backgroundColor:D1.slice(1).map(function(d){return d.ret>=.35?C.green:C.yellow}),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:50,ticks:{callback:function(v){return v+'%'}}}}}});
+  new Chart(document.getElementById('c1d'),{type:'bar',data:{labels:anos.slice(1),datasets:[{label:'Crescimento Líquido',data:D1.slice(1).map(function(d){return d.cliq}),backgroundColor:D1.slice(1).map(function(d){return d.cliq>=0?C.green:C.red}),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+}
+
+// ─── Tab 2 ───
+function initTab2() {
+  var anos = D2cs.map(function(d){return d.ano});
+  document.getElementById('kpi2').innerHTML = kpiHtml([
+    {l:'Consumidor 2025',v:'1.348',s:'Matrículas únicas',c:'blue'},
+    {l:'Empresa 2025',v:'2.658',s:'Matrículas únicas',c:'green'},
+    {l:'CAGR Consumidor',v:'37.3%',s:'2019→2025',c:'blue'},
+    {l:'CAGR Empresa',v:'54.3%',s:'2019→2025',c:'green'},
+    {l:'Ret. Consumidor',v:'36.5%',s:'Média 2020–2025',c:'yellow'},
+    {l:'Ret. Empresa',v:'31.7%',s:'Média 2020–2025',c:'yellow'}
+  ]);
+  document.getElementById('tb2a').innerHTML = tableRows(D2cs, [2022,2025]);
+  document.getElementById('tb2b').innerHTML = tableRows(D2emp, [2023,2025]);
+  document.getElementById('ins2').innerHTML = insHtml('Insights Chave', [
+    'As <strong>empresas</strong> têm CAGR superior (<strong>54.3%</strong>) vs consumidores (<strong>37.3%</strong>).',
+    'Os consumidores finais têm melhor retenção (<strong>36.5%</strong>) que as empresas (<strong>31.7%</strong>).',
+    '2024 foi problemático <strong>só para consumidores (-11.1%)</strong>; empresas mantiveram crescimento (+7.5%).',
+    'Em 2025, as empresas recuperaram fortemente (<strong>+48.7%</strong>) vs consumidores (<strong>+8.9%</strong>).',
+    'O segmento empresarial é o principal <strong>motor de crescimento</strong>, mas com menor fidelização.'
+  ]);
+  new Chart(document.getElementById('c2a'),{type:'line',data:{labels:anos,datasets:[{label:'Consumidor Final',data:D2cs.map(function(d){return d.col1}),borderColor:C.accent,backgroundColor:C.blueL,fill:true,tension:.3,pointRadius:5,pointBackgroundColor:C.accent,borderWidth:2.5},{label:'Empresa',data:D2emp.map(function(d){return d.col1}),borderColor:C.green,backgroundColor:C.greenL,fill:true,tension:.3,pointRadius:5,pointBackgroundColor:C.green,borderWidth:2.5}]},options:cOpts});
+  new Chart(document.getElementById('c2b'),{type:'bar',data:{labels:anos.slice(1),datasets:[{label:'Consumidor %',data:D2cs.slice(1).map(function(d){return d.cpct!==null?+(d.cpct*100).toFixed(1):0}),backgroundColor:C.accent,borderRadius:4},{label:'Empresa %',data:D2emp.slice(1).map(function(d){return d.cpct!==null?+(d.cpct*100).toFixed(1):0}),backgroundColor:C.green,borderRadius:4}]},options:Object.assign({},cOpts,{scales:{y:{ticks:{callback:function(v){return v+'%'}}}}})});
+}
+
+// ─── Tab 3 ───
+function initTab3() {
+  var anos = D3all.map(function(d){return d.ano});
+  document.getElementById('kpi3').innerHTML = kpiHtml([
+    {l:'Clientes Únicos 2025',v:'1.397',s:'Total',c:'navy'},
+    {l:'Consumidores 2025',v:'1.098',s:'78.6% da base',c:'blue'},
+    {l:'Empresas 2025',v:'299',s:'21.4% da base',c:'green'},
+    {l:'Ret. Total',v:'47.4%',s:'Média 2020–2025',c:'yellow'},
+    {l:'Ret. Consumidor',v:'43.7%',s:'Média',c:'yellow'},
+    {l:'Ret. Empresa',v:'59.7%',s:'Média — excelente',c:'green'}
+  ]);
+  document.getElementById('tb3a').innerHTML = tableRows(D3all, [2022,2023]);
+  document.getElementById('tb3b').innerHTML = tableRows(D3cs, [2022,2023]);
+  document.getElementById('tb3c').innerHTML = tableRows(D3emp, [2023]);
+  document.getElementById('ins3').innerHTML = insHtml('Insights Chave', [
+    'Retenção de clientes (<strong>~47%</strong>) é bastante superior à retenção de matrículas (~35%).',
+    'Retenção empresarial é <strong>excelente (~60%)</strong> — sugere boa qualidade de serviço B2B.',
+    'Consumidores dominam em volume (<strong>78.6%</strong> da base em 2025), mas têm maior churn.',
+    '<strong>2024</strong> foi negativo para consumidores (<strong>-7.8%</strong>) e quase estagnado para empresas (+4.4%).',
+    '2025 mostra recuperação nos consumidores (<strong>+5.9%</strong>) mas ligeira perda nas empresas (<strong>-2.6%</strong>).',
+    'O crescimento depende fortemente de captar <strong>novos clientes</strong> — a retenção empresarial é o ponto forte a capitalizar.'
+  ]);
+  new Chart(document.getElementById('c3a'),{type:'line',data:{labels:anos,datasets:[{label:'Total Clientes',data:D3all.map(function(d){return d.col1}),borderColor:C.navy,backgroundColor:C.blueL,fill:true,tension:.3,pointRadius:5,pointBackgroundColor:C.navy,borderWidth:2.5},{label:'Consumidores',data:D3cs.map(function(d){return d.col1}),borderColor:C.accent,borderDash:[6,3],tension:.3,pointRadius:4,pointBackgroundColor:C.accent,borderWidth:2},{label:'Empresas',data:D3emp.map(function(d){return d.col1}),borderColor:C.green,borderDash:[4,2],tension:.3,pointRadius:4,pointBackgroundColor:C.green,borderWidth:2}]},options:cOpts});
+  new Chart(document.getElementById('c3b'),{type:'bar',data:{labels:anos,datasets:[{label:'Consumidores',data:D3cs.map(function(d){return d.col1}),backgroundColor:C.accent,borderRadius:4},{label:'Empresas',data:D3emp.map(function(d){return d.col1}),backgroundColor:C.green,borderRadius:4}]},options:Object.assign({},cOpts,{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}})});
+  new Chart(document.getElementById('c3c'),{type:'line',data:{labels:anos.slice(1),datasets:[{label:'Consumidor',data:D3cs.slice(1).map(function(d){return d.ret!==null?+(d.ret*100).toFixed(1):0}),borderColor:C.accent,tension:.3,pointRadius:5,pointBackgroundColor:C.accent,borderWidth:2.5},{label:'Empresa',data:D3emp.slice(1).map(function(d){return d.ret!==null?+(d.ret*100).toFixed(1):0}),borderColor:C.green,tension:.3,pointRadius:5,pointBackgroundColor:C.green,borderWidth:2.5}]},options:Object.assign({},cOpts,{scales:{y:{ticks:{callback:function(v){return v+'%'}}}}})});
+  new Chart(document.getElementById('c3d'),{type:'bar',data:{labels:anos.slice(1),datasets:[{label:'Crescimento Líquido',data:D3all.slice(1).map(function(d){return d.cliq}),backgroundColor:D3all.slice(1).map(function(d){return d.cliq>=0?C.green:C.red}),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+}
+
+// Init first tab
+chartsInit.matriculas = true;
+initTab1();
+
+})();
+</script>
+</body>
+</html>

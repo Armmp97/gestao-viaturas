@@ -508,8 +508,10 @@ body {
     var parts = ['<a onclick="navigate()">Indicadores</a>'];
     if (state.category) {
       var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+      var ext = !cat ? EXTERNAL_CARDS.find(function(e) { return e.id === state.category; }) : null;
+      var catTitle = cat ? cat.title : (ext ? ext.title : state.category);
       parts.push('<span class="sep">›</span>');
-      parts.push('<a onclick="navigate(\'' + state.category + '\')">' + (cat ? cat.title : state.category) + '</a>');
+      parts.push('<a onclick="navigate(\'' + state.category + '\')">' + catTitle + '</a>');
     }
     if (state.year) {
       parts.push('<span class="sep">›</span>');
@@ -556,6 +558,11 @@ body {
     return renderData();
   }
 
+  // ══════ External module cards (loaded as iframe) ══════
+  var EXTERNAL_CARDS = [
+    { id: 'taxa_retencao', icon: '🚗', title: 'Análise Taxa Retenção Viaturas', desc: 'Crescimento e retenção de matrículas — novas, regressadas, perdidas e taxa de retenção anual.', url: 'taxa_retencao_viaturas.html' }
+  ];
+
   // ══════ Level 1: Categories ══════
   function renderCategories() {
     var html = '<div class="cat-grid">';
@@ -566,9 +573,26 @@ body {
         '<p>' + cat.desc + '</p>' +
       '</div>';
     });
+    EXTERNAL_CARDS.forEach(function(ext) {
+      html += '<div class="cat-card" onclick="openExternal(\'' + ext.id + '\')">' +
+        '<div class="cat-card-icon">' + ext.icon + '</div>' +
+        '<h3>' + ext.title + '</h3>' +
+        '<p>' + ext.desc + '</p>' +
+      '</div>';
+    });
     html += '</div>';
     document.getElementById('content').innerHTML = html;
   }
+
+  window.openExternal = function(id) {
+    var ext = EXTERNAL_CARDS.find(function(e) { return e.id === id; });
+    if (!ext) return;
+    state = { category: id };
+    var html = '<button class="btn-back" onclick="navigate()">← Voltar</button>' +
+      '<iframe src="' + ext.url + '?v=' + Date.now() + '" style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;margin-top:16px;"></iframe>';
+    document.getElementById('content').innerHTML = html;
+    renderBreadcrumb();
+  };
 
   // ══════ Level 2: Years ══════
   function renderYears() {
