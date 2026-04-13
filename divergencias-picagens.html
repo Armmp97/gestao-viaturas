@@ -858,76 +858,55 @@ async function generate() {
         var cardsDiv = document.getElementById('resultCards');
         cardsDiv.innerHTML = '';
         var generatedReports = [];
-        for(var unit in UNITS) {
-            var safe = unit.toLowerCase().replace(/ã/g,'a').replace(/é/g,'e').replace(/ /g,'_');
-            var fn = 'validacao_'+safe+'.html';
-            generatedReports.push({ unit: unit, filename: fn, html: htmlFiles[unit], safe: safe });
-            var card = document.createElement('div');
-            card.className = 'result-card';
-            card.innerHTML = '<div class="info">'+unit+'<br><span>'+COORDINATORS[unit].nome+' · '+fn+'<\/span><\/div>';
-            var btnWrap = document.createElement('div');
-            btnWrap.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
-            var viewBtn = document.createElement('button');
-            viewBtn.className = 'btn-download';
-            viewBtn.style.cssText = 'background:#3498db;padding:8px 14px;font-size:0.85em;';
-            viewBtn.textContent = 'Pré-visualizar';
-            (function(h){ viewBtn.onclick = function(){ openPrintPreview([h]); }; })({ unit: unit, html: htmlFiles[unit] });
-            btnWrap.appendChild(viewBtn);
-
-            card.appendChild(btnWrap);
-            cardsDiv.appendChild(card);
-        }
-        // "Preview All" button
-        var allBtn = document.createElement('button');
-        allBtn.className = 'btn-download';
-        allBtn.style.cssText = 'width:100%;margin-top:12px;padding:12px;font-size:0.95em;background:#3498db;';
-        allBtn.textContent = 'Pré-visualizar Todos (3 relatórios)';
-        allBtn.onclick = function() { openPrintPreview(generatedReports); };
-        cardsDiv.appendChild(allBtn);
-
-        // "Enviar para Coordenadores" button — saves each report to the respective coordinator's pending folder
-        var sendCoordBtn = document.createElement('button');
-        sendCoordBtn.className = 'btn-download';
-        sendCoordBtn.id = 'divSendCoordBtn';
-        sendCoordBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;font-size:1em;background:#27ae60;';
-        sendCoordBtn.textContent = 'Enviar para Coordenadores';
-        sendCoordBtn.onclick = function() {
-            divConfirmBox.style.display = 'block';
-            sendCoordBtn.style.display = 'none';
-        };
-        cardsDiv.appendChild(sendCoordBtn);
-
-        // Inline confirmation box
-        var divConfirmBox = document.createElement('div');
-        divConfirmBox.style.cssText = 'display:none;margin-top:8px;padding:14px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;text-align:center;';
-        divConfirmBox.innerHTML = '<div style="font-size:14px;font-weight:600;color:#856404;margin-bottom:8px;">Confirma envio para os coordenadores?</div>' +
-            '<div style="font-size:12px;color:#856404;margin-bottom:10px;">Colisão → Mário Perez · Mecânica Lisboa → Fábio Ramalho · Mecânica Cacém → José Rodriguez</div>' +
-            '<div style="font-size:12px;color:#856404;margin-bottom:10px;">Cada coordenador receberá notificação por email.</div>' +
-            '<button id="divConfirmYes" style="padding:8px 24px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px;">Sim, Enviar</button>' +
-            '<button id="divConfirmNo" style="padding:8px 24px;background:#6c757d;color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>';
-        cardsDiv.appendChild(divConfirmBox);
-
-        divConfirmBox.querySelector('#divConfirmNo').onclick = function() {
-            divConfirmBox.style.display = 'none';
-            sendCoordBtn.style.display = 'block';
+        var unitToCoord = {
+            'Colisão': 'colisao',
+            'Mecânica Lisboa': 'mecanica_lisboa',
+            'Mecânica Cacém': 'mecanica_cacem'
         };
 
-        divConfirmBox.querySelector('#divConfirmYes').onclick = function() {
-            divConfirmBox.style.display = 'none';
-            sendCoordBtn.style.display = 'block';
-            sendCoordBtn.textContent = 'A enviar para coordenadores...';
-            sendCoordBtn.style.background = '#666';
-            sendCoordBtn.disabled = true;
-
-            // Map unit names to coord keys
-            var unitToCoord = {
-                'Colisão': 'colisao',
-                'Mecânica Lisboa': 'mecanica_lisboa',
-                'Mecânica Cacém': 'mecanica_cacem'
-            };
+        function sendSingleReport(report, btn) {
+            btn.textContent = 'A enviar...';
+            btn.style.background = '#666';
+            btn.disabled = true;
 
             var ts = getTimestamp();
-            var reports = generatedReports.map(function(r) {
+            var payload = [{
+                unit: unitToCoord[report.unit] || report.safe,
+                fileName: 'Validacao_' + report.safe.charAt(0).toUpperCase() + report.safe.slice(1) + '_' + ts + '.html',
+                htmlContent: report.html
+            }];
+
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'saveDivCoord', reports: payload }, '*');
+                function onResult(ev) {
+                    if (!ev.data || ev.data.type !== 'saveDivCoordResult') return;
+                    window.removeEventListener('message', onResult);
+                    if (ev.data.success) {
+                        btn.textContent = 'Enviado ✓';
+                        btn.style.background = '#27ae60';
+                    } else {
+                        btn.textContent = 'Erro!';
+                        btn.style.background = '#e74c3c';
+                    }
+                    setTimeout(function() {
+                        btn.textContent = 'Enviar';
+                        btn.style.background = '#27ae60';
+                        btn.disabled = false;
+                    }, 4000);
+                }
+                window.addEventListener('message', onResult);
+            }
+        }
+
+        function sendAllReports(btn) {
+            btn.textContent = 'A enviar...';
+            btn.style.background = '#666';
+            btn.disabled = true;
+            // Disable all individual send buttons too
+            document.querySelectorAll('.btn-send-individual').forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; });
+
+            var ts = getTimestamp();
+            var payload = generatedReports.map(function(r) {
                 return {
                     unit: unitToCoord[r.unit] || r.safe,
                     fileName: 'Validacao_' + r.safe.charAt(0).toUpperCase() + r.safe.slice(1) + '_' + ts + '.html',
@@ -936,27 +915,76 @@ async function generate() {
             });
 
             if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'saveDivCoord', reports: reports }, '*');
-
-                function onCoordResult(ev) {
+                window.parent.postMessage({ type: 'saveDivCoord', reports: payload }, '*');
+                function onResult(ev) {
                     if (!ev.data || ev.data.type !== 'saveDivCoordResult') return;
-                    window.removeEventListener('message', onCoordResult);
+                    window.removeEventListener('message', onResult);
                     if (ev.data.success) {
-                        sendCoordBtn.textContent = 'Enviado com sucesso!';
-                        sendCoordBtn.style.background = '#27ae60';
+                        btn.textContent = 'Todos enviados ✓';
+                        btn.style.background = '#27ae60';
+                        document.querySelectorAll('.btn-send-individual').forEach(function(b) {
+                            b.textContent = 'Enviado ✓'; b.style.background = '#27ae60';
+                        });
                     } else {
-                        sendCoordBtn.textContent = 'Erros: ' + (ev.data.errors || []).join(', ');
-                        sendCoordBtn.style.background = '#e74c3c';
+                        btn.textContent = 'Erros: ' + (ev.data.errors || []).join(', ');
+                        btn.style.background = '#e74c3c';
                     }
                     setTimeout(function() {
-                        sendCoordBtn.textContent = 'Enviar para Coordenadores';
-                        sendCoordBtn.style.background = '#27ae60';
-                        sendCoordBtn.disabled = false;
+                        btn.textContent = 'Enviar Todos para Coordenadores';
+                        btn.style.background = '#27ae60';
+                        btn.disabled = false;
+                        document.querySelectorAll('.btn-send-individual').forEach(function(b) {
+                            b.textContent = 'Enviar'; b.style.background = '#27ae60'; b.disabled = false; b.style.opacity = '1';
+                        });
                     }, 5000);
                 }
-                window.addEventListener('message', onCoordResult);
+                window.addEventListener('message', onResult);
             }
-        };
+        }
+
+        for(var unit in UNITS) {
+            var safe = unit.toLowerCase().replace(/ã/g,'a').replace(/é/g,'e').replace(/ /g,'_');
+            var fn = 'validacao_'+safe+'.html';
+            generatedReports.push({ unit: unit, filename: fn, html: htmlFiles[unit], safe: safe });
+            var card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = '<div class="info">'+unit+'<br><span>'+COORDINATORS[unit].nome+' · '+fn+'<\/span><\/div>';
+            var btnWrap = document.createElement('div');
+            btnWrap.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;align-items:center;';
+            var viewBtn = document.createElement('button');
+            viewBtn.className = 'btn-download';
+            viewBtn.style.cssText = 'background:#3498db;padding:8px 14px;font-size:0.85em;';
+            viewBtn.textContent = 'Pré-visualizar';
+            (function(h){ viewBtn.onclick = function(){ openPrintPreview([h]); }; })({ unit: unit, html: htmlFiles[unit] });
+            btnWrap.appendChild(viewBtn);
+
+            // Individual send button per report
+            var sendBtn = document.createElement('button');
+            sendBtn.className = 'btn-download btn-send-individual';
+            sendBtn.style.cssText = 'background:#27ae60;padding:8px 14px;font-size:0.85em;';
+            sendBtn.textContent = 'Enviar';
+            sendBtn.title = 'Enviar apenas este relatório para ' + COORDINATORS[unit].nome;
+            (function(r, b){ sendBtn.onclick = function(){ sendSingleReport(r, b); }; })(generatedReports[generatedReports.length - 1], sendBtn);
+            btnWrap.appendChild(sendBtn);
+
+            card.appendChild(btnWrap);
+            cardsDiv.appendChild(card);
+        }
+        // "Preview All" button
+        var allBtn = document.createElement('button');
+        allBtn.className = 'btn-download';
+        allBtn.style.cssText = 'width:100%;margin-top:12px;padding:12px;font-size:0.95em;background:#3498db;';
+        allBtn.textContent = 'Pré-visualizar Todos (' + generatedReports.length + ' relatórios)';
+        allBtn.onclick = function() { openPrintPreview(generatedReports); };
+        cardsDiv.appendChild(allBtn);
+
+        // "Enviar Todos" button
+        var sendAllBtn = document.createElement('button');
+        sendAllBtn.className = 'btn-download';
+        sendAllBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;font-size:1em;background:#27ae60;';
+        sendAllBtn.textContent = 'Enviar Todos para Coordenadores';
+        sendAllBtn.onclick = function() { sendAllReports(sendAllBtn); }
+        cardsDiv.appendChild(sendAllBtn);
 
         setProgress(100, 'Concluído!');
         document.getElementById('uploadScreen').style.display = 'none';

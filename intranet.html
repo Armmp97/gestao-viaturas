@@ -2040,11 +2040,18 @@
     };
 
     // ======== AUTH (Azure AD via MSAL) ========
+    // Redirect URI must match EXACTLY what is registered in Azure AD App Registration
+    // Registered URIs: https://intranet.domuscar.com, https://intranet.domuscar.com/
+    var _resolvedRedirectUri = window.location.origin + window.location.pathname;
+    // Normalize: strip trailing slash for consistency with Azure AD registration
+    if (_resolvedRedirectUri.endsWith('/') && _resolvedRedirectUri.length > 1) {
+        _resolvedRedirectUri = _resolvedRedirectUri.slice(0, -1);
+    }
     const MSAL_CONFIG = {
         auth: {
             clientId: '09d343c1-e3ef-4a71-b50e-be14e7aed4c4',
             authority: 'https://login.microsoftonline.com/17ce2502-f743-4288-86df-fb21fcc4b655',
-            redirectUri: window.location.origin + window.location.pathname
+            redirectUri: _resolvedRedirectUri
         },
         cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
     };
@@ -2690,7 +2697,9 @@
         'mecanica_cacem': { email: 'jose.rodriguez@domuscar.com', name: 'José Rodriguez', pendente: 'div_cacem_pendente', respondido: 'div_cacem_respondido' }
     };
 
-    // Called from divergencias-picagens.html when admin generates reports
+    var INTRANET_URL = 'https://intranet.domuscar.com';
+
+    // Called from divergencias-picagens.html when admin sends reports (all or individual)
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'saveDivCoord') return;
         var d = event.data;
@@ -2698,6 +2707,16 @@
         var totalReports = d.reports.length;
         var savedCount = 0;
         var errors = [];
+        var emailsSent = {};
+
+        // Group reports by coordinator to send ONE email per coordinator with all their files
+        var reportsByCoord = {};
+        d.reports.forEach(function(report) {
+            var key = report.unit;
+            if (!reportsByCoord[key]) reportsByCoord[key] = [];
+            reportsByCoord[key].push(report);
+        });
+
         d.reports.forEach(function(report) {
             var coordInfo = DIV_COORD_MAP[report.unit];
             if (!coordInfo) { errors.push('Unit desconhecida: ' + report.unit); savedCount++; return; }
@@ -2705,15 +2724,23 @@
             uploadToSharePoint(coordInfo.pendente, report.fileName, content, 'text/html')
                 .then(function() {
                     console.log('[DivCoord] Guardado para ' + coordInfo.name + ': ' + report.fileName);
-                    // Send email notification to coordinator
-                    sendEmailOnly([{email: coordInfo.email, name: coordInfo.name}],
-                        '📊 Novo Relatório Divergências Picagens — Para Validação',
-                        '<p>Bom dia ' + coordInfo.name.split(' ')[0] + ',</p>' +
-                        '<p>Foi gerado um novo relatório de divergências de picagens que necessita da sua validação.</p>' +
-                        '<p><strong>Ficheiro:</strong> ' + report.fileName + '</p>' +
-                        '<p>Por favor, aceda à Intranet → Coordenação → Divergências Picagens para validar.</p>' +
-                        '<p style="color:#888;font-size:12px;">Notificação automática — Intranet DomusCar</p>'
-                    );
+                    // Send ONE email per coordinator (only on first file for this coord)
+                    if (!emailsSent[report.unit]) {
+                        emailsSent[report.unit] = true;
+                        var coordReports = reportsByCoord[report.unit];
+                        var fileList = coordReports.map(function(r) { return r.fileName; }).join('<br>');
+                        var fileCount = coordReports.length;
+                        sendEmailOnly([{email: coordInfo.email, name: coordInfo.name}],
+                            '📊 ' + (fileCount > 1 ? fileCount + ' Novos Relatórios' : 'Novo Relatório') + ' Divergências Picagens — Para Validação',
+                            '<p>Bom dia ' + coordInfo.name.split(' ')[0] + ',</p>' +
+                            '<p>' + (fileCount > 1 ? 'Foram gerados <strong>' + fileCount + ' novos relatórios</strong>' : 'Foi gerado um novo relatório') + ' de divergências de picagens que ' + (fileCount > 1 ? 'necessitam' : 'necessita') + ' da sua validação.</p>' +
+                            '<p><strong>Ficheiro' + (fileCount > 1 ? 's' : '') + ':</strong><br>' + fileList + '</p>' +
+                            '<p>Por favor, aceda à Intranet para validar:</p>' +
+                            '<p><a href="' + INTRANET_URL + '" style="display:inline-block;padding:10px 24px;background:#005691;color:white;text-decoration:none;border-radius:6px;font-weight:600;">Abrir Intranet DomusCar</a></p>' +
+                            '<p style="font-size:12px;color:#666;">Navegue para: <strong>Coordenação → Divergências Picagens</strong></p>' +
+                            '<p style="color:#888;font-size:12px;">Notificação automática — Intranet DomusCar</p>'
+                        );
+                    }
                 })
                 .catch(function(err) { errors.push(coordInfo.name + ': ' + err.message); })
                 .finally(function() {
@@ -2815,6 +2842,35 @@
     window.getCurrentUserPermissions = function() {
         return currentUserPermissions;
     };
+    window.deleteDivCoordFile = function(fileId) {
+        return deleteSharePointFile(fileId);
+    };
+
+    // Handler: delete all pending div coord files (called from coord_divergencias.html admin action)
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'deleteAllPendingDiv') return;
+        var units = Object.keys(DIV_COORD_MAP);
+        var allDeletes = [];
+        var chain = Promise.resolve();
+        units.forEach(function(unit) {
+            chain = chain.then(function() {
+                return listSharePointFiles(DIV_COORD_MAP[unit].pendente).then(function(data) {
+                    var files = data.value || [];
+                    return Promise.all(files.map(function(f) {
+                        return deleteSharePointFile(f.id).then(function() {
+                            console.log('[DivCoord] Eliminado pendente: ' + f.name);
+                            return f.name;
+                        });
+                    }));
+                }).then(function(names) { allDeletes = allDeletes.concat(names); });
+            });
+        });
+        chain.then(function() {
+            event.source.postMessage({ type: 'deleteAllPendingDivResult', success: true, count: allDeletes.length, files: allDeletes }, '*');
+        }).catch(function(err) {
+            event.source.postMessage({ type: 'deleteAllPendingDivResult', success: false, error: err.message }, '*');
+        });
+    });
 
     // ======== NAVIGATION ========
     let currentModule = null;

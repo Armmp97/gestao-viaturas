@@ -186,6 +186,7 @@ body {
   <div class="status-bar">
     <div class="status-chip pending" id="statusPending">⏳ <span id="countPending">0</span> por responder</div>
     <div class="status-chip done" id="statusDone">✅ <span id="countDone">0</span> respondidos</div>
+    <button id="adminDeleteAllBtn" style="display:none;margin-left:auto;padding:6px 14px;background:#e74c3c;color:white;border:none;border-radius:6px;font-size:0.8em;font-weight:600;cursor:pointer;" onclick="deleteAllPending()">Eliminar Todos os Pendentes</button>
   </div>
 
   <!-- Tab bar -->
@@ -284,6 +285,37 @@ body {
             '<div class="empty-state"><div class="icon">⚠️</div><p>' + msg + '</p></div>';
     }
 
+    // ======== Delete All Pending (admin only) ========
+    function deleteAllPending() {
+        var count = document.getElementById('countPending').textContent || '0';
+        if (!confirm('Tem a certeza que quer eliminar TODOS os ' + count + ' relatórios pendentes de todas as unidades?\n\nEsta ação é irreversível.')) return;
+        var btn = document.getElementById('adminDeleteAllBtn');
+        btn.textContent = 'A eliminar...';
+        btn.disabled = true;
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'deleteAllPendingDiv' }, '*');
+            function onDeleteResult(ev) {
+                if (!ev.data || ev.data.type !== 'deleteAllPendingDivResult') return;
+                window.removeEventListener('message', onDeleteResult);
+                if (ev.data.success) {
+                    btn.textContent = ev.data.count + ' ficheiros eliminados ✓';
+                    btn.style.background = '#27ae60';
+                    setTimeout(function() {
+                        btn.textContent = 'Eliminar Todos os Pendentes';
+                        btn.style.background = '#e74c3c';
+                        btn.disabled = false;
+                        loadAllUnits(); // refresh
+                    }, 3000);
+                } else {
+                    btn.textContent = 'Erro: ' + (ev.data.error || 'desconhecido');
+                    btn.style.background = '#e74c3c';
+                    btn.disabled = false;
+                }
+            }
+            window.addEventListener('message', onDeleteResult);
+        }
+    }
+
     // ======== Init ========
     function init() {
         currentUnit = detectUnit();
@@ -292,6 +324,9 @@ body {
         if (currentUnit === 'admin') {
             // Admin sees all units — load all
             loadAllUnits();
+            // Show admin-only actions
+            var adminBtn = document.getElementById('adminDeleteAllBtn');
+            if (adminBtn) adminBtn.style.display = 'inline-block';
         } else {
             loadUnitFiles(currentUnit);
         }
