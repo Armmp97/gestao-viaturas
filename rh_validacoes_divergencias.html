@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RH — Validações Divergências Picagens</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:        #003B73;
+  --navy-deep:   #002B55;
+  --navy-light:  #00508F;
+  --accent:      #007BC0;
+  --accent-light:#4DA8DA;
+  --white:       #FFFFFF;
+  --off-white:   #F5F7FA;
+  --gray-100:    #EEF1F5;
+  --gray-200:    #DEE2E8;
+  --gray-400:    #9CA3AF;
+  --gray-600:    #6B7280;
+  --text-dark:   #1A2A3A;
+  --text-body:   #475569;
+  --green:       #0d904f;
+  --green-light: #e6f4ea;
+  --orange:      #e37400;
+  --orange-light:#fef7e0;
+  --red:         #d93025;
+  --radius:      16px;
+  --radius-sm:   12px;
+  --card-shadow: 0 4px 24px rgba(0,59,115,.08);
+  --card-hover:  0 8px 40px rgba(0,59,115,.14);
+  --transition:  .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--off-white); color: var(--text-body); line-height:1.7;
+}
+.hero {
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 50%, var(--navy-light) 100%);
+  color: var(--white); padding: 48px 32px; text-align:center; position:relative; overflow:hidden;
+}
+.hero::before {
+  content:''; position:absolute; top:-30%; right:-8%;
+  width:500px; height:500px; border-radius:50%;
+  background:radial-gradient(circle, rgba(0,123,192,.15) 0%, transparent 70%);
+}
+.hero h1 { font-size:clamp(1.6rem,4vw,2.4rem); font-weight:800; margin-bottom:8px; position:relative; }
+.hero p { font-size:1rem; opacity:.85; max-width:600px; margin:0 auto; position:relative; }
+
+.container { max-width:1100px; margin:0 auto; padding:24px; }
+
+/* Stats */
+.stats-bar {
+  display:flex; gap:16px; flex-wrap:wrap; margin-bottom:32px;
+}
+.stat-card {
+  flex:1; min-width:160px; background:var(--white); border-radius:var(--radius-sm);
+  padding:20px; text-align:center; box-shadow:var(--card-shadow);
+}
+.stat-number { font-size:2rem; font-weight:800; color:var(--navy); }
+.stat-label { font-size:.8rem; color:var(--gray-600); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+
+/* Filter */
+.filter-bar {
+  display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; align-items:center;
+}
+.filter-bar select, .filter-bar input {
+  padding:10px 14px; border:1px solid var(--gray-200); border-radius:var(--radius-sm);
+  font-family:inherit; font-size:.9rem; background:var(--white);
+}
+.filter-bar select:focus, .filter-bar input:focus { outline:none; border-color:var(--accent); }
+
+/* Cards */
+.file-card {
+  background:var(--white); border-radius:var(--radius-sm); padding:18px 22px;
+  margin-bottom:12px; box-shadow:var(--card-shadow); cursor:pointer;
+  border-left:4px solid var(--green); transition:var(--transition);
+}
+.file-card:hover { box-shadow:var(--card-hover); transform:translateY(-1px); }
+.file-card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.file-card-title { font-weight:700; font-size:.95rem; color:var(--text-dark); }
+.file-card-meta { font-size:.8rem; color:var(--gray-400); }
+.file-card-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+
+.badge-unit {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+}
+.badge-colisao { background:#fce8e6; color:#d93025; }
+.badge-cacem { background:#e8f0fe; color:#1a73e8; }
+.badge-lisboa { background:#fef7e0; color:#e37400; }
+.badge-ref {
+  display:inline-block; background:var(--green-light); color:var(--green);
+  font-weight:700; font-size:.75rem; padding:3px 8px; border-radius:4px;
+}
+
+.btn {
+  padding:8px 16px; border:none; border-radius:8px; font-family:inherit;
+  font-size:.85rem; font-weight:600; cursor:pointer; transition:var(--transition);
+}
+.btn-primary { background:var(--accent); color:var(--white); }
+.btn-primary:hover { background:var(--navy); }
+.btn-secondary { background:var(--gray-100); color:var(--text-dark); }
+.btn-secondary:hover { background:var(--gray-200); }
+
+/* View panel */
+.view-panel {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,.5); z-index:1000; justify-content:center; align-items:center;
+}
+.view-panel.active { display:flex; }
+.view-panel-inner {
+  background:var(--white); width:95%; max-width:1000px; height:90vh;
+  border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.view-panel-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 24px; background:var(--navy); color:var(--white);
+}
+.view-panel-header h3 { font-size:1rem; font-weight:700; }
+.view-panel-close {
+  background:none; border:none; color:var(--white); font-size:1.4rem; cursor:pointer; padding:4px 8px;
+}
+.view-panel-body { flex:1; overflow:hidden; }
+.view-panel-body iframe { width:100%; height:100%; border:none; }
+
+.empty-state { text-align:center; padding:60px 20px; color:var(--gray-400); }
+.empty-state .icon { font-size:48px; margin-bottom:12px; }
+.loading { text-align:center; padding:40px; color:var(--gray-400); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Validações Divergências Picagens</h1>
+  <p>Relatórios validados pelos coordenadores — Recursos Humanos</p>
+</div>
+
+<div class="container">
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-number" id="statTotal">—</div><div class="stat-label">Total Validados</div></div>
+    <div class="stat-card"><div class="stat-number" id="statColisao">—</div><div class="stat-label">Colisão</div></div>
+    <div class="stat-card"><div class="stat-number" id="statCacem">—</div><div class="stat-label">Mecânica Cacém</div></div>
+    <div class="stat-card"><div class="stat-number" id="statLisboa">—</div><div class="stat-label">Mecânica Lisboa</div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <select id="filterUnit" onchange="applyFilters()">
+      <option value="all">Todas as Unidades</option>
+      <option value="colisao">Colisão</option>
+      <option value="mecanica_cacem">Mecânica Cacém</option>
+      <option value="mecanica_lisboa">Mecânica Lisboa</option>
+    </select>
+    <input type="text" id="filterSearch" placeholder="Pesquisar por nome..." oninput="applyFilters()">
+  </div>
+
+  <!-- File List -->
+  <div id="fileList"><div class="loading">A carregar relatórios validados...</div></div>
+</div>
+
+<!-- View Panel -->
+<div class="view-panel" id="viewPanel">
+  <div class="view-panel-inner">
+    <div class="view-panel-header">
+      <h3 id="viewTitle">Relatório</h3>
+      <button class="view-panel-close" onclick="closeView()">✕</button>
+    </div>
+    <div class="view-panel-body">
+      <iframe id="viewFrame"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+var allFiles = [];
+var UNIT_MAP = {
+  'colisao':         { label: 'Colisão',         coord: 'Mário Perez',    badgeClass: 'badge-colisao',  folderKey: 'div_colisao_respondido' },
+  'mecanica_lisboa': { label: 'Mecânica Lisboa',  coord: 'Fábio Ramalho',  badgeClass: 'badge-lisboa',   folderKey: 'div_lisboa_respondido' },
+  'mecanica_cacem':  { label: 'Mecânica Cacém',   coord: 'José Rodriguez', badgeClass: 'badge-cacem',    folderKey: 'div_cacem_respondido' }
+};
+
+function extractRefDate(name) {
+  var m = name.match(/Ref_(\d{2})(\d{2})(\d{4})/);
+  if (m) return m[1] + '/' + m[2] + '/' + m[3];
+  return null;
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  return String(d.getDate()).padStart(2,'0') + '/' +
+         String(d.getMonth()+1).padStart(2,'0') + '/' +
+         d.getFullYear() + ' ' +
+         String(d.getHours()).padStart(2,'0') + ':' +
+         String(d.getMinutes()).padStart(2,'0');
+}
+
+function detectUnit(name) {
+  var n = name.toLowerCase();
+  if (n.indexOf('colisao') >= 0 || n.indexOf('colisão') >= 0) return 'colisao';
+  if (n.indexOf('cacem') >= 0 || n.indexOf('cacém') >= 0) return 'mecanica_cacem';
+  if (n.indexOf('lisboa') >= 0) return 'mecanica_lisboa';
+  return null;
+}
+
+function loadAllValidated() {
+  var units = Object.keys(UNIT_MAP);
+  var promises = [];
+  units.forEach(function(unit) {
+    var info = UNIT_MAP[unit];
+    promises.push(
+      window.parent.listDivCoordFiles(info.folderKey)
+        .then(function(data) {
+          return (data.value || []).map(function(f) {
+            f._unit = unit;
+            f._unitLabel = info.label;
+            f._coord = info.coord;
+            f._badgeClass = info.badgeClass;
+            f._refDate = extractRefDate(f.name);
+            return f;
+          });
+        })
+        .catch(function() { return []; })
+    );
+  });
+
+  Promise.all(promises).then(function(results) {
+    allFiles = [];
+    results.forEach(function(arr) { allFiles = allFiles.concat(arr); });
+    allFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+    updateStats();
+    applyFilters();
+  });
+}
+
+function updateStats() {
+  var total = allFiles.length;
+  var colisao = allFiles.filter(function(f) { return f._unit === 'colisao'; }).length;
+  var cacem = allFiles.filter(function(f) { return f._unit === 'mecanica_cacem'; }).length;
+  var lisboa = allFiles.filter(function(f) { return f._unit === 'mecanica_lisboa'; }).length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statColisao').textContent = colisao;
+  document.getElementById('statCacem').textContent = cacem;
+  document.getElementById('statLisboa').textContent = lisboa;
+}
+
+window.applyFilters = function() {
+  var unit = document.getElementById('filterUnit').value;
+  var search = document.getElementById('filterSearch').value.toLowerCase();
+  var filtered = allFiles.filter(function(f) {
+    if (unit !== 'all' && f._unit !== unit) return false;
+    if (search && f.name.toLowerCase().indexOf(search) < 0 && (f._unitLabel || '').toLowerCase().indexOf(search) < 0) return false;
+    return true;
+  });
+  renderFiles(filtered);
+};
+
+function renderFiles(files) {
+  var container = document.getElementById('fileList');
+  if (files.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📂</div><p>Nenhum relatório validado encontrado.</p></div>';
+    return;
+  }
+
+  var html = '';
+  files.forEach(function(f, i) {
+    var date = formatDate(f.lastModifiedDateTime);
+    var info = UNIT_MAP[f._unit] || {};
+    var refBadge = f._refDate ? '<span class="badge-ref">📅 ' + f._refDate + '</span>' : '';
+    var unitBadge = '<span class="badge-unit ' + (info.badgeClass || '') + '">' + (info.label || '—') + '</span>';
+    html += '<div class="file-card" onclick="openFile(\'' + f.id + '\', \'' + (f._unit || '') + '\', \'' + f.name.replace(/'/g, "\\'") + '\')">' +
+      '<div class="file-card-header">' +
+        '<div>' +
+          '<div class="file-card-title">✅ ' + f.name + '</div>' +
+          '<div class="file-card-meta">' + date + ' · ' + (info.coord || '') + ' ' + refBadge + '</div>' +
+        '</div>' +
+        unitBadge +
+      '</div>' +
+      '<div class="file-card-actions">' +
+        '<button class="btn btn-primary" onclick="event.stopPropagation(); openFile(\'' + f.id + '\', \'' + (f._unit || '') + '\', \'' + f.name.replace(/'/g, "\\'") + '\')">👁️ Visualizar</button>' +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+window.openFile = function(fileId, unit, fileName) {
+  var panel = document.getElementById('viewPanel');
+  var frame = document.getElementById('viewFrame');
+  document.getElementById('viewTitle').textContent = fileName;
+  frame.src = '';
+  panel.classList.add('active');
+
+  try {
+    window.parent.downloadDivCoordFile(fileId).then(function(htmlContent) {
+      frame.srcdoc = htmlContent;
+    }).catch(function(err) {
+      frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro ao carregar</h2><p>' + err.message + '</p></body></html>';
+    });
+  } catch(e) {
+    frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro</h2><p>' + e.message + '</p></body></html>';
+  }
+};
+
+window.closeView = function() {
+  document.getElementById('viewPanel').classList.remove('active');
+  document.getElementById('viewFrame').srcdoc = '';
+};
+
+// Close on Escape
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeView(); });
+
+// Init
+if (window.parent && window.parent.listDivCoordFiles) {
+  loadAllValidated();
+} else {
+  document.getElementById('fileList').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Esta página deve ser acedida dentro da Intranet DomusCar.</p></div>';
+}
+
+})();
+</script>
+</body>
+</html>

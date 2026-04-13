@@ -1020,6 +1020,11 @@
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
         </ul>
 
+        <div class="sidebar-section" id="rhSection" style="display: none;">Recursos Humanos</div>
+        <ul class="sidebar-nav" id="rhNav" style="display: none;">
+            <li><a onclick="openModule('rh_validacoes_div')" id="navRh_validacoes_div"><span class="nav-icon">📋</span> Validações Divergências</a></li>
+        </ul>
+
         <div class="sidebar-section" id="adminSection" style="display: none;">Administração</div>
         <ul class="sidebar-nav" id="adminNav" style="display: none;">
             <li><a onclick="openSettings()" id="navDefinicoes"><span class="nav-icon">⚙️</span> Definições</a></li>
@@ -1939,11 +1944,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','rh_validacoes_div']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','rh_validacoes_div']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
@@ -2032,6 +2037,10 @@
         'xavierjoli2@gmail.com': {
             role: 'colaborador', name: 'Xavier Oliveira Jorge',
             modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+        },
+        'claudia.pedro@domuscar.com': {
+            role: 'rh', name: 'Cláudia Pedro',
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','rh_validacoes_div']
         },
         '_default': {
             role: 'user', name: '',
@@ -2257,6 +2266,16 @@
         } else {
             if (coordSection) coordSection.style.display = 'none';
             if (coordNav) coordNav.style.display = 'none';
+        }
+        // Recursos Humanos (RH): visible for 'admin' and 'rh'
+        var rhSection = document.getElementById('rhSection');
+        var rhNav = document.getElementById('rhNav');
+        if (role === 'admin' || role === 'rh') {
+            if (rhSection) rhSection.style.display = 'block';
+            if (rhNav) rhNav.style.display = 'block';
+        } else {
+            if (rhSection) rhSection.style.display = 'none';
+            if (rhNav) rhNav.style.display = 'none';
         }
         // Administração: visible only for 'admin'
         var adminSection = document.getElementById('adminSection');
@@ -2801,7 +2820,9 @@
                     '<p><strong>Coordenador:</strong> ' + coordInfo.name + '</p>' +
                     '<p><strong>Ficheiro:</strong> ' + d.fileName + '</p>' +
                     '<p>O relatório de divergências de picagens foi validado e respondido.</p>' +
-                    '<p style="color:#888;font-size:12px;">Consultar na Intranet > Definições > Gestão de Ficheiros</p>'
+                    '<p><a href="' + INTRANET_URL + '" style="display:inline-block;padding:10px 24px;background:#005691;color:white;text-decoration:none;border-radius:6px;font-weight:600;">Abrir Intranet DomusCar</a></p>' +
+                    '<p style="font-size:12px;color:#666;">Navegue para: <strong>Recursos Humanos → Validações Divergências</strong></p>' +
+                    '<p style="color:#888;font-size:12px;">Notificação automática — Intranet DomusCar</p>'
                 );
                 event.source.postMessage({ type: 'divCoordRespondResult', success: true }, '*');
             })
@@ -2961,7 +2982,8 @@
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
-            coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' }
+            coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' },
+            rh_validacoes_div: { title: 'Validações Divergências Picagens', url: 'rh_validacoes_divergencias.html' }
         };
         const mod = modules[id];
         if (!mod) return;
