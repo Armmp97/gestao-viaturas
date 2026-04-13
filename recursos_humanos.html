@@ -670,7 +670,7 @@ select.form-input { cursor:pointer; }
       <button class="val-view-close" onclick="valCloseView()">✕</button>
     </div>
     <div class="val-view-body">
-      <iframe id="valViewFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+      <iframe id="valViewFrame" sandbox="allow-same-origin"></iframe>
     </div>
   </div>
 </div>
@@ -1221,29 +1221,29 @@ select.form-input { cursor:pointer; }
     try {
       window.parent.downloadDivCoordFile(fileId).then(function(htmlContent) {
         // Inject read-only styles to block any editing
-        // Build read-only wrapper: hide buttons/forms, force all details open via JS
-        var readOnlyStyle = '<style>' +
+        // Force all <details> open via regex (handles any attribute combo)
+        var processed = htmlContent.replace(/<details([^>]*)>/gi, function(match, attrs) {
+          if (/\bopen\b/i.test(attrs)) return match;
+          return '<details' + attrs + ' open>';
+        });
+        // Hide submit/validation sections
+        processed = processed.replace(/<div[^>]*class="[^"]*submit-section[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/gi, '');
+        // Wrap with read-only CSS
+        var readOnlyCSS = '<style>' +
           '*, *::before, *::after { user-select: text !important; }' +
-          'input, textarea, select, [contenteditable] { pointer-events: none !important; opacity: 0.7 !important; }' +
+          'input, textarea, select, [contenteditable] { pointer-events: none !important; opacity: 0.6 !important; }' +
           'button, input[type="submit"], input[type="button"] { display: none !important; }' +
-          'a[onclick], a[href^="mailto:"] { pointer-events: none !important; color: inherit !important; text-decoration: none !important; }' +
+          'a[onclick] { pointer-events: none !important; }' +
           'form { pointer-events: none !important; }' +
-          'summary { pointer-events: none !important; list-style: none !important; }' +
-          'summary::-webkit-details-marker { display: none !important; }' +
-          'summary::marker { display: none !important; }' +
-          '.submit-section, [class*="submit"], [id*="submit"] { display: none !important; }' +
+          'summary { pointer-events: none !important; cursor: default !important; }' +
           '</style>';
-        var readOnlyScript = '<script>' +
-          'document.addEventListener("DOMContentLoaded", function() {' +
-          '  document.querySelectorAll("details").forEach(function(d) { d.open = true; d.setAttribute("open",""); });' +
-          '  var els = document.querySelectorAll("h2, h3, h4, p, div, section");' +
-          '  for (var i = 0; i < els.length; i++) {' +
-          '    var txt = (els[i].textContent || "").toLowerCase();' +
-          '    if (txt.indexOf("submeter") >= 0 && txt.indexOf("valida") >= 0) { els[i].closest("div, section, form") ? els[i].closest("div, section, form").style.display = "none" : els[i].style.display = "none"; }' +
-          '  }' +
-          '});' +
-          '<\/script>';
-        frame.srcdoc = htmlContent.replace(/<\/head>/i, readOnlyStyle + readOnlyScript + '</head>');
+        // Insert CSS into existing <head> or prepend to content
+        if (/<head[^>]*>/i.test(processed)) {
+          processed = processed.replace(/<head([^>]*)>/i, '<head$1>' + readOnlyCSS);
+        } else {
+          processed = readOnlyCSS + processed;
+        }
+        frame.srcdoc = processed;
       }).catch(function(err) {
         frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro ao carregar</h2><p>' + (err.message || err) + '</p></body></html>';
       });
