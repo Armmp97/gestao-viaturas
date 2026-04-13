@@ -1236,6 +1236,11 @@ select.form-input { cursor:pointer; }
           'a[onclick] { pointer-events: none !important; }' +
           'form { pointer-events: none !important; }' +
           'summary { pointer-events: none !important; cursor: default !important; }' +
+          '.cbody { display: block !important; }' +
+          '.ch { pointer-events: none !important; cursor: default !important; }' +
+          'details { pointer-events: none !important; }' +
+          'details[open] summary { pointer-events: none !important; }' +
+          '.submit-section, [class*="submit-section"] { display: none !important; }' +
           '</style>';
         // Insert CSS into existing <head> or prepend to content
         if (/<head[^>]*>/i.test(processed)) {
