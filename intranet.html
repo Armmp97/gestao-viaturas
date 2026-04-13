@@ -1014,8 +1014,8 @@
             </li>
         </ul>
 
-        <div class="sidebar-section">Coordenação</div>
-        <ul class="sidebar-nav">
+        <div class="sidebar-section" id="coordSection" style="display: none;">Coordenação</div>
+        <ul class="sidebar-nav" id="coordNav" style="display: none;">
             <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
         </ul>
@@ -2247,9 +2247,21 @@
 
     function updateSidebarPermissions() {
         if (!currentUserPermissions) return;
+        var role = currentUserPermissions.role;
+        // Coordenação: visible only for 'admin' and 'coordenador'
+        var coordSection = document.getElementById('coordSection');
+        var coordNav = document.getElementById('coordNav');
+        if (role === 'admin' || role === 'coordenador') {
+            if (coordSection) coordSection.style.display = 'block';
+            if (coordNav) coordNav.style.display = 'block';
+        } else {
+            if (coordSection) coordSection.style.display = 'none';
+            if (coordNav) coordNav.style.display = 'none';
+        }
+        // Administração: visible only for 'admin'
         var adminSection = document.getElementById('adminSection');
         var adminNav = document.getElementById('adminNav');
-        if (currentUserPermissions.role === 'admin') {
+        if (role === 'admin') {
             if (adminSection) adminSection.style.display = 'block';
             if (adminNav) adminNav.style.display = 'block';
         } else {
