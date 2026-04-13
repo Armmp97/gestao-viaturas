@@ -256,9 +256,10 @@ async function extractPDF(file) {
 
         // Find movements line: may start with "seg DD.MM.YYYY" (pdfplumber)
         // or just "DD.MM.YYYY" if day abbreviation is on separate Y line (PDF.js)
+        // Note: day abbreviations may have accents (sáb, não sab)
         var movsLine = null;
         for(var mi = 0; mi < lines.length; mi++) {
-            if(/^(seg|ter|qua|qui|sex|sab|dom)\s+\d{2}\.\d{2}\.\d{4}/i.test(lines[mi])) {
+            if(/^(?:seg|ter|qua|qui|sex|s[aá]b|dom)\s+\d{2}\.\d{2}\.\d{4}/i.test(lines[mi])) {
                 movsLine = lines[mi];
                 break;
             }
@@ -274,7 +275,7 @@ async function extractPDF(file) {
         }
 
         // Remove day prefix (if present) + date
-        var rest = movsLine.replace(/^(?:(?:seg|ter|qua|qui|sex|sab|dom)\s+)?\d{2}\.\d{2}\.\d{4}\s*!?\s*/i, '');
+        var rest = movsLine.replace(/^(?:(?:seg|ter|qua|qui|sex|s[aá]b|dom)\s+)?\d{2}\.\d{2}\.\d{4}\s*!?\s*/i, '');
         var hasImpar = movsLine.indexOf('!') >= 0;
         var hasPipe = movsLine.indexOf('|') >= 0;
 
