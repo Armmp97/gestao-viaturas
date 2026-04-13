@@ -285,6 +285,37 @@ body {
             '<div class="empty-state"><div class="icon">⚠️</div><p>' + msg + '</p></div>';
     }
 
+    // ======== Delete Single Pending (admin only) ========
+    window.deleteSinglePending = function(index, btn) {
+        var file = pendingFiles[index];
+        if (!file) return;
+        if (!confirm('Eliminar "' + file.name + '"?\n\nEsta ação é irreversível.')) return;
+        btn.textContent = 'A eliminar...';
+        btn.disabled = true;
+        try {
+            window.parent.deleteDivCoordFile(file.id).then(function() {
+                var card = document.getElementById('pendingCard' + index);
+                if (card) {
+                    card.style.transition = 'opacity 0.3s, transform 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(50px)';
+                    setTimeout(function() {
+                        pendingFiles.splice(index, 1);
+                        renderPending();
+                    }, 350);
+                }
+            }).catch(function(err) {
+                alert('Erro ao eliminar: ' + (err.message || err));
+                btn.textContent = '🗑️ Eliminar';
+                btn.disabled = false;
+            });
+        } catch(e) {
+            alert('Erro: ' + e.message);
+            btn.textContent = '🗑️ Eliminar';
+            btn.disabled = false;
+        }
+    };
+
     // ======== Delete All Pending (admin only) ========
     window.deleteAllPending = function() {
         var count = document.getElementById('countPending').textContent || '0';
@@ -418,11 +449,13 @@ body {
             return;
         }
 
+        var isAdmin = (currentUnit === 'admin');
         var html = '';
         pendingFiles.forEach(function(f, i) {
             var date = formatDate(f.lastModifiedDateTime);
             var unitLabel = f._coordName ? ' · ' + f._coordName : '';
-            html += '<div class="file-card" onclick="openFile(' + i + ', \'pending\')">' +
+            var deleteBtn = isAdmin ? '<button class="btn btn-sm" style="background:#e74c3c;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;" onclick="event.stopPropagation(); deleteSinglePending(' + i + ', this)">🗑️ Eliminar</button>' : '';
+            html += '<div class="file-card" id="pendingCard' + i + '" onclick="openFile(' + i + ', \'pending\')">' +
                 '<div class="file-card-header">' +
                     '<div>' +
                         '<div class="file-card-title">📊 ' + escapeHtml(f.name) + '</div>' +
@@ -432,6 +465,7 @@ body {
                 '</div>' +
                 '<div class="file-card-actions">' +
                     '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openFile(' + i + ', \'pending\')">📝 Abrir e Validar</button>' +
+                    deleteBtn +
                 '</div>' +
             '</div>';
         });
