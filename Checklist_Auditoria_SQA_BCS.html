@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist Auditoria SQA - Bosch Car Service</title>
+<style>
+  :root {
+    --bosch-blue: #005691;
+    --bosch-dark: #1a1a2e;
+    --bosch-red: #e4002b;
+    --green: #28a745;
+    --yellow: #ffc107;
+    --red-light: #ffe0e0;
+    --green-light: #e0ffe0;
+    --yellow-light: #fff8e0;
+    --bg: #f4f6f9;
+    --card-bg: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: #333;
+    line-height: 1.5;
+  }
+  .header {
+    background: linear-gradient(135deg, var(--bosch-dark), var(--bosch-blue));
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .header h1 { font-size: 1.6em; margin-bottom: 5px; }
+  .header .subtitle { font-size: 0.95em; opacity: 0.85; }
+  .progress-bar-container {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    height: 20px;
+    margin: 15px auto 5px;
+    max-width: 500px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), #20c997);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+  .progress-text { font-size: 0.85em; opacity: 0.9; }
+  .score-summary {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .score-badge {
+    background: rgba(255,255,255,0.15);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  .nav {
+    background: white;
+    padding: 10px 15px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    border-bottom: 2px solid #eee;
+    position: sticky;
+    top: 145px;
+    z-index: 99;
+  }
+  .nav button {
+    background: #e9ecef;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8em;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .nav button:hover, .nav button.active {
+    background: var(--bosch-blue);
+    color: white;
+  }
+  .nav button.all-ok { background: var(--green); color: white; }
+  .nav button.has-issues { background: var(--bosch-red); color: white; }
+  .container { max-width: 900px; margin: 20px auto; padding: 0 15px 80px; }
+  .category {
+    margin-bottom: 25px;
+    scroll-margin-top: 200px;
+  }
+  .category-header {
+    background: var(--bosch-blue);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 10px 10px 0 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .category-score {
+    background: rgba(255,255,255,0.2);
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.85em;
+  }
+  .question-card {
+    background: var(--card-bg);
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    padding: 18px 20px;
+    transition: all 0.2s;
+  }
+  .question-card:last-child { border-radius: 0 0 10px 10px; }
+  .question-card.ok { background: var(--green-light); border-left: 4px solid var(--green); }
+  .question-card.nok { background: var(--red-light); border-left: 4px solid var(--bosch-red); }
+  .question-card.partial { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+  .q-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .q-number {
+    background: var(--bosch-blue);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .q-type {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .q-type.corretiva { background: var(--bosch-red); color: white; }
+  .q-type.standard { background: var(--green); color: white; }
+  .q-scale {
+    font-size: 0.75em;
+    color: #888;
+    font-weight: 600;
+  }
+  .q-title {
+    font-weight: 600;
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: var(--bosch-dark);
+  }
+  .criteria-section {
+    margin: 10px 0;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 0.88em;
+  }
+  .criteria-section summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--bosch-blue);
+    user-select: none;
+  }
+  .criteria-section ul {
+    margin: 8px 0 0 18px;
+    line-height: 1.7;
+  }
+  .criteria-section .crit-3 { color: var(--green); font-weight: 600; }
+  .criteria-section .crit-0 { color: var(--bosch-red); font-weight: 600; }
+  .tip-box {
+    background: #e3f2fd;
+    border-left: 3px solid var(--bosch-blue);
+    padding: 8px 12px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85em;
+  }
+  .tip-box strong { color: var(--bosch-blue); }
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn-status {
+    padding: 7px 18px;
+    border: 2px solid #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+    background: white;
+    transition: all 0.2s;
+  }
+  .btn-status:hover { transform: scale(1.05); }
+  .btn-status.ok-btn.selected { background: var(--green); color: white; border-color: var(--green); }
+  .btn-status.partial-btn.selected { background: var(--yellow); color: #333; border-color: var(--yellow); }
+  .btn-status.nok-btn.selected { background: var(--bosch-red); color: white; border-color: var(--bosch-red); }
+  .notes-input {
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 36px;
+  }
+  .notes-input:focus { outline: none; border-color: var(--bosch-blue); }
+  .floating-actions {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 200;
+  }
+  .fab {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9em;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  .fab:hover { transform: translateY(-2px); }
+  .fab-print { background: var(--bosch-blue); color: white; }
+  .fab-reset { background: #6c757d; color: white; }
+  .fab-export { background: var(--green); color: white; }
+  @media print {
+    .header { position: static; }
+    .nav, .floating-actions { display: none; }
+    .question-card { break-inside: avoid; }
+    .notes-input { border: 1px solid #999; }
+    body { font-size: 11px; }
+  }
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.2em; }
+    .nav { top: 130px; }
+    .q-top { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Checklist Auditoria SQA - Bosch Car Service</h1>
+  <div class="subtitle">Oficina de Lisboa &bull; Auditoria: Terça-feira, 14 de Abril 2026</div>
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-text" id="progressText">0 de 30 questões avaliadas</div>
+  <div class="score-summary">
+    <span class="score-badge" id="scoreBadge">Pontuação: 0 / 68 pts</span>
+    <span class="score-badge" id="okCount" style="background:rgba(40,167,69,0.3)">OK: 0</span>
+    <span class="score-badge" id="nokCount" style="background:rgba(228,0,43,0.3)">NOK: 0</span>
+    <span class="score-badge" id="partialCount" style="background:rgba(255,193,7,0.3)">Parcial: 0</span>
+  </div>
+</div>
+
+<div class="nav" id="navBar"></div>
+
+<div class="container" id="container"></div>
+
+<div class="floating-actions">
+  <button class="fab fab-export" onclick="exportReport()">Exportar Relatório</button>
+  <button class="fab fab-print" onclick="window.print()">Imprimir</button>
+  <button class="fab fab-reset" onclick="resetAll()">Limpar Tudo</button>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: "marca", name: "1. Gestão da Marca",
+    questions: [
+      {
+        num: "1.1", scale: "0/3", type: "corretiva",
+        title: "O design exterior cumpre na totalidade as normas / o padrão de imagem corporativa BCS?",
+        criteria3: [
+          "O design exterior cumpre as especificações atuais de CI/CD",
+          "O conteúdo e a disposição de todos os elementos estão em boas condições",
+          "Todos os elementos do BCS estão limpos e sem pó",
+          "Todas as inscrições são claramente legíveis",
+          "Não existem marcas identificativas não permitidas ou não aprovadas pela Bosch"
+        ],
+        criteria0: [
+          "Design NÃO corresponde ao CI/CD atual ou faltam elementos",
+          "O conteúdo e disposição dos elementos NÃO estão em boas condições de limpeza",
+          "Elementos descoloridos, cheios de pó, sujos, em más condições ou ilegíveis",
+          "Foram afixados sinais não permitidos"
+        ],
+        tip: "Verifique a sinalética exterior, o totem Bosch, e retire qualquer sinal de marcas concorrentes afixado permanentemente no edifício."
+      },
+      {
+        num: "1.2", scale: "0/3", type: "corretiva",
+        title: "Todos os colaboradores usam roupa de trabalho / uniforme de acordo com o conceito BCS?",
+        criteria3: [
+          "Todos usam roupas de trabalho estandardizadas, em bom estado e limpas",
+          "Colaboradores em contacto com clientes usam roupas estandardizadas e limpas",
+          "Roupas correspondem ao design corporativo atual (CD)",
+          "Roupas com etiquetas/pins com o nome (pessoal de vendas)",
+          "Roupas de TODOS os colaboradores BCS em bom estado"
+        ],
+        criteria0: [
+          "Colaboradores usam roupas NÃO estandardizadas",
+          "Roupas NÃO correspondem ao design corporativo",
+          "NÃO têm etiquetas com nome (pessoal vendas)",
+          "Roupas em mau estado ou sem identificação BCS"
+        ],
+        tip: "Confirme que TODA a equipa (oficina + receção + gerência) tem uniformes BCS limpos e com nome. Gerentes que contactam clientes também contam!"
+      },
+      {
+        num: "1.3", scale: "0/3", type: "corretiva",
+        title: "Todos os impressos comerciais estão de acordo com o padrão corporativo BCS?",
+        criteria3: [
+          "O BCS usa material impresso no design BCS",
+          "Material corresponde totalmente à imagem corporativa (CD) BCS",
+          "Material impresso é multicolorido (azul, vermelho e preto)",
+          "Disponível no mínimo: papel de carta, envelope, cartões de visita, papel para faturas"
+        ],
+        criteria0: [
+          "NÃO usa material impresso no design BCS",
+          "Material NÃO corresponde à imagem corporativa",
+          "Material alterado com logos de outras oficinas/marcas",
+          "Alterações ao Logo BCS ou logo errado"
+        ],
+        tip: "Tenha à mão exemplos de papel timbrado, envelopes, cartões de visita e faturas com o design BCS. Logótipos de marcas não concorrentes podem ficar na parte inferior."
+      },
+      {
+        num: "1.4", scale: "0/1", type: "standard",
+        title: "Não existem produtos de marcas concorrentes da Bosch expostos para venda na área de clientes?",
+        criteria3: [
+          "Os produtos concorrentes NÃO são anunciados em posters, flyers ou vídeos",
+          "NÃO são oferecidos para venda na área de clientes"
+        ],
+        criteria0: [
+          "Produtos concorrentes aos Produtos Contratuais Bosch Automotive são anunciados em posters/flyers/vídeos",
+          "São oferecidos para venda na área de clientes"
+        ],
+        tip: "Verifique o Anexo 12 do contrato para a lista de Produtos Contratuais Bosch. Remova filtros, velas, baterias de marcas concorrentes das áreas visíveis ao cliente."
+      }
+    ]
+  },
+  {
+    id: "marketing", name: "2. Gestão de Marketing",
+    questions: [
+      {
+        num: "2.1", scale: "0/3", type: "corretiva",
+        title: "O BCS regista os dados dos clientes/veículos para efetuar ações de marketing local?",
+        criteria3: [
+          "O BCS tem um ficheiro confidencial de dados do cliente/veículo",
+          "Prova de pelo menos 2 medidas de fidelização de clientes nos últimos 12 meses (ex: campanhas de mailing, lembretes de revisão, convites para atividades de vendas)"
+        ],
+        criteria0: [
+          "NÃO tem ficheiro confidencial de dados do cliente/veículo",
+          "NÃO pode provar medidas de fidelização nos últimos 12 meses"
+        ],
+        tip: "Prepare a base de dados de clientes (CRM) e exemplos de 2+ campanhas feitas: SMS de lembrete de revisão, email de promoções, mailing cards, etc."
+      },
+      {
+        num: "2.2", scale: "0/1", type: "standard",
+        title: "O BCS utiliza material publicitário POS atualizado da Bosch na área de receção de clientes?",
+        criteria3: [
+          "Materiais POS atuais (não desatualizados)",
+          "Predominantemente materiais POS da Bosch (>50%)",
+          "Materiais em bom estado e limpos (não danificados, amarelados, com pó)"
+        ],
+        criteria0: [
+          "Materiais POS NÃO são atuais (ex: poster de verão no inverno)",
+          "NÃO predominam materiais POS da Bosch",
+          "Materiais em mau estado (danificados, amarelados, com pó)"
+        ],
+        tip: "Atualize os posters/expositores POS para a época atual. Retire material desatualizado. Limpe os expositores. Certifique-se que >50% é Bosch."
+      }
+    ]
+  },
+  {
+    id: "cliente", name: "3. Orientação para o Cliente",
+    questions: [
+      {
+        num: "3.1", scale: "0/3", type: "corretiva",
+        title: "Existe uma sala de espera para cliente atrativa e limpa?",
+        criteria3: [
+          "Existe uma sala de espera específica para clientes",
+          "Tem pelo menos 3 lugares sentados e uma mesa",
+          "Material de leitura atual disponível (brochuras, revistas)",
+          "Bebidas disponíveis (café, água, bebidas frias)",
+          "A sala está limpa e arrumada"
+        ],
+        criteria0: [
+          "NÃO existe sala de espera específica",
+          "Menos de 3 lugares sentados e sem mesa",
+          "Sem material de leitura atual",
+          "Sem bebidas disponíveis",
+          "Sala suja e desarrumada"
+        ],
+        tip: "Verifique: 3+ cadeiras, mesa, revistas recentes, máquina de café/água funcional, e faça limpeza geral da sala de espera."
+      },
+      {
+        num: "3.2", scale: "0/3", type: "corretiva",
+        title: "Existe pelo menos uma casa de banho disponível e limpa para clientes?",
+        criteria3: [
+          "Pelo menos uma casa de banho (separada) disponível para clientes",
+          "A casa de banho está limpa",
+          "Os clientes têm fácil acesso (proximidade da receção/sala de espera)"
+        ],
+        criteria0: [
+          "Não existe casa de banho para clientes",
+          "A casa de banho está suja",
+          "Os clientes NÃO têm fácil acesso (ex: >100m da receção)"
+        ],
+        tip: "Faça limpeza profunda do WC de clientes. Assegure papel, sabonete, toalhas. Idealmente 2 casas de banho. Sinalização clara de 'WC Clientes'."
+      },
+      {
+        num: "3.3", scale: "0/3", type: "corretiva",
+        title: "O preço de mão-de-obra e os preços de serviços padrão são facilmente visíveis para os clientes?",
+        criteria3: [
+          "Valores de mão-de-obra afixados e de fácil visibilidade",
+          "Valores fixos para serviços standards/inspeções afixados e visíveis"
+        ],
+        criteria0: [
+          "Nenhum dos critérios cumprido",
+          "Valor de mão-de-obra não é atual",
+          "Valores fixos para serviços/inspeções não são atuais",
+          "Valores NÃO são facilmente visíveis para os clientes"
+        ],
+        tip: "Afixe uma tabela de preços de mão-de-obra e serviços standard (revisões, inspeções) num local visível na receção. Atualize os valores."
+      }
+    ]
+  },
+  {
+    id: "pessoal", name: "4. Gestão de Pessoal",
+    questions: [
+      {
+        num: "4.1", scale: "0/3", type: "corretiva",
+        title: "Existe um rececionista qualificado/certificado responsável pelo contato com o cliente?",
+        criteria3: [
+          "Certificação BASA - Bosch Automobile Service Adviser",
+          "Seminários relativos ao tema cliente/conselheiro de serviço (Bosch ou Não Bosch)",
+          "Colaboradores inscritos em seminários a decorrer também contam como positivo"
+        ],
+        criteria0: [
+          "Nenhum colaborador tem certificação de Conselheiro de serviço",
+          "Nenhum colaborador participa ou está inscrito em seminário relevante",
+          "Não é possível evidenciar nenhum dos pontos anteriores"
+        ],
+        tip: "Tenha certificados BASA ou comprovativo de formações/seminários de atendimento ao cliente. Se alguém está inscrito numa formação futura, isso também conta."
+      }
+    ]
+  },
+  {
+    id: "conhecimento", name: "5. Conhecimento e Equipamento",
+    questions: [
+      {
+        num: "5.1", scale: "0/3", type: "corretiva",
+        title: "O BCS disponibiliza programas de formação adequados para os seus colaboradores?",
+        criteria3: [
+          "Existe um planeamento (escrito ou informático) para formações, seminários e cursos",
+          "Já foram realizadas ou estão planeadas formações para os diferentes colaboradores"
+        ],
+        criteria0: [
+          "Não existe nenhum planeamento para formações, seminários ou cursos de desenvolvimento"
+        ],
+        tip: "Prepare o plano anual de formação (pode ser em Excel ou quadro). Mostre formações já realizadas e as que estão planeadas."
+      },
+      {
+        num: "5.2", scale: "0/1", type: "standard",
+        title: "Existe acesso a software complementar de diagnóstico?",
+        criteria3: [
+          "Adicionalmente ao KTS/ESItronic, tem acessos a portais OE (fabricantes), ou outros equipamentos de diagnóstico (OE e Não Bosch)"
+        ],
+        criteria0: [
+          "O BCS não consegue mostrar mais nenhum software de diagnóstico além do KTS/ESItronic"
+        ],
+        tip: "Mostre acessos a portais de fabricantes (ex: BMW OSS, Mercedes XENTRY, etc.) ou outros equipamentos de diagnóstico complementares."
+      },
+      {
+        num: "5.3", scale: "0/1", type: "standard",
+        title: "Está disponível informação técnica estruturada relativa a reparação e manutenção de veículos?",
+        criteria3: [
+          "Acesso a informação técnica suplementar (software/hardware) em boas condições",
+          "Informação disponível para os colaboradores consultarem"
+        ],
+        criteria0: [
+          "Não tem informação técnica suplementar",
+          "Informação em más condições ou não acessível aos colaboradores"
+        ],
+        tip: "Mostre acesso a portais técnicos online, manuais, revistas técnicas, livros técnicos, CDs de informação - além do ESItronic."
+      }
+    ]
+  },
+  {
+    id: "vendas", name: "6. Gestão de Vendas",
+    questions: [
+      {
+        num: "6.1", scale: "0/3", type: "corretiva",
+        title: "Nas áreas destinadas a clientes, a maioria dos produtos é Bosch?",
+        criteria3: [
+          "Os produtos Bosch predominam (>30% dos expostos) e são visíveis para os clientes",
+          "Os produtos apresentados estão em boas condições",
+          "Só produtos Bosch podem ser vistos em expositores Bosch"
+        ],
+        criteria0: [
+          "Nenhuns produtos Bosch expostos nas áreas de clientes",
+          "Produtos Bosch <30% dos expostos",
+          "Produtos em más condições (pó, amarelados)",
+          "Outros produtos (não Bosch) em expositores Bosch"
+        ],
+        tip: "Organize os expositores: produtos Bosch em destaque (baterias, escovas, filtros, velas, travagem). Limpe-os. Retire produtos não-Bosch dos expositores Bosch."
+      },
+      {
+        num: "6.2", scale: "0/1", type: "standard",
+        title: "A área de venda/receção está decorada com um tema atual?",
+        criteria3: [
+          "Área decorada (decorações sazonais, festivas, eventos automóvel)",
+          "Tema atual e organizado",
+          "Decoração limpa e percetível"
+        ],
+        criteria0: [
+          "Área não está decorada",
+          "Tema totalmente desatualizado",
+          "Decoração desorganizada, suja e cheia de pó"
+        ],
+        tip: "Coloque uma decoração sazonal atual (primavera/verão 2026). Pode ser simples: poster de campanha Bosch atual + expositor temático."
+      },
+      {
+        num: "6.3", scale: "0/1", type: "standard",
+        title: "O serviço é complementado com ofertas adicionais orientadas para o cliente?",
+        criteria3: [
+          "Serviços complementares oferecidos ativamente (ex: acessórios, recolha de viaturas, reboque, vidros)",
+          "Oferta de serviços complementares é percetível pelo cliente (posters, painéis informativos)"
+        ],
+        criteria0: [
+          "NÃO são oferecidos serviços ou ofertas adicionais",
+          "Só 1 serviço oferecido",
+          "Ofertas não são percetíveis para o cliente"
+        ],
+        tip: "Publicite pelo menos 2 serviços complementares: vidros, reboque, A/C, alinhamento, pintura, etc. Use posters ou painéis informativos visíveis."
+      }
+    ]
+  },
+  {
+    id: "processos", name: "7. Processos de Oficina",
+    questions: [
+      {
+        num: "7.1", scale: "0/3", type: "corretiva",
+        title: "As ordens de reparação são sempre registadas por escrito com dados do cliente e veículo?",
+        criteria3: [
+          "Informações dos clientes sempre registadas por escrito",
+          "Dados do cliente registados na ordem de reparação",
+          "Dados do veículo/unidade sempre registados",
+          "Texto da ordem compreensível (incluindo para o auditor)",
+          "Maioria das ordens assinadas pelos clientes"
+        ],
+        criteria0: [
+          "Informações NÃO registadas por escrito",
+          "Sem registos de dados do cliente",
+          "Dados do veículo incompletos",
+          "Texto da ordem incompreensível",
+          "Sem ordens assinadas pelos clientes"
+        ],
+        tip: "O auditor vai verificar 5 a 10 ordens de reparação dos últimos 2 meses. Confirme que todas têm dados completos do cliente e veículo, texto claro, e assinatura do cliente."
+      },
+      {
+        num: "7.2", scale: "0/3", type: "corretiva",
+        title: "É feita uma receção do veículo com checklist para registar as condições?",
+        criteria3: [
+          "Verificações de entrada efetuadas regularmente",
+          "Condições documentadas utilizando uma checklist",
+          "Checklists totalmente preenchidas"
+        ],
+        criteria0: [
+          "Nenhuma verificação de entrada efetuada",
+          "Condições documentadas mas sem checklist",
+          "Checklists não totalmente preenchidas"
+        ],
+        tip: "O auditor avalia 2 veículos na oficina OU verifica checklists dos últimos 2 meses (5-10 ordens, 30%+ com checklist). Garanta que usa checklists de entrada completas."
+      },
+      {
+        num: "7.3", scale: "0/3", type: "corretiva",
+        title: "A atribuição de trabalhos é feita com base numa calendarização/cronograma?",
+        criteria3: [
+          "Ordens de reparação são planificadas sistematicamente",
+          "É utilizado um quadro de planeamento oficinal (de parede ou eletrónico)"
+        ],
+        criteria0: [
+          "Não existe planificação das ordens de reparação",
+          "Não é utilizado quadro de planeamento",
+          "Só são usadas folhas soltas para marcações"
+        ],
+        tip: "Mostre o sistema de planeamento: software de gestão oficinal ou quadro de parede com a agenda de trabalhos planeados."
+      },
+      {
+        num: "7.4", scale: "0/3", type: "corretiva",
+        title: "As ordens são assignadas a um técnico com toda a documentação e informação?",
+        criteria3: [
+          "Ordens assignadas a técnico/mecânico dedicado",
+          "Ordens de reparação/pastas 'percorrem' toda a oficina",
+          "Documentos necessários estão todos dentro das pastas (chaves, ordem do cliente, plano de manutenção, etc.)"
+        ],
+        criteria0: [
+          "Ordens NÃO são assignadas a técnico dedicado",
+          "Ordens/pastas NÃO se utilizam",
+          "Documentos são passados 'soltos' (dispersos)"
+        ],
+        tip: "Use pastas de ordem de reparação com toda a documentação (ordem, chave, plano). Cada trabalho deve estar atribuído a um mecânico específico no quadro."
+      },
+      {
+        num: "7.5", scale: "0/3", type: "corretiva",
+        title: "Os planos de manutenção são efetuados de acordo com as especificações do fabricante (OE)?",
+        criteria3: [
+          "O BCS usa planos de manutenção dos fabricantes (OEM)",
+          "Usa planos do ESItronic-M",
+          "Usa outros planos conformes às especificações dos fabricantes"
+        ],
+        criteria0: [
+          "NÃO usa planos de manutenção OEM",
+          "NÃO usa checklists",
+          "Planos disponíveis NÃO estão de acordo com especificações",
+          "Menos de 50% das checklists verificadas conformes"
+        ],
+        tip: "O auditor verifica 1 veículo na oficina ou checklists dos últimos 2 meses (50%+ conformes). Mostre planos OEM, ESItronic-M ou equivalentes."
+      },
+      {
+        num: "7.6", scale: "0/1", type: "standard",
+        title: "É feita uma inspeção final de todas as ordens pelo responsável técnico?",
+        criteria3: [
+          "É efetuada inspeção final a cada ordem de reparação/veículo",
+          "A pessoa responsável assina o documento (checklist final) confirmando a inspeção"
+        ],
+        criteria0: [
+          "NÃO é efetuada inspeção final",
+          "Inspeções NÃO são feitas por pessoa responsável nomeada",
+          "Inspeções NÃO são verificadas/assinadas",
+          "Documentos NÃO estão preparados para devolução"
+        ],
+        tip: "Implemente uma checklist de inspeção final assinada pelo responsável antes da entrega. O auditor verifica 5-10 ordens dos últimos 2 meses."
+      },
+      {
+        num: "7.7", scale: "0/1", type: "standard",
+        title: "São utilizados dispositivos de proteção nos veículos em reparação?",
+        criteria3: [
+          "Dispositivos de proteção usados nos veículos dos clientes",
+          "Disponíveis e em utilização: coberturas de bancos, tapetes, coberturas do volante, protetor lateral",
+          "(Se reparam componentes) Unidades para recolha estão protegidas com embalagem apropriada"
+        ],
+        criteria0: [
+          "NÃO são usados dispositivos de proteção",
+          "Faltam itens: coberturas bancos, tapetes, volante, protetor lateral"
+        ],
+        tip: "Verifique stock de: capas de banco, tapetes descartáveis, capas de volante, protetores laterais. Coloque-os nos veículos em reparação ANTES da auditoria."
+      }
+    ]
+  },
+  {
+    id: "instalacoes", name: "8. Instalações / Infra-estruturas",
+    questions: [
+      {
+        num: "8.1", scale: "0/3", type: "corretiva",
+        title: "Todas as partes das instalações visíveis e acessíveis ao cliente estão limpas e arrumadas?",
+        criteria3: [
+          "Instalações do edifício bem mantidas e limpas",
+          "Área exterior conservada e limpa",
+          "Pátio/caminhos para clientes têm superfície dura (pavimentados)",
+          "Espaços verdes tratados, sem ervas nas instalações",
+          "Áreas acessíveis a clientes em boas condições e limpas",
+          "Lixo e sucata NÃO são visíveis"
+        ],
+        criteria0: [
+          "Instalações mal mantidas",
+          "Área exterior suja",
+          "Pátio/caminhos não pavimentados",
+          "Ervas crescidas e negligenciadas",
+          "Áreas de clientes em más condições",
+          "Lixo e sucata visíveis"
+        ],
+        tip: "PRIORIDADE ALTA: Faça uma limpeza geral de tudo o que é visível ao cliente - fachada, pátio, entrada, receção, oficina visível. Esconda sucata e lixo."
+      },
+      {
+        num: "8.2", scale: "0/3", type: "corretiva",
+        title: "As áreas destinadas aos colaboradores do BCS são mantidas em boas condições?",
+        criteria3: [
+          "Sala adequada, limpa e arrumada para pausas",
+          "Existe balneário para tomar banho",
+          "Existem vestiários",
+          "Está disponível casa de banho",
+          "Instalações sanitárias/sociais em boas condições"
+        ],
+        criteria0: [
+          "Não existe sala para pausas adequada",
+          "Não existe balneário",
+          "Não existem vestiários",
+          "Não estão disponíveis casas de banho",
+          "Instalações negligenciadas e muito sujas"
+        ],
+        tip: "Limpe a zona social dos colaboradores: sala de descanso, balneário, vestiários, WC. Tudo deve estar funcional e em condições aceitáveis."
+      },
+      {
+        num: "8.3", scale: "0/3", type: "corretiva",
+        title: "Estão disponíveis zonas de estacionamento para clientes identificadas?",
+        criteria3: [
+          "Pelo menos 3 espaços pavimentados para clientes",
+          "Locais marcados e facilmente visíveis",
+          "Localizados na vizinhança direta da receção (ou parque público <50m)",
+          "Espaços mantidos livres para clientes que chegam",
+          "Espaços de estacionamento limpos"
+        ],
+        criteria0: [
+          "Menos de 3 espaços pavimentados",
+          "Espaços não localizados a <50m da receção",
+          "Espaços não marcados/visíveis",
+          "Espaços bloqueados com outros veículos",
+          "Espaços de estacionamento sujos"
+        ],
+        tip: "Garanta pelo menos 3 lugares de estacionamento para clientes: marcados, limpos, livres e perto da entrada. Se em parque público, deve haver 1 lugar vago junto à oficina."
+      }
+    ]
+  },
+  {
+    id: "operacoes", name: "9. Gestão de Operações",
+    questions: [
+      {
+        num: "9.1", scale: "0/3", type: "corretiva",
+        title: "As regulamentações legais e de segurança são cumpridas e documentadas por certificados válidos?",
+        criteria3: [
+          "Cumpre todos os requisitos de segurança específicos do país",
+          "Cumpre a legislação ambiental em vigor",
+          "Cumprimento documentado através de certificados válidos"
+        ],
+        criteria0: [
+          "NÃO cumpre requisitos de segurança",
+          "NÃO cumpre legislação ambiental",
+          "Certificados inválidos ou inexistentes"
+        ],
+        tip: "Tenha disponíveis: certificados de resíduos, alvará, certificados de extintores, plano de segurança. Verifique separação de resíduos (óleos, filtros, baterias)."
+      },
+      {
+        num: "9.2", scale: "0/1", type: "standard",
+        title: "A Gerência comunica claramente os objetivos anuais aos colaboradores?",
+        criteria3: [
+          "Objetivo anual claro para: vendas totais, satisfação do cliente, qualidade de serviço",
+          "Objetivos comunicados aos colaboradores de chefia (documento)",
+          "Objetivos documentados podem ser apresentados ao auditor"
+        ],
+        criteria0: [
+          "NÃO consegue evidenciar objetivo anual para vendas, satisfação e qualidade",
+          "NÃO comunicados aos colaboradores",
+          "NÃO apresentáveis ao auditor"
+        ],
+        tip: "Prepare um documento com objetivos anuais 2026: vendas totais, satisfação do cliente e qualidade de serviço. Mostre que foi partilhado com a equipa."
+      },
+      {
+        num: "9.3", scale: "0/1", type: "standard",
+        title: "Cada colaborador tem um contrato de trabalho válido?",
+        criteria3: [
+          "Cada colaborador tem contrato de trabalho válido",
+          "Contratos podem ser apresentados ao auditor"
+        ],
+        criteria0: [
+          "Colaboradores NÃO têm contratos válidos",
+          "Contratos NÃO podem ser apresentados ao auditor"
+        ],
+        tip: "O auditor verifica 3 a 5 contratos (nome + assinatura apenas, não conteúdo). Tenha-os organizados e acessíveis."
+      },
+      {
+        num: "9.4", scale: "0/1", type: "standard",
+        title: "O BCS tem um acordo de proteção de dados (RGPD) acessível para todos os clientes?",
+        criteria3: [
+          "Existe política de proteção de dados para o processamento de dados do cliente",
+          "Política acessível a todos os clientes (ex: anexada à ordem de serviço ou afixada na receção)"
+        ],
+        criteria0: [
+          "O pessoal da receção não consegue apresentar a política de proteção de dados",
+          "Política não acessível aos clientes sem pedir"
+        ],
+        tip: "Tenha a política de proteção de dados/RGPD visível na receção ou anexada às ordens de serviço. O pessoal da receção deve saber onde está."
+      }
+    ]
+  },
+  {
+    id: "qualidade", name: "10. Gestão da Qualidade",
+    questions: [
+      {
+        num: "10.1", scale: "0/3", type: "corretiva",
+        title: "O BCS implementou, nos últimos 12 meses, pelo menos 3 medidas para melhorar a qualidade?",
+        criteria3: [
+          "Pelo menos 3 medidas para melhorar a qualidade foram implementadas",
+          "Medidas introduzidas/implementadas por iniciativa própria (não campanhas Bosch)",
+          "Medidas implementadas não são anteriores a 12 meses"
+        ],
+        criteria0: [
+          "NÃO implementou medidas para aumentar qualidade por iniciativa própria",
+          "Medidas foram parte de campanhas Bosch (não conta como iniciativa própria)",
+          "Menos de 3 medidas implementadas nos últimos 12 meses"
+        ],
+        tip: "Documente 3+ melhorias de qualidade dos últimos 12 meses por vossa iniciativa: ex. nova checklist, formação extra, novo equipamento, melhoria de processo, inquérito de satisfação, etc."
+      },
+      {
+        num: "10.2", scale: "0/1", type: "standard",
+        title: "O BCS faz autoavaliação pelo menos 1x por trimestre na receção e oficina?",
+        criteria3: [
+          "Testes de autoavaliação realizados pelo menos 1x por trimestre (4x por ano)",
+          "Realizados pelo menos nas áreas de receção e oficina",
+          "Documentação dos 4 testes dos últimos 12 meses apresentável ao auditor"
+        ],
+        criteria0: [
+          "NÃO realiza testes de autoavaliação",
+          "Testes NÃO trimestrais (menos de 4x/ano)",
+          "NÃO realizados em receção e oficina",
+          "Documentação NÃO apresentável"
+        ],
+        tip: "Tenha 4 autoavaliações documentadas (1 por trimestre) das áreas de receção e oficina. Se não tem, comece agora e documente pelo menos as mais recentes."
+      },
+      {
+        num: "10.3", scale: "0/3", type: "corretiva",
+        title: "A satisfação dos clientes é solicitada e avaliada regularmente?",
+        criteria3: [
+          "Satisfação determinada a intervalos regulares",
+          "Determinada pelo menos 2x por ano",
+          "Resultados avaliados de forma apropriada",
+          "Documentos relevantes apresentáveis ao auditor"
+        ],
+        criteria0: [
+          "Satisfação NÃO determinada em intervalos regulares",
+          "Determinada menos de 2x por ano",
+          "Resultados NÃO avaliados de forma apropriada",
+          "Documentos NÃO apresentáveis"
+        ],
+        tip: "Mostre questionários de satisfação (online ou papel) feitos pelo menos 2x por ano, com resultados analisados. Tenha os documentos prontos para o auditor."
+      }
+    ]
+  }
+];
+
+const MAX_SCORE = 75;
+let state = {};
+
+function init() {
+  loadState();
+  renderNav();
+  renderQuestions();
+  updateProgress();
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('sqa_checklist_state');
+    if (saved) state = JSON.parse(saved);
+  } catch(e) { state = {}; }
+}
+
+function saveState() {
+  try { localStorage.setItem('sqa_checklist_state', JSON.stringify(state)); } catch(e) {}
+}
+
+function renderNav() {
+  const nav = document.getElementById('navBar');
+  DATA.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.textContent = cat.name;
+    btn.id = 'nav-' + cat.id;
+    btn.onclick = () => {
+      document.getElementById('cat-' + cat.id).scrollIntoView({ behavior: 'smooth' });
+    };
+    nav.appendChild(btn);
+  });
+}
+
+function renderQuestions() {
+  const container = document.getElementById('container');
+  container.innerHTML = '';
+
+  DATA.forEach(cat => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category';
+    catDiv.id = 'cat-' + cat.id;
+
+    const catScore = getCategoryScore(cat);
+    const catMax = getCategoryMax(cat);
+
+    catDiv.innerHTML = `
+      <div class="category-header">
+        <span>${cat.name}</span>
+        <span class="category-score" id="catscore-${cat.id}">${catScore} / ${catMax} pts</span>
+      </div>
+    `;
+
+    cat.questions.forEach(q => {
+      const qDiv = document.createElement('div');
+      const qState = state[q.num] || {};
+      let statusClass = qState.status === 'ok' ? 'ok' : qState.status === 'nok' ? 'nok' : qState.status === 'partial' ? 'partial' : '';
+
+      qDiv.className = `question-card ${statusClass}`;
+      qDiv.id = `q-${q.num}`;
+
+      const maxPts = parseInt(q.scale.split('/')[1]);
+
+      qDiv.innerHTML = `
+        <div class="q-top">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span class="q-number">${q.num}</span>
+            <span class="q-type ${q.type}">${q.type === 'corretiva' ? 'Medida Corretiva' : 'Standard'}</span>
+            <span class="q-scale">${q.scale} pts</span>
+          </div>
+        </div>
+        <div class="q-title">${q.title}</div>
+
+        <details class="criteria-section">
+          <summary>Ver critérios de avaliação</summary>
+          <p class="crit-3" style="margin-top:8px;">Para obter ${maxPts} ponto${maxPts > 1 ? 's' : ''}:</p>
+          <ul>${q.criteria3.map(c => `<li>${c}</li>`).join('')}</ul>
+          <p class="crit-0" style="margin-top:10px;">0 Pontos se:</p>
+          <ul>${q.criteria0.map(c => `<li>${c}</li>`).join('')}</ul>
+        </details>
+
+        <div class="tip-box"><strong>Dica de preparação:</strong> ${q.tip}</div>
+
+        <div class="actions">
+          <button class="btn-status ok-btn ${qState.status === 'ok' ? 'selected' : ''}" onclick="setStatus('${q.num}', 'ok', ${maxPts})">OK (${maxPts}pt${maxPts > 1 ? 's' : ''})</button>
+          ${maxPts > 1 ? `<button class="btn-status partial-btn ${qState.status === 'partial' ? 'selected' : ''}" onclick="setStatus('${q.num}', 'partial', ${Math.ceil(maxPts/2)})">Parcial (${Math.ceil(maxPts/2)}pt)</button>` : ''}
+          <button class="btn-status nok-btn ${qState.status === 'nok' ? 'selected' : ''}" onclick="setStatus('${q.num}', 'nok', 0)">NOK (0pt)</button>
+        </div>
+        <textarea class="notes-input" placeholder="Notas / ações necessárias..." onchange="setNotes('${q.num}', this.value)">${qState.notes || ''}</textarea>
+      `;
+
+      catDiv.appendChild(qDiv);
+    });
+
+    container.appendChild(catDiv);
+  });
+}
+
+function setStatus(num, status, points) {
+  if (!state[num]) state[num] = {};
+  if (state[num].status === status) {
+    delete state[num].status;
+    delete state[num].points;
+  } else {
+    state[num].status = status;
+    state[num].points = points;
+  }
+  saveState();
+
+  const card = document.getElementById(`q-${num}`);
+  card.className = `question-card ${state[num].status || ''}`;
+
+  card.querySelectorAll('.btn-status').forEach(btn => btn.classList.remove('selected'));
+  if (state[num].status) {
+    const btnClass = state[num].status + '-btn';
+    card.querySelector(`.${btnClass}`).classList.add('selected');
+  }
+
+  updateProgress();
+}
+
+function setNotes(num, notes) {
+  if (!state[num]) state[num] = {};
+  state[num].notes = notes;
+  saveState();
+}
+
+function getCategoryScore(cat) {
+  let score = 0;
+  cat.questions.forEach(q => {
+    if (state[q.num] && state[q.num].points) score += state[q.num].points;
+  });
+  return score;
+}
+
+function getCategoryMax(cat) {
+  let max = 0;
+  cat.questions.forEach(q => {
+    max += parseInt(q.scale.split('/')[1]);
+  });
+  return max;
+}
+
+function updateProgress() {
+  let totalAnswered = 0, totalScore = 0, okCount = 0, nokCount = 0, partialCount = 0;
+  const totalQuestions = DATA.reduce((sum, cat) => sum + cat.questions.length, 0);
+
+  DATA.forEach(cat => {
+    cat.questions.forEach(q => {
+      if (state[q.num] && state[q.num].status) {
+        totalAnswered++;
+        totalScore += (state[q.num].points || 0);
+        if (state[q.num].status === 'ok') okCount++;
+        else if (state[q.num].status === 'nok') nokCount++;
+        else if (state[q.num].status === 'partial') partialCount++;
+      }
+    });
+
+    // Update category score
+    const el = document.getElementById(`catscore-${cat.id}`);
+    if (el) el.textContent = `${getCategoryScore(cat)} / ${getCategoryMax(cat)} pts`;
+
+    // Update nav button styling
+    const navBtn = document.getElementById(`nav-${cat.id}`);
+    if (navBtn) {
+      navBtn.classList.remove('all-ok', 'has-issues');
+      const catAnswered = cat.questions.filter(q => state[q.num] && state[q.num].status).length;
+      const catAllOk = cat.questions.every(q => state[q.num] && state[q.num].status === 'ok');
+      const catHasNok = cat.questions.some(q => state[q.num] && state[q.num].status === 'nok');
+      if (catAnswered === cat.questions.length && catAllOk) navBtn.classList.add('all-ok');
+      else if (catHasNok) navBtn.classList.add('has-issues');
+    }
+  });
+
+  const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${totalAnswered} de ${totalQuestions} questões avaliadas (${pct}%)`;
+  document.getElementById('scoreBadge').textContent = `Pontuação: ${totalScore} / ${MAX_SCORE} pts (${Math.round(totalScore/MAX_SCORE*100)}%)`;
+  document.getElementById('okCount').textContent = `OK: ${okCount}`;
+  document.getElementById('nokCount').textContent = `NOK: ${nokCount}`;
+  document.getElementById('partialCount').textContent = `Parcial: ${partialCount}`;
+}
+
+function resetAll() {
+  if (confirm('Tem a certeza que quer limpar todas as respostas?')) {
+    state = {};
+    saveState();
+    renderQuestions();
+    updateProgress();
+  }
+}
+
+function exportReport() {
+  let report = "RELATÓRIO DE PRÉ-AUDITORIA SQA - BOSCH CAR SERVICE\n";
+  report += "Oficina de Lisboa | Data: " + new Date().toLocaleDateString('pt-PT') + "\n";
+  report += "=".repeat(60) + "\n\n";
+
+  let totalScore = 0;
+  let issues = [];
+
+  DATA.forEach(cat => {
+    report += `\n${cat.name}\n${"─".repeat(40)}\n`;
+    cat.questions.forEach(q => {
+      const s = state[q.num] || {};
+      const status = s.status ? s.status.toUpperCase() : 'NÃO AVALIADO';
+      const pts = s.points || 0;
+      totalScore += pts;
+      report += `  [${status}] ${q.num} - ${q.title} (${pts}pts)\n`;
+      if (s.notes) report += `    Notas: ${s.notes}\n`;
+      if (s.status === 'nok' || s.status === 'partial') {
+        issues.push({ num: q.num, title: q.title, type: q.type, notes: s.notes || '' });
+      }
+    });
+  });
+
+  report += `\n${"=".repeat(60)}\n`;
+  report += `PONTUAÇÃO TOTAL: ${totalScore} / ${MAX_SCORE} (${Math.round(totalScore/MAX_SCORE*100)}%)\n\n`;
+
+  if (issues.length > 0) {
+    report += `AÇÕES NECESSÁRIAS (${issues.length} itens):\n${"─".repeat(40)}\n`;
+    issues.forEach(i => {
+      report += `  ${i.type === 'corretiva' ? '⚠ CORRETIVA' : '○ STANDARD'} ${i.num}: ${i.title}\n`;
+      if (i.notes) report += `    → ${i.notes}\n`;
+    });
+  }
+
+  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Relatorio_SQA_Lisboa_${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+init();
+</script>
+</body>
+</html>
