@@ -1056,57 +1056,16 @@
     <main class="app-main" id="mainContent">
         <!-- Dashboard -->
         <div class="dashboard" id="dashboardView">
-            <!-- Margem Mensal Real (Indicadores & Objetivos) - Março 2026 -->
+            <!-- Margem Mensal Real (Indicadores & Objetivos) -->
             <div class="kpi-section" id="margemMensalBlock" style="padding:16px 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span style="font-size:14px;font-weight:700;color:var(--text-primary);">Margem Mensal Real</span>
-                        <span style="font-size:11px;color:var(--text-secondary);background:var(--content-bg);padding:2px 8px;border-radius:10px;font-weight:600;">Março 2026</span>
+                        <span id="margemMensalBadge" style="font-size:11px;color:var(--text-secondary);background:var(--content-bg);padding:2px 8px;border-radius:10px;font-weight:600;"></span>
                     </div>
                     <span style="font-size:11px;color:var(--text-secondary);">Fonte: Indicadores e Objetivos</span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;">
-                        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:4px;">Mecânica Cacém</div>
-                        <div style="font-size:16px;font-weight:800;color:#34a853;">26,44%</div>
-                        <div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>
-                        <div style="display:flex;justify-content:center;gap:12px;margin-top:6px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">27.660 €</div><div style="font-size:9px;color:var(--text-secondary);">Resultado</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">104.622 €</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>
-                        </div>
-                    </div>
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;">
-                        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:4px;">Mecânica Lisboa</div>
-                        <div style="font-size:16px;font-weight:800;color:#34a853;">25,90%</div>
-                        <div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>
-                        <div style="display:flex;justify-content:center;gap:12px;margin-top:6px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">20.507 €</div><div style="font-size:9px;color:var(--text-secondary);">Resultado</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">79.170 €</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>
-                        </div>
-                    </div>
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;">
-                        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:4px;">Colisão</div>
-                        <div style="font-size:16px;font-weight:800;color:#d93025;">15,52%</div>
-                        <div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>
-                        <div style="display:flex;justify-content:center;gap:12px;margin-top:6px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">17.084 €</div><div style="font-size:9px;color:var(--text-secondary);">Resultado</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">110.044 €</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>
-                        </div>
-                    </div>
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;border:1.5px solid #34a853;">
-                        <div style="font-size:11px;color:#34a853;font-weight:700;margin-bottom:4px;">DomusCar (Empresa)</div>
-                        <div style="font-size:16px;font-weight:800;color:#34a853;">23,01%</div>
-                        <div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>
-                        <div style="display:flex;justify-content:center;gap:12px;margin-top:6px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">68.300 €</div><div style="font-size:9px;color:var(--text-secondary);">Resultado</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">296.885 €</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>
-                        </div>
-                    </div>
-                </div>
+                <div id="margemMensalContent"></div>
             </div>
             <!-- Margem Provisória Block -->
             <div class="kpi-section" id="margemDashboardBlock">
@@ -1276,6 +1235,12 @@
         document.getElementById('loginLogo').src = LOGO_URL;
         document.getElementById('headerLogo').src = LOGO_URL;
     }
+
+    // ======== MARGEM MENSAL REAL — último mês carregado ========
+    // Atualizar este valor sempre que se carrega um novo mês em Indicadores e Objetivos.
+    // Formato: "Mês AAAA" (ex: "Março 2026"). A Margem Provisória só mostra dados
+    // se o seu período de referência for POSTERIOR a este mês.
+    var MARGEM_REAL_ULTIMO_MES = "Março 2026";
 
     // ======== MARGEM DATA (FALLBACK) ========
     // Hardcoded fallback — used when SP is unavailable (403, no permissions, etc.)
@@ -2234,6 +2199,7 @@
         var firstTab = reorderKpiTabs();
         renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
+        renderMargemMensalReal();
         updateGreeting();
         // Hide breadcrumb on home
         document.getElementById('breadcrumb').style.display = 'none';
@@ -2999,6 +2965,7 @@
         var firstTab = reorderKpiTabs();
         renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
+        renderMargemMensalReal();
     }
 
     function openDashboard(type) {
@@ -3254,8 +3221,76 @@
         // Update in-memory fallback for this session
         MARGEM_FALLBACK_DATA = data;
         renderMargemDashboard(data);
+        renderMargemMensalReal(); // Re-avaliar estado da margem real
         // Persist to SharePoint for cross-browser access
         saveDashboardToSP('margem_dashboard.json', data);
+    }
+
+    // ======== RENDER MARGEM MENSAL REAL ========
+    function renderMargemMensalReal() {
+        var badge = document.getElementById('margemMensalBadge');
+        var content = document.getElementById('margemMensalContent');
+        if (!badge || !content) return;
+
+        badge.textContent = MARGEM_REAL_ULTIMO_MES;
+
+        // Verificar se a Margem Provisória tem dados de um mês posterior ao último mês real
+        // Se sim, significa que já há previsão do mês seguinte → a real aguarda validação
+        var margemProvData = null;
+        try { var s = localStorage.getItem('intranet_margemDashboard'); if (s) margemProvData = JSON.parse(s); } catch(e) {}
+        if (!margemProvData) margemProvData = MARGEM_FALLBACK_DATA;
+
+        if (margemProvData && margemProvData.periodo) {
+            var provNum = parsePeriodoToNum(margemProvData.periodo);
+            var realNum = parsePeriodoToNum(MARGEM_REAL_ULTIMO_MES);
+            if (provNum > 0 && realNum > 0 && provNum > realNum) {
+                content.innerHTML = '<div style="text-align:center;padding:32px 24px;color:var(--text-secondary);font-size:14px;">' +
+                    '<div style="font-size:28px;margin-bottom:10px;">🏦</div>' +
+                    '<div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Aguarda Validação de Dados pelo Departamento Financeiro</div>' +
+                    '<div style="font-size:12px;color:#aaa;">Já existe margem provisória de <strong>' + margemProvData.periodo + '</strong>.<br>A margem mensal real será atualizada após validação financeira.</div>' +
+                    '</div>';
+                return;
+            }
+        }
+
+        // Mostrar dados reais — cores por patamar: <21% vermelho, >=21% verde claro, >=28% verde médio, >=35% verde escuro
+        function margemRealColor(pct) {
+            if (pct >= 35) return '#0a6e2e';
+            if (pct >= 28) return '#0d904f';
+            if (pct >= 21) return '#34a853';
+            return '#d93025';
+        }
+        function buildCard(nome, pct, resultado, vendas, isEmpresa) {
+            var cor = margemRealColor(pct);
+            var border = isEmpresa ? 'border:1.5px solid ' + cor + ';' : '';
+            var nameColor = isEmpresa ? 'color:' + cor + ';font-weight:700;' : 'color:var(--text-secondary);font-weight:600;';
+            return '<div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;' + border + '">' +
+                '<div style="font-size:11px;' + nameColor + 'margin-bottom:4px;">' + nome + '</div>' +
+                '<div style="font-size:16px;font-weight:800;color:' + cor + ';">' + pct.toFixed(2).replace('.', ',') + '%</div>' +
+                '<div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>' +
+                '<div style="display:flex;justify-content:center;gap:12px;margin-top:6px;">' +
+                    '<div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">' + resultado + '</div><div style="font-size:9px;color:var(--text-secondary);">Resultado</div></div>' +
+                    '<div style="width:1px;background:var(--border-color);"></div>' +
+                    '<div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">' + vendas + '</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>' +
+                '</div></div>';
+        }
+        content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">' +
+            buildCard('Mecânica Cacém', 26.44, '27.660 €', '104.622 €', false) +
+            buildCard('Mecânica Lisboa', 25.90, '20.507 €', '79.170 €', false) +
+            buildCard('Colisão', 15.52, '17.084 €', '110.044 €', false) +
+            buildCard('DomusCar (Empresa)', 23.01, '68.300 €', '296.885 €', true) +
+            '</div>';
+    }
+
+    // Converte "Março 2026" → 202603 para comparação numérica
+    function parsePeriodoToNum(periodo) {
+        if (!periodo) return 0;
+        var meses = { 'janeiro':1,'fevereiro':2,'março':3,'abril':4,'maio':5,'junho':6,'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12 };
+        var parts = periodo.trim().toLowerCase().split(/\s+/);
+        if (parts.length < 2) return 0;
+        var mes = meses[parts[0]] || 0;
+        var ano = parseInt(parts[1]) || 0;
+        return ano * 100 + mes;
     }
 
     function renderMargemDashboard(data, stillLoading) {
@@ -3263,6 +3298,22 @@
         var cardsDiv = document.getElementById('margemCards');
         var updateDiv = document.getElementById('margemLastUpdate');
         block.style.display = 'block';
+
+        // Regra: se o período da provisória <= último mês real carregado, mostrar mensagem de espera
+        if (data && data.periodo && MARGEM_REAL_ULTIMO_MES) {
+            var provNum = parsePeriodoToNum(data.periodo);
+            var realNum = parsePeriodoToNum(MARGEM_REAL_ULTIMO_MES);
+            if (provNum > 0 && realNum > 0 && provNum <= realNum) {
+                cardsDiv.innerHTML = '<div style="text-align:center;padding:32px 24px;color:var(--text-secondary);font-size:14px;">' +
+                    '<div style="font-size:28px;margin-bottom:10px;">📅</div>' +
+                    '<div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Aguarda Última Semana do Mês</div>' +
+                    '<div style="font-size:12px;color:#aaa;">A margem mensal real de <strong>' + MARGEM_REAL_ULTIMO_MES + '</strong> já foi carregada.<br>A margem provisória será atualizada quando houver dados do próximo período.</div>' +
+                    '</div>';
+                updateDiv.textContent = data.periodo + ' | Atualizado: ' + (data.timestamp || '—');
+                return;
+            }
+        }
+
         if (!data || !data.departments || data.departments.length === 0) {
             if (stillLoading) {
                 cardsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:14px;"><div style="margin-bottom:8px;">⏳</div>A carregar dados de margem provisória...</div>';
