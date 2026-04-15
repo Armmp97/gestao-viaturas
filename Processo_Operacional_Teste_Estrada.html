@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Processo Operacional - Teste de Estrada</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:800px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  /* Header */
+  .header {
+    background:#2563eb; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  /* Content area */
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  /* Section titles */
+  .section-title { font-size:15px; font-weight:700; color:#2563eb; margin-bottom:18px; }
+  /* Steps */
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#2563eb;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 0 16px; }
+  .step-body ul li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#2563eb; font-weight:600; font-size:12px;
+  }
+  /* Right column */
+  .meta-box {
+    background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px;
+  }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title {
+    font-size:13px; font-weight:700; margin-bottom:8px;
+    padding-bottom:6px; border-bottom:2px solid;
+  }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#2563eb; border-color:#2563eb; }
+  .legal-title { color:#6b7280; border-color:#6b7280; }
+  /* Footer */
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+
+  /* ═══ TABS ═══ */
+  .tab-bar {
+    display:flex; border-bottom:2px solid #e5e7eb; margin:0 32px;
+  }
+  .tab-btn {
+    padding:12px 24px; font-size:13px; font-weight:600; color:#6b7280;
+    background:none; border:none; cursor:pointer; position:relative;
+    font-family:inherit; transition:color .2s;
+  }
+  .tab-btn:hover { color:#2563eb; }
+  .tab-btn.active { color:#2563eb; }
+  .tab-btn.active::after {
+    content:''; position:absolute; bottom:-2px; left:0; right:0;
+    height:2px; background:#2563eb;
+  }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:flex; }
+  .tab-panel-form { display:none; padding:32px; }
+  .tab-panel-form.active { display:block; }
+
+  /* ═══ FORM (printable) ═══ */
+  .auth-form { max-width:100%; }
+  .form-header {
+    text-align:center; margin-bottom:28px; padding-bottom:16px;
+    border-bottom:2px solid #2563eb;
+  }
+  .form-header h2 { font-size:18px; font-weight:700; color:#2563eb; margin-bottom:4px; }
+  .form-header p { font-size:11px; color:#888; }
+  .form-section { margin-bottom:22px; }
+  .form-section-title {
+    font-size:13px; font-weight:700; color:#2563eb; margin-bottom:10px;
+    padding-bottom:5px; border-bottom:1px solid #e5e7eb;
+  }
+  .form-row {
+    display:flex; gap:16px; margin-bottom:8px;
+  }
+  .form-field { flex:1; }
+  .form-label { font-size:11px; font-weight:600; color:#666; margin-bottom:3px; }
+  .form-input {
+    width:100%; border:none; border-bottom:1.5px solid #ccc;
+    padding:6px 0; font-size:12px; font-family:inherit; background:transparent;
+    outline:none; transition:border-color .2s;
+  }
+  .form-input:focus { border-color:#2563eb; }
+  .form-text { font-size:12px; color:#444; line-height:1.7; margin-bottom:8px; }
+  .form-text ul { margin:6px 0 6px 18px; }
+  .form-text ul li { margin-bottom:4px; }
+  .form-sig-row {
+    display:flex; gap:32px; margin-top:24px;
+  }
+  .form-sig {
+    flex:1; text-align:center;
+  }
+  .form-sig .sig-label { font-size:11px; font-weight:600; color:#666; margin-bottom:6px; }
+  .form-sig .sig-line {
+    border-bottom:1.5px solid #999; height:48px;
+  }
+  .form-date {
+    text-align:center; margin-bottom:20px;
+  }
+  .form-date-fields {
+    display:inline-flex; gap:6px; align-items:center; font-size:13px; color:#444;
+  }
+  .form-date-input {
+    width:36px; border:none; border-bottom:1.5px solid #ccc;
+    text-align:center; padding:4px 0; font-size:13px; font-family:inherit;
+    background:transparent; outline:none;
+  }
+  .form-date-input.year { width:52px; }
+  .print-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    background:#2563eb; color:#fff; border:none; border-radius:6px;
+    padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;
+    font-family:inherit; margin-top:16px; transition:background .2s;
+  }
+  .print-btn:hover { background:#1d4ed8; }
+  .print-btn svg { width:16px; height:16px; }
+
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+    .tab-bar, .print-btn { display:none !important; }
+    .tab-panel-form.active { padding:16px 32px; }
+    .header { border-radius:0; }
+    .footer { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Processo Operacional - Teste de Estrada</h1>
+      <p>Procedimento e autorização para testes de estrada</p>
+    </div>
+    <div class="header-icon">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="24" width="52" height="20" rx="4" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.12)"/>
+        <circle cx="16" cy="44" r="5" stroke="white" stroke-width="2" fill="none"/>
+        <circle cx="48" cy="44" r="5" stroke="white" stroke-width="2" fill="none"/>
+        <path d="M14 24l6-12h20l8 12" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.08)"/>
+        <line x1="26" y1="12" x2="26" y2="24" stroke="white" stroke-width="1.5"/>
+        <path d="M52 30h6l2 4h-8" stroke="white" stroke-width="1.5"/>
+        <line x1="4" y1="52" x2="14" y2="52" stroke="white" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <line x1="50" y1="52" x2="60" y2="52" stroke="white" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <line x1="22" y1="52" x2="42" y2="52" stroke="white" stroke-width="1.5" stroke-dasharray="2 2"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('processo')">Processo</button>
+    <button class="tab-btn" onclick="switchTab('formulario')">Formulário de Autorização</button>
+  </div>
+
+  <!-- TAB 1: Processo -->
+  <div class="content tab-panel active" id="tab-processo">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Identificação da necessidade</div>
+          <div class="step-body">
+            O técnico ou coordenador identifica que a resolução da anomalia requer <strong>verificação em condições reais de circulação</strong>.
+            <span class="dest">&#10148; Comunicar ao Coordenador da oficina e à Receção.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Obtenção da autorização do cliente</div>
+          <div class="step-body">
+            Antes de qualquer teste, deve ser obtida <strong>autorização expressa do cliente</strong> ou utilizador, através do formulário de autorização disponível na tab seguinte.
+            <span class="dest">&#10148; O formulário deve ser assinado e anexado à Ordem de Reparação.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Realização do teste de estrada</div>
+          <div class="step-body">
+            O teste é realizado pelo técnico designado, podendo incluir:
+            <ul>
+              <li>Circulação urbana, extraurbana e/ou autoestrada</li>
+              <li>Quilometragem adequada à natureza da intervenção</li>
+              <li>Testes prolongados em caso de avarias intermitentes</li>
+              <li>Testes em diferentes períodos do dia, conforme necessário</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Registo e validação dos resultados</div>
+          <div class="step-body">
+            O técnico regista os resultados do teste e comunica à <strong>Coordenação</strong>, que valida se a anomalia foi resolvida ou se são necessárias intervenções adicionais.
+            <span class="dest">&#10148; Atualizar a Ordem de Reparação com os resultados.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Encerramento e devolução</div>
+          <div class="step-body">
+            Após validação, a viatura é devolvida à oficina. O formulário de autorização permanece <strong>anexado à Ordem de Reparação</strong> para arquivo e rastreabilidade.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Oficina — Mecânica e Colisão</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Coordenação + Técnico designado</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Receção, Coordenação e Técnicos</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body">
+          <p>A <strong>autorização do cliente é obrigatória</strong> antes de qualquer teste de estrada.</p>
+          <p>A viatura deve ser utilizada <strong>exclusivamente</strong> no âmbito do diagnóstico ou validação da reparação.</p>
+          <p>O cliente deve ser informado de que a viatura poderá dispor de <strong>sistemas de geolocalização</strong> cujos dados refletirão os testes realizados.</p>
+        </div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body">
+          <p>1. Anomalia validada/resolvida em condições reais;</p>
+          <p>2. Autorização do cliente devidamente formalizada;</p>
+          <p>3. Ordem de Reparação completa e documentada;</p>
+          <p>4. Proteção legal para a oficina e transparência com o cliente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Formulário -->
+  <div class="tab-panel-form" id="tab-formulario">
+    <div class="auth-form">
+      <div class="form-header">
+        <h2>Autorização para Testes de Estrada</h2>
+        <p>Walkingarage, Lda. &mdash; DomusCar</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Identificação do Cliente / Utilizador</div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">Nome</div>
+            <input type="text" class="form-input">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">NIF</div>
+            <input type="text" class="form-input">
+          </div>
+          <div class="form-field">
+            <div class="form-label">Contacto</div>
+            <input type="text" class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Identificação da Viatura</div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">Matrícula</div>
+            <input type="text" class="form-input">
+          </div>
+          <div class="form-field">
+            <div class="form-label">Marca / Modelo</div>
+            <input type="text" class="form-input">
+          </div>
+          <div class="form-field">
+            <div class="form-label">Ordem de Reparação N.º</div>
+            <input type="text" class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Objeto</div>
+        <div class="form-text">
+          No âmbito do diagnóstico e/ou reparação da viatura acima identificada, poderá revelar-se necessário proceder à realização de testes de estrada, com o objetivo de:
+          <ul>
+            <li>Identificação de anomalias</li>
+            <li>Validação de intervenções técnicas</li>
+            <li>Verificação do comportamento da viatura em condições reais de utilização</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Autorização</div>
+        <div class="form-text">
+          Declaro que autorizo a oficina a proceder à realização de testes de estrada com a viatura identificada, sempre que tal se revele necessário para efeitos de diagnóstico e/ou validação da reparação.
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Condições dos Testes</div>
+        <div class="form-text">
+          Os testes de estrada poderão incluir:
+          <ul>
+            <li>Circulação em diferentes tipos de percurso (urbano, extraurbano e/ou autoestrada)</li>
+            <li>Quilometragem adicional adequada à natureza da intervenção</li>
+            <li>Testes prolongados em caso de avarias intermitentes</li>
+            <li>Testes em diferentes períodos do dia, conforme necessidades técnicas</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Compromissos da Oficina</div>
+        <div class="form-text">
+          A oficina compromete-se a:
+          <ul>
+            <li>Utilizar a viatura exclusivamente no âmbito da prestação de serviços contratada</li>
+            <li>Não utilizar a viatura para fins pessoais</li>
+            <li>Atuar com diligência e zelo na condução e guarda da mesma</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Sistemas de Geolocalização</div>
+        <div class="form-text">
+          O cliente/utilizador declara ter conhecimento de que a viatura poderá dispor de sistemas de geolocalização, podendo os dados de utilização refletir os testes de estrada realizados no âmbito do processo de diagnóstico e reparação.
+        </div>
+      </div>
+
+      <div class="form-section" style="background:#fef3cd;padding:12px 16px;border-radius:6px;border-left:3px solid #d4a017;">
+        <div style="font-size:12px;color:#856404;line-height:1.6;">
+          <strong>Nota:</strong> A não realização de testes de estrada, quando tecnicamente necessários, poderá comprometer a correta identificação e/ou resolução da anomalia reportada.
+        </div>
+      </div>
+
+      <div class="form-section" style="margin-top:24px;">
+        <div class="form-section-title">Declaração</div>
+        <div class="form-text" style="margin-bottom:16px;">
+          Declaro que tomei conhecimento e aceito as condições acima descritas.
+        </div>
+
+        <div class="form-date">
+          <div class="form-date-fields">
+            Data: <input type="text" class="form-date-input" placeholder="DD"> / <input type="text" class="form-date-input" placeholder="MM"> / <input type="text" class="form-date-input year" placeholder="AAAA">
+          </div>
+        </div>
+
+        <div class="form-sig-row">
+          <div class="form-sig">
+            <div class="sig-label">Assinatura do Cliente / Utilizador</div>
+            <div class="sig-line"></div>
+          </div>
+          <div class="form-sig">
+            <div class="sig-label">Assinatura da Oficina</div>
+            <div class="sig-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="print-btn" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir Formulário
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Otimização dos Processos Operacionais</span>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('tab-processo').classList.remove('active');
+  document.getElementById('tab-formulario').classList.remove('active');
+  if (tab === 'processo') {
+    document.getElementById('tab-processo').classList.add('active');
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+  } else {
+    document.getElementById('tab-formulario').classList.add('active');
+    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  }
+}
+</script>
+</body>
+</html>

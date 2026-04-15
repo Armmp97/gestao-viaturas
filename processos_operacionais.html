@@ -223,6 +223,16 @@ body {
         </div>
       </div>
 
+      <div class="process-btn" onclick="showProcess('teste_estrada')">
+        <div class="process-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h2l2-4h6l2 4h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M14 7h2l1.5 3"/><path d="M3 11h18"/><path d="M12 3v4"/><polyline points="9,5 12,3 15,5"/></svg>
+        </div>
+        <div class="process-btn-content">
+          <div class="process-btn-title">Teste de Estrada</div>
+          <div class="process-btn-desc">Procedimento e autorização para testes de estrada</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -252,7 +262,13 @@ var processNames = {
   pecas: 'Departamento Peças',
   qualidade: 'Qualidade',
   entrega: 'Entrega de Viatura',
-  checklists: 'Checklists Operacionais'
+  checklists: 'Checklists Operacionais',
+  teste_estrada: 'Teste de Estrada'
+};
+
+// Processos com página HTML dedicada (iframe)
+var processPages = {
+  teste_estrada: 'Processo_Operacional_Teste_Estrada.html'
 };
 
 function showProcess(id) {
@@ -260,8 +276,13 @@ function showProcess(id) {
   var detail = document.getElementById('detailSection');
   detail.classList.add('visible');
   document.getElementById('detailTitle').textContent = processNames[id] || id;
-  document.getElementById('detailContent').textContent =
-    'Conteúdo em preparação para: ' + (processNames[id] || id) + '. Esta secção será preenchida com os procedimentos detalhados deste processo.';
+
+  var contentDiv = document.getElementById('detailContent');
+  if (processPages[id]) {
+    contentDiv.innerHTML = '<iframe src="' + processPages[id] + '" style="width:100%;min-height:700px;border:none;border-radius:8px;" onload="this.style.height=this.contentWindow.document.body.scrollHeight+40+\'px\'"></iframe>';
+  } else {
+    contentDiv.textContent = 'Conteúdo em preparação para: ' + (processNames[id] || id) + '. Esta secção será preenchida com os procedimentos detalhados deste processo.';
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // Mark active button
