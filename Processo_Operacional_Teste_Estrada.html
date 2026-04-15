@@ -511,15 +511,18 @@
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
-        <a class="print-btn" id="btn-outlook" href="#" target="_blank" style="text-decoration:none;color:#fff;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Enviar Email
-        </a>
-        <button class="print-btn" onclick="copiarEmail()" style="background:#6b7280;">
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;align-items:center;">
+        <button class="print-btn" onclick="copiarAssunto()" style="background:#6b7280;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar Corpo do Email
+          <span id="btn-assunto-text">Copiar Assunto</span>
         </button>
+        <button class="print-btn" onclick="copiarCorpo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <span id="btn-corpo-text">Copiar Corpo do Email</span>
+        </button>
+      </div>
+      <div style="margin-top:10px;font-size:11.5px;color:#6b7280;line-height:1.6;">
+        <strong>Como usar:</strong> Copie o assunto e o corpo, abra o Outlook, crie um novo email para o cliente e cole cada um no respetivo campo.
       </div>
 
       <div class="form-section" style="margin-top:24px;background:#e8f5e9;padding:14px 18px;border-radius:6px;border-left:3px solid #34a853;">
@@ -565,11 +568,8 @@ function updatePreview() {
   document.querySelectorAll('.prev-or').forEach(function(el) { el.textContent = or_; });
 }
 document.addEventListener('DOMContentLoaded', function() {
-  ['email-cliente','email-nome','email-matricula','email-marca','email-or'].forEach(function(id) {
-    document.getElementById(id).addEventListener('input', function() {
-      updatePreview();
-      atualizarLinkOutlook();
-    });
+  ['email-nome','email-matricula','email-marca','email-or'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', updatePreview);
   });
 });
 
@@ -594,25 +594,23 @@ function buildEmail() {
   return { assunto: assunto, corpo: corpo };
 }
 
-/* Atualizar link do botão Enviar Email */
-function atualizarLinkOutlook() {
-  var email = document.getElementById('email-cliente').value;
-  var btn = document.getElementById('btn-outlook');
-  if (!email) { btn.href = '#'; return; }
+/* Copiar assunto para clipboard */
+function copiarAssunto() {
   var e = buildEmail();
-  var url = 'https://outlook.cloud.microsoft/mail/deeplink/compose'
-    + '?to=' + encodeURIComponent(email)
-    + '&subject=' + encodeURIComponent(e.assunto)
-    + '&body=' + encodeURIComponent(e.corpo);
-  btn.href = url;
+  navigator.clipboard.writeText(e.assunto).then(function() {
+    var btn = document.getElementById('btn-assunto-text');
+    btn.textContent = 'Copiado!';
+    setTimeout(function() { btn.textContent = 'Copiar Assunto'; }, 2000);
+  });
 }
 
 /* Copiar corpo do email para clipboard */
-function copiarEmail() {
+function copiarCorpo() {
   var e = buildEmail();
-  var texto = 'Assunto: ' + e.assunto + '\n\n' + e.corpo;
-  navigator.clipboard.writeText(texto).then(function() {
-    alert('Email copiado para a área de transferência. Cole no Outlook.');
+  navigator.clipboard.writeText(e.corpo).then(function() {
+    var btn = document.getElementById('btn-corpo-text');
+    btn.textContent = 'Copiado!';
+    setTimeout(function() { btn.textContent = 'Copiar Corpo do Email'; }, 2000);
   });
 }
 </script>
