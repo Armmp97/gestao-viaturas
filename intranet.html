@@ -3319,7 +3319,7 @@
             if (pct >= 35) return '#0a6e2e';
             if (pct >= 28) return '#0d904f';
             if (pct >= 21) return '#34a853';
-            return '#e37400';
+            return '#d4a017';
         }
         function buildCard(nome, pct, resultado, vendas, isEmpresa) {
             var cor = margemRealColor(pct);
@@ -3402,7 +3402,7 @@
                 mpColor = '#34a853'; mpLabel = '1.º patamar atingido';
             } else {
                 if (mpPct < 0) { mpColor = '#d93025'; mpLabel = ''; }
-                else { mpColor = '#e37400'; mpLabel = ''; }
+                else { mpColor = '#d4a017'; mpLabel = ''; }
             }
             var card = document.createElement('div');
             card.style.cssText = 'background:white;border-radius:12px;padding:20px;border-left:4px solid ' + color + ';box-shadow:0 1px 3px rgba(0,0,0,.1);';
