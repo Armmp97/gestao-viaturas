@@ -230,6 +230,7 @@
               <li>Quilometragem adequada à natureza da intervenção</li>
               <li>Testes prolongados em caso de avarias intermitentes</li>
               <li>Testes em diferentes períodos do dia, conforme necessário</li>
+              <li>Os testes devem ser realizados dentro do <strong>horário de funcionamento da oficina (08h00–18h30)</strong></li>
             </ul>
           </div>
         </div>
@@ -361,6 +362,7 @@
             <li>Quilometragem adicional adequada à natureza da intervenção</li>
             <li>Testes prolongados em caso de avarias intermitentes</li>
             <li>Testes em diferentes períodos do dia, conforme necessidades técnicas</li>
+            <li>Os testes serão realizados dentro do horário de funcionamento da oficina (08h00–18h30)</li>
           </ul>
         </div>
       </div>
@@ -373,6 +375,7 @@
             <li>Utilizar a viatura exclusivamente no âmbito da prestação de serviços contratada</li>
             <li>Não utilizar a viatura para fins pessoais</li>
             <li>Atuar com diligência e zelo na condução e guarda da mesma</li>
+            <li>Realizar os testes exclusivamente dentro do horário de funcionamento (08h00–18h30)</li>
           </ul>
         </div>
       </div>
@@ -477,14 +480,6 @@
             <div class="form-label">Ordem de Reparação N.º</div>
             <input type="text" class="form-input" id="email-or" placeholder="N.º da OR">
           </div>
-          <div class="form-field">
-            <div class="form-label">Oficina</div>
-            <select class="form-input" id="email-oficina" style="border:none;border-bottom:1.5px solid #ccc;background:transparent;font-family:inherit;font-size:12px;padding:6px 0;">
-              <option value="Mecânica Cacém">Mecânica Cacém</option>
-              <option value="Mecânica Lisboa">Mecânica Lisboa</option>
-              <option value="Colisão Cacém">Colisão Cacém</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -502,7 +497,7 @@
             No âmbito da intervenção na viatura <span class="prev-marca" style="color:#2563eb;">___</span>, matrícula <span class="prev-matricula" style="color:#2563eb;">___</span> (OR n.º <span class="prev-or" style="color:#2563eb;">___</span>), informamos que se revela tecnicamente necessário proceder à realização de um <strong>teste de estrada</strong> para diagnóstico e/ou validação da reparação.
           </div>
           <br>
-          <div>O teste poderá incluir circulação em percurso urbano, extraurbano e/ou autoestrada, com quilometragem adequada à natureza da intervenção. A viatura será utilizada exclusivamente no âmbito da prestação de serviços e conduzida com toda a diligência.</div>
+          <div>O teste poderá incluir circulação em percurso urbano, extraurbano e/ou autoestrada, com quilometragem adequada à natureza da intervenção. Os testes serão realizados dentro do horário de funcionamento da oficina (08h00–18h30). A viatura será utilizada exclusivamente no âmbito da prestação de serviços e conduzida com toda a diligência.</div>
           <br>
           <div>Informamos ainda que a viatura poderá dispor de sistemas de geolocalização, cujos dados refletirão os testes realizados.</div>
           <br>
@@ -511,7 +506,7 @@
           <div>Caso não autorize ou pretenda esclarecimentos adicionais, por favor contacte-nos.</div>
           <br>
           <div>Com os melhores cumprimentos,</div>
-          <div style="margin-top:4px;"><span class="prev-oficina" style="color:#2563eb;">Mecânica Cacém</span> — DomusCar</div>
+          <div style="margin-top:4px;">DomusCar</div>
           <div style="font-size:11px;color:#999;margin-top:2px;">Walkingarage, Lda.</div>
         </div>
       </div>
@@ -560,27 +555,24 @@ function updatePreview() {
   var matricula = document.getElementById('email-matricula').value || '___';
   var marca = document.getElementById('email-marca').value || '___';
   var or_ = document.getElementById('email-or').value || '___';
-  var oficina = document.getElementById('email-oficina').value;
   document.querySelectorAll('.prev-nome').forEach(function(el) { el.textContent = nome; });
   document.querySelectorAll('.prev-matricula').forEach(function(el) { el.textContent = matricula; });
   document.querySelectorAll('.prev-marca').forEach(function(el) { el.textContent = marca; });
   document.querySelectorAll('.prev-or').forEach(function(el) { el.textContent = or_; });
-  document.querySelectorAll('.prev-oficina').forEach(function(el) { el.textContent = oficina; });
 }
 document.addEventListener('DOMContentLoaded', function() {
-  ['email-nome','email-matricula','email-marca','email-or','email-oficina'].forEach(function(id) {
+  ['email-nome','email-matricula','email-marca','email-or'].forEach(function(id) {
     document.getElementById(id).addEventListener('input', updatePreview);
   });
 });
 
-/* Abrir Outlook com mailto */
+/* Abrir Outlook Web */
 function abrirOutlook() {
   var email = document.getElementById('email-cliente').value;
   var nome = document.getElementById('email-nome').value || '(Cliente)';
   var matricula = document.getElementById('email-matricula').value || '(Matrícula)';
   var marca = document.getElementById('email-marca').value || '(Marca/Modelo)';
   var or_ = document.getElementById('email-or').value || '(N.º OR)';
-  var oficina = document.getElementById('email-oficina').value;
 
   if (!email) { alert('Por favor, preencha o email do cliente.'); return; }
 
@@ -588,18 +580,19 @@ function abrirOutlook() {
   var corpo = 'Exmo(a). Sr(a). ' + nome + ',\n\n'
     + 'No âmbito da intervenção na viatura ' + marca + ', matrícula ' + matricula
     + ' (OR n.º ' + or_ + '), informamos que se revela tecnicamente necessário proceder à realização de um teste de estrada para diagnóstico e/ou validação da reparação.\n\n'
-    + 'O teste poderá incluir circulação em percurso urbano, extraurbano e/ou autoestrada, com quilometragem adequada à natureza da intervenção. A viatura será utilizada exclusivamente no âmbito da prestação de serviços e conduzida com toda a diligência.\n\n'
+    + 'O teste poderá incluir circulação em percurso urbano, extraurbano e/ou autoestrada, com quilometragem adequada à natureza da intervenção. Os testes serão realizados dentro do horário de funcionamento da oficina (08h00–18h30). A viatura será utilizada exclusivamente no âmbito da prestação de serviços e conduzida com toda a diligência.\n\n'
     + 'Informamos ainda que a viatura poderá dispor de sistemas de geolocalização, cujos dados refletirão os testes realizados.\n\n'
     + 'Solicitamos que responda a este email confirmando que autoriza a realização do(s) teste(s) de estrada nas condições descritas.\n\n'
     + 'Caso não autorize ou pretenda esclarecimentos adicionais, por favor contacte-nos.\n\n'
     + 'Com os melhores cumprimentos,\n'
-    + oficina + ' — DomusCar\n'
+    + 'DomusCar\n'
     + 'Walkingarage, Lda.';
 
-  var mailto = 'mailto:' + encodeURIComponent(email)
-    + '?subject=' + encodeURIComponent(assunto)
+  var url = 'https://outlook.office.com/mail/deeplink/compose'
+    + '?to=' + encodeURIComponent(email)
+    + '&subject=' + encodeURIComponent(assunto)
     + '&body=' + encodeURIComponent(corpo);
-  window.open(mailto, '_self');
+  window.open(url, '_blank');
 }
 </script>
 </body>
