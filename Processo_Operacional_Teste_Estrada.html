@@ -185,6 +185,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('processo')">Processo</button>
     <button class="tab-btn" onclick="switchTab('formulario')">Formulário de Autorização</button>
+    <button class="tab-btn" onclick="switchTab('email')">Autorização por Email</button>
   </div>
 
   <!-- TAB 1: Processo -->
@@ -208,8 +209,12 @@
         <div class="step-content">
           <div class="step-title">Obtenção da autorização do cliente</div>
           <div class="step-body">
-            Antes de qualquer teste, deve ser obtida <strong>autorização expressa do cliente</strong> ou utilizador, através do formulário de autorização disponível na tab seguinte.
-            <span class="dest">&#10148; O formulário deve ser assinado e anexado à Ordem de Reparação.</span>
+            Antes de qualquer teste, deve ser obtida <strong>autorização expressa do cliente</strong> ou utilizador. Existem duas vias:
+            <ul>
+              <li><strong>Presencial:</strong> preenchimento e assinatura do formulário físico (tab "Formulário de Autorização"), anexado à Ordem de Reparação.</li>
+              <li><strong>Remota (email):</strong> envio do pedido de autorização por email com resposta escrita do cliente a confirmar (tab "Autorização por Email"). O email de resposta deve ser impresso e anexado à OR.</li>
+            </ul>
+            <span class="dest">&#10148; Ambas as vias têm validade legal ao abrigo do Código Civil (Art. 217.º) e Regulamento eIDAS.</span>
           </div>
         </div>
       </div>
@@ -416,6 +421,120 @@
     </div>
   </div>
 
+  <!-- TAB 3: Autorização por Email -->
+  <div class="tab-panel-form" id="tab-email">
+    <div class="auth-form">
+      <div class="form-header">
+        <h2>Autorização por Email</h2>
+        <p>Procedimento alternativo quando o cliente não pode assinar presencialmente</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Enquadramento Legal</div>
+        <div class="form-text">
+          De acordo com o <strong>Código Civil Português (Art. 217.º)</strong>, a declaração negocial pode ser expressa por qualquer meio que a torne percetível, incluindo meios eletrónicos. O <strong>Regulamento eIDAS (UE 910/2014)</strong> reforça que não pode ser negado efeito legal a uma comunicação eletrónica apenas por esta se apresentar em formato eletrónico. Assim, a resposta escrita do cliente por email constitui prova de consentimento legalmente válida.
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Procedimento</div>
+        <div class="form-text">
+          <ul>
+            <li><strong>1.</strong> Preencher os campos abaixo com os dados do cliente e da viatura.</li>
+            <li><strong>2.</strong> Clicar em "Abrir no Outlook" para gerar o email pré-preenchido.</li>
+            <li><strong>3.</strong> Enviar o email ao cliente e aguardar resposta de confirmação.</li>
+            <li><strong>4.</strong> Assim que o cliente responder com a autorização, <strong>imprimir o email de resposta</strong> (incluindo o histórico da troca) e <strong>anexar à Ordem de Reparação</strong>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Dados para o Email</div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">Email do Cliente</div>
+            <input type="email" class="form-input" id="email-cliente" placeholder="cliente@exemplo.com">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">Nome do Cliente</div>
+            <input type="text" class="form-input" id="email-nome" placeholder="Nome completo">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">Matrícula</div>
+            <input type="text" class="form-input" id="email-matricula" placeholder="AA-00-AA">
+          </div>
+          <div class="form-field">
+            <div class="form-label">Marca / Modelo</div>
+            <input type="text" class="form-input" id="email-marca" placeholder="Ex: BMW 320d">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <div class="form-label">Ordem de Reparação N.º</div>
+            <input type="text" class="form-input" id="email-or" placeholder="N.º da OR">
+          </div>
+          <div class="form-field">
+            <div class="form-label">Oficina</div>
+            <select class="form-input" id="email-oficina" style="border:none;border-bottom:1.5px solid #ccc;background:transparent;font-family:inherit;font-size:12px;padding:6px 0;">
+              <option value="Mecânica Cacém">Mecânica Cacém</option>
+              <option value="Mecânica Lisboa">Mecânica Lisboa</option>
+              <option value="Colisão Cacém">Colisão Cacém</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Pré-visualização do Email</div>
+        <div id="email-preview" style="background:#f7f7f7;border-radius:6px;padding:18px 20px;font-size:12px;color:#444;line-height:1.8;border:1px solid #e5e7eb;">
+          <div style="margin-bottom:10px;">
+            <strong>Assunto:</strong> <span style="color:#2563eb;">Pedido de Autorização para Teste de Estrada — OR <span class="prev-or">___</span></span>
+          </div>
+          <div>
+            Exmo(a). Sr(a). <span class="prev-nome" style="color:#2563eb;">___</span>,
+          </div>
+          <br>
+          <div>
+            No âmbito da intervenção na viatura <span class="prev-marca" style="color:#2563eb;">___</span>, matrícula <span class="prev-matricula" style="color:#2563eb;">___</span> (OR n.º <span class="prev-or" style="color:#2563eb;">___</span>), informamos que se revela tecnicamente necessário proceder à realização de um <strong>teste de estrada</strong> para diagnóstico e/ou validação da reparação.
+          </div>
+          <br>
+          <div>O teste poderá incluir circulação em percurso urbano, extraurbano e/ou autoestrada, com quilometragem adequada à natureza da intervenção. A viatura será utilizada exclusivamente no âmbito da prestação de serviços e conduzida com toda a diligência.</div>
+          <br>
+          <div>Informamos ainda que a viatura poderá dispor de sistemas de geolocalização, cujos dados refletirão os testes realizados.</div>
+          <br>
+          <div><strong>Solicitamos que responda a este email confirmando que autoriza a realização do(s) teste(s) de estrada nas condições descritas.</strong></div>
+          <br>
+          <div>Caso não autorize ou pretenda esclarecimentos adicionais, por favor contacte-nos.</div>
+          <br>
+          <div>Com os melhores cumprimentos,</div>
+          <div style="margin-top:4px;"><span class="prev-oficina" style="color:#2563eb;">Mecânica Cacém</span> — DomusCar</div>
+          <div style="font-size:11px;color:#999;margin-top:2px;">Walkingarage, Lda.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button class="print-btn" onclick="abrirOutlook()" id="btn-outlook">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Abrir no Outlook
+        </button>
+      </div>
+
+      <div class="form-section" style="margin-top:24px;background:#e8f5e9;padding:14px 18px;border-radius:6px;border-left:3px solid #34a853;">
+        <div style="font-size:12px;color:#2e7d32;line-height:1.7;">
+          <strong>Após receção da resposta do cliente:</strong><br>
+          1. Abrir o email de resposta do cliente no Outlook.<br>
+          2. Imprimir o email completo (incluindo o histórico da troca de mensagens).<br>
+          3. Anexar a impressão à Ordem de Reparação como comprovativo de autorização.<br>
+          4. Prosseguir com o teste de estrada conforme o processo definido.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="footer">
     <span>DomusCar &bull; Walkingarage, Lda.</span>
     <span>Otimização dos Processos Operacionais</span>
@@ -427,13 +546,60 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById('tab-processo').classList.remove('active');
   document.getElementById('tab-formulario').classList.remove('active');
-  if (tab === 'processo') {
-    document.getElementById('tab-processo').classList.add('active');
-    document.querySelectorAll('.tab-btn')[0].classList.add('active');
-  } else {
-    document.getElementById('tab-formulario').classList.add('active');
-    document.querySelectorAll('.tab-btn')[1].classList.add('active');
-  }
+  document.getElementById('tab-email').classList.remove('active');
+  var idx = 0;
+  if (tab === 'processo') { idx = 0; document.getElementById('tab-processo').classList.add('active'); }
+  else if (tab === 'formulario') { idx = 1; document.getElementById('tab-formulario').classList.add('active'); }
+  else { idx = 2; document.getElementById('tab-email').classList.add('active'); }
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+/* Live preview update */
+function updatePreview() {
+  var nome = document.getElementById('email-nome').value || '___';
+  var matricula = document.getElementById('email-matricula').value || '___';
+  var marca = document.getElementById('email-marca').value || '___';
+  var or_ = document.getElementById('email-or').value || '___';
+  var oficina = document.getElementById('email-oficina').value;
+  document.querySelectorAll('.prev-nome').forEach(function(el) { el.textContent = nome; });
+  document.querySelectorAll('.prev-matricula').forEach(function(el) { el.textContent = matricula; });
+  document.querySelectorAll('.prev-marca').forEach(function(el) { el.textContent = marca; });
+  document.querySelectorAll('.prev-or').forEach(function(el) { el.textContent = or_; });
+  document.querySelectorAll('.prev-oficina').forEach(function(el) { el.textContent = oficina; });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  ['email-nome','email-matricula','email-marca','email-or','email-oficina'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', updatePreview);
+  });
+});
+
+/* Abrir Outlook com mailto */
+function abrirOutlook() {
+  var email = document.getElementById('email-cliente').value;
+  var nome = document.getElementById('email-nome').value || '(Cliente)';
+  var matricula = document.getElementById('email-matricula').value || '(Matrícula)';
+  var marca = document.getElementById('email-marca').value || '(Marca/Modelo)';
+  var or_ = document.getElementById('email-or').value || '(N.º OR)';
+  var oficina = document.getElementById('email-oficina').value;
+
+  if (!email) { alert('Por favor, preencha o email do cliente.'); return; }
+
+  var assunto = 'Pedido de Autorização para Teste de Estrada — OR ' + or_;
+  var corpo = 'Exmo(a). Sr(a). ' + nome + ',\n\n'
+    + 'No âmbito da intervenção na viatura ' + marca + ', matrícula ' + matricula
+    + ' (OR n.º ' + or_ + '), informamos que se revela tecnicamente necessário proceder à realização de um teste de estrada para diagnóstico e/ou validação da reparação.\n\n'
+    + 'O teste poderá incluir circulação em percurso urbano, extraurbano e/ou autoestrada, com quilometragem adequada à natureza da intervenção. A viatura será utilizada exclusivamente no âmbito da prestação de serviços e conduzida com toda a diligência.\n\n'
+    + 'Informamos ainda que a viatura poderá dispor de sistemas de geolocalização, cujos dados refletirão os testes realizados.\n\n'
+    + 'Solicitamos que responda a este email confirmando que autoriza a realização do(s) teste(s) de estrada nas condições descritas.\n\n'
+    + 'Caso não autorize ou pretenda esclarecimentos adicionais, por favor contacte-nos.\n\n'
+    + 'Com os melhores cumprimentos,\n'
+    + oficina + ' — DomusCar\n'
+    + 'Walkingarage, Lda.';
+
+  var mailto = 'mailto:' + encodeURIComponent(email)
+    + '?subject=' + encodeURIComponent(assunto)
+    + '&body=' + encodeURIComponent(corpo);
+  window.open(mailto, '_self');
 }
 </script>
 </body>
