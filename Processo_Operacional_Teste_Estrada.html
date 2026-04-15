@@ -588,11 +588,10 @@ function abrirOutlook() {
     + 'DomusCar\n'
     + 'Walkingarage, Lda.';
 
-  var url = 'https://outlook.office.com/mail/deeplink/compose'
-    + '?to=' + encodeURIComponent(email)
-    + '&subject=' + encodeURIComponent(assunto)
+  var mailto = 'mailto:' + encodeURIComponent(email)
+    + '?subject=' + encodeURIComponent(assunto)
     + '&body=' + encodeURIComponent(corpo);
-  window.open(url, '_blank');
+  window.location.href = mailto;
 }
 </script>
 </body>
