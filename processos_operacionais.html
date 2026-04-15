@@ -153,7 +153,7 @@ body {
     <p class="section-intro-desc">Clique numa área para consultar os procedimentos detalhados.</p>
     <div class="process-grid">
 
-      <div class="process-btn em-breve" onclick="showProcess('rececao')">
+      <div class="process-btn" onclick="showSubArea('rececao')">
         <div class="process-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
         </div>
@@ -223,17 +223,34 @@ body {
         </div>
       </div>
 
-      <div class="process-btn" onclick="showProcess('teste_estrada')">
-        <div class="process-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h2l2-4h6l2 4h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M14 7h2l1.5 3"/><path d="M3 11h18"/><path d="M12 3v4"/><polyline points="9,5 12,3 15,5"/></svg>
-        </div>
-        <div class="process-btn-content">
-          <div class="process-btn-title">Teste de Estrada</div>
-          <div class="process-btn-desc">Procedimento e autorização para testes de estrada</div>
-        </div>
-      </div>
 
     </div>
+  </div>
+</div>
+
+<!-- SUB-ÁREA: Receção → Mecânica / Colisão -->
+<div class="process-section" id="subAreaSection" style="display:none;">
+  <div class="container">
+    <button class="back-btn" onclick="hideSubArea()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+      Voltar aos processos
+    </button>
+    <p class="section-intro" id="subAreaTitle">Receção</p>
+    <p class="section-intro-desc">Selecione a área para ver os processos disponíveis.</p>
+    <div class="process-grid" id="subAreaGrid"></div>
+  </div>
+</div>
+
+<!-- SUB-PROCESSOS de uma área (ex: Mecânica → Teste Estrada, Peritagens) -->
+<div class="process-section" id="subProcessSection" style="display:none;">
+  <div class="container">
+    <button class="back-btn" onclick="hideSubProcess()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+      Voltar
+    </button>
+    <p class="section-intro" id="subProcessTitle">—</p>
+    <p class="section-intro-desc">Procedimentos disponíveis nesta área.</p>
+    <div class="process-grid" id="subProcessGrid"></div>
   </div>
 </div>
 
@@ -263,16 +280,112 @@ var processNames = {
   qualidade: 'Qualidade',
   entrega: 'Entrega de Viatura',
   checklists: 'Checklists Operacionais',
-  teste_estrada: 'Teste de Estrada'
+  teste_estrada: 'Teste de Estrada',
+  peritagens: 'Peritagens',
+  leiloes: 'Leilões',
+  viaturas_prontas: 'Viaturas Prontas Colisão'
 };
 
-// Processos com página HTML dedicada (iframe)
 var processPages = {
-  teste_estrada: 'Processo_Operacional_Teste_Estrada.html'
+  teste_estrada: 'Processo_Operacional_Teste_Estrada.html',
+  peritagens: 'Processo_Operacional_Peritagens.html',
+  leiloes: 'Processo_Operacional_Leiloes.html',
+  viaturas_prontas: 'Processo_Operacional_Viaturas_Prontas.html'
 };
 
+/* Sub-áreas dentro de Receção */
+var subAreas = {
+  rececao: {
+    title: 'Receção',
+    areas: [
+      { id: 'mecanica', title: 'Mecânica', desc: 'Processos operacionais da área de mecânica', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>' },
+      { id: 'colisao', title: 'Colisão', desc: 'Processos operacionais da área de colisão', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/><circle cx="12" cy="14" r="2"/></svg>' }
+    ]
+  }
+};
+
+/* Processos dentro de cada sub-área */
+var subProcesses = {
+  mecanica: [
+    { id: 'teste_estrada', title: 'Teste de Estrada', desc: 'Procedimento e autorização para testes de estrada', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h2l2-4h6l2 4h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M14 7h2l1.5 3"/><path d="M3 11h18"/><path d="M12 3v4"/><polyline points="9,5 12,3 15,5"/></svg>' },
+    { id: 'peritagens', title: 'Peritagens', desc: 'Processo de peritagens e avaliação de danos', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>' },
+    { id: 'viaturas_prontas', title: 'Viaturas Prontas Colisão', desc: 'Verificação mecânica antes da entrega de viaturas de colisão', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16,8 20,8 23,11 23,16 16,16 16,8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' }
+  ],
+  colisao: [
+    { id: 'teste_estrada', title: 'Teste de Estrada', desc: 'Procedimento e autorização para testes de estrada', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h2l2-4h6l2 4h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M14 7h2l1.5 3"/><path d="M3 11h18"/><path d="M12 3v4"/><polyline points="9,5 12,3 15,5"/></svg>' },
+    { id: 'peritagens', title: 'Peritagens', desc: 'Processo de peritagens e avaliação de danos', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>' },
+    { id: 'leiloes', title: 'Leilões', desc: 'Encomenda antecipada de peças para viaturas de leilão', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="12" x2="15" y2="15"/><path d="M16.24 7.76l1.42-1.42"/></svg>' },
+    { id: 'viaturas_prontas', title: 'Viaturas Prontas Colisão', desc: 'Verificação mecânica antes da entrega de viaturas de colisão', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16,8 20,8 23,11 23,16 16,16 16,8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' }
+  ]
+};
+
+var currentSubArea = null; // track which sub-area we're in (rececao)
+var currentSubProcess = null; // track which sub-process area (mecanica/colisao)
+
+/* ═══ Sub-área (Receção → Mecânica / Colisão) ═══ */
+function showSubArea(id) {
+  var config = subAreas[id];
+  if (!config) return;
+  currentSubArea = id;
+  document.getElementById('processGrid').style.display = 'none';
+  document.getElementById('subAreaTitle').textContent = config.title;
+  var grid = document.getElementById('subAreaGrid');
+  grid.innerHTML = '';
+  config.areas.forEach(function(area) {
+    grid.innerHTML += '<div class="process-btn" onclick="showSubProcess(\'' + area.id + '\')">'
+      + '<div class="process-icon">' + area.icon + '</div>'
+      + '<div class="process-btn-content">'
+      + '<div class="process-btn-title">' + area.title + '</div>'
+      + '<div class="process-btn-desc">' + area.desc + '</div>'
+      + '</div></div>';
+  });
+  document.getElementById('subAreaSection').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideSubArea() {
+  document.getElementById('subAreaSection').style.display = 'none';
+  document.getElementById('processGrid').style.display = '';
+  currentSubArea = null;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══ Sub-processos (Mecânica → Teste Estrada, Peritagens) ═══ */
+function showSubProcess(areaId) {
+  var procs = subProcesses[areaId];
+  if (!procs) return;
+  currentSubProcess = areaId;
+  document.getElementById('subAreaSection').style.display = 'none';
+  document.getElementById('subProcessTitle').textContent =
+    areaId.charAt(0).toUpperCase() + areaId.slice(1) + ' — Processos';
+  var grid = document.getElementById('subProcessGrid');
+  grid.innerHTML = '';
+  procs.forEach(function(p) {
+    grid.innerHTML += '<div class="process-btn" onclick="showProcess(\'' + p.id + '\')">'
+      + '<div class="process-icon">' + p.icon + '</div>'
+      + '<div class="process-btn-content">'
+      + '<div class="process-btn-title">' + p.title + '</div>'
+      + '<div class="process-btn-desc">' + p.desc + '</div>'
+      + '</div></div>';
+  });
+  document.getElementById('subProcessSection').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideSubProcess() {
+  document.getElementById('subProcessSection').style.display = 'none';
+  if (currentSubArea) {
+    showSubArea(currentSubArea);
+  } else {
+    document.getElementById('processGrid').style.display = '';
+  }
+}
+
+/* ═══ Detalhe do processo (iframe) ═══ */
 function showProcess(id) {
   document.getElementById('processGrid').style.display = 'none';
+  document.getElementById('subAreaSection').style.display = 'none';
+  document.getElementById('subProcessSection').style.display = 'none';
   var detail = document.getElementById('detailSection');
   detail.classList.add('visible');
   document.getElementById('detailTitle').textContent = processNames[id] || id;
@@ -281,17 +394,21 @@ function showProcess(id) {
   if (processPages[id]) {
     contentDiv.innerHTML = '<iframe src="' + processPages[id] + '" style="width:100%;min-height:700px;border:none;border-radius:8px;" onload="this.style.height=this.contentWindow.document.body.scrollHeight+40+\'px\'"></iframe>';
   } else {
-    contentDiv.textContent = 'Conteúdo em preparação para: ' + (processNames[id] || id) + '. Esta secção será preenchida com os procedimentos detalhados deste processo.';
+    contentDiv.textContent = 'Conteúdo em preparação para: ' + (processNames[id] || id) + '.';
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  // Mark active button
-  document.querySelectorAll('.process-btn').forEach(function(btn) { btn.classList.remove('active'); });
 }
 
 function hideProcess() {
   document.getElementById('detailSection').classList.remove('visible');
-  document.getElementById('processGrid').style.display = '';
+  // Voltar para o nível correto
+  if (currentSubProcess) {
+    showSubProcess(currentSubProcess);
+  } else if (currentSubArea) {
+    showSubArea(currentSubArea);
+  } else {
+    document.getElementById('processGrid').style.display = '';
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>

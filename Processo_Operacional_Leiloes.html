@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Processo Operacional - Leilões</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:800px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#4a90c4; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#4a90c4; margin-bottom:18px; }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#4a90c4;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:8px 0 0 16px; }
+  .step-body ul li { margin-bottom:4px; }
+  .meta-box {
+    background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px;
+  }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title {
+    font-size:13px; font-weight:700; margin-bottom:8px;
+    padding-bottom:6px; border-bottom:2px solid;
+  }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .obj-title { color:#4a90c4; border-color:#4a90c4; }
+  .results-title { color:#4a90c4; border-color:#4a90c4; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Processo Operacional - Leilões</h1>
+      <p>Processo passo a passo</p>
+    </div>
+    <div class="header-icon">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Gavel -->
+        <rect x="16" y="14" width="26" height="9" rx="3" fill="white" transform="rotate(30 29 18)"/>
+        <line x1="29" y1="22" x2="36" y2="42" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <rect x="28" y="44" width="22" height="6" rx="2" fill="rgba(255,255,255,0.5)"/>
+        <!-- Price tag -->
+        <path d="M48 10 L60 10 L63 16 L60 22 L48 22 Z" stroke="white" stroke-width="1.5" fill="none"/>
+        <text x="54" y="19" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Inter,sans-serif">&#8364;</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Confirmar necessidades de peças</div>
+          <div class="step-body">
+            Antes da recolha da viatura, a Receção deve <strong>confirmar com a Coordenação</strong> a necessidade de encomenda das peças já aprovadas.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Avançar com encomenda (se possível)</div>
+          <div class="step-body">
+            Caso a informação disponível (fotografias, relatório de peritagem) seja suficiente para identificar as peças necessárias, <strong>avançar imediatamente com a encomenda</strong> ao Departamento de Peças.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Verificar disponibilidade (se impossível confirmar)</div>
+          <div class="step-body">
+            Caso não seja possível confirmar as peças apenas por fotografias, deve-se:
+            <ul>
+              <li>Verificar a <strong>disponibilidade das peças</strong> em questão junto do Departamento de Peças;</li>
+              <li>Avaliar se é viável <strong>atrasar a encomenda</strong> até à confirmação presencial junto da viatura.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Receção / Coordenação</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Receção + Coordenação</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Receção e Coordenação</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title obj-title">Objetivo</div>
+        <div class="right-section-body">
+          <p>Minimizar o tempo de imobilização da viatura, garantindo que as peças estejam disponíveis o mais cedo possível após a chegada do veículo à oficina.</p>
+        </div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body">
+          <p>1. Peças encomendadas antes da recolha sempre que possível;</p>
+          <p>2. Disponibilidade verificada previamente quando a encomenda antecipada não é possível;</p>
+          <p>3. Menor tempo de espera por peças após chegada da viatura.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Otimização dos Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>
