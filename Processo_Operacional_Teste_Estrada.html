@@ -511,10 +511,14 @@
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;margin-top:8px;">
-        <button class="print-btn" onclick="abrirOutlook()" id="btn-outlook">
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+        <a class="print-btn" id="btn-outlook" href="#" target="_blank" style="text-decoration:none;color:#fff;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Abrir no Outlook
+          Enviar Email
+        </a>
+        <button class="print-btn" onclick="copiarEmail()" style="background:#6b7280;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copiar Corpo do Email
         </button>
       </div>
 
@@ -561,20 +565,20 @@ function updatePreview() {
   document.querySelectorAll('.prev-or').forEach(function(el) { el.textContent = or_; });
 }
 document.addEventListener('DOMContentLoaded', function() {
-  ['email-nome','email-matricula','email-marca','email-or'].forEach(function(id) {
-    document.getElementById(id).addEventListener('input', updatePreview);
+  ['email-cliente','email-nome','email-matricula','email-marca','email-or'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', function() {
+      updatePreview();
+      atualizarLinkOutlook();
+    });
   });
 });
 
-/* Abrir Outlook Web */
-function abrirOutlook() {
-  var email = document.getElementById('email-cliente').value;
+/* Construir corpo do email */
+function buildEmail() {
   var nome = document.getElementById('email-nome').value || '(Cliente)';
   var matricula = document.getElementById('email-matricula').value || '(Matrícula)';
   var marca = document.getElementById('email-marca').value || '(Marca/Modelo)';
   var or_ = document.getElementById('email-or').value || '(N.º OR)';
-
-  if (!email) { alert('Por favor, preencha o email do cliente.'); return; }
 
   var assunto = 'Pedido de Autorização para Teste de Estrada — OR ' + or_;
   var corpo = 'Exmo(a). Sr(a). ' + nome + ',\n\n'
@@ -587,11 +591,29 @@ function abrirOutlook() {
     + 'Com os melhores cumprimentos,\n'
     + 'DomusCar\n'
     + 'Walkingarage, Lda.';
+  return { assunto: assunto, corpo: corpo };
+}
 
-  var mailto = 'mailto:' + encodeURIComponent(email)
-    + '?subject=' + encodeURIComponent(assunto)
-    + '&body=' + encodeURIComponent(corpo);
-  window.location.href = mailto;
+/* Atualizar link do botão Enviar Email */
+function atualizarLinkOutlook() {
+  var email = document.getElementById('email-cliente').value;
+  var btn = document.getElementById('btn-outlook');
+  if (!email) { btn.href = '#'; return; }
+  var e = buildEmail();
+  var url = 'https://outlook.cloud.microsoft/mail/deeplink/compose'
+    + '?to=' + encodeURIComponent(email)
+    + '&subject=' + encodeURIComponent(e.assunto)
+    + '&body=' + encodeURIComponent(e.corpo);
+  btn.href = url;
+}
+
+/* Copiar corpo do email para clipboard */
+function copiarEmail() {
+  var e = buildEmail();
+  var texto = 'Assunto: ' + e.assunto + '\n\n' + e.corpo;
+  navigator.clipboard.writeText(texto).then(function() {
+    alert('Email copiado para a área de transferência. Cole no Outlook.');
+  });
 }
 </script>
 </body>
