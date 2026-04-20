@@ -431,14 +431,107 @@ body {
       ],
       mecanica_lisboa: [
         [83283.10, 26924.70, 61791.32, 30908.06, 30767.78, 21607.26, 25.94],
-        [82710.86, 26967.17, 64051.11, 33337.17, 25618.28, 23755.41, 28.72],
+        [82710.86, 26967.77, 64051.11, 33337.17, 25618.28, 23755.41, 28.72],
         [79169.76, 29763.34, 58296.11, 30979.85, 27683.34, 20506.57, 25.90],
         null, null, null, null, null, null, null, null, null
       ],
       domuscar: [
-        [274820.98, 101976.67, 152724.61, 117492.55, 115124.57, 42203.86, 15.36],
-        [246361.06, 101769.36, 144567.61, 124938.30, 102113.27, 19309.49, 7.84],
-        [296884.90, 119689.14, 180329.07, 119838.44, 108746.56, 68299.90, 23.01],
+        [270430.98, 101976.67, 152724.61, 117492.55, 115124.57, 37813.86, 13.98],
+        [237277.05, 101769.96, 144567.61, 124938.30, 102113.27, 10225.48, 4.31],
+        [293835.82, 119689.14, 180329.07, 119838.44, 108746.56, 65250.82, 22.21],
+        null, null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  // ══════ DADOS DETALHADOS MARGEM MENSAL 2026 ══════
+  // Estrutura completa das rubricas de vendas e custos por unidade e mês.
+  // Índices 0-11: Vendas | 12-14: Custos Fixos | 15-21: Custos Variáveis
+  var MARGEM_DETAIL_ROWS = [
+    { label: 'Rappel LeasePlan — Peças',        group: 'vendas', idx: 0,  signHint: 'neg' },
+    { label: 'Rappel LeasePlan — Horas',        group: 'vendas', idx: 1,  signHint: 'neg' },
+    { label: 'Vendas de Mão de Obra',           group: 'vendas', idx: 2 },
+    { label: 'Vendas de Peças',                 group: 'vendas', idx: 3 },
+    { label: 'Vendas de Serviços',              group: 'vendas', idx: 4 },
+    { label: 'Serviço de Mobilidade',           group: 'vendas', idx: 5 },
+    { label: 'Fatura Interna — Peças e Serviços', group: 'vendas', idx: 6 },
+    { label: 'Fatura Interna — Horas',          group: 'vendas', idx: 7 },
+    { label: 'Aguarda NE — Peças e Serviços',   group: 'vendas', idx: 8 },
+    { label: 'Aguarda NE — Horas',              group: 'vendas', idx: 9 },
+    { label: 'Outras Vendas — Peças e Serviços',group: 'vendas', idx: 10 },
+    { label: 'Outras Vendas — Horas',           group: 'vendas', idx: 11 },
+    { label: 'Custos Pessoal',                  group: 'cf',     idx: 12 },
+    { label: 'Renda e Infraestruturas',         group: 'cf',     idx: 13 },
+    { label: 'Custos Fixos Variados',           group: 'cf',     idx: 14 },
+    { label: 'Custos imputados diretamente ao veículo', group: 'cv', idx: 15 },
+    { label: 'Rappel de Fornecedores',          group: 'cv',     idx: 16, signHint: 'neg' },
+    { label: 'Custos não imputados ao veículo', group: 'cv',     idx: 17 },
+    { label: 'CFI (Fatura Custos Internos)',    group: 'cv',     idx: 18 },
+    { label: 'Prémios de Produtividade',        group: 'cv',     idx: 19 },
+    { label: 'Horas Extra de Pessoal',          group: 'cv',     idx: 20 },
+    { label: 'Outros Custos Variáveis',         group: 'cv',     idx: 21 }
+  ];
+
+  var MARGEM_DETAIL = {
+    2026: {
+      mecanica_cacem: [
+        // Janeiro
+        [-1983.08, -712.83, 31294.81, 61885.40, 9883.93, 780.49, 0, 0, 0, 0, 308.86, 255.30,
+         25521.53, 1741.14, 5955.21,
+         40153.71, 0, 2453.14, 607.37, 0, 660.00, 620.61],
+        // Fevereiro
+        [-593.89, -220.79, 23995.28, 49771.91, 3725.37, 48.78, 427.55, 342.16, 0, 0, 202.56, 886.45,
+         27071.74, 1906.06, 5966.66,
+         35847.18, -627.87, 1941.68, 109.20, 1657.65, 470.00, 451.66],
+        // Março
+        [-1471.14, -868.17, 31605.70, 69111.02, 4389.80, 650.41, 0, 0, 0, 0, 320.63, 884.17,
+         27213.13, 1891.73, 5827.27,
+         39390.24, -1030.25, 2354.09, 0, 0, 560.00, 756.20],
+        null, null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        // Janeiro
+        [-4296.23, -4344.45, 43757.16, 29047.89, 1293.36, 0, 73.09, 873.04, 0, 0, 4732.41, 14298.73,
+         36355.59, 9236.54, 7774.48,
+         34862.78, 0, 2534.61, 0, 0, 2410.00, 54.57],
+        // Fevereiro
+        [-5227.23, -4790.15, 50806.91, 30744.59, 2487.13, 75.00, 232.58, 1505.28, -16.94, -5075.09, 1217.31, 4021.42,
+         38595.83, 9617.44, 8443.40,
+         31466.81, -241.53, 2149.83, 1628.66, 0, 1570.00, 71.72],
+        // Março
+        [-8690.89, -6621.84, 58320.10, 52921.94, 4578.68, 73.17, 0, 0, 1638.66, 1128.82, 1740.43, 4954.57,
+         37325.75, 8282.52, 8318.19,
+         30893.17, -286.20, 6980.45, 0, 0, 1270.00, 175.52],
+        null, null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        // Janeiro
+        [-8192.33, -3014.68, 26924.70, 61791.32, 3438.89, 0, 0, 0, 0, 0, 1381.88, 953.32,
+         21482.44, 4366.43, 5059.19,
+         27574.75, 0, 2565.42, 338.76, 0, 0, 288.85],
+        // Fevereiro
+        [-9120.20, -3355.92, 26967.77, 64051.11, 2958.10, 0, 0, 0, 0, 0, 768.40, 441.60,
+         23581.75, 4468.13, 5287.29,
+         23087.85, -753.57, 1316.19, 0, 1885.63, 0, 82.18],
+        // Março
+        [-8886.47, -4313.41, 29763.34, 58296.11, 2430.19, 360.00, 0, 0, 0, 0, 682.40, 837.60,
+         21532.65, 4290.36, 5156.84,
+         24697.35, -1224.16, 1558.23, 0, 2348.15, 0, 303.77],
+        null, null, null, null, null, null, null, null, null
+      ],
+      domuscar: [
+        // Janeiro (soma das 3 unidades)
+        [-14471.64, -8071.96, 101976.67, 152724.61, 14616.18, 780.49, 73.09, 873.04, 0, 0, 6423.15, 15507.35,
+         83359.56, 15344.11, 18788.88,
+         102591.24, 0, 7553.17, 946.13, 0, 3070.00, 964.03],
+        // Fevereiro (soma das 3 unidades)
+        [-14941.32, -8366.86, 101769.96, 144567.61, 9170.60, 123.78, 660.13, 1847.44, -16.94, -5075.09, 2188.27, 5349.47,
+         89249.32, 15991.63, 19697.35,
+         90401.84, -1622.97, 5407.70, 1737.86, 3543.28, 2040.00, 605.56],
+        // Março (soma das 3 unidades)
+        [-19048.50, -11803.42, 119689.14, 180329.07, 11398.67, 1083.58, 0, 0, 1638.66, 1128.82, 2743.46, 6676.34,
+         86071.53, 14464.61, 19302.30,
+         94980.76, -2540.61, 10892.77, 0, 2348.15, 1830.00, 1235.49],
         null, null, null, null, null, null, null, null, null
       ]
     }
@@ -456,27 +549,27 @@ body {
     },
     2026: {
       mecanica_cacem: [
-        [204, 304.87, 154.66, 498.59, 3.51, 610.30, 716.63, 44.03],
-        [187, 268.45, 134.89, 420.24, 2.99, 556.75, 559.37, 45.09],
-        [227, 304.45, 143.13, 460.89, 2.70, 589.90, 611.89, 53.10],
+        [204, 304.87, 154.66, 498.59, 3.51, 610.30, 716.63, 43.03],
+        [187, 268.45, 134.89, 420.24, 2.99, 556.75, 559.91, 44.70],
+        [227, 304.45, 143.13, 460.89, 3.34, 589.90, 757.06, 41.77],
         null, null, null, null, null, null, null, null, null
       ],
       colisao: [
-        [132, 256.47, 446.43, 647.23, 6.85, 1202.75, 904.47, 65.15],
-        [95, 325.90, 592.99, 799.80, 11.43, 1388.05, 1085.52, 47.22],
-        [123, 443.58, 514.43, 894.66, 9.84, 1513.00, 1210.26, 53.21],
+        [132, 256.47, 446.43, 647.23, 6.85, 1202.75, 904.47, 60.35],
+        [95, 325.90, 592.99, 799.80, 11.43, 1388.05, 1085.52, 42.81],
+        [123, 443.58, 514.43, 894.66, 9.83, 1513.00, 1209.16, 47.79],
         null, null, null, null, null, null, null, null, null
       ],
       mecanica_lisboa: [
-        [217, 291.12, 128.47, 383.79, 2.59, 344.68, 561.58, 49.64],
-        [226, 283.41, 121.28, 365.98, 2.48, 361.42, 561.24, 48.84],
-        [231, 252.36, 132.47, 342.73, 3.33, 322.15, 768.56, 39.82],
+        [217, 291.12, 128.47, 383.79, 2.59, 344.68, 561.58, 44.27],
+        [226, 283.41, 121.28, 365.98, 2.48, 361.42, 561.24, 42.86],
+        [231, 252.36, 132.47, 342.73, 2.65, 322.15, 611.89, 42.96],
         null, null, null, null, null, null, null, null, null
       ],
       domuscar: [
         [553, 276.17, 184.41, 496.96, 3.95, 2157.73, 2182.68, 54.23],
         [508, 284.58, 200.33, 484.96, 4.34, 2306.22, 2206.13, 51.62],
-        [581, 310.38, 206.01, 510.99, 4.46, 2425.05, 2590.71, 49.61],
+        [581, 310.38, 206.01, 510.99, 4.44, 2425.05, 2578.11, 49.85],
         null, null, null, null, null, null, null, null, null
       ]
     }
@@ -1211,52 +1304,265 @@ body {
       html += '<div class="info-banner">ℹ️ Os dados para esta categoria/ano ainda não foram carregados.</div>';
     }
 
-    // Chart
-    html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+    // Quando existir detalhe completo de margem (MARGEM_DETAIL), salta-se a tabela-resumo
+    // (que só traz MO+Peças e gerava confusão porque essas 2 rubricas não somam o Total Vendas s/IVA).
+    // O detalhe mostra TODAS as 22 rubricas com subtotais fechados.
+    var hasMargemDetail = (cat.id === 'margem' && MARGEM_DETAIL[state.year] && MARGEM_DETAIL[state.year][state.unit]);
 
-    // Table
-    html += '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Mês</th>';
-    cat.columns.forEach(function(col) {
-      html += '<th>' + col + '</th>';
-    });
-    html += '</tr></thead><tbody>';
+    // Quando usamos o detalhe da margem, em vez do gráfico (que duplicava informação do detalhe)
+    // mostramos 2 cards de resumo: Margem do último mês + Acumulado do ano da unidade.
+    if (hasMargemDetail) {
+      html += renderMargemSummary(MARGEM_DETAIL[state.year][state.unit]);
+    } else {
+      // Chart
+      html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+    }
 
     var tableData = hasRealData ? realData : generatePlaceholder(cat.id);
-    MONTHS.forEach(function(m, i) {
-      html += '<tr><td style="font-weight:600;color:var(--navy);">' + m + '</td>';
-      if (hasRealData && tableData[i] !== null) {
-        if (cat.id === 'kpis') {
-          html += '<td>' + formatNum(tableData[i][0]) + '</td>';
-          html += '<td>' + formatNum(tableData[i][1]) + '</td>';
-          html += '<td>' + formatNum(tableData[i][2]) + '</td>';
-          html += '<td style="font-weight:700;color:' + efColor(tableData[i][3]) + ';">' + tableData[i][3].toFixed(1) + '%</td>';
-          html += '<td style="font-weight:700;color:' + utColor(tableData[i][4]) + ';">' + tableData[i][4].toFixed(1) + '%</td>';
-        } else if (cat.id === 'margem') {
-          html += '<td>' + formatEur(tableData[i][0]) + '</td>';
-          html += '<td>' + formatEur(tableData[i][1]) + '</td>';
-          html += '<td>' + formatEur(tableData[i][2]) + '</td>';
-          html += '<td>' + formatEur(tableData[i][3]) + '</td>';
-          html += '<td>' + formatEur(tableData[i][4]) + '</td>';
-          var mVal = tableData[i][5];
-          html += '<td style="font-weight:700;color:' + (mVal >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(mVal) + '</td>';
-          html += '<td style="font-weight:700;color:' + (tableData[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + tableData[i][6].toFixed(2) + '%</td>';
-        } else {
-          tableData[i].forEach(function(v) { html += '<td>' + (v !== null ? v : '—') + '</td>'; });
-        }
-      } else {
-        cat.columns.forEach(function() {
-          html += '<td class="placeholder-val">—</td>';
-        });
-      }
-      html += '</tr>';
-    });
 
-    html += '</tbody></table></div>';
+    if (!hasMargemDetail) {
+      // Table
+      html += '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Mês</th>';
+      cat.columns.forEach(function(col) {
+        html += '<th>' + col + '</th>';
+      });
+      html += '</tr></thead><tbody>';
+
+      MONTHS.forEach(function(m, i) {
+        html += '<tr><td style="font-weight:600;color:var(--navy);">' + m + '</td>';
+        if (hasRealData && tableData[i] !== null) {
+          if (cat.id === 'kpis') {
+            html += '<td>' + formatNum(tableData[i][0]) + '</td>';
+            html += '<td>' + formatNum(tableData[i][1]) + '</td>';
+            html += '<td>' + formatNum(tableData[i][2]) + '</td>';
+            html += '<td style="font-weight:700;color:' + efColor(tableData[i][3]) + ';">' + tableData[i][3].toFixed(1) + '%</td>';
+            html += '<td style="font-weight:700;color:' + utColor(tableData[i][4]) + ';">' + tableData[i][4].toFixed(1) + '%</td>';
+          } else if (cat.id === 'margem') {
+            html += '<td>' + formatEur(tableData[i][0]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][1]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][2]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][3]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][4]) + '</td>';
+            var mVal = tableData[i][5];
+            html += '<td style="font-weight:700;color:' + (mVal >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(mVal) + '</td>';
+            html += '<td style="font-weight:700;color:' + (tableData[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + tableData[i][6].toFixed(2) + '%</td>';
+          } else {
+            tableData[i].forEach(function(v) { html += '<td>' + (v !== null ? v : '—') + '</td>'; });
+          }
+        } else {
+          cat.columns.forEach(function() {
+            html += '<td class="placeholder-val">—</td>';
+          });
+        }
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+    }
+
+    // ══════ Detalhe Mensal (apenas Margem + quando existir MARGEM_DETAIL) ══════
+    if (hasMargemDetail) {
+      html += renderMargemDetail(MARGEM_DETAIL[state.year][state.unit]);
+    }
 
     document.getElementById('content').innerHTML = html;
 
-    // Render chart
-    setTimeout(function() { renderChart(cat, tableData, hasRealData); }, 50);
+    // Render chart (só quando existir o canvas — no modo detalhe foi substituído pelos cards resumo)
+    if (!hasMargemDetail) {
+      setTimeout(function() { renderChart(cat, tableData, hasRealData); }, 50);
+    }
+  }
+
+  // ══════ Renderizador do Resumo da Margem (cards) ══════
+  // 2 cards lado-a-lado: Margem do último mês com dados + Acumulado anual da unidade.
+  function renderMargemSummary(monthly) {
+    var idxs = [];
+    for (var i = 0; i < 12; i++) { if (monthly[i]) idxs.push(i); }
+    if (idxs.length === 0) return '';
+
+    function sumGroupMonth(group, m) {
+      return MARGEM_DETAIL_ROWS
+        .filter(function(r) { return r.group === group; })
+        .reduce(function(a, r) { return a + monthly[m][r.idx]; }, 0);
+    }
+
+    // Último mês com dados
+    var lastIdx = idxs[idxs.length - 1];
+    var lVendas = sumGroupMonth('vendas', lastIdx);
+    var lCF     = sumGroupMonth('cf',     lastIdx);
+    var lCV     = sumGroupMonth('cv',     lastIdx);
+    var lCustos = lCF + lCV;
+    var lMargem = lVendas - lCustos;
+    var lMargemPct = lVendas !== 0 ? (lMargem / lVendas * 100) : 0;
+
+    // Acumulado do ano
+    var aVendas = 0, aCF = 0, aCV = 0;
+    idxs.forEach(function(m) {
+      aVendas += sumGroupMonth('vendas', m);
+      aCF     += sumGroupMonth('cf',     m);
+      aCV     += sumGroupMonth('cv',     m);
+    });
+    var aCustos = aCF + aCV;
+    var aMargem = aVendas - aCustos;
+    var aMargemPct = aVendas !== 0 ? (aMargem / aVendas * 100) : 0;
+
+    var mColor = lMargem >= 0 ? 'var(--green)' : 'var(--red)';
+    var aColor = aMargem >= 0 ? 'var(--green)' : 'var(--red)';
+    var nMeses = idxs.length;
+    var labelMeses = nMeses === 1 ? '1 mês' : nMeses + ' meses';
+
+    function metricCell(label, value, color) {
+      return '<div>' +
+        '<div style="font-size:.68rem;color:var(--text-body);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">' + label + '</div>' +
+        '<div style="font-size:1.05rem;font-weight:800;color:' + (color || 'var(--navy)') + ';">' + value + '</div>' +
+      '</div>';
+    }
+
+    var h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin:18px 0 4px;">';
+
+    // Card 1 — Último mês
+    h += '<div style="background:linear-gradient(135deg,#f0f7fc 0%,#fff 100%);border:1px solid #dce8f2;border-left:4px solid var(--navy);border-radius:12px;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04);">';
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
+    h += '<span style="font-size:1.1rem;">📅</span>';
+    h += '<span style="font-size:.75rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--navy);font-weight:800;">Margem do Mês — ' + MONTHS[lastIdx] + '</span>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;">';
+    h += metricCell('Vendas s/ IVA', formatEur(lVendas));
+    h += metricCell('Custos Totais', formatEur(lCustos), 'var(--text-primary)');
+    h += metricCell('Margem €', formatEur(lMargem), mColor);
+    h += metricCell('Margem %', lMargemPct.toFixed(2) + ' %', mColor);
+    h += '</div></div>';
+
+    // Card 2 — Acumulado anual
+    h += '<div style="background:linear-gradient(135deg,#fbf6ea 0%,#fff 100%);border:1px solid #e8d79e;border-left:4px solid #c9a227;border-radius:12px;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04);">';
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
+    h += '<span style="font-size:1.1rem;">📊</span>';
+    h += '<span style="font-size:.75rem;text-transform:uppercase;letter-spacing:1.2px;color:#8a6d0f;font-weight:800;">Acumulado ' + state.year + ' <span style="opacity:.7;font-weight:600;">(YTD — ' + labelMeses + ')</span></span>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;">';
+    h += metricCell('Vendas s/ IVA', formatEur(aVendas));
+    h += metricCell('Custos Totais', formatEur(aCustos), 'var(--text-primary)');
+    h += metricCell('Margem €', formatEur(aMargem), aColor);
+    h += metricCell('Margem %', aMargemPct.toFixed(2) + ' %', aColor);
+    h += '</div></div>';
+
+    h += '</div>';
+    return h;
+  }
+
+  // ══════ Renderizador do Detalhe Mensal da Margem ══════
+  // Mostra todas as rubricas de vendas e custos que compõem a margem, com coluna por mês
+  // que tenha dados + coluna Acumulado. Agrupa por: Vendas → Custos Fixos → Custos Variáveis → Margem.
+  function renderMargemDetail(monthly) {
+    // Meses com dados
+    var idxs = [];
+    for (var i = 0; i < 12; i++) { if (monthly[i]) idxs.push(i); }
+    if (idxs.length === 0) return '';
+
+    function sumIdx(rowIdx) {
+      var s = 0;
+      idxs.forEach(function(m) { s += monthly[m][rowIdx]; });
+      return s;
+    }
+    function sumGroup(group) {
+      var rows = MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === group; });
+      return idxs.map(function(m) {
+        return rows.reduce(function(a, r) { return a + monthly[m][r.idx]; }, 0);
+      });
+    }
+
+    // Totais por grupo e por mês (ordem: igual a idxs)
+    var totVendas = sumGroup('vendas');
+    var totCF     = sumGroup('cf');
+    var totCV     = sumGroup('cv');
+    var margem    = idxs.map(function(_, k) { return totVendas[k] - totCF[k] - totCV[k]; });
+    var margemPct = idxs.map(function(_, k) { return totVendas[k] !== 0 ? (margem[k] / totVendas[k] * 100) : 0; });
+
+    // Acumulados
+    var accVendas = totVendas.reduce(function(a, b) { return a + b; }, 0);
+    var accCF     = totCF.reduce(function(a, b) { return a + b; }, 0);
+    var accCV     = totCV.reduce(function(a, b) { return a + b; }, 0);
+    var accMargem = margem.reduce(function(a, b) { return a + b; }, 0);
+    var accMargemPct = accVendas !== 0 ? (accMargem / accVendas * 100) : 0;
+
+    var h = '<h3 style="font-size:1.05rem;font-weight:800;color:var(--navy);margin:36px 0 4px;">📑 Detalhe Mensal — Vendas e Custos</h3>';
+    h += '<p style="font-size:.82rem;color:var(--text-body);margin-bottom:14px;">Desagregação completa de todas as rubricas que compõem a margem, conforme os relatórios mensais.</p>';
+    h += '<div class="data-table-wrap"><table class="data-table"><thead><tr>';
+    h += '<th style="text-align:left;">Rubrica</th>';
+    idxs.forEach(function(m) { h += '<th>' + MONTHS[m] + '</th>'; });
+    if (idxs.length > 1) h += '<th style="background:var(--navy-light);color:#fff;">Acumulado</th>';
+    h += '</tr></thead><tbody>';
+
+    function groupHeaderRow(label, totals, accVal, cls) {
+      var r = '<tr style="background:var(--gray-100);font-weight:700;">';
+      r += '<td style="text-align:left;color:var(--navy);">' + label + '</td>';
+      totals.forEach(function(v) {
+        r += '<td style="font-weight:700;' + (cls || '') + '">' + formatEur(v) + '</td>';
+      });
+      if (idxs.length > 1) r += '<td style="font-weight:700;background:var(--gray-100);' + (cls || '') + '">' + formatEur(accVal) + '</td>';
+      r += '</tr>';
+      return r;
+    }
+    function detailRow(rowDef) {
+      var r = '<tr><td style="text-align:left;padding-left:22px;color:var(--text-body);">' + rowDef.label + '</td>';
+      var acc = 0;
+      idxs.forEach(function(m) {
+        var v = monthly[m][rowDef.idx];
+        acc += v;
+        var style = '';
+        if (v < 0) style = 'color:var(--red);';
+        else if (v === 0) style = 'color:var(--gray-600);';
+        r += '<td style="' + style + '">' + (v === 0 ? '—' : formatEur(v)) + '</td>';
+      });
+      if (idxs.length > 1) {
+        var styleAcc = acc < 0 ? 'color:var(--red);' : (acc === 0 ? 'color:var(--gray-600);' : '');
+        r += '<td style="background:var(--gray-100);' + styleAcc + '">' + (acc === 0 ? '—' : formatEur(acc)) + '</td>';
+      }
+      r += '</tr>';
+      return r;
+    }
+
+    // Vendas
+    h += groupHeaderRow('TOTAL VENDAS S/ IVA', totVendas, accVendas, '');
+    MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === 'vendas'; }).forEach(function(r) {
+      h += detailRow(r);
+    });
+
+    // Custos Fixos
+    h += groupHeaderRow('TOTAL CUSTOS FIXOS', totCF, accCF, '');
+    MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === 'cf'; }).forEach(function(r) {
+      h += detailRow(r);
+    });
+
+    // Custos Variáveis
+    h += groupHeaderRow('TOTAL CUSTOS VARIÁVEIS', totCV, accCV, '');
+    MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === 'cv'; }).forEach(function(r) {
+      h += detailRow(r);
+    });
+
+    // Margem
+    h += '<tr style="background:rgba(0,59,115,.08);font-weight:800;">';
+    h += '<td style="text-align:left;color:var(--navy);">MARGEM €</td>';
+    margem.forEach(function(v) {
+      h += '<td style="font-weight:800;color:' + (v >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(v) + '</td>';
+    });
+    if (idxs.length > 1) {
+      h += '<td style="background:rgba(0,59,115,.08);font-weight:800;color:' + (accMargem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(accMargem) + '</td>';
+    }
+    h += '</tr>';
+
+    h += '<tr style="background:rgba(0,59,115,.08);font-weight:800;">';
+    h += '<td style="text-align:left;color:var(--navy);">MARGEM %</td>';
+    margemPct.forEach(function(v) {
+      h += '<td style="font-weight:800;color:' + (v >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + v.toFixed(2) + '%</td>';
+    });
+    if (idxs.length > 1) {
+      h += '<td style="background:rgba(0,59,115,.08);font-weight:800;color:' + (accMargemPct >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + accMargemPct.toFixed(2) + '%</td>';
+    }
+    h += '</tr>';
+
+    h += '</tbody></table></div>';
+    return h;
   }
 
   function formatNum(v) {
