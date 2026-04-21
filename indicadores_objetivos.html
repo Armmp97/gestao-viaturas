@@ -1521,24 +1521,40 @@ body {
       r += '</tr>';
       return r;
     }
+    // Soma várias rubricas (índices) numa única linha — usado p/ vendas consolidadas (Peças, MO)
+    function detailCombinedRow(label, indicesArr) {
+      var r = '<tr><td style="text-align:left;padding-left:22px;color:var(--text-body);">' + label + '</td>';
+      var acc = 0;
+      idxs.forEach(function(m) {
+        var v = indicesArr.reduce(function(a, i) { return a + monthly[m][i]; }, 0);
+        acc += v;
+        var style = '';
+        if (v < 0) style = 'color:var(--red);';
+        else if (v === 0) style = 'color:var(--gray-600);';
+        r += '<td style="' + style + '">' + (v === 0 ? '—' : formatEur(v)) + '</td>';
+      });
+      if (idxs.length > 1) {
+        var styleAcc = acc < 0 ? 'color:var(--red);' : (acc === 0 ? 'color:var(--gray-600);' : '');
+        r += '<td style="background:var(--gray-100);' + styleAcc + '">' + (acc === 0 ? '—' : formatEur(acc)) + '</td>';
+      }
+      r += '</tr>';
+      return r;
+    }
 
-    // Vendas
+    // Vendas — vista consolidada: 3 linhas (Peças totais, MO totais, Mobilidade)
     h += groupHeaderRow('TOTAL VENDAS S/ IVA', totVendas, accVendas, '');
-    MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === 'vendas'; }).forEach(function(r) {
-      h += detailRow(r);
-    });
+    // Peças = idx 0 (Rappel LP Peças), 3 (Vendas Peças), 4 (Vendas Serviços), 6 (Fat. Int. P/S), 8 (Aguarda NE P/S), 10 (Outras P/S)
+    h += detailCombinedRow('Vendas Peças Totais — S/ Rappel', [0, 3, 4, 6, 8, 10]);
+    // Mão de Obra = idx 1 (Rappel LP Horas), 2 (Vendas MO), 7 (Fat. Int. Horas), 9 (Aguarda NE Horas), 11 (Outras Horas)
+    h += detailCombinedRow('Vendas Mão de Obra Totais — S/ Rappel', [1, 2, 7, 9, 11]);
+    // Serviço de Mobilidade = idx 5 (mantém-se isolado)
+    h += detailRow({ label: 'Serviço de Mobilidade', idx: 5 });
 
-    // Custos Fixos
+    // Custos Fixos — só o total (sem breakdown)
     h += groupHeaderRow('TOTAL CUSTOS FIXOS', totCF, accCF, '');
-    MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === 'cf'; }).forEach(function(r) {
-      h += detailRow(r);
-    });
 
-    // Custos Variáveis
+    // Custos Variáveis — só o total (sem breakdown)
     h += groupHeaderRow('TOTAL CUSTOS VARIÁVEIS', totCV, accCV, '');
-    MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === 'cv'; }).forEach(function(r) {
-      h += detailRow(r);
-    });
 
     // Margem
     h += '<tr style="background:rgba(0,59,115,.08);font-weight:800;">';
