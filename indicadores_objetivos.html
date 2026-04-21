@@ -624,29 +624,32 @@ body {
   var TICKET_MENSAL_COLS = ['Nº OSV', 'Ticket Peças (€)', 'Ticket MO (€)', 'Ticket Total (€)', 'Horas/OSV', 'H. Disponíveis', 'H. Vendidas', '€/H. Vendida'];
 
   // ══════ DADOS TICKET MÉDIO POR TIPO DE CLIENTE ══════
-  // Fonte: Officegest export (séries 261/262/263) × Margem Mensal (Total Vendas S/IVA)
-  // Classificação por NIF: 1º dígito 5/6/7/8/9 = Empresa | 1/2/3/4 ou 999999990 = Particular
-  // Exceção: nome contém "Lease Plan" ou "Fleet Cover" → LP+FC
-  // Particular ajustado = Particular OG + Diff(Vendas S/IVA − OG) quando Diff > 0
-  // Cada mês: { lp:{e,n,t}, em:{e,n,t}, pa:{e,n,t}, og, margem, diff }  (t = ticket = e/n)
+  // Fonte: Officegest (séries 261/262/263) reconciliado com Margem Mensal detalhada
+  // Classificação:
+  //   LP+FC: nome contém "Lease Plan" ou "Fleet Cover" (NIFs LP) — com rappel contratual 25% já deduzido em Cacém/Lisboa
+  //   Empresa: NIF 1º dígito 5-9, + rubricas "Fat Interna" e "Aguarda NE" (horas+peças+serviços)
+  //   Particular: NIF 1-4 ou 999999990, + rubrica "Outras Vendas" (Por Fora, horas+peças+serviços)
+  //     Particular nº docs = docs OG + OS "Por Fora" (Cacém 3/2/7, Lisboa 8/4/6, Colisão 8/12/18)
+  //   Resíduos (diferença entre soma das 3 categorias e Margem total) são divididos 50/50 Empresa/Particular
+  // Cada mês: { lp:{e,n,t}, em:{e,n,t}, pa:{e,n,t} }  (t = ticket = e/n)
   var TICKET_CLIENT_DATA = {
     2026: {
       mecanica_cacem: [
-        { lp:{e:9638.52,n:14,t:688.47}, em:{e:51917.71,n:118,t:439.98}, pa:{e:42647.44,n:81,t:526.51}, og:104203.67, margem:101712.88, diff:-2490.79 },
-        { lp:{e:3122.42,n:7,t:446.06}, em:{e:47442.86,n:108,t:439.29}, pa:{e:28020.11,n:87,t:322.07}, og:77335.12, margem:78585.39, diff:1250.27 },
-        { lp:{e:9264.60,n:18,t:514.70}, em:{e:60064.63,n:123,t:488.33}, pa:{e:35293.19,n:79,t:446.75}, og:104140.16, margem:104622.42, diff:482.26 },
+        { lp:{e:7228.89,n:14,t:516.35}, em:{e:51595.05,n:118,t:437.25}, pa:{e:42888.94,n:84,t:510.58} },
+        { lp:{e:2341.82,n:7,t:334.55}, em:{e:48298.64,n:108,t:447.21}, pa:{e:27944.92,n:89,t:313.99} },
+        { lp:{e:6948.45,n:18,t:386.02}, em:{e:60861.44,n:123,t:494.81}, pa:{e:36812.54,n:86,t:428.05} },
         null, null, null, null, null, null, null, null, null
       ],
       mecanica_lisboa: [
-        { lp:{e:44163.95,n:109,t:405.17}, em:{e:12533.21,n:37,t:338.74}, pa:{e:34096.24,n:84,t:405.91}, og:90793.40, margem:83283.10, diff:-7510.30 },
-        { lp:{e:49410.47,n:106,t:466.14}, em:{e:15184.65,n:49,t:309.89}, pa:{e:29381.94,n:76,t:386.60}, og:93977.06, margem:82710.86, diff:-11266.20 },
-        { lp:{e:52276.82,n:121,t:432.04}, em:{e:17065.30,n:38,t:449.09}, pa:{e:22090.72,n:60,t:368.18}, og:91432.84, margem:79169.76, diff:-12263.08 },
+        { lp:{e:33122.96,n:109,t:303.88}, em:{e:13130.96,n:37,t:354.89}, pa:{e:37029.19,n:92,t:402.49} },
+        { lp:{e:37057.85,n:106,t:349.60}, em:{e:15122.86,n:49,t:308.63}, pa:{e:30530.15,n:80,t:381.63} },
+        { lp:{e:39207.62,n:121,t:324.03}, em:{e:16708.36,n:38,t:439.69}, pa:{e:23253.78,n:66,t:352.33} },
         null, null, null, null, null, null, null, null, null
       ],
       colisao: [
-        { lp:{e:30859.59,n:40,t:771.49}, em:{e:37173.68,n:76,t:489.13}, pa:{e:17401.73,n:7,t:2485.96}, og:72047.63, margem:85435.00, diff:13387.37 },
-        { lp:{e:25758.98,n:33,t:780.58}, em:{e:45357.71,n:89,t:509.64}, pa:{e:4864.12,n:8,t:608.01}, og:74302.54, margem:75980.81, diff:1678.27 },
-        { lp:{e:39375.57,n:42,t:937.51}, em:{e:60365.13,n:87,t:693.85}, pa:{e:10302.94,n:4,t:2575.74}, og:100897.98, margem:110043.64, diff:9145.66 },
+        { lp:{e:30859.59,n:40,t:771.49}, em:{e:34824.86,n:76,t:458.22}, pa:{e:19750.55,n:15,t:1316.70} },
+        { lp:{e:25758.98,n:33,t:780.58}, em:{e:41900.40,n:89,t:470.79}, pa:{e:8321.44,n:20,t:416.07} },
+        { lp:{e:39375.57,n:42,t:937.51}, em:{e:62974.20,n:87,t:723.84}, pa:{e:7693.87,n:22,t:349.72} },
         null, null, null, null, null, null, null, null, null
       ]
     }
@@ -656,14 +659,13 @@ body {
     var agg = [];
     for (var m=0; m<12; m++) {
       var anyNull = false;
-      var acc = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0, diff:0 };
+      var acc = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
       ['mecanica_cacem','mecanica_lisboa','colisao'].forEach(function(u) {
         var d = TICKET_CLIENT_DATA[2026][u][m];
         if (!d) { anyNull = true; return; }
         acc.lp.e += d.lp.e; acc.lp.n += d.lp.n;
         acc.em.e += d.em.e; acc.em.n += d.em.n;
         acc.pa.e += d.pa.e; acc.pa.n += d.pa.n;
-        acc.og += d.og; acc.margem += d.margem; acc.diff += d.diff;
       });
       if (anyNull) { agg.push(null); continue; }
       acc.lp.t = acc.lp.n ? acc.lp.e/acc.lp.n : 0;
@@ -1081,7 +1083,7 @@ body {
       var cData = TICKET_CLIENT_DATA[state.year];
       if (!cData) { html += '<div class="info-banner">ℹ️ Sem dados de ticket médio para ' + state.year + '.</div>'; document.getElementById('content').innerHTML = html; return; }
 
-      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Análise cruzada entre faturação <b>Officegest</b> (séries 261/262/263) e rubrica <b>Total Vendas S/IVA</b> da Margem Mensal. Classificação por NIF: 1º dígito <b>5-9</b> → Empresa · <b>1-4</b> ou 999999990 → Particular · exceção: Lease Plan &amp; Fleet Cover. Particular inclui ajuste residual (Vendas − OG positivo). Valores acumulados dos meses com dados disponíveis.</p>';
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Reconciliação entre <b>Officegest</b> (séries 261/262/263) e <b>Margem Mensal</b> detalhada. <b>LP+FC</b>: com rappel contratual 25% deduzido em Cacém/Lisboa (rappel via NC mensal na Colisão). <b>Empresa</b>: NIF 5-9 + Fat. Interna + Aguarda NE. <b>Particular</b>: NIF 1-4 + Outras Vendas (Por Fora) e OS Por Fora no nº de docs. Resíduos entre soma e Margem divididos 50/50 Empresa/Particular. Valores acumulados dos meses disponíveis.</p>';
 
       // ══════ Ticket Médio por Tipo de Cliente (breakdown por NIF) ══════
       {
@@ -1090,7 +1092,7 @@ body {
         unitList.forEach(function(u) {
           var arr = cData[u.id];
           if (!arr) return;
-          var agg = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0 };
+          var agg = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
           var mCnt2 = 0;
           for (var k = 0; k < 12; k++) {
             var d = arr[k];
@@ -1098,7 +1100,6 @@ body {
             agg.lp.e += d.lp.e; agg.lp.n += d.lp.n;
             agg.em.e += d.em.e; agg.em.n += d.em.n;
             agg.pa.e += d.pa.e; agg.pa.n += d.pa.n;
-            agg.og += d.og; agg.margem += d.margem;
             mCnt2++;
           }
           if (mCnt2 === 0) return;
@@ -1261,7 +1262,7 @@ body {
     // Ramo 2026+: tabela e gráfico APENAS por tipo de cliente (NIF)
     // ─────────────────────────────────────────────────────────────
     if (hasClientData) {
-      html += '<p style="font-size:.85rem;color:var(--text-body);margin:8px 0 16px;">Faturação Officegest por categoria NIF (LP+FC / Empresa / Particular) vs <b>Total Vendas S/IVA</b> da Margem Mensal. Diff = Vendas − OG (positivo = crédito notas &amp; ajustes, somado a Particular).</p>';
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin:8px 0 16px;">Faturação reconciliada com a <b>Margem Mensal</b> detalhada. <b>LP+FC</b> com rappel contratual 25% deduzido (Cacém/Lisboa). <b>Empresa</b> inclui Fat. Interna e Aguarda NE. <b>Particular</b> inclui Outras Vendas (Por Fora) e OS Por Fora no nº de docs. Resíduos divididos 50/50 Empresa/Particular.</p>';
 
       // Chart
       html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
@@ -1273,15 +1274,12 @@ body {
           '<th colspan="3" class="cat-lp">LeasePlan + FleetCover</th>' +
           '<th colspan="3" class="cat-em">Empresa (excl. LP)</th>' +
           '<th colspan="3" class="cat-pa">Particular</th>' +
-          '<th rowspan="2">Total OG</th>' +
-          '<th rowspan="2">Vendas S/IVA</th>' +
-          '<th rowspan="2">Diff</th>' +
         '</tr><tr>' +
           '<th class="cat-lp">€</th><th class="cat-lp">Nº</th><th class="cat-lp">Ticket</th>' +
           '<th class="cat-em">€</th><th class="cat-em">Nº</th><th class="cat-em">Ticket</th>' +
           '<th class="cat-pa">€</th><th class="cat-pa">Nº</th><th class="cat-pa">Ticket</th>' +
         '</tr></thead><tbody>';
-      var tot = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0, diff:0 };
+      var tot = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
       MONTHS.forEach(function(m, i) {
         var d = cArr[i];
         html += '<tr><td>' + m + '</td>';
@@ -1289,16 +1287,11 @@ body {
           html += '<td>' + formatEur(d.lp.e) + '</td><td>' + d.lp.n + '</td><td>' + formatEur(d.lp.t) + '</td>';
           html += '<td>' + formatEur(d.em.e) + '</td><td>' + d.em.n + '</td><td>' + formatEur(d.em.t) + '</td>';
           html += '<td>' + formatEur(d.pa.e) + '</td><td>' + d.pa.n + '</td><td>' + formatEur(d.pa.t) + '</td>';
-          html += '<td>' + formatEur(d.og) + '</td>';
-          html += '<td>' + formatEur(d.margem) + '</td>';
-          var diffCls = d.diff >= 0 ? 'diff-pos' : 'diff-neg';
-          html += '<td class="' + diffCls + '">' + (d.diff >= 0 ? '+' : '') + formatEur(d.diff) + '</td>';
           tot.lp.e += d.lp.e; tot.lp.n += d.lp.n;
           tot.em.e += d.em.e; tot.em.n += d.em.n;
           tot.pa.e += d.pa.e; tot.pa.n += d.pa.n;
-          tot.og += d.og; tot.margem += d.margem; tot.diff += d.diff;
         } else {
-          for (var c = 0; c < 12; c++) html += '<td class="placeholder-val">—</td>';
+          for (var c = 0; c < 9; c++) html += '<td class="placeholder-val">—</td>';
         }
         html += '</tr>';
       });
@@ -1307,9 +1300,6 @@ body {
         html += '<td>' + formatEur(tot.lp.e) + '</td><td>' + tot.lp.n + '</td><td>' + formatEur(tot.lp.n ? tot.lp.e/tot.lp.n : 0) + '</td>';
         html += '<td>' + formatEur(tot.em.e) + '</td><td>' + tot.em.n + '</td><td>' + formatEur(tot.em.n ? tot.em.e/tot.em.n : 0) + '</td>';
         html += '<td>' + formatEur(tot.pa.e) + '</td><td>' + tot.pa.n + '</td><td>' + formatEur(tot.pa.n ? tot.pa.e/tot.pa.n : 0) + '</td>';
-        html += '<td>' + formatEur(tot.og) + '</td><td>' + formatEur(tot.margem) + '</td>';
-        var diffClsT = tot.diff >= 0 ? 'diff-pos' : 'diff-neg';
-        html += '<td class="' + diffClsT + '">' + (tot.diff >= 0 ? '+' : '') + formatEur(tot.diff) + '</td>';
         html += '</tr>';
       }
       html += '</tbody></table></div>';
@@ -1391,7 +1381,7 @@ body {
     var isClient = data && data.some(function(m) { return m && m.lp; });
 
     if (isClient) {
-      var labels = [], lpVals = [], emVals = [], paVals = [], ogVals = [];
+      var labels = [], lpVals = [], emVals = [], paVals = [], totVals = [];
       for (var i = 0; i < 12; i++) {
         var d = data[i];
         if (!d) continue;
@@ -1399,14 +1389,14 @@ body {
         lpVals.push(d.lp.t);
         emVals.push(d.em.t);
         paVals.push(d.pa.t);
-        ogVals.push(d.og);
+        totVals.push(d.lp.e + d.em.e + d.pa.e);
       }
       currentChart = new Chart(canvas, {
         type: 'bar',
         data: {
           labels: labels,
           datasets: [
-            { label: 'Total OG (€)', data: ogVals, type: 'bar',
+            { label: 'Total Faturado (€)', data: totVals, type: 'bar',
               backgroundColor: 'rgba(0,59,115,.10)', borderColor: 'rgba(0,59,115,.35)', borderWidth: 1, borderRadius: 6,
               yAxisID: 'y' },
             { label: 'LP + FC', data: lpVals, type: 'line',
@@ -1433,7 +1423,7 @@ body {
             }
           },
           scales: {
-            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Total OG (€)', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: function(v) { return (v/1000).toFixed(0) + 'k'; }, font: { size: 10 } } },
+            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Total Faturado (€)', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: function(v) { return (v/1000).toFixed(0) + 'k'; }, font: { size: 10 } } },
             y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Ticket médio (€)', font: { size: 11 } }, grid: { drawOnChartArea: false }, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } } },
             x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '600' } } }
           }
