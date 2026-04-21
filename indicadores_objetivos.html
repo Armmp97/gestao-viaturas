@@ -628,8 +628,8 @@ body {
   // Classificação:
   //   LP+FC: nome contém "Lease Plan" ou "Fleet Cover" (NIFs LP) — com rappel contratual 25% já deduzido em Cacém/Lisboa
   //   Empresa: NIF 1º dígito 5-9, + rubricas "Fat Interna" e "Aguarda NE" (horas+peças+serviços)
-  //   Particular: NIF 1-4 ou 999999990, + rubrica "Outras Vendas" (Por Fora, horas+peças+serviços)
-  //     Particular nº docs = docs OG + OS "Por Fora" (Cacém 3/2/7, Lisboa 8/4/6, Colisão 8/12/18)
+  //   Particular: NIF 1-4 ou 999999990, + rubrica "Outras Vendas" (horas+peças+serviços)
+  //     Particular nº docs = docs OG + nº OS de Outras Vendas (Cacém 3/2/7, Lisboa 8/4/6, Colisão 8/12/18)
   //   Resíduos (diferença entre soma das 3 categorias e Margem total) são divididos 50/50 Empresa/Particular
   // Cada mês: { lp:{e,n,t}, em:{e,n,t}, pa:{e,n,t} }  (t = ticket = e/n)
   var TICKET_CLIENT_DATA = {
@@ -1083,7 +1083,7 @@ body {
       var cData = TICKET_CLIENT_DATA[state.year];
       if (!cData) { html += '<div class="info-banner">ℹ️ Sem dados de ticket médio para ' + state.year + '.</div>'; document.getElementById('content').innerHTML = html; return; }
 
-      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Reconciliação entre <b>Officegest</b> (séries 261/262/263) e <b>Margem Mensal</b> detalhada. <b>LP+FC</b>: com rappel contratual 25% deduzido em Cacém/Lisboa (rappel via NC mensal na Colisão). <b>Empresa</b>: NIF 5-9 + Fat. Interna + Aguarda NE. <b>Particular</b>: NIF 1-4 + Outras Vendas (Por Fora) e OS Por Fora no nº de docs. Resíduos entre soma e Margem divididos 50/50 Empresa/Particular. Valores acumulados dos meses disponíveis.</p>';
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Reconciliação entre <b>Officegest</b> (séries 261/262/263) e <b>Margem Mensal</b> detalhada. <b>LP+FC</b>: com rappel contratual 25% deduzido em Cacém/Lisboa (rappel via NC mensal na Colisão). <b>Empresa</b>: NIF 5-9 + Fat. Interna + Aguarda NE. <b>Particular</b>: NIF 1-4 + Outras Vendas (nº OS somado ao nº de docs). Resíduos entre soma e Margem divididos 50/50 Empresa/Particular. Valores acumulados dos meses disponíveis.</p>';
 
       // ══════ Ticket Médio por Tipo de Cliente (breakdown por NIF) ══════
       {
@@ -1262,7 +1262,7 @@ body {
     // Ramo 2026+: tabela e gráfico APENAS por tipo de cliente (NIF)
     // ─────────────────────────────────────────────────────────────
     if (hasClientData) {
-      html += '<p style="font-size:.85rem;color:var(--text-body);margin:8px 0 16px;">Faturação reconciliada com a <b>Margem Mensal</b> detalhada. <b>LP+FC</b> com rappel contratual 25% deduzido (Cacém/Lisboa). <b>Empresa</b> inclui Fat. Interna e Aguarda NE. <b>Particular</b> inclui Outras Vendas (Por Fora) e OS Por Fora no nº de docs. Resíduos divididos 50/50 Empresa/Particular.</p>';
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin:8px 0 16px;">Faturação reconciliada com a <b>Margem Mensal</b> detalhada. <b>LP+FC</b> com rappel contratual 25% deduzido (Cacém/Lisboa). <b>Empresa</b> inclui Fat. Interna e Aguarda NE. <b>Particular</b> inclui Outras Vendas (nº OS somado ao nº de docs). Resíduos divididos 50/50 Empresa/Particular.</p>';
 
       // Chart
       html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
