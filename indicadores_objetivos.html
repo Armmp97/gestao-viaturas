@@ -120,6 +120,52 @@ body {
 .tg-metric-val { font-size:1rem; font-weight:700; color:var(--text-dark); margin-top:2px; }
 .tg-metric-sub { font-size:.72rem; color:var(--gray-400); }
 
+/* Ticket por Cliente block (breakdown by client type) */
+.tc-section { margin-top:32px; }
+.tc-section-title {
+  font-size:1.05rem; font-weight:800; color:var(--navy); margin-bottom:6px;
+  display:flex; align-items:center; gap:10px;
+}
+.tc-section-sub { font-size:.82rem; color:var(--text-body); margin-bottom:16px; }
+.tc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.tc-card {
+  background:var(--white); border-radius:var(--radius); padding:20px 22px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  position:relative; overflow:hidden;
+}
+.tc-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; border-radius:2px 0 0 2px; }
+.tc-card.lisboa::before { background:var(--accent); }
+.tc-card.cacem::before { background:var(--green); }
+.tc-card.colisao::before { background:var(--yellow); }
+.tc-card.domuscar::before { background:var(--navy); }
+.tc-card-title { font-size:.85rem; font-weight:700; color:var(--navy); margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.tc-card-title .tc-total { font-size:.72rem; color:var(--gray-600); font-weight:600; }
+.tc-row { display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px dashed var(--gray-100); font-size:.82rem; }
+.tc-row:last-child { border-bottom:none; }
+.tc-label { font-weight:700; }
+.tc-label.lp { color:#d97706; }
+.tc-label.em { color:#059669; }
+.tc-label.pa { color:#7c3aed; }
+.tc-label-sub { font-size:.7rem; color:var(--gray-600); font-weight:500; display:block; }
+.tc-val { font-weight:800; color:var(--navy); text-align:right; min-width:72px; }
+.tc-val-sm { font-size:.72rem; color:var(--gray-600); text-align:right; font-weight:600; }
+
+/* Tabela mensal por cliente */
+.tc-mensal-wrap { margin-top:24px; background:var(--white); border-radius:var(--radius); overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200); }
+.tc-mensal-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.tc-mensal-table th { background:var(--navy); color:var(--white); padding:10px 12px; text-align:center;
+  font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.3px; }
+.tc-mensal-table td { padding:9px 12px; text-align:right; border-bottom:1px solid var(--gray-100); }
+.tc-mensal-table td:first-child { text-align:left; font-weight:600; color:var(--navy); }
+.tc-mensal-table th.cat-lp { background:#d97706; }
+.tc-mensal-table th.cat-em { background:#059669; }
+.tc-mensal-table th.cat-pa { background:#7c3aed; }
+.tc-mensal-table tr.total-row { background:var(--gray-100); font-weight:800; }
+.tc-mensal-table tr.total-row td { color:var(--navy); }
+.tc-mensal-table .diff-pos { color:#059669; font-weight:700; }
+.tc-mensal-table .diff-neg { color:var(--gray-400); font-weight:500; }
+
 /* Comparativo */
 .comp-section {
   margin-top:36px; background:var(--white); border-radius:var(--radius);
@@ -577,6 +623,57 @@ body {
 
   var TICKET_MENSAL_COLS = ['Nº OSV', 'Ticket Peças (€)', 'Ticket MO (€)', 'Ticket Total (€)', 'Horas/OSV', 'H. Disponíveis', 'H. Vendidas', '€/H. Vendida'];
 
+  // ══════ DADOS TICKET MÉDIO POR TIPO DE CLIENTE ══════
+  // Fonte: Officegest export (séries 261/262/263) × Margem Mensal (Total Vendas S/IVA)
+  // Classificação por NIF: 1º dígito 5/6/7/8/9 = Empresa | 1/2/3/4 ou 999999990 = Particular
+  // Exceção: nome contém "Lease Plan" ou "Fleet Cover" → LP+FC
+  // Particular ajustado = Particular OG + Diff(Vendas S/IVA − OG) quando Diff > 0
+  // Cada mês: { lp:{e,n,t}, em:{e,n,t}, pa:{e,n,t}, og, margem, diff }  (t = ticket = e/n)
+  var TICKET_CLIENT_DATA = {
+    2026: {
+      mecanica_cacem: [
+        { lp:{e:9638.52,n:14,t:688.47}, em:{e:51917.71,n:118,t:439.98}, pa:{e:42647.44,n:81,t:526.51}, og:104203.67, margem:101712.88, diff:-2490.79 },
+        { lp:{e:3122.42,n:7,t:446.06}, em:{e:47442.86,n:108,t:439.29}, pa:{e:28020.11,n:87,t:322.07}, og:77335.12, margem:78585.39, diff:1250.27 },
+        { lp:{e:9264.60,n:18,t:514.70}, em:{e:60064.63,n:123,t:488.33}, pa:{e:35293.19,n:79,t:446.75}, og:104140.16, margem:104622.42, diff:482.26 },
+        null, null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        { lp:{e:44163.95,n:109,t:405.17}, em:{e:12533.21,n:37,t:338.74}, pa:{e:34096.24,n:84,t:405.91}, og:90793.40, margem:83283.10, diff:-7510.30 },
+        { lp:{e:49410.47,n:106,t:466.14}, em:{e:15184.65,n:49,t:309.89}, pa:{e:29381.94,n:76,t:386.60}, og:93977.06, margem:82710.86, diff:-11266.20 },
+        { lp:{e:52276.82,n:121,t:432.04}, em:{e:17065.30,n:38,t:449.09}, pa:{e:22090.72,n:60,t:368.18}, og:91432.84, margem:79169.76, diff:-12263.08 },
+        null, null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        { lp:{e:30859.59,n:40,t:771.49}, em:{e:37173.68,n:76,t:489.13}, pa:{e:17401.73,n:7,t:2485.96}, og:72047.63, margem:85435.00, diff:13387.37 },
+        { lp:{e:25758.98,n:33,t:780.58}, em:{e:45357.71,n:89,t:509.64}, pa:{e:4864.12,n:8,t:608.01}, og:74302.54, margem:75980.81, diff:1678.27 },
+        { lp:{e:39375.57,n:42,t:937.51}, em:{e:60365.13,n:87,t:693.85}, pa:{e:10302.94,n:4,t:2575.74}, og:100897.98, margem:110043.64, diff:9145.66 },
+        null, null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+  // DomusCar (empresa) = soma das 3 unidades
+  (function() {
+    var agg = [];
+    for (var m=0; m<12; m++) {
+      var anyNull = false;
+      var acc = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0, diff:0 };
+      ['mecanica_cacem','mecanica_lisboa','colisao'].forEach(function(u) {
+        var d = TICKET_CLIENT_DATA[2026][u][m];
+        if (!d) { anyNull = true; return; }
+        acc.lp.e += d.lp.e; acc.lp.n += d.lp.n;
+        acc.em.e += d.em.e; acc.em.n += d.em.n;
+        acc.pa.e += d.pa.e; acc.pa.n += d.pa.n;
+        acc.og += d.og; acc.margem += d.margem; acc.diff += d.diff;
+      });
+      if (anyNull) { agg.push(null); continue; }
+      acc.lp.t = acc.lp.n ? acc.lp.e/acc.lp.n : 0;
+      acc.em.t = acc.em.n ? acc.em.e/acc.em.n : 0;
+      acc.pa.t = acc.pa.n ? acc.pa.e/acc.pa.n : 0;
+      agg.push(acc);
+    }
+    TICKET_CLIENT_DATA[2026].domuscar = agg;
+  })();
+
   var YEARS = [2025, 2026];
 
   var UNITS = [
@@ -1025,6 +1122,53 @@ body {
         '</div>';
       });
       html += '</div>';
+
+      // ══════ Ticket Médio por Tipo de Cliente (breakdown por NIF) ══════
+      var cData = TICKET_CLIENT_DATA[state.year];
+      if (cData) {
+        html += '<div class="tc-section">' +
+          '<div class="tc-section-title">👥 Ticket Médio por Tipo de Cliente</div>' +
+          '<div class="tc-section-sub">Análise cruzada entre faturação Officegest (séries 261/262/263) e rubrica <b>Total Vendas S/IVA</b> da Margem Mensal. Classificação por NIF: 1º dígito <b>5-9</b> → Empresa · <b>1-4</b> ou 999999990 → Particular · exceção: Lease Plan &amp; Fleet Cover. Particular inclui ajuste residual (Vendas − OG positivo).</div>' +
+          '<div class="tc-grid">';
+        unitList.forEach(function(u) {
+          var arr = cData[u.id];
+          if (!arr) return;
+          var agg = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0 };
+          var mCnt2 = 0;
+          for (var k = 0; k < 12; k++) {
+            var d = arr[k];
+            if (!d) continue;
+            agg.lp.e += d.lp.e; agg.lp.n += d.lp.n;
+            agg.em.e += d.em.e; agg.em.n += d.em.n;
+            agg.pa.e += d.pa.e; agg.pa.n += d.pa.n;
+            agg.og += d.og; agg.margem += d.margem;
+            mCnt2++;
+          }
+          if (mCnt2 === 0) return;
+          var totalN = agg.lp.n + agg.em.n + agg.pa.n;
+          var totalE = agg.lp.e + agg.em.e + agg.pa.e;
+          var tLP = agg.lp.n ? agg.lp.e/agg.lp.n : 0;
+          var tEM = agg.em.n ? agg.em.e/agg.em.n : 0;
+          var tPA = agg.pa.n ? agg.pa.e/agg.pa.n : 0;
+          var tGlobal = totalN ? totalE/totalN : 0;
+          html += '<div class="tc-card ' + u.cls + '">' +
+            '<div class="tc-card-title"><span>' + u.icon + ' ' + u.name + '</span><span class="tc-total">' + formatEur(tGlobal) + ' global</span></div>' +
+            '<div class="tc-row">' +
+              '<div><span class="tc-label lp">LeasePlan + FleetCover</span><span class="tc-label-sub">' + agg.lp.n + ' docs · ' + formatEur(agg.lp.e) + '</span></div>' +
+              '<div class="tc-val">' + formatEur(tLP) + '</div>' +
+            '</div>' +
+            '<div class="tc-row">' +
+              '<div><span class="tc-label em">Empresa (excl. LP)</span><span class="tc-label-sub">' + agg.em.n + ' docs · ' + formatEur(agg.em.e) + '</span></div>' +
+              '<div class="tc-val">' + formatEur(tEM) + '</div>' +
+            '</div>' +
+            '<div class="tc-row">' +
+              '<div><span class="tc-label pa">Particular</span><span class="tc-label-sub">' + agg.pa.n + ' docs · ' + formatEur(agg.pa.e) + '</span></div>' +
+              '<div class="tc-val">' + formatEur(tPA) + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div></div>';
+      }
     }
 
     // Chart: ticket por unidade
@@ -1181,6 +1325,61 @@ body {
     }
 
     html += '</tbody></table></div>';
+
+    // ══════ Tabela mensal Ticket por Tipo de Cliente ══════
+    var cArr = TICKET_CLIENT_DATA[state.year] && TICKET_CLIENT_DATA[state.year][state.unit];
+    if (cArr && cArr.some(function(m) { return m !== null; })) {
+      html += '<div class="tc-section">' +
+        '<div class="tc-section-title">👥 Ticket Médio Mensal por Tipo de Cliente</div>' +
+        '<div class="tc-section-sub">Faturação OG por categoria NIF (LP+FC / Empresa / Particular) vs Total Vendas S/IVA da Margem Mensal. Diff = Vendas − OG (positivo = crédito notas &amp; ajustes, somado a Particular).</div>' +
+        '<div class="tc-mensal-wrap">' +
+        '<table class="tc-mensal-table"><thead><tr>' +
+          '<th rowspan="2">Mês</th>' +
+          '<th colspan="3" class="cat-lp">LeasePlan + FleetCover</th>' +
+          '<th colspan="3" class="cat-em">Empresa (excl. LP)</th>' +
+          '<th colspan="3" class="cat-pa">Particular</th>' +
+          '<th rowspan="2">Total OG</th>' +
+          '<th rowspan="2">Vendas S/IVA</th>' +
+          '<th rowspan="2">Diff</th>' +
+        '</tr><tr>' +
+          '<th class="cat-lp">€</th><th class="cat-lp">Nº</th><th class="cat-lp">Ticket</th>' +
+          '<th class="cat-em">€</th><th class="cat-em">Nº</th><th class="cat-em">Ticket</th>' +
+          '<th class="cat-pa">€</th><th class="cat-pa">Nº</th><th class="cat-pa">Ticket</th>' +
+        '</tr></thead><tbody>';
+      var tot = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0, diff:0 };
+      MONTHS.forEach(function(m, i) {
+        var d = cArr[i];
+        html += '<tr><td>' + m + '</td>';
+        if (d) {
+          html += '<td>' + formatEur(d.lp.e) + '</td><td>' + d.lp.n + '</td><td>' + formatEur(d.lp.t) + '</td>';
+          html += '<td>' + formatEur(d.em.e) + '</td><td>' + d.em.n + '</td><td>' + formatEur(d.em.t) + '</td>';
+          html += '<td>' + formatEur(d.pa.e) + '</td><td>' + d.pa.n + '</td><td>' + formatEur(d.pa.t) + '</td>';
+          html += '<td>' + formatEur(d.og) + '</td>';
+          html += '<td>' + formatEur(d.margem) + '</td>';
+          var diffCls = d.diff >= 0 ? 'diff-pos' : 'diff-neg';
+          html += '<td class="' + diffCls + '">' + (d.diff >= 0 ? '+' : '') + formatEur(d.diff) + '</td>';
+          tot.lp.e += d.lp.e; tot.lp.n += d.lp.n;
+          tot.em.e += d.em.e; tot.em.n += d.em.n;
+          tot.pa.e += d.pa.e; tot.pa.n += d.pa.n;
+          tot.og += d.og; tot.margem += d.margem; tot.diff += d.diff;
+        } else {
+          for (var c = 0; c < 12; c++) html += '<td class="placeholder-val">—</td>';
+        }
+        html += '</tr>';
+      });
+      if (tot.lp.n + tot.em.n + tot.pa.n > 0) {
+        html += '<tr class="total-row"><td>Acumulado</td>';
+        html += '<td>' + formatEur(tot.lp.e) + '</td><td>' + tot.lp.n + '</td><td>' + formatEur(tot.lp.n ? tot.lp.e/tot.lp.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.em.e) + '</td><td>' + tot.em.n + '</td><td>' + formatEur(tot.em.n ? tot.em.e/tot.em.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.pa.e) + '</td><td>' + tot.pa.n + '</td><td>' + formatEur(tot.pa.n ? tot.pa.e/tot.pa.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.og) + '</td><td>' + formatEur(tot.margem) + '</td>';
+        var diffClsT = tot.diff >= 0 ? 'diff-pos' : 'diff-neg';
+        html += '<td class="' + diffClsT + '">' + (tot.diff >= 0 ? '+' : '') + formatEur(tot.diff) + '</td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table></div></div>';
+    }
+
     document.getElementById('content').innerHTML = html;
     setTimeout(function() { renderTicketMensalChart(monthly); }, 80);
   }
