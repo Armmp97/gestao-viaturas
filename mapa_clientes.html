@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de Clientes — DomusCar</title>
+<script src="https://unpkg.com/globe.gl@2.32.3/dist/globe.gl.min.js"></script>
+<style>
+  :root {
+    --bg: #05070d;
+    --panel: rgba(13, 18, 30, 0.82);
+    --panel-border: rgba(99, 130, 200, 0.18);
+    --text: #e8ecf3;
+    --text-dim: #8a94a8;
+    --accent: #60a5fa;
+    --cacem: #10b981;
+    --lisboa: #3b82f6;
+    --colisao: #f97316;
+    --outros: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow: hidden;
+  }
+  #globeContainer {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #0d1930 0%, #050a18 70%, #02030a 100%);
+  }
+  /* Stars twinkle layer */
+  #starfield {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(2px 2px at 60% 30%, rgba(200,220,255,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 60%, rgba(180,200,255,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 25% 85%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 75% 15%, rgba(220,230,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 85%, #fff 0%, transparent 100%);
+    background-size: 100% 100%;
+    opacity: 0.7;
+  }
+  header {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #60a5fa 0%, #10b981 50%, #f97316 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  header p {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .panel {
+    position: absolute;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 16px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    z-index: 5;
+  }
+  #controls {
+    top: 72px;
+    left: 20px;
+    width: 280px;
+  }
+  #stats {
+    top: 72px;
+    right: 20px;
+    width: 300px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+  #stats::-webkit-scrollbar { width: 6px; }
+  #stats::-webkit-scrollbar-thumb { background: rgba(99, 130, 200, 0.3); border-radius: 3px; }
+  .panel h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .panel-section {
+    margin-bottom: 18px;
+  }
+  .panel-section:last-child { margin-bottom: 0; }
+  .unit-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 4px;
+  }
+  .unit-row:hover { background: rgba(255, 255, 255, 0.05); }
+  .unit-row input[type="checkbox"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 2px solid currentColor;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .unit-row input[type="checkbox"]:checked {
+    background: currentColor;
+  }
+  .unit-row input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    color: #0a0a0f;
+    font-weight: 800;
+  }
+  .unit-row .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .unit-row .name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .unit-row .count {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .unit-row.cacem { color: var(--cacem); }
+  .unit-row.lisboa { color: var(--lisboa); }
+  .unit-row.outros { color: var(--outros); }
+  /* Year range */
+  .year-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .year-label .value {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .range-wrap {
+    position: relative;
+    height: 24px;
+  }
+  .range-track {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+  }
+  .range-fill {
+    position: absolute;
+    top: 10px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--cacem));
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  input[type="range"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 24px;
+    appearance: none;
+    background: transparent;
+    pointer-events: none;
+    margin: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+    pointer-events: auto;
+    margin-top: -6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    flex: 1;
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(96, 165, 250, 0.4);
+  }
+  .btn.active {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .stat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .stat-card:last-child { border-bottom: none; }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .top-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+    list-style: none;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  }
+  .top-list li:last-child { border-bottom: none; }
+  .top-list .city-name {
+    color: var(--text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .top-list .city-count {
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    margin-left: 8px;
+  }
+  .top-list .rank {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 18px;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .top-list li:nth-child(1) .rank { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+  .top-list li:nth-child(2) .rank { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+  .top-list li:nth-child(3) .rank { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
+  #tooltip {
+    position: absolute;
+    background: rgba(5, 10, 20, 0.95);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    display: none;
+    min-width: 180px;
+  }
+  #tooltip .t-city {
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  #tooltip .t-total {
+    color: var(--accent);
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  #tooltip .t-unit {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  #tooltip .t-unit-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    padding: 6px 10px;
+    background: rgba(13, 18, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 11px;
+    transition: all 0.15s;
+    backdrop-filter: blur(8px);
+  }
+  .back-link:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+  .legend-note {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  @media (max-width: 900px) {
+    #controls, #stats {
+      position: fixed;
+      top: auto;
+      width: calc(50% - 24px);
+    }
+    #controls { bottom: 16px; left: 16px; }
+    #stats { bottom: 16px; right: 16px; }
+    header h1 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+  <div id="starfield"></div>
+  <div id="globeContainer"></div>
+
+  <a href="indicadores_objetivos.html" class="back-link">← Indicadores</a>
+
+  <header>
+    <h1>MAPA DE CLIENTES</h1>
+    <p>Walkingarage · Distribuição geográfica da carteira</p>
+  </header>
+
+  <div id="controls" class="panel">
+    <div class="panel-section">
+      <h2>Unidades</h2>
+      <div id="unitList"></div>
+    </div>
+    <div class="panel-section">
+      <h2>Ano de Registo</h2>
+      <div class="year-label">
+        <span>Desde: <span class="value" id="yStartLabel">2014</span></span>
+        <span>Até: <span class="value" id="yEndLabel">2026</span></span>
+      </div>
+      <div class="range-wrap">
+        <div class="range-track"></div>
+        <div class="range-fill" id="rangeFill"></div>
+        <input type="range" id="yStart" min="2014" max="2026" value="2014" step="1">
+        <input type="range" id="yEnd" min="2014" max="2026" value="2026" step="1">
+      </div>
+    </div>
+    <div class="panel-section">
+      <h2>Vista</h2>
+      <div class="actions">
+        <button class="btn" id="btnRotate">▶ Rodar</button>
+        <button class="btn" id="btnZoomPT">🇵🇹 Portugal</button>
+        <button class="btn" id="btnReset">⟲ Reset</button>
+      </div>
+      <div class="legend-note">Clica e arrasta para rodar · scroll / pinch para zoom · hover para detalhes</div>
+    </div>
+  </div>
+
+  <div id="stats" class="panel">
+    <div class="panel-section">
+      <h2>Resumo</h2>
+      <div class="stat-card">
+        <span class="stat-label">Clientes</span>
+        <span class="stat-value" id="totalClients">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Cidades</span>
+        <span class="stat-value" id="totalCities">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Países</span>
+        <span class="stat-value" id="totalCountries">—</span>
+      </div>
+    </div>
+    <div class="panel-section">
+      <h2>Top 10 Cidades</h2>
+      <ul class="top-list" id="topList"></ul>
+    </div>
+    <div class="panel-section">
+      <h2>Repartição</h2>
+      <div id="splitChart"></div>
+    </div>
+  </div>
+
+  <div id="tooltip"></div>
+
+<script>
+/* eslint-disable */
+const DATA ={"hubs":{"mecanica_cacem":{"name":"Mecânica Cacém","lat":38.7707,"lng":-9.2988,"color":"#10b981"},"mecanica_lisboa":{"name":"Mecânica Lisboa","lat":38.749,"lng":-9.15,"color":"#3b82f6"},"colisao":{"name":"Colisão","lat":38.733,"lng":-9.29,"color":"#f97316"}},"cities":[{"city":"Lisboa","lat":38.7223,"lng":-9.1393,"total":2328,"by_unit":{"mecanica_lisboa":1189,"mecanica_cacem":1042,"outros":97},"by_year":{"2026":88,"2025":314,"2022":408,"2024":520,"2023":832,"2021":111,"2019":22,"2014":3,"2020":24,"2015":3,"2016":3}},{"city":"Cacém","lat":38.7707,"lng":-9.2988,"total":262,"by_unit":{"mecanica_cacem":239,"mecanica_lisboa":3,"outros":20},"by_year":{"2026":12,"2025":37,"2024":39,"2023":124,"2022":18,"2021":9,"2019":10,"2020":10,"2014":1,"2015":2}},{"city":"Agualva-Cacém","lat":38.769,"lng":-9.2967,"total":222,"by_unit":{"mecanica_lisboa":3,"mecanica_cacem":201,"outros":18},"by_year":{"2026":26,"2025":41,"2024":35,"2023":68,"2022":29,"2021":8,"2020":8,"2019":3,"2015":3,"2016":1}},{"city":"Amadora","lat":38.7581,"lng":-9.233,"total":109,"by_unit":{"mecanica_lisboa":12,"mecanica_cacem":75,"outros":22},"by_year":{"2026":10,"2025":26,"2024":13,"2023":27,"2022":15,"2021":4,"2020":6,"2019":1,"2016":2,"2015":2,"2014":3}},{"city":"São Marcos","lat":38.756,"lng":-9.27,"total":105,"by_unit":{"mecanica_cacem":93,"outros":12},"by_year":{"2026":5,"2025":29,"2024":11,"2023":12,"2022":17,"2021":9,"2020":9,"2019":11,"2016":1,"2014":1}},{"city":"Rio de Mouro","lat":38.777,"lng":-9.325,"total":94,"by_unit":{"mecanica_cacem":84,"mecanica_lisboa":4,"outros":6},"by_year":{"2026":11,"2025":25,"2023":25,"2024":13,"2022":13,"2021":3,"2020":2,"2019":1,"2016":1}},{"city":"Oeiras","lat":38.6875,"lng":-9.3091,"total":91,"by_unit":{"mecanica_lisboa":5,"mecanica_cacem":71,"outros":15},"by_year":{"2026":5,"2025":22,"2024":13,"2023":14,"2022":11,"2021":10,"2019":5,"2020":8,"2015":1,"2014":2}},{"city":"Mem Martins","lat":38.782,"lng":-9.338,"total":84,"by_unit":{"mecanica_cacem":72,"mecanica_lisboa":5,"outros":7},"by_year":{"2026":10,"2025":22,"2024":6,"2023":24,"2022":11,"2021":5,"2020":3,"2019":3}},{"city":"Porto Salvo","lat":38.722,"lng":-9.313,"total":65,"by_unit":{"mecanica_cacem":54,"mecanica_lisboa":2,"outros":9},"by_year":{"2026":2,"2025":15,"2024":8,"2023":15,"2022":10,"2021":6,"2019":5,"2020":3,"2015":1}},{"city":"Queluz","lat":38.757,"lng":-9.256,"total":62,"by_unit":{"mecanica_cacem":51,"outros":9,"mecanica_lisboa":2},"by_year":{"2026":1,"2025":14,"2024":10,"2023":16,"2022":5,"2021":6,"2020":3,"2019":3,"2015":2,"2014":2}},{"city":"Sintra","lat":38.8029,"lng":-9.3817,"total":57,"by_unit":{"mecanica_cacem":43,"mecanica_lisboa":5,"outros":9},"by_year":{"2026":8,"2025":13,"2024":13,"2023":12,"2022":5,"2020":6}},{"city":"S. Domingos de Rana","lat":38.706,"lng":-9.36,"total":46,"by_unit":{"mecanica_cacem":36,"mecanica_lisboa":2,"outros":8},"by_year":{"2026":3,"2025":10,"2020":5,"2024":7,"2023":9,"2022":6,"2021":3,"2019":2,"2014":1}},{"city":"Barcarena","lat":38.734,"lng":-9.277,"total":43,"by_unit":{"mecanica_cacem":34,"outros":8,"mecanica_lisboa":1},"by_year":{"2026":3,"2025":10,"2024":8,"2023":6,"2022":6,"2021":3,"2020":3,"2019":3,"2014":1}},{"city":"Paço de Arcos","lat":38.6965,"lng":-9.2945,"total":36,"by_unit":{"mecanica_cacem":30,"outros":5,"mecanica_lisboa":1},"by_year":{"2026":2,"2025":7,"2024":8,"2023":8,"2022":3,"2021":4,"2020":2,"2019":2}},{"city":"Carcavelos","lat":38.6808,"lng":-9.3333,"total":32,"by_unit":{"mecanica_cacem":27,"mecanica_lisboa":2,"outros":3},"by_year":{"2026":5,"2025":5,"2024":4,"2023":10,"2022":3,"2021":1,"2020":4}},{"city":"Setúbal","lat":38.5244,"lng":-8.8882,"total":29,"by_unit":{"mecanica_lisboa":4,"mecanica_cacem":25},"by_year":{"2024":5,"2022":10,"2021":3,"2023":11}},{"city":"Estoril","lat":38.705,"lng":-9.3975,"total":26,"by_unit":{"mecanica_cacem":18,"mecanica_lisboa":3,"outros":5},"by_year":{"2026":2,"2025":7,"2024":7,"2023":1,"2022":1,"2021":4,"2020":3,"2019":1}},{"city":"Belas","lat":38.774,"lng":-9.261,"total":25,"by_unit":{"mecanica_cacem":17,"mecanica_lisboa":1,"outros":7},"by_year":{"2026":2,"2025":5,"2024":6,"2023":4,"2022":2,"2021":2,"2015":1,"2014":3}},{"city":"Massamá","lat":38.758,"lng":-9.285,"total":25,"by_unit":{"mecanica_cacem":19,"outros":5,"mecanica_lisboa":1},"by_year":{"2024":7,"2023":4,"2022":5,"2015":2,"2021":1,"2025":2,"2020":2,"2019":2}},{"city":"Porto","lat":41.1579,"lng":-8.6291,"total":24,"by_unit":{"mecanica_cacem":14,"mecanica_lisboa":4,"outros":6},"by_year":{"2026":2,"2025":3,"2024":3,"2023":8,"2022":4,"2021":1,"2020":1,"2019":1,"2014":1}},{"city":"Cascais","lat":38.6979,"lng":-9.4215,"total":24,"by_unit":{"mecanica_lisboa":3,"mecanica_cacem":18,"outros":3},"by_year":{"2026":1,"2025":5,"2024":6,"2023":2,"2022":3,"2021":1,"2020":2,"2019":4}},{"city":"Carnaxide","lat":38.7242,"lng":-9.245,"total":23,"by_unit":{"mecanica_lisboa":6,"mecanica_cacem":13,"outros":4},"by_year":{"2026":2,"2025":6,"2023":10,"2024":2,"2020":2,"2016":1}},{"city":"Alcabideche","lat":38.727,"lng":-9.411,"total":21,"by_unit":{"mecanica_cacem":18,"outros":1,"mecanica_lisboa":2},"by_year":{"2026":4,"2025":5,"2024":5,"2023":3,"2021":3,"2019":1}},{"city":"Parede","lat":38.693,"lng":-9.36,"total":17,"by_unit":{"mecanica_lisboa":3,"mecanica_cacem":10,"outros":4},"by_year":{"2026":1,"2025":6,"2021":2,"2024":1,"2022":2,"2023":1,"2020":1,"2019":1,"2016":1,"2014":1}},{"city":"Caxias","lat":38.708,"lng":-9.276,"total":16,"by_unit":{"mecanica_cacem":15,"mecanica_lisboa":1},"by_year":{"2025":5,"2024":2,"2023":1,"2022":4,"2021":2,"2020":2}},{"city":"Odivelas","lat":38.793,"lng":-9.183,"total":15,"by_unit":{"mecanica_lisboa":6,"mecanica_cacem":7,"outros":2},"by_year":{"2026":3,"2025":6,"2022":1,"2021":1,"2024":2,"2020":1,"2014":1}},{"city":"Viseu","lat":40.6566,"lng":-7.9125,"total":15,"by_unit":{"mecanica_cacem":4,"outros":10,"mecanica_lisboa":1},"by_year":{"2025":2,"2023":7,"2022":5,"2024":1}},{"city":"Algés","lat":38.705,"lng":-9.2305,"total":14,"by_unit":{"mecanica_cacem":9,"mecanica_lisboa":3,"outros":2},"by_year":{"2026":3,"2025":5,"2024":1,"2023":1,"2022":2,"2020":1,"2014":1}},{"city":"Agualva","lat":38.77,"lng":-9.305,"total":14,"by_unit":{"mecanica_cacem":11,"outros":3},"by_year":{"2025":3,"2024":5,"2023":3,"2020":1,"2019":1,"2014":1}},{"city":"Almada","lat":38.6792,"lng":-9.1569,"total":12,"by_unit":{"mecanica_lisboa":4,"mecanica_cacem":8},"by_year":{"2025":2,"2024":4,"2023":3,"2022":3}},{"city":"Casal do Cotão","lat":38.787,"lng":-9.335,"total":11,"by_unit":{"mecanica_cacem":11},"by_year":{"2026":1,"2025":4,"2023":1,"2022":2,"2024":3}},{"city":"Madrid","lat":40.4168,"lng":-3.7038,"total":11,"by_unit":{"mecanica_cacem":8,"mecanica_lisboa":2,"outros":1},"by_year":{"2026":1,"2025":3,"2023":2,"2022":2,"2021":2,"2020":1}},{"city":"Paris","lat":48.8566,"lng":2.3522,"total":11,"by_unit":{"mecanica_cacem":9,"mecanica_lisboa":2},"by_year":{"2026":1,"2025":1,"2024":4,"2023":2,"2020":1,"2019":2}},{"city":"Santarém","lat":39.2362,"lng":-8.6854,"total":11,"by_unit":{"mecanica_cacem":9,"outros":2},"by_year":{"2021":1,"2022":3,"2023":5,"2024":1,"2020":1}},{"city":"Coimbra","lat":40.2033,"lng":-8.4103,"total":10,"by_unit":{"mecanica_lisboa":1,"mecanica_cacem":8,"outros":1},"by_year":{"2026":2,"2022":2,"2021":1,"2024":2,"2023":1,"2019":2}},{"city":"Loures","lat":38.8305,"lng":-9.168,"total":10,"by_unit":{"mecanica_cacem":8,"mecanica_lisboa":1,"outros":1},"by_year":{"2026":1,"2025":3,"2024":3,"2022":2,"2020":1}},{"city":"Mafra","lat":38.9368,"lng":-9.3252,"total":9,"by_unit":{"mecanica_cacem":8,"mecanica_lisboa":1},"by_year":{"2026":1,"2023":4,"2024":2,"2022":2}},{"city":"Caneças","lat":38.818,"lng":-9.201,"total":9,"by_unit":{"mecanica_cacem":5,"mecanica_lisboa":4},"by_year":{"2026":2,"2023":3,"2025":1,"2024":3}},{"city":"Prior Velho","lat":38.783,"lng":-9.122,"total":9,"by_unit":{"mecanica_lisboa":3,"mecanica_cacem":4,"outros":2},"by_year":{"2025":3,"2024":2,"2022":2,"2023":1,"2016":1}},{"city":"Ramada","lat":38.8,"lng":-9.198,"total":9,"by_unit":{"mecanica_cacem":8,"mecanica_lisboa":1},"by_year":{"2025":2,"2023":3,"2022":1,"2021":1,"2024":2}},{"city":"Sacavém","lat":38.795,"lng":-9.103,"total":9,"by_unit":{"mecanica_cacem":3,"mecanica_lisboa":4,"outros":2},"by_year":{"2024":1,"2023":4,"2025":2,"2020":1,"2019":1}},{"city":"Benfica","lat":38.7475,"lng":-9.1963,"total":8,"by_unit":{"mecanica_lisboa":4,"mecanica_cacem":3,"outros":1},"by_year":{"2026":1,"2025":3,"2024":1,"2020":1,"2023":1,"2019":1}},{"city":"Costa da Caparica","lat":38.644,"lng":-9.233,"total":8,"by_unit":{"mecanica_lisboa":2,"mecanica_cacem":5,"outros":1},"by_year":{"2026":1,"2025":2,"2022":1,"2021":1,"2023":1,"2024":1,"2020":1}},{"city":"Bobadela","lat":38.805,"lng":-9.101,"total":8,"by_unit":{"mecanica_lisboa":2,"mecanica_cacem":5,"outros":1},"by_year":{"2025":6,"2022":1,"2024":1}},{"city":"Queijas","lat":38.72,"lng":-9.256,"total":8,"by_unit":{"mecanica_cacem":6,"outros":1,"mecanica_lisboa":1},"by_year":{"2025":2,"2024":2,"2023":1,"2022":1,"2021":2}},{"city":"Montijo","lat":38.7044,"lng":-8.9753,"total":7,"by_unit":{"mecanica_cacem":5,"mecanica_lisboa":1,"outros":1},"by_year":{"2026":1,"2025":1,"2024":2,"2021":1,"2022":1,"2014":1}},{"city":"Alfragide","lat":38.7368,"lng":-9.225,"total":7,"by_unit":{"mecanica_lisboa":3,"mecanica_cacem":4},"by_year":{"2025":4,"2023":1,"2022":1,"2024":1}},{"city":"Camarate","lat":38.8007,"lng":-9.131,"total":7,"by_unit":{"mecanica_lisboa":2,"mecanica_cacem":5},"by_year":{"2025":2,"2024":2,"2021":3}},{"city":"Vila Nova de Gaia","lat":41.1232,"lng":-8.6114,"total":7,"by_unit":{"outros":2,"mecanica_cacem":5},"by_year":{"2025":2,"2023":2,"2022":1,"2021":1,"2024":1}},{"city":"Aveiro","lat":40.6405,"lng":-8.6538,"total":7,"by_unit":{"mecanica_lisboa":4,"mecanica_cacem":3},"by_year":{"2025":1,"2024":4,"2023":1,"2022":1}},{"city":"Linda-a-Velha","lat":38.709,"lng":-9.235,"total":6,"by_unit":{"mecanica_cacem":4,"outros":2},"by_year":{"2026":1,"2025":1,"2024":3,"2021":1}},{"city":"Berlin","lat":52.52,"lng":13.405,"total":6,"by_unit":{"mecanica_cacem":6},"by_year":{"2026":1,"2022":1,"2025":2,"2024":1,"2019":1}},{"city":"Algueirão","lat":38.8,"lng":-9.345,"total":6,"by_unit":{"mecanica_cacem":5,"mecanica_lisboa":1},"by_year":{"2026":1,"2025":2,"2023":2,"2024":1}},{"city":"Monte Abraão","lat":38.752,"lng":-9.277,"total":6,"by_unit":{"mecanica_cacem":6},"by_year":{"2025":3,"2022":1,"2024":1,"2021":1}},{"city":"Mira Sintra","lat":38.782,"lng":-9.3054,"total":6,"by_unit":{"mecanica_cacem":6},"by_year":{"2025":2,"2024":4}},{"city":"Évora","lat":38.5711,"lng":-7.9135,"total":5,"by_unit":{"mecanica_lisboa":4,"mecanica_cacem":1},"by_year":{"2025":2,"2022":1,"2024":2}},{"city":"Pontinha","lat":38.772,"lng":-9.193,"total":5,"by_unit":{"mecanica_lisboa":2,"mecanica_cacem":3},"by_year":{"2025":1,"2023":2,"2022":1,"2024":1}},{"city":"Palmela","lat":38.5683,"lng":-8.9018,"total":5,"by_unit":{"mecanica_lisboa":1,"mecanica_cacem":3,"outros":1},"by_year":{"2025":1,"2024":2,"2022":2}},{"city":"Leiria","lat":39.7437,"lng":-8.8071,"total":5,"by_unit":{"mecanica_cacem":4,"outros":1},"by_year":{"2023":4,"2022":1}},{"city":"Guarda","lat":40.5378,"lng":-7.2668,"total":5,"by_unit":{"mecanica_cacem":3,"mecanica_lisboa":1,"outros":1},"by_year":{"2022":1,"2023":2,"2025":1,"2016":1}},{"city":"Sesimbra","lat":38.4444,"lng":-9.1003,"total":4,"by_unit":{"mecanica_cacem":2,"mecanica_lisboa":2},"by_year":{"2026":1,"2024":2,"2023":1}},{"city":"Abóboda","lat":38.726,"lng":-9.356,"total":4,"by_unit":{"mecanica_cacem":3,"outros":1},"by_year":{"2026":1,"2023":1,"2021":1,"2020":1}},{"city":"Famões","lat":38.803,"lng":-9.2,"total":4,"by_unit":{"mecanica_cacem":4},"by_year":{"2025":2,"2024":1,"2023":1}},{"city":"Póvoa de Santa Iria","lat":38.86,"lng":-9.062,"total":4,"by_unit":{"mecanica_lisboa":2,"mecanica_cacem":1,"outros":1},"by_year":{"2025":2,"2020":1,"2019":1}},{"city":"Vialonga","lat":38.874,"lng":-9.062,"total":4,"by_unit":{"mecanica_cacem":3,"mecanica_lisboa":1},"by_year":{"2025":2,"2024":2}},{"city":"Santo António dos Cavaleiros","lat":38.816,"lng":-9.174,"total":4,"by_unit":{"mecanica_lisboa":4},"by_year":{"2025":1,"2024":2,"2023":1}},{"city":"Faro","lat":37.0194,"lng":-7.9304,"total":4,"by_unit":{"mecanica_cacem":3,"mecanica_lisboa":1},"by_year":{"2023":3,"2025":1}},{"city":"Torres Vedras","lat":39.0903,"lng":-9.2589,"total":4,"by_unit":{"mecanica_cacem":3,"outros":1},"by_year":{"2023":1,"2022":1,"2021":1,"2019":1}},{"city":"Castelo Branco","lat":39.8217,"lng":-7.4919,"total":4,"by_unit":{"mecanica_cacem":4},"by_year":{"2023":2,"2024":1,"2021":1}},{"city":"Colares","lat":38.799,"lng":-9.448,"total":3,"by_unit":{"mecanica_cacem":3},"by_year":{"2026":1,"2023":1,"2019":1}},{"city":"Corroios","lat":38.64,"lng":-9.158,"total":3,"by_unit":{"outros":1,"mecanica_cacem":2},"by_year":{"2025":3}},{"city":"Alverca","lat":38.895,"lng":-9.034,"total":3,"by_unit":{"mecanica_cacem":3},"by_year":{"2023":2,"2022":1}},{"city":"Beja","lat":38.0154,"lng":-7.865,"total":3,"by_unit":{"mecanica_cacem":2,"outros":1},"by_year":{"2023":1,"2024":1,"2020":1}},{"city":"Seixal","lat":38.6404,"lng":-9.1034,"total":3,"by_unit":{"mecanica_cacem":3},"by_year":{"2021":1,"2022":1,"2024":1}},{"city":"Ericeira","lat":38.9634,"lng":-9.4192,"total":3,"by_unit":{"mecanica_cacem":3},"by_year":{"2023":3}},{"city":"Barreiro","lat":38.6633,"lng":-9.0718,"total":3,"by_unit":{"mecanica_cacem":2,"mecanica_lisboa":1},"by_year":{"2023":1,"2022":1,"2025":1}},{"city":"Barcelona","lat":41.3874,"lng":2.1686,"total":3,"by_unit":{"mecanica_lisboa":1,"outros":1,"mecanica_cacem":1},"by_year":{"2025":2,"2024":1}},{"city":"Amsterdam","lat":52.3676,"lng":4.9041,"total":3,"by_unit":{"mecanica_cacem":3},"by_year":{"2024":2,"2023":1}},{"city":"Ponta Delgada","lat":37.7412,"lng":-25.6756,"total":2,"by_unit":{"mecanica_lisboa":2},"by_year":{"2026":1,"2024":1}},{"city":"Funchal","lat":32.6669,"lng":-16.9241,"total":2,"by_unit":{"mecanica_cacem":2},"by_year":{"2026":1,"2025":1}},{"city":"Tojal","lat":38.85,"lng":-9.122,"total":2,"by_unit":{"mecanica_cacem":2},"by_year":{"2025":1,"2023":1}},{"city":"Miraflores","lat":38.716,"lng":-9.229,"total":2,"by_unit":{"mecanica_lisboa":1,"mecanica_cacem":1},"by_year":{"2025":2}},{"city":"Alcântara","lat":38.705,"lng":-9.179,"total":2,"by_unit":{"mecanica_lisboa":1,"mecanica_cacem":1},"by_year":{"2025":1,"2023":1}},{"city":"Tercena","lat":38.754,"lng":-9.235,"total":2,"by_unit":{"mecanica_cacem":2},"by_year":{"2025":1,"2023":1}},{"city":"Trajouce","lat":38.728,"lng":-9.361,"total":2,"by_unit":{"mecanica_cacem":2},"by_year":{"2022":1,"2023":1}},{"city":"Casal de Cambra","lat":38.794,"lng":-9.243,"total":2,"by_unit":{"mecanica_cacem":2},"by_year":{"2025":1,"2019":1}},{"city":"Alenquer","lat":39.055,"lng":-9.012,"total":2,"by_unit":{"mecanica_lisboa":1,"mecanica_cacem":1},"by_year":{"2025":1,"2024":1}},{"city":"Kongen","lat":48.684,"lng":9.342,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2026":1}},{"city":"Tallinn","lat":59.437,"lng":24.7536,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2026":1}},{"city":"Lourinhã","lat":39.2408,"lng":-9.3141,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2026":1}},{"city":"Zurich","lat":47.3769,"lng":8.5417,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2026":1}},{"city":"Hamburg","lat":53.5511,"lng":9.9937,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2025":1}},{"city":"Pero Pinheiro","lat":38.833,"lng":-9.335,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2022":1}},{"city":"Queluz de Baixo","lat":38.7515,"lng":-9.267,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2023":1}},{"city":"Viana do Castelo","lat":41.6947,"lng":-8.8314,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2022":1}},{"city":"Moita","lat":38.6503,"lng":-8.9891,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2023":1}},{"city":"Portalegre","lat":39.2931,"lng":-7.43,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2023":1}},{"city":"Vaduz","lat":47.141,"lng":9.5209,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2024":1}},{"city":"Arruda dos Vinhos","lat":38.983,"lng":-9.081,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2025":1}},{"city":"Marseille","lat":43.2965,"lng":5.3698,"total":1,"by_unit":{"mecanica_lisboa":1},"by_year":{"2025":1}},{"city":"Badajoz","lat":38.8794,"lng":-6.9707,"total":1,"by_unit":{"outros":1},"by_year":{"2025":1}},{"city":"Olivais","lat":38.768,"lng":-9.117,"total":1,"by_unit":{"mecanica_lisboa":1},"by_year":{"2025":1}},{"city":"Malveira","lat":38.933,"lng":-9.258,"total":1,"by_unit":{"mecanica_lisboa":1},"by_year":{"2025":1}},{"city":"Ajuda","lat":38.706,"lng":-9.2,"total":1,"by_unit":{"mecanica_lisboa":1},"by_year":{"2025":1}},{"city":"Braga","lat":41.5454,"lng":-8.4265,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2024":1}},{"city":"Rome","lat":41.9028,"lng":12.4964,"total":1,"by_unit":{"mecanica_cacem":1},"by_year":{"2023":1}},{"city":"Fanhões","lat":38.883,"lng":-9.178,"total":1,"by_unit":{"outros":1},"by_year":{"2020":1}}],"stats":{"total_rows":5757,"mapped":4268,"mapped_pct":74.1}};
+
+const UNIT_LABELS = {
+  mecanica_cacem:  { label: 'Mecânica Cacém',  color: '#10b981', hub: 'mecanica_cacem' },
+  mecanica_lisboa: { label: 'Mecânica Lisboa', color: '#3b82f6', hub: 'mecanica_lisboa' },
+  outros:          { label: 'Colisão / Outros', color: '#f97316', hub: 'colisao' },
+};
+
+const state = {
+  units: { mecanica_cacem: true, mecanica_lisboa: true, outros: true },
+  yearStart: 2014,
+  yearEnd: 2026,
+  rotating: false,
+};
+
+// --------- Build Unit List (checkboxes) ---------
+const unitListEl = document.getElementById('unitList');
+Object.entries(UNIT_LABELS).forEach(([key, u]) => {
+  // Compute total for this unit
+  const total = DATA.cities.reduce((s, c) => s + (c.by_unit[key] || 0), 0);
+  const row = document.createElement('label');
+  row.className = `unit-row ${key === 'mecanica_cacem' ? 'cacem' : key === 'mecanica_lisboa' ? 'lisboa' : 'outros'}`;
+  row.style.color = u.color;
+  row.innerHTML = `
+    <input type="checkbox" checked data-unit="${key}">
+    <span class="dot"></span>
+    <span class="name" style="color: var(--text)">${u.label}</span>
+    <span class="count">${total.toLocaleString('pt-PT')}</span>
+  `;
+  unitListEl.appendChild(row);
+  row.querySelector('input').addEventListener('change', (e) => {
+    state.units[key] = e.target.checked;
+    refresh();
+  });
+});
+
+// --------- Year slider ---------
+const yStart = document.getElementById('yStart');
+const yEnd   = document.getElementById('yEnd');
+const yStartLabel = document.getElementById('yStartLabel');
+const yEndLabel   = document.getElementById('yEndLabel');
+const rangeFill   = document.getElementById('rangeFill');
+
+function updateRangeFill() {
+  const min = 2014, max = 2026;
+  const p1 = (parseInt(yStart.value) - min) / (max - min) * 100;
+  const p2 = (parseInt(yEnd.value) - min)   / (max - min) * 100;
+  rangeFill.style.left = p1 + '%';
+  rangeFill.style.width = (p2 - p1) + '%';
+}
+
+function onYearChange() {
+  let a = parseInt(yStart.value);
+  let b = parseInt(yEnd.value);
+  if (a > b) { const t = a; a = b; b = t; yStart.value = a; yEnd.value = b; }
+  state.yearStart = a;
+  state.yearEnd   = b;
+  yStartLabel.textContent = a;
+  yEndLabel.textContent   = b;
+  updateRangeFill();
+  refresh();
+}
+yStart.addEventListener('input', onYearChange);
+yEnd.addEventListener('input',   onYearChange);
+updateRangeFill();
+
+// --------- Action buttons ---------
+const btnRotate = document.getElementById('btnRotate');
+const btnReset  = document.getElementById('btnReset');
+const btnZoomPT = document.getElementById('btnZoomPT');
+
+btnRotate.addEventListener('click', () => {
+  state.rotating = !state.rotating;
+  btnRotate.textContent = state.rotating ? '⏸ Pausa' : '▶ Rodar';
+  btnRotate.classList.toggle('active', state.rotating);
+  if (globe && globe.controls) globe.controls().autoRotate = state.rotating;
+});
+
+btnReset.addEventListener('click', () => {
+  if (globe) globe.pointOfView({ lat: 38.7, lng: -9.2, altitude: 2.2 }, 1400);
+});
+
+btnZoomPT.addEventListener('click', () => {
+  if (globe) globe.pointOfView({ lat: 39.5, lng: -8.0, altitude: 0.28 }, 1600);
+});
+
+// --------- Build Globe ---------
+const globeEl = document.getElementById('globeContainer');
+
+if (typeof Globe !== 'function') {
+  globeEl.innerHTML = '<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#e8ecf3; font-family:sans-serif; text-align:center; padding:40px;">' +
+    '<div style="font-size:40px; margin-bottom:16px;">🌐</div>' +
+    '<h2 style="color:#f87171; margin-bottom:8px;">Biblioteca do globo não carregou</h2>' +
+    '<p style="color:#8a94a8; max-width:520px; line-height:1.5;">A CDN <code style="color:#60a5fa">unpkg.com/globe.gl</code> não respondeu. Verifica a ligação à internet ou se algum bloqueador / proxy está a impedir o acesso. Recarrega a página.</p>' +
+    '</div>';
+  throw new Error('globe.gl not loaded');
+}
+
+// Diagnostic overlay — visible in-page if something fails so we don't see just a black square
+function showDiag(msg, isError) {
+  let d = document.getElementById('globeDiag');
+  if (!d) {
+    d = document.createElement('div');
+    d.id = 'globeDiag';
+    d.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5; ' +
+      'background:rgba(10,14,26,0.92); border:1px solid rgba(99,130,200,0.3); border-radius:12px; ' +
+      'padding:14px 22px; color:#e8ecf3; font-family:sans-serif; font-size:13px; text-align:center; ' +
+      'box-shadow:0 8px 30px rgba(0,0,0,0.6); max-width:460px; line-height:1.5;';
+    globeEl.appendChild(d);
+  }
+  d.innerHTML = msg;
+  d.style.borderColor = isError ? '#f87171' : 'rgba(96,165,250,0.4)';
+}
+function clearDiag() {
+  const d = document.getElementById('globeDiag');
+  if (d) d.remove();
+}
+
+// GeoJSON country outlines — used to draw the globe as a stylised illustration
+// (no photographic textures, just flat polygons with borders)
+const GEOJSON_URLS = [
+  'https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson',
+  'https://cdn.jsdelivr.net/gh/vasturiano/globe.gl@master/example/datasets/ne_110m_admin_0_countries.geojson',
+  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson',
+  'https://datahub.io/core/geo-countries/r/countries.geojson',
+];
+
+async function loadGeoJson() {
+  for (const url of GEOJSON_URLS) {
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) continue;
+      const json = await res.json();
+      if (json && json.features && json.features.length > 100) return json;
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
+// (legacy) texture candidates — no longer used for the main surface, kept for reference
+const TEXTURE_CANDIDATES = {
+  night: [
+    // Wikimedia high-res Black Marble — try biggest thumbs first (CORS-enabled)
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/BlackMarble_2016_01deg.jpg/8000px-BlackMarble_2016_01deg.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/BlackMarble_2016_01deg.jpg/6400px-BlackMarble_2016_01deg.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/BlackMarble_2016_01deg.jpg/5120px-BlackMarble_2016_01deg.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/BlackMarble_2016_01deg.jpg/3840px-BlackMarble_2016_01deg.jpg',
+    // Earths_City_Lights alternative
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Earths_City_Lights_by_DMSP%2C_1994-1995_%28large%29.jpg/5120px-Earths_City_Lights_by_DMSP%2C_1994-1995_%28large%29.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Earths_City_Lights_by_DMSP%2C_1994-1995_%28large%29.jpg/3840px-Earths_City_Lights_by_DMSP%2C_1994-1995_%28large%29.jpg',
+    // NASA GSFC 3.6K (may fail CORS)
+    'https://eoimages.gsfc.nasa.gov/images/imagerecords/79000/79765/dnb_land_ocean_ice.2012.3600x1800.jpg',
+    // 2K fallbacks from three-globe
+    'https://unpkg.com/three-globe@2.27.2/example/img/earth-night.jpg',
+    'https://cdn.jsdelivr.net/npm/three-globe@2.27.2/example/img/earth-night.jpg',
+    'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-night.jpg',
+  ],
+  topo: [
+    'https://unpkg.com/three-globe@2.27.2/example/img/earth-topology.png',
+    'https://cdn.jsdelivr.net/npm/three-globe@2.27.2/example/img/earth-topology.png',
+    'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png',
+  ],
+};
+
+function probeTexture(urls) {
+  return new Promise((resolve) => {
+    let idx = 0;
+    const tryNext = () => {
+      if (idx >= urls.length) return resolve(null);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(urls[idx]);
+      img.onerror = () => { idx++; tryNext(); };
+      img.src = urls[idx];
+    };
+    tryNext();
+  });
+}
+
+showDiag('A carregar mapa…', false);
+
+// Countries where we have at least one client (derived from the data)
+const COUNTRIES_WITH_CLIENTS = new Set([
+  'Portugal', 'Spain', 'France', 'Germany', 'Italy', 'Netherlands',
+  'United Kingdom', 'Poland', 'Switzerland', 'Liechtenstein', 'Estonia',
+  'Austria', 'Belgium',
+]);
+// Name property varies between GeoJSON sources
+function countryName(feat) {
+  const p = feat.properties || {};
+  return p.ADMIN || p.NAME || p.name || p.NAME_LONG || p.sovereignt || '';
+}
+
+let globe;
+loadGeoJson().then((geo) => {
+  globe = Globe()(globeEl)
+    .backgroundColor('rgba(0,0,0,0)')
+    .showAtmosphere(true)
+    .atmosphereColor('#60a5fa')
+    .atmosphereAltitude(0.2)
+    .pointOfView({ lat: 38.7, lng: -9.2, altitude: 2.2 });
+
+  // Flat ocean colour — no photo texture, just a solid dark-blue sphere.
+  try {
+    const mat = globe.globeMaterial && globe.globeMaterial();
+    if (mat) {
+      if (mat.color && mat.color.set)    mat.color.set(0x0e2140);
+      if (mat.emissive && mat.emissive.set) mat.emissive.set(0x061024);
+      mat.shininess = 4;
+      mat.needsUpdate = true;
+    }
+  } catch (e) { console.warn('globeMaterial setup failed', e); }
+
+  // Check WebGL availability
+  const canvas = globeEl.querySelector('canvas');
+  if (!canvas) {
+    showDiag('<strong style="color:#f87171;">Canvas não foi criado</strong><br>O navegador pode não suportar WebGL.', true);
+    return;
+  }
+  const gl = canvas.getContext && (canvas.getContext('webgl2') || canvas.getContext('webgl'));
+  if (!gl) {
+    showDiag('<strong style="color:#f87171;">WebGL indisponível</strong><br>Ativa a aceleração por hardware em <code>edge://settings/system</code> e recarrega a página.', true);
+    return;
+  }
+
+  // Draw countries as polygons (cartoon / illustration look)
+  if (geo && geo.features) {
+    globe
+      .polygonsData(geo.features.filter(f => countryName(f) !== 'Antarctica'))
+      .polygonAltitude(d => {
+        const n = countryName(d);
+        if (n === 'Portugal') return 0.012;
+        if (COUNTRIES_WITH_CLIENTS.has(n)) return 0.008;
+        return 0.005;
+      })
+      .polygonCapColor(d => {
+        const n = countryName(d);
+        if (n === 'Portugal') return 'rgba(96, 165, 250, 0.78)';   // destaque azul
+        if (COUNTRIES_WITH_CLIENTS.has(n)) return 'rgba(52, 100, 160, 0.6)';
+        return 'rgba(35, 64, 100, 0.55)';
+      })
+      .polygonSideColor(() => 'rgba(20, 40, 70, 0.65)')
+      .polygonStrokeColor(() => 'rgba(180, 210, 255, 0.35)')
+      .polygonsTransitionDuration(0);
+    clearDiag();
+  } else {
+    showDiag('<strong style="color:#fbbf24;">Não foi possível carregar os contornos dos países</strong><br>O globo aparece como esfera lisa — verifica a ligação à internet.', true);
+    setTimeout(clearDiag, 5000);
+  }
+
+  sizeGlobe();
+  requestAnimationFrame(() => requestAnimationFrame(sizeGlobe));
+  setTimeout(sizeGlobe, 500);
+  setTimeout(() => {
+    if (globe.controls) {
+      const ctrl = globe.controls();
+      ctrl.autoRotate = false;
+      ctrl.autoRotateSpeed = 0.35;
+      ctrl.enableDamping = true;
+      ctrl.dampingFactor = 0.08;
+      ctrl.minDistance = 102;   // quase a tocar a superfície (raio=100)
+      ctrl.maxDistance = 600;
+      ctrl.zoomSpeed = 1.2;
+
+      // Refresh arcs visibility on zoom change (debounced)
+      let lastAlt = null, refreshTimer = null;
+      ctrl.addEventListener('change', () => {
+        try {
+          const alt = globe.pointOfView().altitude;
+          const bucket = alt > 1.2 ? 'far' : 'near';
+          const lastBucket = lastAlt == null ? null : (lastAlt > 1.2 ? 'far' : 'near');
+          if (bucket !== lastBucket) {
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(refresh, 150);
+          }
+          lastAlt = alt;
+        } catch (e) {}
+      });
+    }
+  }, 200);
+  refresh();
+}).catch(err => {
+  console.error('Globe initialisation failed', err);
+  showDiag('<strong style="color:#f87171;">Falha a inicializar o globo</strong><br>' + (err && err.message ? err.message : String(err)), true);
+});
+
+// --------- Filter + refresh ---------
+function filterCities() {
+  const activeUnits = Object.keys(state.units).filter(k => state.units[k]);
+  return DATA.cities.map(c => {
+    // Sum within active units + year range
+    let filtered = 0;
+    const byUnit = {};
+    for (const u of activeUnits) {
+      const uCount = c.by_unit[u] || 0;
+      if (uCount === 0) continue;
+      // Year filtering is applied proportionally to the unit's slice.
+      // Since by_year aggregates all units together, we scale:
+      //   unit_in_range ≈ (years in range / all years) * by_unit[u]
+      // More accurate: compute year ratio
+      let yearsInRange = 0;
+      let yearsTotal = 0;
+      for (const [y, n] of Object.entries(c.by_year || {})) {
+        const yi = parseInt(y);
+        yearsTotal += n;
+        if (yi >= state.yearStart && yi <= state.yearEnd) yearsInRange += n;
+      }
+      const ratio = yearsTotal > 0 ? yearsInRange / yearsTotal : 0;
+      const adj = uCount * ratio;
+      byUnit[u] = adj;
+      filtered += adj;
+    }
+    return { ...c, filtered, byUnit };
+  }).filter(c => c.filtered > 0.5);
+}
+
+function refresh() {
+  const filtered = filterCities();
+
+  // Points: one per city, scaled by filtered total
+  const maxT = Math.max(...filtered.map(c => c.filtered), 1);
+  const points = filtered.map(c => ({
+    lat: c.lat,
+    lng: c.lng,
+    size: Math.max(0.1, 0.15 + Math.pow(c.filtered / maxT, 0.5) * 1.3),
+    total: c.filtered,
+    city: c.city,
+    byUnit: c.byUnit,
+    // Color by dominant unit
+    color: dominantColor(c.byUnit),
+  }));
+
+  // Arcs: one per city × active unit, from hub → city
+  const arcs = [];
+  filtered.forEach(c => {
+    Object.entries(c.byUnit).forEach(([u, cnt]) => {
+      if (cnt < 0.5) return;
+      const hub = DATA.hubs[UNIT_LABELS[u].hub];
+      if (!hub) return;
+      // Skip self-arcs (city == hub location)
+      if (Math.abs(hub.lat - c.lat) < 0.02 && Math.abs(hub.lng - c.lng) < 0.02) return;
+      arcs.push({
+        startLat: hub.lat, startLng: hub.lng,
+        endLat: c.lat,     endLng: c.lng,
+        color: UNIT_LABELS[u].color,
+        count: cnt,
+      });
+    });
+  });
+
+  // Hubs: always shown as larger pulsing points
+  // Map hub id → unit key (so we can show the unit's aggregated figures on hover)
+  const HUB_TO_UNIT = { mecanica_cacem: 'mecanica_cacem', mecanica_lisboa: 'mecanica_lisboa', colisao: 'outros' };
+  const hubPoints = Object.entries(DATA.hubs).map(([id, h]) => {
+    const unitKey = HUB_TO_UNIT[id];
+    // Sum this unit's clients across filtered cities → hub "traffic"
+    const unitTotal = filtered.reduce((s, c) => s + (c.byUnit[unitKey] || 0), 0);
+    return {
+      lat: h.lat, lng: h.lng, size: 1.8, color: h.color,
+      city: h.name,
+      total: unitTotal,
+      byUnit: { [unitKey]: unitTotal },
+      cityCount: filtered.filter(c => (c.byUnit[unitKey] || 0) > 0.5).length,
+      isHub: true,
+    };
+  });
+
+  // City dots: NEUTRAL colour (soft white-blue), same style for every city.
+  // No hub markers on the map — the 3 offices are represented only by where the arcs start.
+  // The city name + per-unit breakdown shows only on hover.
+  const CITY_COLOUR = '#cfe0ff';
+  const cityPoints = points.map(p => ({ ...p, color: CITY_COLOUR }));
+
+  globe
+    .pointsData(cityPoints)
+    .pointLat('lat').pointLng('lng')
+    .pointColor('color')
+    .pointAltitude(0.015)  // above the country polygons (max polygon alt = 0.012)
+    .pointRadius(d => Math.max(0.012, 0.014 + Math.pow(d.size, 0.55) * 0.013))
+    .pointResolution(20)
+    .pointsMerge(false)
+    .onPointHover(handleHover)
+    .onPointClick(handleClick);
+
+  // Arcs: only when looking at the whole globe — at close zoom they'd be visual clutter.
+  const altitude = globe.pointOfView ? globe.pointOfView().altitude : 2.2;
+  const showArcs = altitude > 1.2;
+  globe
+    .arcsData(showArcs ? arcs : [])
+    .arcStartLat('startLat').arcStartLng('startLng')
+    .arcEndLat('endLat').arcEndLng('endLng')
+    .arcColor(d => [d.color + '77', d.color + '08'])
+    .arcDashLength(0.5)
+    .arcDashGap(0.3)
+    .arcDashAnimateTime(() => 3200 + Math.random() * 1800)
+    .arcStroke(d => Math.min(0.18, 0.04 + Math.log(1 + d.count) * 0.03))
+    .arcAltitudeAutoScale(0.25);
+
+  // No rings — we deliberately don't highlight any unit with colour on the map.
+  globe.ringsData([]);
+
+  updateStats(filtered);
+}
+
+function dominantColor(byUnit) {
+  let best = null, bestV = 0;
+  for (const [u, v] of Object.entries(byUnit)) {
+    if (v > bestV) { bestV = v; best = u; }
+  }
+  return best ? UNIT_LABELS[best].color : '#888';
+}
+
+// --------- Stats panel ---------
+const ptCountries = new Set(['Portugal']); // helper — we infer foreign by city name/coords
+const FOREIGN_CITIES = new Set([
+  'Madrid','Barcelona','Lugo','Badajoz','Sevilla','Valencia','Vigo',
+  'Paris','Lyon','Marseille','Nice',
+  'Berlin','Munich','Kongen','Frankfurt','Hamburg','Magdeburg',
+  'Amsterdam','Rotterdam',
+  'Rome','Milan',
+  'Warsaw','Tallinn','Zurich','Vaduz'
+]);
+
+function updateStats(cities) {
+  const total = Math.round(cities.reduce((s, c) => s + c.filtered, 0));
+  document.getElementById('totalClients').textContent = total.toLocaleString('pt-PT');
+  document.getElementById('totalCities').textContent  = cities.length;
+  const foreign = cities.filter(c => FOREIGN_CITIES.has(c.city)).length;
+  document.getElementById('totalCountries').textContent = (foreign > 0 ? (1 + new Set(cities.filter(c => FOREIGN_CITIES.has(c.city)).map(c => c.city)).size) : 1);
+
+  // Top list
+  const top = [...cities].sort((a, b) => b.filtered - a.filtered).slice(0, 10);
+  const ul = document.getElementById('topList');
+  ul.innerHTML = '';
+  top.forEach((c, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <span class="rank">${i + 1}</span>
+      <span class="city-name">${c.city}</span>
+      <span class="city-count">${Math.round(c.filtered).toLocaleString('pt-PT')}</span>
+    `;
+    ul.appendChild(li);
+  });
+
+  // Split chart (horizontal bar per unit)
+  const splitTotals = { mecanica_cacem: 0, mecanica_lisboa: 0, outros: 0 };
+  cities.forEach(c => Object.entries(c.byUnit).forEach(([u, v]) => { splitTotals[u] = (splitTotals[u] || 0) + v; }));
+  const grand = Object.values(splitTotals).reduce((s, v) => s + v, 0) || 1;
+  const sc = document.getElementById('splitChart');
+  sc.innerHTML = '';
+  Object.entries(UNIT_LABELS).forEach(([u, info]) => {
+    const v = Math.round(splitTotals[u] || 0);
+    const pct = (v / grand * 100);
+    const row = document.createElement('div');
+    row.style.cssText = 'margin-bottom: 8px;';
+    row.innerHTML = `
+      <div style="display:flex; justify-content:space-between; font-size: 11px; margin-bottom: 4px;">
+        <span style="color: ${info.color}; font-weight: 600;">${info.label}</span>
+        <span style="color: var(--text-dim);">${v.toLocaleString('pt-PT')} · ${pct.toFixed(0)}%</span>
+      </div>
+      <div style="height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+        <div style="height: 100%; width: ${pct}%; background: ${info.color}; box-shadow: 0 0 8px ${info.color}66;"></div>
+      </div>
+    `;
+    sc.appendChild(row);
+  });
+}
+
+// --------- Tooltip ---------
+const tooltip = document.getElementById('tooltip');
+
+function handleHover(pt) {
+  if (!pt) {
+    tooltip.style.display = 'none';
+    globeEl.style.cursor = 'grab';
+    return;
+  }
+  globeEl.style.cursor = 'pointer';
+  let unitHtml = '';
+  if (pt.byUnit) {
+    Object.entries(pt.byUnit).forEach(([u, v]) => {
+      if (v < 0.5) return;
+      const info = UNIT_LABELS[u];
+      unitHtml += `<div class="t-unit">
+        <span><span class="t-unit-dot" style="background:${info.color}"></span>${info.label}</span>
+        <span style="color: var(--text-dim); font-variant-numeric: tabular-nums;">${Math.round(v).toLocaleString('pt-PT')}</span>
+      </div>`;
+    });
+  }
+  const title = pt.isHub ? `🏢 ${pt.city}` : pt.city;
+  const subtitle = pt.isHub
+    ? `${Math.round(pt.total).toLocaleString('pt-PT')} clientes · Oficina sede${pt.cityCount ? ` · ${pt.cityCount} cidades` : ''}`
+    : `${Math.round(pt.total).toLocaleString('pt-PT')} clientes`;
+  tooltip.innerHTML = `
+    <div class="t-city">${title}</div>
+    <div class="t-total">${subtitle}</div>
+    ${unitHtml}
+  `;
+  tooltip.style.display = 'block';
+}
+
+function handleClick(pt) {
+  if (!pt) return;
+  globe.pointOfView({ lat: pt.lat, lng: pt.lng, altitude: 0.9 }, 1200);
+}
+
+// Follow mouse for tooltip
+document.addEventListener('mousemove', (e) => {
+  if (tooltip.style.display === 'block') {
+    let x = e.clientX + 14;
+    let y = e.clientY + 14;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    if (x + tw > window.innerWidth - 10) x = e.clientX - tw - 14;
+    if (y + th > window.innerHeight - 10) y = e.clientY - th - 14;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top  = y + 'px';
+  }
+});
+
+// Resize handler (globe may not be initialised yet — guard it)
+function sizeGlobe() {
+  if (globe && globe.width) {
+    globe.width(window.innerWidth).height(window.innerHeight);
+  }
+}
+window.addEventListener('resize', sizeGlobe);
+</script>
+</body>
+</html>
