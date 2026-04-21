@@ -1079,94 +1079,107 @@
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;" id="margemCards"></div>
                 </div>
             </div>
-            <!-- Ticket Médio (Indicadores & Objetivos) - Março 2026 -->
+            <!-- Ticket Médio por Tipo de Cliente (Q1 2026 acumulado) -->
             <div class="kpi-section" id="ticketMedioBlock" style="padding:16px 20px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:14px;font-weight:700;color:var(--text-primary);">Ticket Médio</span>
-                        <span style="font-size:11px;color:var(--text-secondary);background:var(--content-bg);padding:2px 8px;border-radius:10px;font-weight:600;">Março 2026</span>
-                        <span style="font-size:10px;color:var(--text-secondary);background:var(--content-bg);padding:2px 6px;border-radius:8px;">Produtividade (Vendas ÷ OSV)</span>
+                        <span style="font-size:14px;font-weight:700;color:var(--text-primary);">Ticket Médio por Tipo de Cliente</span>
+                        <span style="font-size:11px;color:var(--text-secondary);background:var(--content-bg);padding:2px 8px;border-radius:10px;font-weight:600;">Q1 2026</span>
+                        <span style="font-size:10px;color:var(--text-secondary);background:var(--content-bg);padding:2px 6px;border-radius:8px;">Faturação OG ÷ Nº Docs</span>
                     </div>
-                    <span style="font-size:11px;color:var(--text-secondary);">Fonte: Indicadores e Objetivos</span>
+                    <span style="font-size:11px;color:var(--text-secondary);">Fonte: Officegest (séries 261/262/263) × Margem Mensal</span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
                     <!-- Mecânica Cacém -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;">
-                        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:4px;">Mecânica Cacém</div>
-                        <div style="font-size:18px;font-weight:800;color:var(--text-primary);">460,89 €</div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Ticket Total</div>
-                        <div style="display:flex;justify-content:center;gap:10px;margin-top:8px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">304,45 €</div><div style="font-size:9px;color:var(--accent-blue);font-weight:600;">66,1% — Peças</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">143,13 €</div><div style="font-size:9px;color:#e37400;font-weight:600;">31,1% — MO</div></div>
+                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border-left:3px solid #059669;">
+                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:11px;color:var(--text-secondary);font-weight:700;">Mecânica Cacém</div>
+                            <div style="font-size:16px;font-weight:800;color:var(--text-primary);">452,62 €</div>
                         </div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color);">227 OSV</div>
+                        <div style="font-size:9px;color:var(--text-secondary);margin-bottom:8px;">635 docs · 287 411,48 € · ticket global</div>
+                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(217,119,6,.06);border-radius:4px;">
+                                <div><span style="color:#d97706;font-weight:700;">LP + FC</span><span style="color:var(--text-secondary);font-size:9px;display:block;">39 docs · 22 025,54 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">564,76 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(5,150,105,.06);border-radius:4px;">
+                                <div><span style="color:#059669;font-weight:700;">Empresa</span><span style="color:var(--text-secondary);font-size:9px;display:block;">349 docs · 159 425,20 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">456,81 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(124,58,237,.06);border-radius:4px;">
+                                <div><span style="color:#7c3aed;font-weight:700;">Particular</span><span style="color:var(--text-secondary);font-size:9px;display:block;">247 docs · 105 960,74 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">428,99 €</span>
+                            </div>
+                        </div>
                     </div>
                     <!-- Mecânica Lisboa -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;">
-                        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:4px;">Mecânica Lisboa</div>
-                        <div style="font-size:18px;font-weight:800;color:var(--text-primary);">342,73 €</div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Ticket Total</div>
-                        <div style="display:flex;justify-content:center;gap:10px;margin-top:8px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">252,36 €</div><div style="font-size:9px;color:var(--accent-blue);font-weight:600;">73,6% — Peças</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">132,47 €</div><div style="font-size:9px;color:#e37400;font-weight:600;">38,7% — MO</div></div>
+                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border-left:3px solid var(--accent-blue);">
+                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:11px;color:var(--text-secondary);font-weight:700;">Mecânica Lisboa</div>
+                            <div style="font-size:16px;font-weight:800;color:var(--text-primary);">406,18 €</div>
                         </div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color);">231 OSV</div>
+                        <div style="font-size:9px;color:var(--text-secondary);margin-bottom:8px;">680 docs · 276 203,30 € · ticket global</div>
+                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(217,119,6,.06);border-radius:4px;">
+                                <div><span style="color:#d97706;font-weight:700;">LP + FC</span><span style="color:var(--text-secondary);font-size:9px;display:block;">336 docs · 145 851,24 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">434,08 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(5,150,105,.06);border-radius:4px;">
+                                <div><span style="color:#059669;font-weight:700;">Empresa</span><span style="color:var(--text-secondary);font-size:9px;display:block;">124 docs · 44 783,16 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">361,15 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(124,58,237,.06);border-radius:4px;">
+                                <div><span style="color:#7c3aed;font-weight:700;">Particular</span><span style="color:var(--text-secondary);font-size:9px;display:block;">220 docs · 85 568,90 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">388,95 €</span>
+                            </div>
+                        </div>
                     </div>
                     <!-- Colisão -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;">
-                        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:4px;">Colisão</div>
-                        <div style="font-size:18px;font-weight:800;color:var(--text-primary);">894,66 €</div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Ticket Total</div>
-                        <div style="display:flex;justify-content:center;gap:10px;margin-top:8px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">443,58 €</div><div style="font-size:9px;color:var(--accent-blue);font-weight:600;">49,6% — Peças</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">514,43 €</div><div style="font-size:9px;color:#e37400;font-weight:600;">57,5% — MO</div></div>
+                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border-left:3px solid #e37400;">
+                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:11px;color:var(--text-secondary);font-weight:700;">Colisão</div>
+                            <div style="font-size:16px;font-weight:800;color:var(--text-primary);">703,26 €</div>
                         </div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color);">123 OSV</div>
+                        <div style="font-size:9px;color:var(--text-secondary);margin-bottom:8px;">386 docs · 271 459,45 € · ticket global</div>
+                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(217,119,6,.06);border-radius:4px;">
+                                <div><span style="color:#d97706;font-weight:700;">LP + FC</span><span style="color:var(--text-secondary);font-size:9px;display:block;">115 docs · 95 994,14 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">834,73 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(5,150,105,.06);border-radius:4px;">
+                                <div><span style="color:#059669;font-weight:700;">Empresa</span><span style="color:var(--text-secondary);font-size:9px;display:block;">252 docs · 142 896,52 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">567,05 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(124,58,237,.06);border-radius:4px;">
+                                <div><span style="color:#7c3aed;font-weight:700;">Particular</span><span style="color:var(--text-secondary);font-size:9px;display:block;">19 docs · 32 568,79 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">1 714,15 €</span>
+                            </div>
+                        </div>
                     </div>
                     <!-- DomusCar (Empresa) -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;border:1.5px solid var(--accent-blue);">
-                        <div style="font-size:11px;color:var(--accent-blue);font-weight:700;margin-bottom:4px;">DomusCar (Empresa)</div>
-                        <div style="font-size:18px;font-weight:800;color:var(--accent-blue);">510,99 €</div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Ticket Total</div>
-                        <div style="display:flex;justify-content:center;gap:10px;margin-top:8px;">
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">310,38 €</div><div style="font-size:9px;color:var(--accent-blue);font-weight:600;">60,7% — Peças</div></div>
-                            <div style="width:1px;background:var(--border-color);"></div>
-                            <div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">206,01 €</div><div style="font-size:9px;color:#e37400;font-weight:600;">40,3% — MO</div></div>
+                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border:1.5px solid var(--accent-blue);border-left:3px solid var(--accent-blue);">
+                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:11px;color:var(--accent-blue);font-weight:700;">DomusCar (Empresa)</div>
+                            <div style="font-size:16px;font-weight:800;color:var(--accent-blue);">490,93 €</div>
                         </div>
-                        <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color);">581 OSV</div>
+                        <div style="font-size:9px;color:var(--text-secondary);margin-bottom:8px;">1 701 docs · 835 074,23 € · ticket global</div>
+                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(217,119,6,.08);border-radius:4px;">
+                                <div><span style="color:#d97706;font-weight:700;">LP + FC</span><span style="color:var(--text-secondary);font-size:9px;display:block;">490 docs · 263 870,92 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">538,51 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(5,150,105,.08);border-radius:4px;">
+                                <div><span style="color:#059669;font-weight:700;">Empresa</span><span style="color:var(--text-secondary);font-size:9px;display:block;">725 docs · 347 104,88 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">478,77 €</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(124,58,237,.08);border-radius:4px;">
+                                <div><span style="color:#7c3aed;font-weight:700;">Particular</span><span style="color:var(--text-secondary);font-size:9px;display:block;">486 docs · 224 098,43 €</span></div>
+                                <span style="font-weight:800;color:var(--text-primary);">461,11 €</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <!-- Breakdown por tipo de cliente (Q1 2026 acumulado, base faturação OG) -->
-                <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border-color);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:12px;font-weight:700;color:var(--text-primary);">Ticket por Tipo de Cliente</span>
-                            <span style="font-size:10px;color:var(--text-secondary);background:var(--content-bg);padding:2px 6px;border-radius:8px;">Q1 2026 · Faturação (Vendas ÷ Nº Docs)</span>
-                        </div>
-                        <span style="font-size:10px;color:var(--text-secondary);">1 701 docs · 835 074 € · Ticket 491 €</span>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;">
-                        <div style="background:var(--content-bg);border-radius:6px;padding:8px 10px;text-align:center;border-left:3px solid #d97706;">
-                            <div style="font-size:10px;color:#d97706;font-weight:700;">LeasePlan + FleetCover</div>
-                            <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-top:2px;">539 €</div>
-                            <div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">490 docs · 263 872 €</div>
-                        </div>
-                        <div style="background:var(--content-bg);border-radius:6px;padding:8px 10px;text-align:center;border-left:3px solid #059669;">
-                            <div style="font-size:10px;color:#059669;font-weight:700;">Empresa (excl. LP)</div>
-                            <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-top:2px;">479 €</div>
-                            <div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">725 docs · 347 105 €</div>
-                        </div>
-                        <div style="background:var(--content-bg);border-radius:6px;padding:8px 10px;text-align:center;border-left:3px solid #7c3aed;">
-                            <div style="font-size:10px;color:#7c3aed;font-weight:700;">Particular</div>
-                            <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-top:2px;">461 €</div>
-                            <div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">486 docs · 224 098 €</div>
-                        </div>
-                    </div>
-                    <div style="font-size:10px;color:var(--text-secondary);margin-top:8px;text-align:right;">Detalhe mensal por unidade em <i>Indicadores &amp; Objetivos → Ticket Médio 2026</i></div>
-                </div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-top:10px;text-align:right;">Detalhe mensal em <i>Indicadores &amp; Objetivos → Ticket Médio 2026</i></div>
             </div>
             <!-- KPI Dashboard -->
             <div class="kpi-section" id="kpiDashboardBlock">

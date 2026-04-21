@@ -1077,58 +1077,15 @@ body {
       });
       html += '</div>';
     } else {
-      // 2026+: Aggregate from mensal TICKET_DATA arrays
-      var tData = TICKET_DATA[state.year];
-      if (!tData) { html += '<div class="info-banner">ℹ️ Sem dados de ticket médio para ' + state.year + '.</div>'; document.getElementById('content').innerHTML = html; return; }
+      // 2026+: Ticket médio por tipo de cliente (NIF)
+      var cData = TICKET_CLIENT_DATA[state.year];
+      if (!cData) { html += '<div class="info-banner">ℹ️ Sem dados de ticket médio para ' + state.year + '.</div>'; document.getElementById('content').innerHTML = html; return; }
 
-      // Calculate aggregated geral per unit
-      var mData = MARGEM_DATA[state.year];
-      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Valores acumulados dos meses com dados disponíveis.</p>';
-      html += '<div class="tg-grid">';
-      unitList.forEach(function(u) {
-        var monthly = tData[u.id];
-        if (!monthly || !Array.isArray(monthly)) return;
-        var totalOSV = 0, mCount = 0;
-        var sumTicketT = 0, sumTicketP = 0, sumTicketMO = 0;
-        var sumHDisp = 0, sumHVend = 0;
-        for (var i = 0; i < 12; i++) {
-          if (monthly[i]) {
-            totalOSV += monthly[i][0]; mCount++;
-            sumTicketP += monthly[i][0] * monthly[i][1];
-            sumTicketMO += monthly[i][0] * monthly[i][2];
-            sumTicketT += monthly[i][0] * monthly[i][3];
-            sumHDisp += monthly[i][5];
-            sumHVend += monthly[i][6];
-          }
-        }
-        if (totalOSV === 0) return;
-        var avgTicketT = sumTicketT / totalOSV;
-        var avgTicketP = sumTicketP / totalOSV;
-        var avgTicketMO = sumTicketMO / totalOSV;
-        var totalVendas = mData && mData[u.id] ? mData[u.id].reduce(function(s, m) { return s + (m ? m[0] : 0); }, 0) : 0;
-
-        html += '<div class="tg-card ' + u.cls + '">' +
-          '<div class="tg-card-title">' + u.icon + ' ' + u.name + '</div>' +
-          '<div class="tg-big">' + formatEur(avgTicketT) + '</div>' +
-          '<div style="font-size:.75rem;color:var(--gray-600);margin-top:4px;">' + totalOSV.toLocaleString('pt-PT') + ' OSV em ' + mCount + ' meses</div>' +
-          '<div class="tg-row">' +
-            '<div class="tg-metric"><div class="tg-metric-label">Peças</div><div class="tg-metric-val">' + formatEur(avgTicketP) + '</div></div>' +
-            '<div class="tg-metric"><div class="tg-metric-label">Mão-de-Obra</div><div class="tg-metric-val">' + formatEur(avgTicketMO) + '</div></div>' +
-          '</div>' +
-          '<div class="tg-row">' +
-            '<div class="tg-metric"><div class="tg-metric-label">H. Disponíveis</div><div class="tg-metric-val">' + formatNum(sumHDisp) + '</div></div>' +
-            '<div class="tg-metric"><div class="tg-metric-label">H. Vendidas</div><div class="tg-metric-val">' + formatNum(sumHVend) + '</div></div>' +
-          '</div>' +
-        '</div>';
-      });
-      html += '</div>';
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Análise cruzada entre faturação <b>Officegest</b> (séries 261/262/263) e rubrica <b>Total Vendas S/IVA</b> da Margem Mensal. Classificação por NIF: 1º dígito <b>5-9</b> → Empresa · <b>1-4</b> ou 999999990 → Particular · exceção: Lease Plan &amp; Fleet Cover. Particular inclui ajuste residual (Vendas − OG positivo). Valores acumulados dos meses com dados disponíveis.</p>';
 
       // ══════ Ticket Médio por Tipo de Cliente (breakdown por NIF) ══════
-      var cData = TICKET_CLIENT_DATA[state.year];
-      if (cData) {
-        html += '<div class="tc-section">' +
-          '<div class="tc-section-title">👥 Ticket Médio por Tipo de Cliente</div>' +
-          '<div class="tc-section-sub">Análise cruzada entre faturação Officegest (séries 261/262/263) e rubrica <b>Total Vendas S/IVA</b> da Margem Mensal. Classificação por NIF: 1º dígito <b>5-9</b> → Empresa · <b>1-4</b> ou 999999990 → Particular · exceção: Lease Plan &amp; Fleet Cover. Particular inclui ajuste residual (Vendas − OG positivo).</div>' +
+      {
+        html += '<div class="tc-section" style="margin-top:0;">' +
           '<div class="tc-grid">';
         unitList.forEach(function(u) {
           var arr = cData[u.id];
@@ -1184,34 +1141,64 @@ body {
 
     var unitNames = ['Mec. Cacém', 'Mec. Lisboa', 'Colisão', 'DomusCar'];
     var unitIds = ['mecanica_cacem', 'mecanica_lisboa', 'colisao', 'domuscar'];
-    var pecasVals = [], moVals = [];
+
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
 
     if (state.year === 2025) {
       var td = TICKET_DATA[2025];
+      var pecasVals = [], moVals = [];
       unitIds.forEach(function(id) {
         pecasVals.push(td[id] ? td[id].ticketPecas : 0);
         moVals.push(td[id] ? td[id].ticketMO : 0);
       });
-    } else {
-      var td = TICKET_DATA[state.year];
-      unitIds.forEach(function(id) {
-        var monthly = td && td[id];
-        if (!monthly || !Array.isArray(monthly)) { pecasVals.push(0); moVals.push(0); return; }
-        var tOSV = 0, sP = 0, sMO = 0;
-        for (var i = 0; i < 12; i++) { if (monthly[i]) { tOSV += monthly[i][0]; sP += monthly[i][0]*monthly[i][1]; sMO += monthly[i][0]*monthly[i][2]; } }
-        pecasVals.push(tOSV ? sP/tOSV : 0);
-        moVals.push(tOSV ? sMO/tOSV : 0);
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: unitNames,
+          datasets: [
+            { label: 'Ticket Peças (€)', data: pecasVals, backgroundColor: 'rgba(0,123,192,.6)', borderColor: 'rgba(0,123,192,1)', borderWidth: 1, borderRadius: 6 },
+            { label: 'Ticket MO (€)', data: moVals, backgroundColor: 'rgba(5,150,105,.5)', borderColor: 'rgba(5,150,105,1)', borderWidth: 1, borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+            tooltip: { backgroundColor: '#002B55', callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; } } }
+          },
+          scales: {
+            y: { beginAtZero: true, stacked: true, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' } },
+            x: { stacked: true, ticks: { font: { family: 'Inter', size: 11, weight: '600' } }, grid: { display: false } }
+          }
+        }
       });
+      return;
     }
 
-    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    // 2026+: Ticket médio por tipo de cliente (LP+FC, Empresa, Particular) por unidade
+    var cData = TICKET_CLIENT_DATA[state.year];
+    if (!cData) return;
+    var lpVals = [], emVals = [], paVals = [];
+    unitIds.forEach(function(id) {
+      var arr = cData[id];
+      if (!arr) { lpVals.push(0); emVals.push(0); paVals.push(0); return; }
+      var a = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
+      for (var i=0;i<12;i++) { var d=arr[i]; if(!d) continue;
+        a.lp.e+=d.lp.e; a.lp.n+=d.lp.n;
+        a.em.e+=d.em.e; a.em.n+=d.em.n;
+        a.pa.e+=d.pa.e; a.pa.n+=d.pa.n; }
+      lpVals.push(a.lp.n ? a.lp.e/a.lp.n : 0);
+      emVals.push(a.em.n ? a.em.e/a.em.n : 0);
+      paVals.push(a.pa.n ? a.pa.e/a.pa.n : 0);
+    });
     currentChart = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: unitNames,
         datasets: [
-          { label: 'Ticket Peças (€)', data: pecasVals, backgroundColor: 'rgba(0,123,192,.6)', borderColor: 'rgba(0,123,192,1)', borderWidth: 1, borderRadius: 6 },
-          { label: 'Ticket MO (€)', data: moVals, backgroundColor: 'rgba(5,150,105,.5)', borderColor: 'rgba(5,150,105,1)', borderWidth: 1, borderRadius: 6 }
+          { label: 'LeasePlan + FleetCover', data: lpVals, backgroundColor: 'rgba(217,119,6,.70)', borderColor: 'rgba(217,119,6,1)', borderWidth: 1, borderRadius: 6 },
+          { label: 'Empresa (excl. LP)',    data: emVals, backgroundColor: 'rgba(5,150,105,.70)',  borderColor: 'rgba(5,150,105,1)',  borderWidth: 1, borderRadius: 6 },
+          { label: 'Particular',             data: paVals, backgroundColor: 'rgba(124,58,237,.70)', borderColor: 'rgba(124,58,237,1)', borderWidth: 1, borderRadius: 6 }
         ]
       },
       options: {
@@ -1221,8 +1208,8 @@ body {
           tooltip: { backgroundColor: '#002B55', callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; } } }
         },
         scales: {
-          y: { beginAtZero: true, stacked: true, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' } },
-          x: { stacked: true, ticks: { font: { family: 'Inter', size: 11, weight: '600' } }, grid: { display: false } }
+          y: { beginAtZero: true, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' }, title: { display: true, text: 'Ticket médio (€)', font: { size: 11 } } },
+          x: { ticks: { font: { family: 'Inter', size: 11, weight: '600' } }, grid: { display: false } }
         }
       }
     });
@@ -1248,26 +1235,93 @@ body {
   // ══════ Ticket Médio: Mensal detail per unit ══════
   function renderTicketMensal() {
     var unit = UNITS.find(function(u) { return u.id === state.unit; });
+    var cArr = TICKET_CLIENT_DATA[state.year] && TICKET_CLIENT_DATA[state.year][state.unit];
+    var hasClientData = cArr && cArr.some(function(m) { return m !== null; });
     var tData = TICKET_DATA[state.year];
     var monthly = tData && tData[state.unit];
-    var hasData = monthly && Array.isArray(monthly) && monthly.some(function(m) { return m !== null; });
+    var hasOsvData = monthly && Array.isArray(monthly) && monthly.some(function(m) { return m !== null; });
 
     var html = '<button class="btn-back" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\')">← Voltar</button>';
     html += '<div class="data-header" style="margin-top:20px;">' +
       '<h2>🎫 Ticket Médio — ' + (unit ? unit.name : '') + ' ' + state.year + '</h2>';
-    if (hasData) {
+    if (hasClientData || hasOsvData) {
       html += '<span class="data-badge" style="background:rgba(5,150,105,.1);color:#059669;">Dados Reais</span>';
     } else {
       html += '<span class="data-badge placeholder">Em Breve</span>';
     }
     html += '</div>';
 
-    if (!hasData) {
+    if (!hasClientData && !hasOsvData) {
       html += '<div class="info-banner">ℹ️ Os dados mensais de ticket médio para esta unidade ainda não foram carregados.</div>';
       document.getElementById('content').innerHTML = html;
       return;
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // Ramo 2026+: tabela e gráfico APENAS por tipo de cliente (NIF)
+    // ─────────────────────────────────────────────────────────────
+    if (hasClientData) {
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin:8px 0 16px;">Faturação Officegest por categoria NIF (LP+FC / Empresa / Particular) vs <b>Total Vendas S/IVA</b> da Margem Mensal. Diff = Vendas − OG (positivo = crédito notas &amp; ajustes, somado a Particular).</p>';
+
+      // Chart
+      html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+      // Tabela mensal por tipo de cliente
+      html += '<div class="tc-mensal-wrap" style="margin-top:24px;">' +
+        '<table class="tc-mensal-table"><thead><tr>' +
+          '<th rowspan="2">Mês</th>' +
+          '<th colspan="3" class="cat-lp">LeasePlan + FleetCover</th>' +
+          '<th colspan="3" class="cat-em">Empresa (excl. LP)</th>' +
+          '<th colspan="3" class="cat-pa">Particular</th>' +
+          '<th rowspan="2">Total OG</th>' +
+          '<th rowspan="2">Vendas S/IVA</th>' +
+          '<th rowspan="2">Diff</th>' +
+        '</tr><tr>' +
+          '<th class="cat-lp">€</th><th class="cat-lp">Nº</th><th class="cat-lp">Ticket</th>' +
+          '<th class="cat-em">€</th><th class="cat-em">Nº</th><th class="cat-em">Ticket</th>' +
+          '<th class="cat-pa">€</th><th class="cat-pa">Nº</th><th class="cat-pa">Ticket</th>' +
+        '</tr></thead><tbody>';
+      var tot = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0, diff:0 };
+      MONTHS.forEach(function(m, i) {
+        var d = cArr[i];
+        html += '<tr><td>' + m + '</td>';
+        if (d) {
+          html += '<td>' + formatEur(d.lp.e) + '</td><td>' + d.lp.n + '</td><td>' + formatEur(d.lp.t) + '</td>';
+          html += '<td>' + formatEur(d.em.e) + '</td><td>' + d.em.n + '</td><td>' + formatEur(d.em.t) + '</td>';
+          html += '<td>' + formatEur(d.pa.e) + '</td><td>' + d.pa.n + '</td><td>' + formatEur(d.pa.t) + '</td>';
+          html += '<td>' + formatEur(d.og) + '</td>';
+          html += '<td>' + formatEur(d.margem) + '</td>';
+          var diffCls = d.diff >= 0 ? 'diff-pos' : 'diff-neg';
+          html += '<td class="' + diffCls + '">' + (d.diff >= 0 ? '+' : '') + formatEur(d.diff) + '</td>';
+          tot.lp.e += d.lp.e; tot.lp.n += d.lp.n;
+          tot.em.e += d.em.e; tot.em.n += d.em.n;
+          tot.pa.e += d.pa.e; tot.pa.n += d.pa.n;
+          tot.og += d.og; tot.margem += d.margem; tot.diff += d.diff;
+        } else {
+          for (var c = 0; c < 12; c++) html += '<td class="placeholder-val">—</td>';
+        }
+        html += '</tr>';
+      });
+      if (tot.lp.n + tot.em.n + tot.pa.n > 0) {
+        html += '<tr class="total-row"><td>Acumulado</td>';
+        html += '<td>' + formatEur(tot.lp.e) + '</td><td>' + tot.lp.n + '</td><td>' + formatEur(tot.lp.n ? tot.lp.e/tot.lp.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.em.e) + '</td><td>' + tot.em.n + '</td><td>' + formatEur(tot.em.n ? tot.em.e/tot.em.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.pa.e) + '</td><td>' + tot.pa.n + '</td><td>' + formatEur(tot.pa.n ? tot.pa.e/tot.pa.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.og) + '</td><td>' + formatEur(tot.margem) + '</td>';
+        var diffClsT = tot.diff >= 0 ? 'diff-pos' : 'diff-neg';
+        html += '<td class="' + diffClsT + '">' + (tot.diff >= 0 ? '+' : '') + formatEur(tot.diff) + '</td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
+
+      document.getElementById('content').innerHTML = html;
+      setTimeout(function() { renderTicketMensalChart(cArr); }, 80);
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Ramo 2025 (legacy): tabela OSV/Peças/MO/Horas
+    // ─────────────────────────────────────────────────────────────
     // Chart
     html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
 
@@ -1315,115 +1369,100 @@ body {
       html += '<td>' + formatNum(sHP / totalOSV) + '</td>';
       html += '<td>' + formatNum(sHD) + '</td>';
       html += '<td>' + formatNum(sHV) + '</td>';
-      var avgEurH = sHV > 0 ? (totalOSV * (sTT / totalOSV)) / sHV : 0;
-      // Actually €/H = total vendas / total horas vendidas. Use margem data for total vendas
-      var mData = MARGEM_DATA[state.year] && MARGEM_DATA[state.year][state.unit];
+      var mDataLeg = MARGEM_DATA[state.year] && MARGEM_DATA[state.year][state.unit];
       var tVendas = 0;
-      if (mData) { for (var j = 0; j < 12; j++) { if (mData[j] && monthly[j]) tVendas += mData[j][1]; } }
+      if (mDataLeg) { for (var j = 0; j < 12; j++) { if (mDataLeg[j] && monthly[j]) tVendas += mDataLeg[j][1]; } }
       html += '<td>' + formatEur(tVendas && sHV ? tVendas / sHV : 0) + '</td>';
       html += '</tr>';
     }
 
     html += '</tbody></table></div>';
 
-    // ══════ Tabela mensal Ticket por Tipo de Cliente ══════
-    var cArr = TICKET_CLIENT_DATA[state.year] && TICKET_CLIENT_DATA[state.year][state.unit];
-    if (cArr && cArr.some(function(m) { return m !== null; })) {
-      html += '<div class="tc-section">' +
-        '<div class="tc-section-title">👥 Ticket Médio Mensal por Tipo de Cliente</div>' +
-        '<div class="tc-section-sub">Faturação OG por categoria NIF (LP+FC / Empresa / Particular) vs Total Vendas S/IVA da Margem Mensal. Diff = Vendas − OG (positivo = crédito notas &amp; ajustes, somado a Particular).</div>' +
-        '<div class="tc-mensal-wrap">' +
-        '<table class="tc-mensal-table"><thead><tr>' +
-          '<th rowspan="2">Mês</th>' +
-          '<th colspan="3" class="cat-lp">LeasePlan + FleetCover</th>' +
-          '<th colspan="3" class="cat-em">Empresa (excl. LP)</th>' +
-          '<th colspan="3" class="cat-pa">Particular</th>' +
-          '<th rowspan="2">Total OG</th>' +
-          '<th rowspan="2">Vendas S/IVA</th>' +
-          '<th rowspan="2">Diff</th>' +
-        '</tr><tr>' +
-          '<th class="cat-lp">€</th><th class="cat-lp">Nº</th><th class="cat-lp">Ticket</th>' +
-          '<th class="cat-em">€</th><th class="cat-em">Nº</th><th class="cat-em">Ticket</th>' +
-          '<th class="cat-pa">€</th><th class="cat-pa">Nº</th><th class="cat-pa">Ticket</th>' +
-        '</tr></thead><tbody>';
-      var tot = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0}, og:0, margem:0, diff:0 };
-      MONTHS.forEach(function(m, i) {
-        var d = cArr[i];
-        html += '<tr><td>' + m + '</td>';
-        if (d) {
-          html += '<td>' + formatEur(d.lp.e) + '</td><td>' + d.lp.n + '</td><td>' + formatEur(d.lp.t) + '</td>';
-          html += '<td>' + formatEur(d.em.e) + '</td><td>' + d.em.n + '</td><td>' + formatEur(d.em.t) + '</td>';
-          html += '<td>' + formatEur(d.pa.e) + '</td><td>' + d.pa.n + '</td><td>' + formatEur(d.pa.t) + '</td>';
-          html += '<td>' + formatEur(d.og) + '</td>';
-          html += '<td>' + formatEur(d.margem) + '</td>';
-          var diffCls = d.diff >= 0 ? 'diff-pos' : 'diff-neg';
-          html += '<td class="' + diffCls + '">' + (d.diff >= 0 ? '+' : '') + formatEur(d.diff) + '</td>';
-          tot.lp.e += d.lp.e; tot.lp.n += d.lp.n;
-          tot.em.e += d.em.e; tot.em.n += d.em.n;
-          tot.pa.e += d.pa.e; tot.pa.n += d.pa.n;
-          tot.og += d.og; tot.margem += d.margem; tot.diff += d.diff;
-        } else {
-          for (var c = 0; c < 12; c++) html += '<td class="placeholder-val">—</td>';
-        }
-        html += '</tr>';
-      });
-      if (tot.lp.n + tot.em.n + tot.pa.n > 0) {
-        html += '<tr class="total-row"><td>Acumulado</td>';
-        html += '<td>' + formatEur(tot.lp.e) + '</td><td>' + tot.lp.n + '</td><td>' + formatEur(tot.lp.n ? tot.lp.e/tot.lp.n : 0) + '</td>';
-        html += '<td>' + formatEur(tot.em.e) + '</td><td>' + tot.em.n + '</td><td>' + formatEur(tot.em.n ? tot.em.e/tot.em.n : 0) + '</td>';
-        html += '<td>' + formatEur(tot.pa.e) + '</td><td>' + tot.pa.n + '</td><td>' + formatEur(tot.pa.n ? tot.pa.e/tot.pa.n : 0) + '</td>';
-        html += '<td>' + formatEur(tot.og) + '</td><td>' + formatEur(tot.margem) + '</td>';
-        var diffClsT = tot.diff >= 0 ? 'diff-pos' : 'diff-neg';
-        html += '<td class="' + diffClsT + '">' + (tot.diff >= 0 ? '+' : '') + formatEur(tot.diff) + '</td>';
-        html += '</tr>';
-      }
-      html += '</tbody></table></div></div>';
-    }
-
     document.getElementById('content').innerHTML = html;
     setTimeout(function() { renderTicketMensalChart(monthly); }, 80);
   }
 
-  function renderTicketMensalChart(monthly) {
+  function renderTicketMensalChart(data) {
     var canvas = document.getElementById('indicadorChart');
     if (!canvas) return;
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
 
-    var labels = [], ticketVals = [], osvVals = [];
-    for (var i = 0; i < 12; i++) {
-      if (monthly[i]) {
+    // Detecta formato: arr de objetos {lp,em,pa,...} → ramo 2026 · arr de arrays [osv,peças,...] → legacy
+    var isClient = data && data.some(function(m) { return m && m.lp; });
+
+    if (isClient) {
+      var labels = [], lpVals = [], emVals = [], paVals = [], ogVals = [];
+      for (var i = 0; i < 12; i++) {
+        var d = data[i];
+        if (!d) continue;
         labels.push(MONTHS_SHORT[i]);
-        ticketVals.push(monthly[i][3]);
-        osvVals.push(monthly[i][0]);
+        lpVals.push(d.lp.t);
+        emVals.push(d.em.t);
+        paVals.push(d.pa.t);
+        ogVals.push(d.og);
       }
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Total OG (€)', data: ogVals, type: 'bar',
+              backgroundColor: 'rgba(0,59,115,.10)', borderColor: 'rgba(0,59,115,.35)', borderWidth: 1, borderRadius: 6,
+              yAxisID: 'y' },
+            { label: 'LP + FC', data: lpVals, type: 'line',
+              borderColor: 'rgba(217,119,6,1)', backgroundColor: 'rgba(217,119,6,.12)',
+              borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: 'rgba(217,119,6,1)', tension: 0.3, fill: false, yAxisID: 'y1' },
+            { label: 'Empresa', data: emVals, type: 'line',
+              borderColor: 'rgba(5,150,105,1)', backgroundColor: 'rgba(5,150,105,.12)',
+              borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: 'rgba(5,150,105,1)', tension: 0.3, fill: false, yAxisID: 'y1' },
+            { label: 'Particular', data: paVals, type: 'line',
+              borderColor: 'rgba(124,58,237,1)', backgroundColor: 'rgba(124,58,237,.12)',
+              borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: 'rgba(124,58,237,1)', tension: 0.3, fill: false, yAxisID: 'y1' }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+            tooltip: {
+              backgroundColor: '#002B55',
+              callbacks: {
+                label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Total OG (€)', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: function(v) { return (v/1000).toFixed(0) + 'k'; }, font: { size: 10 } } },
+            y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Ticket médio (€)', font: { size: 11 } }, grid: { drawOnChartArea: false }, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '600' } } }
+          }
+        }
+      });
+      return;
     }
 
-    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    // Legacy (2025): OSV + Ticket Total
+    var labels = [], ticketVals = [], osvVals = [];
+    for (var i = 0; i < 12; i++) {
+      if (data[i]) {
+        labels.push(MONTHS_SHORT[i]);
+        ticketVals.push(data[i][3]);
+        osvVals.push(data[i][0]);
+      }
+    }
     currentChart = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          {
-            label: 'Nº OSV',
-            data: osvVals,
-            backgroundColor: 'rgba(0,59,115,.25)',
-            borderColor: 'rgba(0,59,115,.6)',
-            borderWidth: 1, borderRadius: 6,
-            yAxisID: 'y'
-          },
-          {
-            label: 'Ticket Médio Total (€)',
-            data: ticketVals,
-            type: 'line',
-            borderColor: 'rgba(0,123,192,1)',
-            backgroundColor: 'rgba(0,123,192,.08)',
-            borderWidth: 2.5,
-            pointRadius: 6,
-            pointBackgroundColor: 'rgba(0,123,192,1)',
-            fill: true,
-            tension: 0.3,
-            yAxisID: 'y1'
-          }
+          { label: 'Nº OSV', data: osvVals,
+            backgroundColor: 'rgba(0,59,115,.25)', borderColor: 'rgba(0,59,115,.6)',
+            borderWidth: 1, borderRadius: 6, yAxisID: 'y' },
+          { label: 'Ticket Médio Total (€)', data: ticketVals, type: 'line',
+            borderColor: 'rgba(0,123,192,1)', backgroundColor: 'rgba(0,123,192,.08)',
+            borderWidth: 2.5, pointRadius: 6, pointBackgroundColor: 'rgba(0,123,192,1)',
+            fill: true, tension: 0.3, yAxisID: 'y1' }
         ]
       },
       options: {
