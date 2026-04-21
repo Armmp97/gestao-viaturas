@@ -269,6 +269,105 @@ body {
   display:flex; align-items:center; gap:10px;
 }
 
+/* ══════ KPI por técnico (2026) ══════ */
+.tec-section { margin-top:28px; }
+.tec-section-title {
+  font-size:1rem; font-weight:800; color:var(--navy); text-transform:uppercase;
+  letter-spacing:.5px; margin:0 0 12px;
+  padding-bottom:8px; border-bottom:2px solid var(--gray-100);
+}
+.tec-month-tabs {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;
+}
+.tec-month-tab {
+  padding:8px 16px; border-radius:8px; border:1px solid var(--gray-200);
+  background:#fff; font-size:.85rem; font-weight:600; color:var(--gray-600);
+  cursor:pointer; transition:var(--transition);
+}
+.tec-month-tab:hover { border-color:var(--accent); color:var(--navy); }
+.tec-month-tab.active {
+  background:var(--navy); color:#fff; border-color:var(--navy);
+}
+.tec-month-tab.disabled {
+  opacity:.35; cursor:not-allowed; background:var(--gray-50);
+}
+.tec-subsection {
+  background:#fff; border:1px solid var(--gray-100);
+  border-radius:var(--radius-sm); padding:16px 18px; margin-bottom:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);
+}
+.tec-subsection-header {
+  font-size:.82rem; font-weight:800; color:var(--accent); text-transform:uppercase;
+  letter-spacing:.6px; margin-bottom:10px;
+}
+.tec-kpi-table, .tec-ranking-table {
+  width:100%; border-collapse:collapse; font-size:.83rem;
+}
+.tec-kpi-table th, .tec-ranking-table th {
+  background:var(--navy); color:#fff; text-align:left;
+  padding:8px 12px; font-weight:700; font-size:.75rem; text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.tec-kpi-table td, .tec-ranking-table td {
+  padding:8px 12px; border-bottom:1px solid var(--gray-100);
+}
+.tec-kpi-table tr:last-child td, .tec-ranking-table tr:last-child td { border-bottom:none; }
+.tec-kpi-table td.mes { font-weight:700; background:rgba(0,123,192,.04); }
+.tec-kpi-rankings { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:700px) { .tec-kpi-rankings { grid-template-columns:1fr; } }
+
+.tec-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;
+}
+.tec-card {
+  background:#fff; border:1px solid var(--gray-100); border-left:3px solid var(--accent);
+  border-radius:var(--radius-sm); padding:14px 14px 12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.tec-card.lisboa { border-left-color:#6366f1; }
+.tec-card.cacem { border-left-color:#059669; }
+.tec-card.colisao { border-left-color:#d97706; }
+.tec-card-name {
+  font-size:.95rem; font-weight:800; color:var(--navy); margin-bottom:10px;
+}
+.tec-card-weeks {
+  width:100%; font-size:.76rem; border-collapse:collapse; margin-bottom:10px;
+}
+.tec-card-weeks th, .tec-card-weeks td {
+  padding:4px 6px; text-align:center; border-bottom:1px solid var(--gray-50);
+}
+.tec-card-weeks th {
+  background:var(--gray-50); color:var(--gray-600); font-weight:700;
+  font-size:.68rem; text-transform:uppercase; letter-spacing:.3px;
+}
+.tec-card-weeks td:first-child { font-weight:700; color:var(--gray-600); }
+.tec-card-summary {
+  display:grid; grid-template-columns:1fr 1fr; gap:6px;
+  background:var(--gray-50); border-radius:6px; padding:8px 10px;
+  font-size:.74rem;
+}
+.tec-card-summary-item { display:flex; flex-direction:column; }
+.tec-card-summary-label {
+  font-size:.63rem; text-transform:uppercase; letter-spacing:.4px;
+  color:var(--gray-600); font-weight:700;
+}
+.tec-card-summary-value { font-size:.95rem; font-weight:800; color:var(--navy); }
+.tec-card-financials {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 10px; background:rgba(0,123,192,.06);
+  border-radius:6px; margin-bottom:8px; font-size:.78rem;
+}
+.tec-card-fin-item { display:flex; flex-direction:column; }
+.tec-card-fin-label {
+  font-size:.62rem; text-transform:uppercase; letter-spacing:.4px;
+  color:var(--gray-600); font-weight:700;
+}
+.tec-card-fin-value { font-size:.9rem; font-weight:800; color:var(--navy); }
+.tec-util-ok { color:#059669; font-weight:700; }
+.tec-util-warn { color:#d97706; font-weight:700; }
+.tec-util-bad { color:#dc2626; font-weight:700; }
+.tec-util-high { color:#2563eb; font-weight:700; }
+
 /* Responsive */
 @media(max-width:600px) {
   .hero { padding:30px 0 22px; }
@@ -400,6 +499,11 @@ body {
       ]
     }
   };
+
+  // ══════ DADOS REAIS KPIs POR TÉCNICO 2026 (Jan/Fev/Mar) ══════
+  // Extraído dos Excel de Coordenação mensais (folhas LX/CA/CO KPIs).
+  // Array indexado por mês (0=Jan..11=Dez). Cada entrada: { unit:{...}, tecnicos:[...] }.
+  var KPI_TECNICOS_DATA = {"2026": {"mecanica_lisboa": [{"unit": {"ht": {"mes": 344.5, "s1": 59.65, "s2": 78.42, "s3": 106.15, "s4": 100.29}, "hv": {"mes": 575.83, "s1": 85.2, "s2": 150.5, "s3": 156.41, "s4": 183.72}, "hd": {"mes": 344.68, "s1": 60.77, "s2": 82.45, "s3": 102.0, "s4": 99.45}, "faltas": {"mes": 56.5, "s1": 48.5, "s2": 8.0, "s3": 0.0, "s4": 0.0}, "ferias": {"mes": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0}, "ef_global": {"mes": 138.07, "s1": 140.19, "s2": 182.53, "s3": 153.34, "s4": 184.74}, "ef_prod": {"mes": 138.62, "s1": 142.84, "s2": 191.91, "s3": 147.35, "s4": 183.19}, "utilizacao": {"mes": 99.69, "s1": 98.14, "s2": 95.11, "s3": 104.06, "s4": 100.84}}, "tecnicos": [{"name": "Emanuel", "weeks": [{"s": 1, "ht": 24.9, "hd": 26.8, "u": 92.9}, {"s": 2, "ht": 24.3, "hd": 26.8, "u": 90.9}, {"s": 3, "ht": 35.0, "hd": 34.0, "u": 103.0}, {"s": 4, "ht": 35.3, "hd": 32.3, "u": 109.3}], "ht_mes": 119.5, "hd_mes": 119.8, "utilizacao_mes": 99.7, "ht_prod": 115.4, "hd_prod": 115.8, "hf_mes": 202.8, "total_faturado": 28200.67, "ef_global": 175.2, "ef_prod": 175.7}, {"name": "Jorge", "weeks": [{"s": 1, "ht": 34.8, "hd": 34.0, "u": 102.3}, {"s": 2, "ht": 30.7, "hd": 31.4, "u": 97.7}, {"s": 3, "ht": 34.6, "hd": 34.0, "u": 101.7}, {"s": 4, "ht": 35.4, "hd": 33.6, "u": 105.4}], "ht_mes": 135.5, "hd_mes": 133.0, "utilizacao_mes": 101.8, "ht_prod": 127.2, "hd_prod": 124.8, "hf_mes": 157.1, "total_faturado": 23245.64, "ef_global": 125.9, "ef_prod": 123.5}, {"name": "Sérgio", "weeks": [{"s": 1, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 23.4, "hd": 24.2, "u": 96.4}, {"s": 3, "ht": 36.6, "hd": 34.0, "u": 107.5}, {"s": 4, "ht": 29.6, "hd": 33.6, "u": 88.1}], "ht_mes": 89.5, "hd_mes": 91.8, "utilizacao_mes": 97.5, "ht_prod": 72.2, "hd_prod": 74.5, "hf_mes": 84.2, "total_faturado": 11282.75, "ef_global": 113.1, "ef_prod": 116.7}, {"name": "Xavier", "weeks": [{"s": 1, "ht": 27.4, "hd": 27.2, "u": 100.6}, {"s": 2, "ht": 19.9, "hd": 24.6, "u": 80.6}, {"s": 3, "ht": 23.3, "hd": 27.2, "u": 85.8}, {"s": 4, "ht": 25.8, "hd": 27.2, "u": 94.7}], "ht_mes": 96.3, "hd_mes": 106.2, "utilizacao_mes": 90.7, "ht_prod": 94.0, "hd_prod": 103.9, "hf_mes": 102.3, "total_faturado": 9140.24, "ef_global": 98.5, "ef_prod": 106.2}]}, {"unit": {"ht": {"mes": 345.68, "s1": 92.83, "s2": 95.59, "s3": 71.97, "s4": 85.29}, "hv": {"mes": 561.24, "s1": 134.7, "s2": 142.79, "s3": 128.91, "s4": 154.84}, "hd": {"mes": 361.42, "s1": 101.32, "s2": 99.45, "s3": 79.05, "s4": 81.6}, "faltas": {"mes": 6.8, "s1": 0.8, "s2": 3.0, "s3": 3.0, "s4": 0.0}, "ferias": {"mes": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0}, "ef_global": {"mes": 152.7, "s1": 132.95, "s2": 143.58, "s3": 163.07, "s4": 189.75}, "ef_prod": {"mes": 160.05, "s1": 145.1, "s2": 149.38, "s3": 179.12, "s4": 181.54}, "utilizacao": {"mes": 95.76, "s1": 91.57, "s2": 96.09, "s3": 91.18, "s4": 111.63}}, "tecnicos": [{"name": "Emanuel", "weeks": [{"s": 1, "ht": 27.8, "hd": 33.3, "u": 83.3}, {"s": 2, "ht": 29.9, "hd": 31.4, "u": 95.1}, {"s": 3, "ht": 23.6, "hd": 24.6, "u": 95.6}, {"s": 4, "ht": 19.0, "hd": 13.6, "u": 140.1}], "ht_mes": 100.3, "hd_mes": 103.0, "utilizacao_mes": 97.3, "ht_prod": 86.4, "hd_prod": 89.2, "hf_mes": 178.7, "total_faturado": 24344.02, "ef_global": 200.5, "ef_prod": 206.8}, {"name": "Jorge", "weeks": [{"s": 1, "ht": 31.1, "hd": 34.0, "u": 91.3}, {"s": 2, "ht": 30.4, "hd": 34.0, "u": 89.5}, {"s": 3, "ht": 25.0, "hd": 27.2, "u": 91.7}, {"s": 4, "ht": 32.7, "hd": 34.0, "u": 96.3}], "ht_mes": 119.2, "hd_mes": 129.2, "utilizacao_mes": 92.2, "ht_prod": 110.2, "hd_prod": 120.2, "hf_mes": 165.2, "total_faturado": 25970.99, "ef_global": 137.5, "ef_prod": 150.0}, {"name": "Sérgio", "weeks": [{"s": 1, "ht": 34.0, "hd": 34.0, "u": 100.1}, {"s": 2, "ht": 35.3, "hd": 34.0, "u": 103.7}, {"s": 3, "ht": 23.5, "hd": 27.2, "u": 86.3}, {"s": 4, "ht": 33.5, "hd": 34.0, "u": 98.5}], "ht_mes": 126.2, "hd_mes": 129.2, "utilizacao_mes": 97.7, "ht_prod": 112.2, "hd_prod": 115.1, "hf_mes": 138.4, "total_faturado": 27620.95, "ef_global": 120.2, "ef_prod": 123.4}, {"name": "Xavier", "weeks": [{"s": 1, "ht": 13.6, "hd": 27.2, "u": 50.0}, {"s": 2, "ht": 17.1, "hd": 27.2, "u": 63.0}, {"s": 3, "ht": 17.0, "hd": 20.4, "u": 83.5}, {"s": 4, "ht": 20.6, "hd": 27.2, "u": 75.6}], "ht_mes": 68.3, "hd_mes": 102.0, "utilizacao_mes": 67.0, "ht_prod": 66.1, "hd_prod": 99.8, "hf_mes": 121.7, "total_faturado": 2857.1, "ef_global": 121.9, "ef_prod": 178.1}]}, {"unit": {"ht": {"mes": 356.55, "s1": 96.96, "s2": 88.48, "s3": 66.01, "s4": 76.53, "s5": 28.56}, "hv": {"mes": 611.89, "s1": 130.24, "s2": 124.21, "s3": 117.52, "s4": 180.68, "s5": 59.24}, "hd": {"mes": 322.15, "s1": 68.0, "s2": 95.2, "s3": 63.75, "s4": 68.0, "s5": 27.2}, "faltas": {"mes": 101.0, "s1": 0.0, "s2": 0.0, "s3": 45.0, "s4": 40.0, "s5": 16.0}, "ferias": {"mes": 8.0, "s1": 0.0, "s2": 8.0, "s3": 0.0, "s4": 0.0, "s5": 0.0}, "ef_global": {"mes": 218.14, "s1": 191.53, "s2": 130.47, "s3": 184.35, "s4": 265.71, "s5": 217.79}, "ef_prod": {"mes": 157.87, "s1": 134.32, "s2": 140.38, "s3": 178.03, "s4": 236.08, "s5": 207.42}, "utilizacao": {"mes": 132.37, "s1": 62.48, "s2": 93.32, "s3": 101.39, "s4": 75.03, "s5": 70.0}}, "tecnicos": [{"name": "Emanuel", "weeks": [{"s": 1, "ht": 33.2, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 26.8, "hd": 27.2, "u": 98.6}, {"s": 3, "ht": 6.5, "hd": 6.8, "u": 95.4}, {"s": 4, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 5, "ht": 0.0, "hd": 0.0, "u": 0.0}], "ht_mes": 66.6, "hd_mes": 34.0, "utilizacao_mes": 195.8, "ht_prod": 66.1, "hd_prod": 33.6, "hf_mes": 122.1, "total_faturado": 15935.34, "ef_global": 363.7, "ef_prod": 184.6}, {"name": "Jorge", "weeks": [{"s": 1, "ht": 32.3, "hd": 34.0, "u": 95.0}, {"s": 2, "ht": 30.9, "hd": 34.0, "u": 91.0}, {"s": 3, "ht": 35.8, "hd": 34.0, "u": 105.2}, {"s": 4, "ht": 35.6, "hd": 34.0, "u": 104.7}, {"s": 5, "ht": 14.3, "hd": 13.6, "u": 105.3}], "ht_mes": 148.9, "hd_mes": 149.6, "utilizacao_mes": 99.5, "ht_prod": 131.8, "hd_prod": 132.4, "hf_mes": 217.6, "total_faturado": 29830.72, "ef_global": 164.3, "ef_prod": 165.1}, {"name": "Sérgio", "weeks": [{"s": 1, "ht": 31.4, "hd": 34.0, "u": 92.4}, {"s": 2, "ht": 30.7, "hd": 34.0, "u": 90.3}, {"s": 3, "ht": 23.8, "hd": 22.9, "u": 103.5}, {"s": 4, "ht": 40.9, "hd": 34.0, "u": 120.4}, {"s": 5, "ht": 14.2, "hd": 13.6, "u": 104.7}], "ht_mes": 141.1, "hd_mes": 138.6, "utilizacao_mes": 101.8, "ht_prod": 121.9, "hd_prod": 119.4, "hf_mes": 151.0, "total_faturado": 20478.62, "ef_global": 126.5, "ef_prod": 123.9}, {"name": "Xavier", "weeks": [{"s": 1, "ht": 12.5, "hd": 13.6, "u": 92.0}, {"s": 2, "ht": 23.4, "hd": 27.2, "u": 86.0}, {"s": 3, "ht": 24.8, "hd": 27.2, "u": 91.3}, {"s": 4, "ht": 26.1, "hd": 27.2, "u": 95.8}, {"s": 5, "ht": 10.5, "hd": 6.8, "u": 154.5}], "ht_mes": 97.3, "hd_mes": 102.0, "utilizacao_mes": 95.4, "ht_prod": 94.8, "hd_prod": 99.5, "hf_mes": 83.8, "total_faturado": 4744.62, "ef_global": 84.3, "ef_prod": 86.2}]}, null, null, null, null, null, null, null, null, null], "mecanica_cacem": [{"unit": {"ht": {"mes": 574.31, "s1": 132.25, "s2": 123.04, "s3": 149.87, "s4": 169.15}, "hv": {"mes": 722.18, "s1": 138.01, "s2": 137.77, "s3": 220.79, "s4": 225.61}, "hd": {"mes": 610.3, "s1": 142.8, "s2": 129.2, "s3": 161.5, "s4": 176.8}, "faltas": {"mes": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0}, "ferias": {"mes": 88.0, "s1": 40.0, "s2": 40.0, "s3": 8.0, "s4": 0.0}, "ef_global": {"mes": 120.75, "s1": 96.65, "s2": 106.63, "s3": 136.71, "s4": 127.61}, "ef_prod": {"mes": 130.52, "s1": 104.36, "s2": 111.97, "s3": 147.32, "s4": 133.38}, "utilizacao": {"mes": 93.9, "s1": 92.61, "s2": 95.23, "s3": 92.8, "s4": 95.67}}, "tecnicos": [{"name": "Arnaldo", "weeks": [{"s": 1, "ht": 38.9, "hd": 34.0, "u": 114.4}, {"s": 2, "ht": 35.7, "hd": 30.6, "u": 116.8}, {"s": 3, "ht": 36.1, "hd": 34.0, "u": 106.1}, {"s": 4, "ht": 36.0, "hd": 34.0, "u": 105.7}], "ht_mes": 146.7, "hd_mes": 132.6, "utilizacao_mes": 110.6, "ht_prod": 123.8, "hd_prod": 109.7, "hf_mes": 129.7, "total_faturado": 18153.33, "ef_global": 118.3, "ef_prod": 104.8}, {"name": "Edmilson", "weeks": [{"s": 1, "ht": 28.4, "hd": 34.0, "u": 83.4}, {"s": 2, "ht": 24.7, "hd": 30.6, "u": 80.8}, {"s": 3, "ht": 33.3, "hd": 34.0, "u": 98.0}, {"s": 4, "ht": 30.7, "hd": 34.0, "u": 90.2}], "ht_mes": 117.1, "hd_mes": 132.6, "utilizacao_mes": 88.3, "ht_prod": 112.1, "hd_prod": 127.6, "hf_mes": 119.7, "total_faturado": 14642.53, "ef_global": 93.8, "ef_prod": 106.8}, {"name": "Filipe", "weeks": [{"s": 1, "ht": 34.9, "hd": 40.8, "u": 85.4}, {"s": 2, "ht": 27.9, "hd": 30.6, "u": 91.3}, {"s": 3, "ht": 28.2, "hd": 34.0, "u": 83.0}, {"s": 4, "ht": 30.1, "hd": 34.0, "u": 88.5}], "ht_mes": 121.1, "hd_mes": 139.4, "utilizacao_mes": 86.9, "ht_prod": 102.6, "hd_prod": 120.9, "hf_mes": 173.7, "total_faturado": 23070.06, "ef_global": 143.7, "ef_prod": 169.3}, {"name": "Robson", "weeks": [{"s": 1, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 3, "ht": 23.6, "hd": 25.5, "u": 92.7}, {"s": 4, "ht": 30.7, "hd": 34.0, "u": 90.3}], "ht_mes": 54.3, "hd_mes": 59.5, "utilizacao_mes": 91.3, "ht_prod": 53.7, "hd_prod": 58.9, "hf_mes": 64.3, "total_faturado": 7180.45, "ef_global": 109.1, "ef_prod": 119.6}, {"name": "Gonçalo", "weeks": [{"s": 1, "ht": 30.1, "hd": 34.0, "u": 88.6}, {"s": 2, "ht": 34.6, "hd": 37.4, "u": 92.6}, {"s": 3, "ht": 28.6, "hd": 34.0, "u": 84.2}, {"s": 4, "ht": 41.7, "hd": 40.8, "u": 102.3}], "ht_mes": 135.1, "hd_mes": 146.2, "utilizacao_mes": 92.4, "ht_prod": 116.3, "hd_prod": 127.3, "hf_mes": 176.9, "total_faturado": 28032.72, "ef_global": 138.9, "ef_prod": 152.1}, {"name": "Rafael", "weeks": [{"s": 1, "ht": 8.6, "hd": 13.6, "u": 63.1}, {"s": 2, "ht": 14.2, "hd": 23.8, "u": 59.7}, {"s": 3, "ht": 9.6, "hd": 20.4, "u": 47.3}, {"s": 4, "ht": 6.2, "hd": 20.4, "u": 30.2}], "ht_mes": 38.6, "hd_mes": 78.2, "utilizacao_mes": 49.4, "ht_prod": 32.7, "hd_prod": 72.3, "hf_mes": 29.0, "total_faturado": 3114.55, "ef_global": 40.0, "ef_prod": 88.5}]}, {"unit": {"ht": {"mes": 499.58, "s1": 151.83, "s2": 133.79, "s3": 107.74, "s4": 106.22}, "hv": {"mes": 559.37, "s1": 169.74, "s2": 117.76, "s3": 126.02, "s4": 145.85}, "hd": {"mes": 556.75, "s1": 163.2, "s2": 176.8, "s3": 115.6, "s4": 101.15}, "faltas": {"mes": 1.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 1.0}, "ferias": {"mes": 72.0, "s1": 8.0, "s2": 0.0, "s3": 40.0, "s4": 24.0}, "ef_global": {"mes": 118.36, "s1": 104.01, "s2": 66.61, "s3": 109.01, "s4": 144.19}, "ef_prod": {"mes": 130.89, "s1": 111.8, "s2": 88.02, "s3": 116.96, "s4": 137.31}, "utilizacao": {"mes": 90.79, "s1": 93.57, "s2": 75.51, "s3": 74.78, "s4": 79.68}}, "tecnicos": [{"name": "Arnaldo", "weeks": [{"s": 1, "ht": 31.2, "hd": 34.0, "u": 91.7}, {"s": 2, "ht": 32.1, "hd": 34.0, "u": 94.5}, {"s": 3, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 4, "ht": 14.0, "hd": 13.6, "u": 102.8}], "ht_mes": 77.3, "hd_mes": 81.6, "utilizacao_mes": 94.7, "ht_prod": 64.9, "hd_prod": 69.2, "hf_mes": 95.3, "total_faturado": 14203.62, "ef_global": 137.7, "ef_prod": 146.8}, {"name": "Edmilson", "weeks": [{"s": 1, "ht": 32.6, "hd": 34.0, "u": 96.0}, {"s": 2, "ht": 27.5, "hd": 34.0, "u": 80.8}, {"s": 3, "ht": 25.5, "hd": 27.2, "u": 93.7}, {"s": 4, "ht": 21.1, "hd": 20.4, "u": 103.2}], "ht_mes": 106.6, "hd_mes": 115.6, "utilizacao_mes": 92.2, "ht_prod": 101.3, "hd_prod": 110.3, "hf_mes": 123.3, "total_faturado": 13561.57, "ef_global": 111.8, "ef_prod": 121.6}, {"name": "Filipe", "weeks": [{"s": 1, "ht": 28.9, "hd": 34.0, "u": 85.1}, {"s": 2, "ht": 18.2, "hd": 34.0, "u": 53.6}, {"s": 3, "ht": 30.2, "hd": 34.0, "u": 88.9}, {"s": 4, "ht": 32.9, "hd": 34.0, "u": 96.8}], "ht_mes": 110.3, "hd_mes": 136.0, "utilizacao_mes": 81.1, "ht_prod": 89.1, "hd_prod": 114.8, "hf_mes": 121.1, "total_faturado": 21617.65, "ef_global": 105.5, "ef_prod": 135.9}, {"name": "Robson", "weeks": [{"s": 1, "ht": 30.1, "hd": 34.0, "u": 88.6}, {"s": 2, "ht": 23.4, "hd": 34.0, "u": 69.0}, {"s": 3, "ht": 24.7, "hd": 27.2, "u": 90.7}, {"s": 4, "ht": 31.7, "hd": 33.1, "u": 95.5}], "ht_mes": 109.9, "hd_mes": 128.3, "utilizacao_mes": 85.6, "ht_prod": 105.9, "hd_prod": 124.3, "hf_mes": 98.0, "total_faturado": 8585.8, "ef_global": 78.8, "ef_prod": 92.5}, {"name": "Gonçalo", "weeks": [{"s": 1, "ht": 29.0, "hd": 27.2, "u": 106.4}, {"s": 2, "ht": 32.5, "hd": 40.8, "u": 79.7}, {"s": 3, "ht": 27.4, "hd": 27.2, "u": 100.7}, {"s": 4, "ht": 6.6, "hd": 0.0, "u": 0.0}], "ht_mes": 95.4, "hd_mes": 95.2, "utilizacao_mes": 100.3, "ht_prod": 71.5, "hd_prod": 71.3, "hf_mes": 112.7, "total_faturado": 19117.88, "ef_global": 158.1, "ef_prod": 157.6}]}, {"unit": {"ht": {"mes": 575.8, "s1": 141.57, "s2": 122.14, "s3": 135.23, "s4": 121.11, "s5": 55.76}, "hv": {"mes": 757.06, "s1": 182.21, "s2": 119.07, "s3": 168.44, "s4": 115.23, "s5": 172.11}, "hd": {"mes": 589.9, "s1": 142.8, "s2": 136.0, "s3": 136.0, "s4": 122.4, "s5": 52.7}, "faltas": {"mes": 18.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 16.0, "s5": 2.0}, "ferias": {"mes": 8.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 8.0, "s5": 0.0}, "ef_global": {"mes": 137.49, "s1": 127.6, "s2": 87.55, "s3": 123.85, "s4": 94.14, "s5": 326.58}, "ef_prod": {"mes": 141.31, "s1": 128.7, "s2": 97.49, "s3": 124.56, "s4": 95.15, "s5": 308.68}, "utilizacao": {"mes": 97.84, "s1": 99.31, "s2": 90.31, "s3": 99.43, "s4": 100.72, "s5": 106.22}}, "tecnicos": [{"name": "Arnaldo", "weeks": [{"s": 1, "ht": 36.4, "hd": 34.0, "u": 107.1}, {"s": 2, "ht": 34.7, "hd": 34.0, "u": 101.9}, {"s": 3, "ht": 35.7, "hd": 34.0, "u": 105.1}, {"s": 4, "ht": 29.1, "hd": 27.2, "u": 107.1}, {"s": 5, "ht": 14.2, "hd": 13.6, "u": 104.5}], "ht_mes": 150.1, "hd_mes": 142.8, "utilizacao_mes": 105.1, "ht_prod": 141.4, "hd_prod": 134.1, "hf_mes": 195.0, "total_faturado": 23756.38, "ef_global": 145.4, "ef_prod": 137.8}, {"name": "Edmilson", "weeks": [{"s": 1, "ht": 35.3, "hd": 34.0, "u": 103.8}, {"s": 2, "ht": 23.2, "hd": 27.2, "u": 85.2}, {"s": 3, "ht": 31.3, "hd": 34.0, "u": 92.2}, {"s": 4, "ht": 23.2, "hd": 20.4, "u": 114.0}, {"s": 5, "ht": 14.2, "hd": 11.9, "u": 119.4}], "ht_mes": 127.3, "hd_mes": 127.5, "utilizacao_mes": 99.8, "ht_prod": 125.3, "hd_prod": 125.6, "hf_mes": 147.2, "total_faturado": 17416.56, "ef_global": 117.2, "ef_prod": 117.4}, {"name": "Filipe", "weeks": [{"s": 1, "ht": 30.8, "hd": 34.0, "u": 90.5}, {"s": 2, "ht": 30.7, "hd": 40.8, "u": 75.1}, {"s": 3, "ht": 33.3, "hd": 34.0, "u": 97.8}, {"s": 4, "ht": 27.3, "hd": 34.0, "u": 80.3}, {"s": 5, "ht": 12.6, "hd": 13.6, "u": 92.4}], "ht_mes": 134.6, "hd_mes": 156.4, "utilizacao_mes": 86.0, "ht_prod": 122.8, "hd_prod": 144.7, "hf_mes": 190.2, "total_faturado": 25141.87, "ef_global": 131.5, "ef_prod": 154.9}, {"name": "Gonçalo", "weeks": [{"s": 1, "ht": 39.1, "hd": 40.8, "u": 95.9}, {"s": 2, "ht": 33.6, "hd": 34.0, "u": 98.9}, {"s": 3, "ht": 34.9, "hd": 34.0, "u": 102.6}, {"s": 4, "ht": 41.4, "hd": 40.8, "u": 101.6}, {"s": 5, "ht": 14.8, "hd": 13.6, "u": 108.6}], "ht_mes": 163.8, "hd_mes": 163.2, "utilizacao_mes": 100.4, "ht_prod": 125.5, "hd_prod": 124.9, "hf_mes": 194.7, "total_faturado": 31672.47, "ef_global": 155.9, "ef_prod": 155.1}]}, null, null, null, null, null, null, null, null, null], "colisao": [{"unit": {"ht": {"mes": 1211.87, "s1": 328.84, "s2": 307.85, "s3": 322.56, "s4": 252.61}, "hv": {"mes": 716.4, "s1": 131.03, "s2": 148.21, "s3": 148.51, "s4": 288.65}, "hd": {"mes": 1202.75, "s1": 308.55, "s2": 293.25, "s3": 312.8, "s4": 288.15}, "faltas": {"mes": 11.0, "s1": 8.0, "s2": 3.0, "s3": 0.0, "s4": 0.0}, "ferias": {"mes": 32.0, "s1": 0.0, "s2": 0.0, "s3": 8.0, "s4": 24.0}, "ef_global": {"mes": 95.02, "s1": 42.47, "s2": 50.54, "s3": 47.48, "s4": 100.17}, "ef_prod": {"mes": 92.6, "s1": 39.85, "s2": 48.14, "s3": 46.04, "s4": 114.27}, "utilizacao": {"mes": 101.48, "s1": 106.58, "s2": 104.98, "s3": 103.12, "s4": 87.67}}, "tecnicos": [{"name": "Diogo Fernandes", "weeks": [{"s": 1, "ht": 44.2, "hd": 45.9, "u": 96.3}, {"s": 2, "ht": 42.3, "hd": 38.7, "u": 109.3}, {"s": 3, "ht": 47.5, "hd": 45.9, "u": 103.6}, {"s": 4, "ht": 37.9, "hd": 42.5, "u": 89.2}], "ht_mes": 172.0, "hd_mes": 173.0, "utilizacao_mes": 99.4, "ht_prod": 132.6, "hd_prod": 133.6, "hf_mes": 106.1, "total_faturado": 8926.29, "ef_global": 79.4, "ef_prod": 80.0}, {"name": "Nuno Montês", "weeks": [{"s": 1, "ht": 36.6, "hd": 34.0, "u": 107.5}, {"s": 2, "ht": 32.7, "hd": 31.9, "u": 102.7}, {"s": 3, "ht": 43.8, "hd": 47.6, "u": 92.1}, {"s": 4, "ht": 26.8, "hd": 35.7, "u": 75.1}], "ht_mes": 139.9, "hd_mes": 149.2, "utilizacao_mes": 93.8, "ht_prod": 102.1, "hd_prod": 111.4, "hf_mes": 99.7, "total_faturado": 7234.7, "ef_global": 89.5, "ef_prod": 97.6}, {"name": "Carlos Antunes", "weeks": [{"s": 1, "ht": 41.4, "hd": 38.2, "u": 108.2}, {"s": 2, "ht": 40.1, "hd": 38.7, "u": 103.8}, {"s": 3, "ht": 38.5, "hd": 38.2, "u": 100.7}, {"s": 4, "ht": 37.4, "hd": 45.9, "u": 81.4}], "ht_mes": 157.4, "hd_mes": 161.1, "utilizacao_mes": 97.7, "ht_prod": 141.7, "hd_prod": 145.4, "hf_mes": 139.7, "total_faturado": 9026.84, "ef_global": 96.1, "ef_prod": 98.6}, {"name": "Vitor Soutilha", "weeks": [{"s": 1, "ht": 42.3, "hd": 42.5, "u": 99.5}, {"s": 2, "ht": 41.8, "hd": 38.7, "u": 108.0}, {"s": 3, "ht": 40.7, "hd": 38.2, "u": 106.4}, {"s": 4, "ht": 18.8, "hd": 22.9, "u": 81.7}], "ht_mes": 143.5, "hd_mes": 142.4, "utilizacao_mes": 100.8, "ht_prod": 122.1, "hd_prod": 121.0, "hf_mes": 110.4, "total_faturado": 8884.91, "ef_global": 91.2, "ef_prod": 90.4}, {"name": "Gyanu Pujara", "weeks": [{"s": 1, "ht": 44.1, "hd": 47.6, "u": 92.6}, {"s": 2, "ht": 37.8, "hd": 44.6, "u": 84.8}, {"s": 3, "ht": 41.7, "hd": 46.8, "u": 89.3}, {"s": 4, "ht": 38.2, "hd": 45.9, "u": 83.1}], "ht_mes": 161.8, "hd_mes": 184.9, "utilizacao_mes": 87.5, "ht_prod": 140.0, "hd_prod": 163.1, "hf_mes": 137.3, "total_faturado": 11813.57, "ef_global": 84.2, "ef_prod": 98.0}, {"name": "José Fernandes", "weeks": [{"s": 1, "ht": 47.7, "hd": 38.2, "u": 124.6}, {"s": 2, "ht": 42.0, "hd": 36.1, "u": 116.2}, {"s": 3, "ht": 41.9, "hd": 34.9, "u": 120.4}, {"s": 4, "ht": 37.1, "hd": 34.0, "u": 109.1}], "ht_mes": 168.7, "hd_mes": 143.2, "utilizacao_mes": 117.8, "ht_prod": 109.9, "hd_prod": 84.4, "hf_mes": 103.9, "total_faturado": 4093.31, "ef_global": 123.0, "ef_prod": 94.5}, {"name": "João Bizarro", "weeks": [{"s": 1, "ht": 41.5, "hd": 34.9, "u": 119.0}, {"s": 2, "ht": 37.1, "hd": 31.9, "u": 116.4}, {"s": 3, "ht": 39.4, "hd": 34.0, "u": 115.9}, {"s": 4, "ht": 34.1, "hd": 34.0, "u": 100.4}], "ht_mes": 152.1, "hd_mes": 134.7, "utilizacao_mes": 112.9, "ht_prod": 124.0, "hd_prod": 106.6, "hf_mes": 93.5, "total_faturado": 3082.81, "ef_global": 87.7, "ef_prod": 75.4}, {"name": "Djeison Amado", "weeks": [{"s": 1, "ht": 31.2, "hd": 27.2, "u": 114.7}, {"s": 2, "ht": 34.0, "hd": 32.7, "u": 104.0}, {"s": 3, "ht": 28.9, "hd": 27.2, "u": 106.3}, {"s": 4, "ht": 22.3, "hd": 27.2, "u": 82.2}], "ht_mes": 116.5, "hd_mes": 114.3, "utilizacao_mes": 101.9, "ht_prod": 85.0, "hd_prod": 82.8, "hf_mes": 90.4, "total_faturado": 5561.54, "ef_global": 109.1, "ef_prod": 106.3}]}, {"unit": {"ht": {"mes": 878.97, "s1": 243.05, "s2": 222.25, "s3": 156.73, "s4": 256.94}, "hv": {"mes": 748.04, "s1": 141.48, "s2": 239.9, "s3": 86.45, "s4": 280.21}, "hd": {"mes": 1150.9, "s1": 302.6, "s2": 269.45, "s3": 249.9, "s4": 328.95}, "faltas": {"mes": 8.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 8.0}, "ferias": {"mes": 136.0, "s1": 56.0, "s2": 56.0, "s3": 16.0, "s4": 8.0}, "ef_global": {"mes": 95.45, "s1": 46.75, "s2": 89.03, "s3": 34.59, "s4": 85.18}, "ef_prod": {"mes": 116.86, "s1": 58.21, "s2": 107.94, "s3": 55.16, "s4": 109.06}, "utilizacao": {"mes": 86.01, "s1": 79.07, "s2": 81.27, "s3": 69.33, "s4": 90.11}}, "tecnicos": [{"name": "Diogo Fernandes", "weeks": [{"s": 1, "ht": 35.7, "hd": 39.9, "u": 89.3}, {"s": 2, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 3, "ht": 8.1, "hd": 27.2, "u": 29.9}, {"s": 4, "ht": 24.2, "hd": 41.6, "u": 58.1}], "ht_mes": 68.0, "hd_mes": 108.8, "utilizacao_mes": 62.5, "ht_prod": 36.8, "hd_prod": 77.6, "hf_mes": 52.0, "total_faturado": 4028.17, "ef_global": 67.0, "ef_prod": 141.2}, {"name": "Nuno Montês", "weeks": [{"s": 1, "ht": 33.3, "hd": 39.9, "u": 83.3}, {"s": 2, "ht": 28.3, "hd": 37.4, "u": 75.7}, {"s": 3, "ht": 0.8, "hd": 13.6, "u": 5.6}, {"s": 4, "ht": 37.9, "hd": 45.0, "u": 84.1}], "ht_mes": 100.3, "hd_mes": 136.0, "utilizacao_mes": 73.7, "ht_prod": 64.8, "hd_prod": 100.5, "hf_mes": 85.4, "total_faturado": 9078.15, "ef_global": 85.0, "ef_prod": 131.9}, {"name": "Carlos Antunes", "weeks": [{"s": 1, "ht": 27.7, "hd": 39.1, "u": 71.0}, {"s": 2, "ht": 15.2, "hd": 37.4, "u": 40.7}, {"s": 3, "ht": 13.3, "hd": 30.6, "u": 43.6}, {"s": 4, "ht": 25.1, "hd": 39.9, "u": 62.7}], "ht_mes": 81.4, "hd_mes": 147.0, "utilizacao_mes": 55.3, "ht_prod": 70.6, "hd_prod": 136.3, "hf_mes": 95.9, "total_faturado": 12778.19, "ef_global": 70.4, "ef_prod": 135.9}, {"name": "Vitor Soutilha", "weeks": [{"s": 1, "ht": 40.4, "hd": 40.8, "u": 98.9}, {"s": 2, "ht": 30.2, "hd": 39.9, "u": 75.7}, {"s": 3, "ht": 29.7, "hd": 30.6, "u": 96.9}, {"s": 4, "ht": 32.4, "hd": 32.3, "u": 100.5}], "ht_mes": 132.7, "hd_mes": 143.6, "utilizacao_mes": 92.4, "ht_prod": 117.9, "hd_prod": 128.9, "hf_mes": 116.7, "total_faturado": 10952.23, "ef_global": 90.6, "ef_prod": 99.0}, {"name": "Gyanu Pujara", "weeks": [{"s": 1, "ht": 32.5, "hd": 40.8, "u": 79.7}, {"s": 2, "ht": 38.3, "hd": 32.3, "u": 118.5}, {"s": 3, "ht": 29.7, "hd": 31.4, "u": 94.6}, {"s": 4, "ht": 33.1, "hd": 39.9, "u": 82.9}], "ht_mes": 133.7, "hd_mes": 144.5, "utilizacao_mes": 92.5, "ht_prod": 124.0, "hd_prod": 134.9, "hf_mes": 121.1, "total_faturado": 10730.51, "ef_global": 89.8, "ef_prod": 97.7}, {"name": "José Fernandes", "weeks": [{"s": 1, "ht": 37.2, "hd": 34.0, "u": 109.3}, {"s": 2, "ht": 37.3, "hd": 34.0, "u": 109.6}, {"s": 3, "ht": 21.4, "hd": 34.9, "u": 61.3}, {"s": 4, "ht": 42.6, "hd": 34.9, "u": 122.1}], "ht_mes": 138.4, "hd_mes": 137.7, "utilizacao_mes": 100.5, "ht_prod": 84.9, "hd_prod": 84.2, "hf_mes": 112.5, "total_faturado": 6824.43, "ef_global": 133.7, "ef_prod": 132.6}, {"name": "João Bizarro", "weeks": [{"s": 1, "ht": 36.3, "hd": 34.0, "u": 106.8}, {"s": 2, "ht": 36.2, "hd": 34.0, "u": 106.4}, {"s": 3, "ht": 29.1, "hd": 27.2, "u": 106.9}, {"s": 4, "ht": 39.1, "hd": 34.0, "u": 115.0}], "ht_mes": 140.6, "hd_mes": 129.2, "utilizacao_mes": 108.8, "ht_prod": 118.0, "hd_prod": 106.6, "hf_mes": 86.1, "total_faturado": 5114.12, "ef_global": 80.8, "ef_prod": 72.9}, {"name": "Djeison Amado", "weeks": [{"s": 1, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 36.8, "hd": 27.2, "u": 135.2}, {"s": 3, "ht": 24.6, "hd": 27.2, "u": 90.6}, {"s": 4, "ht": 22.5, "hd": 27.2, "u": 82.8}], "ht_mes": 83.9, "hd_mes": 81.6, "utilizacao_mes": 102.9, "ht_prod": 62.8, "hd_prod": 60.4, "hf_mes": 88.4, "total_faturado": 4323.62, "ef_global": 146.4, "ef_prod": 140.9}, {"name": "Diamantino Silva", "weeks": [{"s": 1, "ht": 24.9, "hd": 34.0, "u": 73.3}, {"s": 2, "ht": 18.9, "hd": 27.2, "u": 69.6}, {"s": 3, "ht": 25.7, "hd": 27.2, "u": 94.6}, {"s": 4, "ht": 34.9, "hd": 34.0, "u": 102.7}], "ht_mes": 104.5, "hd_mes": 122.4, "utilizacao_mes": 85.4, "ht_prod": 88.8, "hd_prod": 106.7, "hf_mes": 88.4, "total_faturado": 3597.97, "ef_global": 82.9, "ef_prod": 99.6}]}, {"unit": {"ht": {"mes": 1126.68, "s1": 248.17, "s2": 238.18, "s3": 246.01, "s4": 296.44, "s5": 97.88}, "hv": {"mes": 769.69, "s1": 91.49, "s2": 126.22, "s3": 273.43, "s4": 154.45, "s5": 124.1}, "hd": {"mes": 1248.65, "s1": 307.7, "s2": 269.45, "s3": 267.75, "s4": 311.95, "s5": 91.8}, "faltas": {"mes": 160.0, "s1": 24.0, "s2": 56.0, "s3": 64.0, "s4": 16.0, "s5": 0.0}, "ferias": {"mes": 24.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0, "s5": 24.0}, "ef_global": {"mes": 85.69, "s1": 29.73, "s2": 46.84, "s3": 102.12, "s4": 49.51, "s5": 135.19}, "ef_prod": {"mes": 95.33, "s1": 36.87, "s2": 52.99, "s3": 111.15, "s4": 52.1, "s5": 126.79}, "utilizacao": {"mes": 89.76, "s1": 80.74, "s2": 78.33, "s3": 81.93, "s4": 95.01, "s5": 83.09}}, "tecnicos": [{"name": "Diogo Fernandes", "weeks": [{"s": 1, "ht": 7.5, "hd": 39.1, "u": 19.1}, {"s": 2, "ht": 26.1, "hd": 34.0, "u": 76.9}, {"s": 3, "ht": 28.9, "hd": 34.0, "u": 85.0}, {"s": 4, "ht": 36.8, "hd": 38.2, "u": 96.2}, {"s": 5, "ht": 0.0, "hd": 0.0, "u": 0.0}], "ht_mes": 99.3, "hd_mes": 145.3, "utilizacao_mes": 68.3, "ht_prod": 77.3, "hd_prod": 123.3, "hf_mes": 76.0, "total_faturado": 6435.58, "ef_global": 61.7, "ef_prod": 98.3}, {"name": "Nuno Montês", "weeks": [{"s": 1, "ht": 26.1, "hd": 39.1, "u": 66.6}, {"s": 2, "ht": 27.2, "hd": 34.0, "u": 79.9}, {"s": 3, "ht": 26.1, "hd": 34.0, "u": 76.9}, {"s": 4, "ht": 37.3, "hd": 40.8, "u": 91.5}, {"s": 5, "ht": 11.2, "hd": 13.6, "u": 82.5}], "ht_mes": 127.9, "hd_mes": 161.5, "utilizacao_mes": 79.2, "ht_prod": 93.2, "hd_prod": 126.8, "hf_mes": 111.8, "total_faturado": 15129.08, "ef_global": 88.2, "ef_prod": 120.0}, {"name": "Carlos Antunes", "weeks": [{"s": 1, "ht": 10.8, "hd": 18.7, "u": 58.0}, {"s": 2, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 3, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 4, "ht": 26.7, "hd": 30.6, "u": 87.1}, {"s": 5, "ht": 12.3, "hd": 13.6, "u": 90.2}], "ht_mes": 49.8, "hd_mes": 62.9, "utilizacao_mes": 79.1, "ht_prod": 38.7, "hd_prod": 51.8, "hf_mes": 34.0, "total_faturado": 8120.82, "ef_global": 65.6, "ef_prod": 87.9}, {"name": "Vitor Soutilha", "weeks": [{"s": 1, "ht": 36.5, "hd": 38.2, "u": 95.5}, {"s": 2, "ht": 37.8, "hd": 39.9, "u": 94.6}, {"s": 3, "ht": 37.9, "hd": 39.1, "u": 96.9}, {"s": 4, "ht": 35.5, "hd": 39.1, "u": 90.7}, {"s": 5, "ht": 17.7, "hd": 16.1, "u": 109.6}], "ht_mes": 165.4, "hd_mes": 172.5, "utilizacao_mes": 95.9, "ht_prod": 154.7, "hd_prod": 161.9, "hf_mes": 134.0, "total_faturado": 15729.57, "ef_global": 82.7, "ef_prod": 86.6}, {"name": "Gyanu Pujara", "weeks": [{"s": 1, "ht": 33.3, "hd": 39.1, "u": 85.2}, {"s": 2, "ht": 9.9, "hd": 32.3, "u": 30.6}, {"s": 3, "ht": 33.3, "hd": 45.0, "u": 74.0}, {"s": 4, "ht": 25.0, "hd": 31.4, "u": 79.6}, {"s": 5, "ht": 17.0, "hd": 14.4, "u": 117.7}], "ht_mes": 118.5, "hd_mes": 162.3, "utilizacao_mes": 73.0, "ht_prod": 106.4, "hd_prod": 150.3, "hf_mes": 85.0, "total_faturado": 9657.32, "ef_global": 56.6, "ef_prod": 79.8}, {"name": "José Fernandes", "weeks": [{"s": 1, "ht": 30.8, "hd": 34.9, "u": 88.3}, {"s": 2, "ht": 39.0, "hd": 34.0, "u": 114.6}, {"s": 3, "ht": 39.3, "hd": 34.0, "u": 115.5}, {"s": 4, "ht": 39.5, "hd": 36.5, "u": 108.0}, {"s": 5, "ht": 16.2, "hd": 13.6, "u": 119.4}], "ht_mes": 164.7, "hd_mes": 153.0, "utilizacao_mes": 107.7, "ht_prod": 98.4, "hd_prod": 86.7, "hf_mes": 125.0, "total_faturado": 10810.05, "ef_global": 144.2, "ef_prod": 127.0}, {"name": "João Bizarro", "weeks": [{"s": 1, "ht": 39.0, "hd": 34.0, "u": 114.7}, {"s": 2, "ht": 38.1, "hd": 34.0, "u": 111.9}, {"s": 3, "ht": 36.7, "hd": 34.0, "u": 108.0}, {"s": 4, "ht": 37.5, "hd": 34.0, "u": 110.2}, {"s": 5, "ht": 15.8, "hd": 13.6, "u": 116.3}], "ht_mes": 151.2, "hd_mes": 136.0, "utilizacao_mes": 111.2, "ht_prod": 139.3, "hd_prod": 124.1, "hf_mes": 107.1, "total_faturado": 5395.64, "ef_global": 86.3, "ef_prod": 76.9}, {"name": "Djeison Amado", "weeks": [{"s": 1, "ht": 32.0, "hd": 30.6, "u": 104.6}, {"s": 2, "ht": 33.7, "hd": 34.0, "u": 99.3}, {"s": 3, "ht": 27.2, "hd": 27.2, "u": 100.2}, {"s": 4, "ht": 30.2, "hd": 34.0, "u": 88.9}, {"s": 5, "ht": 7.6, "hd": 6.8, "u": 112.1}], "ht_mes": 130.9, "hd_mes": 132.6, "utilizacao_mes": 98.7, "ht_prod": 118.4, "hd_prod": 120.1, "hf_mes": 120.3, "total_faturado": 6507.45, "ef_global": 100.2, "ef_prod": 101.6}, {"name": "Diamantino Silva", "weeks": [{"s": 1, "ht": 32.2, "hd": 34.0, "u": 94.6}, {"s": 2, "ht": 26.5, "hd": 27.2, "u": 97.3}, {"s": 3, "ht": 16.5, "hd": 20.4, "u": 81.0}, {"s": 4, "ht": 28.0, "hd": 27.2, "u": 102.8}, {"s": 5, "ht": 0.0, "hd": 0.0, "u": 0.0}], "ht_mes": 103.1, "hd_mes": 108.8, "utilizacao_mes": 94.8, "ht_prod": 102.0, "hd_prod": 107.7, "hf_mes": 81.4, "total_faturado": 5556.58, "ef_global": 75.5, "ef_prod": 79.8}]}, null, null, null, null, null, null, null, null, null]}};
 
   // ══════ DADOS REAIS MARGEM MENSAL 2025 ══════
   // [Vendas s/IVA, Vendas MO, Vendas Peças, Custos Fixos, Custos Variáveis, Margem €, Margem %]
@@ -685,7 +789,7 @@ body {
     { id: 'domuscar', name: 'DomusCar (Empresa)', iconClass: 'domuscar', margemOnly: true }
   ];
 
-  var state = { category: null, year: null, unit: null, subview: null };
+  var state = { category: null, year: null, unit: null, subview: null, tecMonth: null };
   var currentChart = null;
 
   function navigate(category, year, subviewOrUnit, unit) {
@@ -699,6 +803,8 @@ body {
       state.subview = null;
       state.unit = subviewOrUnit || null;
     }
+    // Reset tecMonth when changing unit/year/category — will be auto-set to last available
+    state.tecMonth = null;
     renderBreadcrumb();
     render();
   }
@@ -1593,11 +1699,180 @@ body {
       html += renderMargemDetail(MARGEM_DETAIL[state.year][state.unit]);
     }
 
+    // ══════ Vista por Técnico (apenas KPIs 2026+) ══════
+    var hasTecData = (cat.id === 'kpis' && KPI_TECNICOS_DATA[state.year] && KPI_TECNICOS_DATA[state.year][state.unit]);
+    if (hasTecData) {
+      html += '<div id="tec-section-wrap">' + renderTecnicosSection(state.year, state.unit) + '</div>';
+    }
+
     document.getElementById('content').innerHTML = html;
 
     // Render chart (só quando existir o canvas — no modo detalhe foi substituído pelos cards resumo)
     if (!hasMargemDetail) {
       setTimeout(function() { renderChart(cat, tableData, hasRealData); }, 50);
+    }
+  }
+
+  // ══════ Renderizador da Vista por Técnico (KPIs 2026) ══════
+  function renderTecnicosSection(year, unitId) {
+    var months = KPI_TECNICOS_DATA[year] && KPI_TECNICOS_DATA[year][unitId];
+    if (!months) return '';
+
+    // Determine available months and default selected
+    var available = [];
+    for (var i = 0; i < 12; i++) { if (months[i]) available.push(i); }
+    if (available.length === 0) return '';
+
+    // Initialize/sanitize selected month
+    if (state.tecMonth === null || !months[state.tecMonth]) {
+      state.tecMonth = available[available.length - 1];
+    }
+    var m = state.tecMonth;
+    var data = months[m];
+
+    var unitClassMap = { 'mecanica_lisboa': 'lisboa', 'mecanica_cacem': 'cacem', 'colisao': 'colisao' };
+    var cardCls = unitClassMap[unitId] || '';
+
+    var html = '<div class="tec-section">';
+    html += '<h3 class="tec-section-title">👷 Análise por Técnico — ' + MONTHS[m] + ' ' + year + '</h3>';
+
+    // Month tabs
+    html += '<div class="tec-month-tabs">';
+    for (var i = 0; i < 12; i++) {
+      var label = MONTHS_SHORT[i] + ' ' + year;
+      if (months[i]) {
+        var cls = (i === m) ? 'tec-month-tab active' : 'tec-month-tab';
+        html += '<div class="' + cls + '" onclick="selectTecMonth(' + i + ')">' + label + '</div>';
+      }
+    }
+    html += '</div>';
+
+    // --- Unit-level KPI table ---
+    var semanas = (data.unit.ht && data.unit.ht.s5 !== undefined) ? 5 : 4;
+    html += '<div class="tec-subsection">';
+    html += '<div class="tec-subsection-header">KPIs Gerais — ' + (UNITS.find(function(u){return u.id===unitId;}) || {}).name + '</div>';
+    html += '<div style="overflow-x:auto"><table class="tec-kpi-table"><thead><tr><th>KPI</th>';
+    for (var s = 1; s <= semanas; s++) { html += '<th>S' + s + '</th>'; }
+    html += '<th>Mês</th></tr></thead><tbody>';
+
+    var kpiRows = [
+      { key: 'ht',         label: 'Horas Trabalhadas',     unit: 'h', colorized: false },
+      { key: 'hv',         label: 'Horas Vendidas',        unit: 'h', colorized: false },
+      { key: 'hd',         label: 'Horas Disponíveis',     unit: 'h', colorized: false },
+      { key: 'faltas',     label: 'Horas Faltas',          unit: 'h', colorized: false },
+      { key: 'ferias',     label: 'Horas Férias',          unit: 'h', colorized: false },
+      { key: 'ef_prod',    label: 'Eficiência Produtiva',  unit: '%', colorized: true, kind: 'ef' },
+      { key: 'ef_global',  label: 'Eficiência Global',     unit: '%', colorized: true, kind: 'ef' },
+      { key: 'utilizacao', label: 'Taxa de Utilização',    unit: '%', colorized: true, kind: 'ut' }
+    ];
+    kpiRows.forEach(function(row) {
+      var u = data.unit[row.key] || {};
+      html += '<tr><td style="font-weight:600;">' + row.label + '</td>';
+      for (var s = 1; s <= semanas; s++) {
+        var v = u['s' + s];
+        html += '<td>' + fmtTecVal(v, row.unit, row.colorized, row.kind) + '</td>';
+      }
+      html += '<td class="mes">' + fmtTecVal(u.mes, row.unit, row.colorized, row.kind) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    // --- Rankings (HF + Total Faturado) ---
+    var tecnicos = data.tecnicos || [];
+    var rHF = tecnicos.slice().sort(function(a,b){ return (b.hf_mes||0)-(a.hf_mes||0); });
+    var rEUR = tecnicos.slice().sort(function(a,b){ return (b.total_faturado||0)-(a.total_faturado||0); });
+    var medals = ['🥇','🥈','🥉'];
+
+    html += '<div class="tec-kpi-rankings">';
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Ranking Horas Faturadas</div>';
+    html += '<table class="tec-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th style="text-align:right">HF</th></tr></thead><tbody>';
+    rHF.forEach(function(t, idx) {
+      var tag = idx < 3 ? medals[idx] : (idx + 1);
+      html += '<tr><td>' + tag + '</td><td style="font-weight:600;">' + t.name + '</td><td style="text-align:right">' + (t.hf_mes !== null ? t.hf_mes.toFixed(1) + ' h' : '—') + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Ranking Total Faturado (€)</div>';
+    html += '<table class="tec-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th style="text-align:right">€</th></tr></thead><tbody>';
+    var totalEur = 0;
+    rEUR.forEach(function(t, idx) {
+      var tag = idx < 3 ? medals[idx] : (idx + 1);
+      totalEur += (t.total_faturado || 0);
+      html += '<tr><td>' + tag + '</td><td style="font-weight:600;">' + t.name + '</td><td style="text-align:right">' + formatEur(t.total_faturado) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div style="text-align:right; margin-top:8px; font-weight:700; color:var(--accent);">TOTAL: ' + formatEur(totalEur) + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // --- Per-technician cards ---
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Técnicos Individuais</div>';
+    html += '<div class="tec-grid">';
+    tecnicos.forEach(function(t) {
+      html += '<div class="tec-card ' + cardCls + '">';
+      html += '<div class="tec-card-name">' + t.name + '</div>';
+
+      // Weeks table
+      html += '<table class="tec-card-weeks"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Util</th></tr></thead><tbody>';
+      t.weeks.forEach(function(w) {
+        var uCls = w.u !== null ? tecUtilColorClass(w.u) : '';
+        html += '<tr>';
+        html += '<td>S' + w.s + '</td>';
+        html += '<td>' + (w.ht !== null ? w.ht.toFixed(1) + 'h' : '—') + '</td>';
+        html += '<td>' + (w.hd !== null ? w.hd.toFixed(1) + 'h' : '—') + '</td>';
+        html += '<td' + (uCls ? ' class="' + uCls + '"' : '') + '>' + (w.u !== null ? w.u.toFixed(1) + '%' : '—') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      // Financials bar (HF + Total €)
+      html += '<div class="tec-card-financials">';
+      html += '<div class="tec-card-fin-item"><span class="tec-card-fin-label">H. Faturadas</span><span class="tec-card-fin-value">' + (t.hf_mes !== null ? t.hf_mes.toFixed(1) + 'h' : '—') + '</span></div>';
+      html += '<div class="tec-card-fin-item" style="text-align:right;"><span class="tec-card-fin-label">Total Faturado</span><span class="tec-card-fin-value">' + formatEur(t.total_faturado) + '</span></div>';
+      html += '</div>';
+
+      // Summary: EF PROD / EF GLOBAL / Utilização (3 slots, 2x2 grid)
+      html += '<div class="tec-card-summary" style="grid-template-columns:1fr 1fr 1fr;">';
+      html += '<div class="tec-card-summary-item"><span class="tec-card-summary-label">Ef. Prod</span><span class="tec-card-summary-value" style="color:' + (t.ef_prod !== null ? efColor(t.ef_prod) : 'var(--gray-600)') + ';">' + (t.ef_prod !== null ? t.ef_prod.toFixed(1) + '%' : '—') + '</span></div>';
+      html += '<div class="tec-card-summary-item"><span class="tec-card-summary-label">Ef. Global</span><span class="tec-card-summary-value" style="color:' + (t.ef_global !== null ? efColor(t.ef_global) : 'var(--gray-600)') + ';">' + (t.ef_global !== null ? t.ef_global.toFixed(1) + '%' : '—') + '</span></div>';
+      html += '<div class="tec-card-summary-item"><span class="tec-card-summary-label">Utilização</span><span class="tec-card-summary-value" style="color:' + (t.utilizacao_mes !== null ? utColor(t.utilizacao_mes) : 'var(--gray-600)') + ';">' + (t.utilizacao_mes !== null ? t.utilizacao_mes.toFixed(1) + '%' : '—') + '</span></div>';
+      html += '</div>';
+
+      html += '</div>';
+    });
+    html += '</div></div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  // Formatter for tec-kpi-table cells
+  function fmtTecVal(v, unit, colorized, kind) {
+    if (v === null || v === undefined) return '—';
+    var suffix = unit === '%' ? '%' : 'h';
+    var str = v.toFixed(unit === '%' ? 1 : 1) + suffix;
+    if (!colorized) return str;
+    var color;
+    if (kind === 'ef') color = efColor(v);
+    else if (kind === 'ut') color = utColor(v);
+    return '<span style="color:' + color + ';font-weight:700;">' + str + '</span>';
+  }
+
+  // Utilização color class for week cells
+  function tecUtilColorClass(v) {
+    if (v === null || v === undefined) return '';
+    if (v < 70)  return 'tec-util-bad';
+    if (v < 85)  return 'tec-util-warn';
+    if (v <= 115) return 'tec-util-ok';
+    return 'tec-util-high';
+  }
+
+  // Month tab click handler
+  function selectTecMonth(m) {
+    state.tecMonth = m;
+    var wrap = document.getElementById('tec-section-wrap');
+    if (wrap) {
+      wrap.innerHTML = renderTecnicosSection(state.year, state.unit);
     }
   }
 
@@ -2025,6 +2300,7 @@ body {
 
   // Expose navigate globally
   window.navigate = navigate;
+  window.selectTecMonth = selectTecMonth;
 
   // Init
   navigate();
