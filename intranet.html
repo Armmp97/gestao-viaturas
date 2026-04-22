@@ -3439,6 +3439,24 @@
                 if (mpPct < 0) { mpColor = '#d93025'; mpLabel = ''; }
                 else { mpColor = '#d4a017'; mpLabel = ''; }
             }
+            // Bloco de patamares de prémio (21% / 28% / 35%)
+            // Só renderiza se o payload os trouxer — mantém retrocompatibilidade com JSON antigo.
+            var patamaresHtml = '';
+            if (dept.patamares && dept.patamares.length) {
+                var linhas = dept.patamares.map(function(p) {
+                    var col = p.hit ? '#0a6e2e' : '#d93025';
+                    var prefixo = p.hit ? '✓ Excedente: +' : 'Falta: ';
+                    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;font-size:11px;border-top:1px solid #eaecef;">' +
+                             '<span style="color:#555;font-weight:600;">Meta ' + p.meta + '</span>' +
+                             '<span style="color:' + col + ';font-weight:700;">' + prefixo + p.valor + '</span>' +
+                           '</div>';
+                }).join('');
+                patamaresHtml =
+                    '<div style="margin-top:12px;padding:8px 12px 10px 12px;background:#f8f9fa;border-radius:8px;">' +
+                        '<div style="font-size:10px;color:#666;text-align:center;margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Patamares de Prémio</div>' +
+                        linhas +
+                    '</div>';
+            }
             var card = document.createElement('div');
             card.style.cssText = 'background:white;border-radius:12px;padding:20px;border-left:4px solid ' + color + ';box-shadow:0 1px 3px rgba(0,0,0,.1);';
             card.innerHTML =
@@ -3462,6 +3480,7 @@
                         '<div style="font-size:16px;font-weight:600;color:' + mpColor + ';">' + (dept.resultado || '—') + '</div>' +
                     '</div>' +
                 '</div>' +
+                patamaresHtml +
                 '<div style="text-align:center;font-size:10px;color:#999;font-style:italic;margin-top:10px;">Aguarda validação de dados pelo departamento financeiro</div>';
             cardsDiv.appendChild(card);
         });

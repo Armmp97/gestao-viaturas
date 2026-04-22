@@ -624,7 +624,17 @@ document.getElementById('fileInput').addEventListener('change', function(e){
             margem: g.parsed.mp,
             vendas: fmt(g.parsed.vT),
             custos: fmt(g.parsed.cf + g.parsed.cvT),
-            resultado: fmt(g.parsed.vT - g.parsed.cf - g.parsed.cvT)
+            resultado: fmt(g.parsed.vT - g.parsed.cf - g.parsed.cvT),
+            // Patamares de prémio (21%, 28%, 35%) — quanto falta (ou excedente) em vendas
+            // para atingir cada patamar. Usado pelo dashboard para mostrar os 3 alvos.
+            patamares: (g.parsed.tgts || []).map(function(t){
+              return {
+                meta: t.pl,           // "21%" / "28%" / "35%"
+                hit: !!t.hit,         // true => patamar já atingido
+                // fmt() devolve "1.234,56 €"; t.df é positivo quando falta, negativo quando excedente
+                valor: fmt(Math.abs(t.df))
+              };
+            })
           };
         })
       };
