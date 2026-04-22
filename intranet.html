@@ -3279,33 +3279,47 @@
     var margemLoadedFromSP = false; // track if SP load was attempted
 
     function loadMargemDashboard() {
-        // 1. Try localStorage first
+        // Padrão stale-while-revalidate:
+        //  1. Render imediato do localStorage (evita flash visual).
+        //  2. SEMPRE consultar o SharePoint a seguir — se devolver dados, substitui.
+        //  3. Fallback hardcoded só se SP falhar E não houver cache.
+        // NOTA: a versão antiga fazia `return` após ler o localStorage, o que fazia com que
+        // utilizadores não-admin nunca vissem actualizações publicadas pelos admins.
+        var renderedFromCache = false;
         try {
             var stored = localStorage.getItem('intranet_margemDashboard');
             if (stored) {
-                console.log('[Margem] Loaded from localStorage');
+                console.log('[Margem] Quick-render from localStorage (will revalidate from SP)');
                 renderMargemDashboard(JSON.parse(stored));
-                return;
+                renderedFromCache = true;
             }
-        } catch(e) { console.error('[Margem] localStorage error:', e); }
-        // 2. Show loading placeholder
-        console.log('[Margem] No localStorage, loading from SP. driveId:', getDriveId() ? 'available' : 'MISSING');
-        renderMargemDashboard(null, true); // true = still loading
-        // 3. Try to load from SP, fallback to hardcoded data if SP fails (403, etc.)
+        } catch(e) { console.error('[Margem] localStorage read error:', e); }
+
+        if (!renderedFromCache) {
+            console.log('[Margem] No localStorage, loading from SP. driveId:', getDriveId() ? 'available' : 'MISSING');
+            renderMargemDashboard(null, true); // placeholder de loading
+        }
+
+        // SEMPRE revalidar contra o SharePoint — garante que todos os utilizadores vêem
+        // a versão actual publicada pelos admins, independentemente de terem cache antiga.
         margemLoadedFromSP = true;
         loadDashboardFromSP('margem_dashboard.json').then(function(data) {
             if (data) {
-                console.log('[Margem] Loaded from SP successfully:', data.periodo);
+                console.log('[Margem] Revalidated from SP:', data.periodo, '| ts:', data.timestamp);
                 try { localStorage.setItem('intranet_margemDashboard', JSON.stringify(data)); } catch(e) {}
                 renderMargemDashboard(data);
-            } else {
-                // SP returned null (403, file not found, etc.) — use hardcoded fallback
-                console.warn('[Margem] SP unavailable, using FALLBACK data:', MARGEM_FALLBACK_DATA.periodo);
+                renderMargemMensalReal(); // re-avaliar Margem Real com dados frescos
+            } else if (!renderedFromCache) {
+                // SP indisponível E sem cache — último recurso: fallback hardcoded
+                console.warn('[Margem] SP unavailable and no cache, using FALLBACK data:', MARGEM_FALLBACK_DATA.periodo);
                 renderMargemDashboard(MARGEM_FALLBACK_DATA);
             }
+            // Se SP falhou mas tínhamos cache, mantemos a cache renderizada (modo offline).
         }).catch(function(e) {
-            console.error('[Margem] SP load FAILED, using FALLBACK:', e.message || e);
-            renderMargemDashboard(MARGEM_FALLBACK_DATA);
+            console.error('[Margem] SP load FAILED:', e.message || e);
+            if (!renderedFromCache) {
+                renderMargemDashboard(MARGEM_FALLBACK_DATA);
+            }
         });
     }
 
@@ -3490,14 +3504,16 @@
     // KPI DASHBOARD BLOCK (dynamic from gerador-kpis)
     // ============================================
     function loadKpiDashboard() {
+        // Stale-while-revalidate (mesmo padrão de loadMargemDashboard):
+        // lê da cache para render imediato, mas SEMPRE bate no SharePoint para revalidar.
+        // Sem isto, utilizadores não-admin ficavam presos à 1.ª versão que cacharam.
         try {
             var stored = localStorage.getItem('intranet_kpiDashboard');
             if (stored) {
                 applyKpiDashboard(JSON.parse(stored));
-                return;
             }
         } catch(e) { console.error('loadKpiDashboard localStorage:', e); }
-        // Fallback: load from SharePoint
+        // SEMPRE revalidar a partir do SharePoint.
         loadDashboardFromSP('kpi_dashboard.json').then(function(data) {
             if (data) {
                 try { localStorage.setItem('intranet_kpiDashboard', JSON.stringify(data)); } catch(e) {}
