@@ -44,6 +44,29 @@
   <div class="icon-box">📊</div>
   <h2>Carregar Ficheiro Excel</h2>
   <p>Seleciona o ficheiro .xlsx com a Calculadora de Margem</p>
+  <div style="margin-bottom:18px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
+    <label style="font-size:12px;color:#64748b;font-weight:600;">Período:</label>
+    <select id="selMes" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;background:white;cursor:pointer;">
+      <option value="Janeiro">Janeiro</option>
+      <option value="Fevereiro">Fevereiro</option>
+      <option value="Março">Março</option>
+      <option value="Abril">Abril</option>
+      <option value="Maio">Maio</option>
+      <option value="Junho">Junho</option>
+      <option value="Julho">Julho</option>
+      <option value="Agosto">Agosto</option>
+      <option value="Setembro">Setembro</option>
+      <option value="Outubro">Outubro</option>
+      <option value="Novembro">Novembro</option>
+      <option value="Dezembro">Dezembro</option>
+    </select>
+    <select id="selAno" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;background:white;cursor:pointer;">
+      <option value="2025">2025</option>
+      <option value="2026">2026</option>
+      <option value="2027">2027</option>
+      <option value="2028">2028</option>
+    </select>
+  </div>
   <div class="file-wrap">
     <button class="upload-btn">📁 Escolher Ficheiro</button>
     <input type="file" id="fileInput" accept=".xlsx,.xls">
@@ -497,6 +520,23 @@ function openPrintPreviewMargem(reports) {
     }, 200);
 }
 
+// Pré-seleccionar mês/ano actual nos seletores
+(function initPeriodoSelectors(){
+  var mesesPT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var now = new Date();
+  var selMes = document.getElementById('selMes');
+  var selAno = document.getElementById('selAno');
+  if (selMes) selMes.value = mesesPT[now.getMonth()];
+  if (selAno) {
+    var yr = String(now.getFullYear());
+    // Adiciona a opção se não existir (ex: ano futuro)
+    if (!Array.from(selAno.options).some(function(o){return o.value===yr;})) {
+      var opt = document.createElement('option'); opt.value = yr; opt.textContent = yr; selAno.appendChild(opt);
+    }
+    selAno.value = yr;
+  }
+})();
+
 document.getElementById('fileInput').addEventListener('change', function(e){
   const file=e.target.files[0];
   if(!file)return;
@@ -525,47 +565,12 @@ document.getElementById('fileInput').addEventListener('change', function(e){
       let allLogs=[];
       const generated=[];
 
-      // Extrair mês de referência do Excel (procura nas primeiras linhas e no nome do sheet)
-      var mesReferencia = '';
-      var mesesPT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      // Try sheet name first
-      var sheetName = wb.SheetNames[0] || '';
-      mesesPT.forEach(function(m) { if (sheetName.toLowerCase().includes(m.toLowerCase())) mesReferencia = m; });
-      // Then scan first 5 rows of columns A-D for month references
-      if (!mesReferencia) {
-        for (var sr = 1; sr <= 5; sr++) {
-          ['A','B','C','D'].forEach(function(col) {
-            var txt = getCellText(ws, col, sr);
-            if (txt && !mesReferencia) {
-              mesesPT.forEach(function(m) { if (txt.toLowerCase().includes(m.toLowerCase())) mesReferencia = m; });
-              // Also check for date-like patterns (e.g., "Mar 2026", "03/2026")
-              if (!mesReferencia) {
-                var dateMatch = txt.match(/(\d{1,2})[\/\-](\d{4})/);
-                if (dateMatch) { var mi = parseInt(dateMatch[1]) - 1; if (mi >= 0 && mi < 12) mesReferencia = mesesPT[mi] + ' ' + dateMatch[2]; }
-              }
-              var shortMonths = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-              if (!mesReferencia) {
-                shortMonths.forEach(function(sm, idx) {
-                  if (txt.toLowerCase().includes(sm) && txt.length < 30) mesReferencia = mesesPT[idx];
-                });
-              }
-            }
-          });
-        }
-      }
-      // Extract year if present near month
-      var anoReferencia = '';
-      if (mesReferencia) {
-        for (var yr = 1; yr <= 5; yr++) {
-          ['A','B','C','D'].forEach(function(col) {
-            var txt = getCellText(ws, col, yr);
-            var ym = txt.match(/(20\d{2})/);
-            if (ym && !anoReferencia) anoReferencia = ym[1];
-          });
-        }
-      }
-      if (!anoReferencia) anoReferencia = new Date().getFullYear();
-      var periodoLabel = mesReferencia ? mesReferencia + ' ' + anoReferencia : 'Período não identificado';
+      // Período de referência: lido dos seletores escolhidos pelo utilizador
+      // (antes era auto-detectado a partir do conteúdo do Excel — pouco fiável,
+      //  pois facturas de meses anteriores contaminavam a detecção)
+      var mesReferencia = document.getElementById('selMes').value;
+      var anoReferencia = document.getElementById('selAno').value;
+      var periodoLabel = mesReferencia + ' ' + anoReferencia;
 
       DEPT_CFG.forEach((cfg,i)=>{
         const parsed=parseSection(ws,cfg,range);
