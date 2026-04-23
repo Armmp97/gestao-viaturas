@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dar Cotação de Peças</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:900px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#1a8a7d; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#1a8a7d; margin-bottom:18px; }
+  .intro {
+    font-size:13px; color:#444; line-height:1.7;
+    background:#f0faf8; border-left:3px solid #1a8a7d;
+    padding:12px 14px; border-radius:0 4px 4px 0; margin-bottom:22px;
+  }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#1a8a7d;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 6px 18px; }
+  .step-body li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#1a8a7d; font-weight:600; font-size:12px;
+  }
+  .step-body .warn {
+    display:inline-block; background:#fff3e0; border-left:3px solid #e8833a;
+    padding:4px 8px; margin:4px 0; font-size:12px; font-weight:600;
+    color:#c25700; border-radius:0 4px 4px 0;
+  }
+  .step-body .code {
+    font-family: 'SF Mono', Consolas, monospace; background:#f5f5f5;
+    padding:2px 6px; border-radius:3px; font-size:11.5px; color:#333;
+  }
+  .step-body .example {
+    background:#f7f7f7; border-radius:4px; padding:10px 12px;
+    margin:8px 0; font-size:11.5px; color:#333; line-height:1.6;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .step-body img { display:block; max-width:100%; border:1px solid #ddd; border-radius:4px; margin:10px 0; }
+  .step-body .img-caption { font-size:11px; color:#888; margin-top:-4px; font-style:italic; }
+  .step-body .rule-block {
+    background:#f9f9f9; border-left:3px solid #1a8a7d;
+    padding:10px 14px; margin:10px 0; border-radius:0 4px 4px 0;
+  }
+  .step-body .rule-block-title { font-weight:700; color:#1a8a7d; font-size:12.5px; margin-bottom:6px; }
+  .step-body .danger {
+    background:#fff0f0; border-left:3px solid #c62828;
+    padding:8px 12px; margin:6px 0; font-size:12px;
+    color:#7a1a1a; border-radius:0 4px 4px 0; font-weight:600;
+  }
+  .meta-box { background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px; }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title { font-size:13px; font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid; }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .right-section-body ol { margin:0 0 0 18px; padding:0; }
+  .right-section-body ol li { margin-bottom:4px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#1a8a7d; border-color:#1a8a7d; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Dar Cotação de Peças</h1>
+      <p>Função diária &mdash; Caixeiro</p>
+    </div>
+    <div class="header-icon"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="8" width="36" height="48" rx="3" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+  <line x1="16" y1="20" x2="38" y2="20" stroke="white" stroke-width="1.5"/>
+  <line x1="16" y1="28" x2="38" y2="28" stroke="white" stroke-width="1.5"/>
+  <line x1="16" y1="36" x2="30" y2="36" stroke="white" stroke-width="1.5"/>
+  <circle cx="48" cy="46" r="10" stroke="white" stroke-width="2" fill="#1a8a7d"/>
+  <text x="48" y="50" fill="white" font-size="10" font-weight="700" text-anchor="middle" font-family="Inter">€</text>
+</svg></div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+      <div class="intro">Sempre que a receção ou coordenação solicita uma cotação de peças, o caixeiro deve identificar corretamente as referências, consultar os fornecedores seguindo a ordem de prioridade definida, e responder no tópico Teams da matrícula com preços, prazos e disponibilidades. A qualidade da cotação condiciona o restante processo de reparação. Este processo <strong>articula-se diretamente com o de Peritagens</strong>: os prints de peças pedidos durante a peritagem são a base para a identificação correta de todo o material necessário à orçamentação.</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Receção do pedido</div>
+          <div class="step-body">O pedido é solicitado <strong>via Teams pela receção/coordenação</strong>, por tópicos de conversa nos canais respetivos, com a matrícula como referência.
+          <div class="example">Exemplo:<br>AA-00-BB &mdash; Discos e pastilhas frente + pinça travão frente esquerda</div>
+          <span class="dest">&#10148; O tópico Teams é o único canal válido para pedidos e respostas de cotação.</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Identificação das referências (Tecdoc)</div>
+          <div class="step-body">A identificação das peças deve ser feita <strong>via Tecdoc</strong>. Com a referência correta, pesquisar em todos os fornecedores disponíveis.<br><br>
+          Quando a identificação é <strong>impossível via Tecdoc</strong>, enviar comunicação aos fornecedores pelos canais próprios dos mesmos &mdash; preferencialmente <strong>e-mail</strong>, ou WhatsApp, para existir sempre prova escrita.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Prints do fornecedor original &mdash; cruzamento com Peritagem</div>
+          <div class="step-body">Para uma correta orçamentação, é <strong>quase crítico</strong> que, em paralelo ao Tecdoc, sejam solicitados <strong>prints de peças aos fornecedores originais</strong> (ou pesquisados no <span class="code">Parts Link</span>).<br><br>
+          Este passo articula-se diretamente com o <em>Processo Operacional de Peritagens</em>: os prints já pedidos proativamente pela receção servem de base. Quando faltarem prints, ou for necessário complementar, é da responsabilidade do caixeiro / coordenação solicitá-los.<br><br>
+          Sem os prints é impossível identificar com rigor:
+          <ul>
+            <li>Todas as peças efetivamente necessárias (inclui pequenos componentes, clips, parafusos originais);</li>
+            <li>Variantes de referência por chassis / ano / país de mercado;</li>
+            <li>Referências obsoletas substituídas por nova designação.</li>
+          </ul>
+          <span class="dest">&#10148; Cotação sem print original = risco elevado de faltar material quando a reparação começa.</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Critérios de escolha de fornecedor</div>
+          <div class="step-body">A consulta obedece a uma ordem de prioridade fixa:
+          <ul>
+            <li><strong>1.º Bosch</strong> &mdash; dentro de Bosch comparar preço e disponibilidade (Bomboleo / Drive360)</li>
+            <li><strong>2.º Aftermarket</strong></li>
+            <li><strong>3.º Original</strong> &mdash; preferencialmente MCoutinho</li>
+            <li><strong>4.º Usado</strong> &mdash; consoante a peça</li>
+          </ul></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Formato da resposta de cotação</div>
+          <div class="step-body">Nas cotações é <strong>obrigatório informar prazos de entrega</strong> para além dos preços, sempre via Teams. Formato:
+          <div class="example">Descrição &mdash; Referência (quando possível) &mdash; Quantidade &mdash; PVP &mdash; Marca (quando possível) &mdash; Fornecedor &mdash; Disponibilidade</div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">Exemplos práticos</div>
+          <div class="step-body"><div class="example">Discos Frente | 0986111222 | Qtd 2 | 125&euro; PVP | Bosch | Drive360 | 24h<br>
+          Pastilhas Frente | 0986222111 | Qtd 1 | 74.35&euro; PVP | Bosch | Drive360 | Próxima Volta<br>
+          Pinça Travão Frente Esquerda | x | Qtd 1 | 428.66&euro; PVP | Mercedes | Mcoutinho | 24/48H</div>
+          <span class="dest">&#10148; Cada linha deve ser clara, completa e permitir à receção adjudicar sem dúvidas.</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Armazém (Cacém / Lisboa)</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Caixeiro</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Receção e Coordenação</div></div>
+        <div class="meta-field"><div class="meta-label">Periodicidade:</div><div class="meta-value">Diária &mdash; sempre que solicitado</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body"><p>Uma cotação sem prazo é uma cotação <strong>incompleta</strong>. Nunca responder apenas com preço.</p>
+<p>Para peças originais, <strong>prints do fornecedor / Parts Link</strong> são quase obrigatórios &mdash; cruzar sempre com o processo de Peritagens.</p>
+<p>Sempre que haja comunicação fora do Teams (e-mail, WhatsApp), deve ficar <strong>prova escrita</strong> arquivada.</p>
+<p>A ordem de prioridade (Bosch &rarr; Aftermarket &rarr; Original &rarr; Usado) <strong>não é negociável</strong>, salvo indicação expressa.</p></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body"><ol><li>Cotação completa no tópico Teams da matrícula, com preço, prazo e fornecedor para cada linha;</li>
+<li>Prioridade de fornecedores respeitada, garantindo margem e tempo de entrega adequados;</li>
+<li>Receção com informação suficiente para adjudicar sem pedidos de clarificação adicional;</li>
+<li>Identificação das peças via Tecdoc assegurada, reduzindo devoluções por referência errada.</li></ol></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Funções do Caixeiro &mdash; Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>

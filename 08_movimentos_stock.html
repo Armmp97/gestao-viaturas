@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movimentos de Stock &mdash; Consumos e Transferências</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:900px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#1a8a7d; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#1a8a7d; margin-bottom:18px; }
+  .intro {
+    font-size:13px; color:#444; line-height:1.7;
+    background:#f0faf8; border-left:3px solid #1a8a7d;
+    padding:12px 14px; border-radius:0 4px 4px 0; margin-bottom:22px;
+  }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#1a8a7d;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 6px 18px; }
+  .step-body li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#1a8a7d; font-weight:600; font-size:12px;
+  }
+  .step-body .warn {
+    display:inline-block; background:#fff3e0; border-left:3px solid #e8833a;
+    padding:4px 8px; margin:4px 0; font-size:12px; font-weight:600;
+    color:#c25700; border-radius:0 4px 4px 0;
+  }
+  .step-body .code {
+    font-family: 'SF Mono', Consolas, monospace; background:#f5f5f5;
+    padding:2px 6px; border-radius:3px; font-size:11.5px; color:#333;
+  }
+  .step-body .example {
+    background:#f7f7f7; border-radius:4px; padding:10px 12px;
+    margin:8px 0; font-size:11.5px; color:#333; line-height:1.6;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .step-body img { display:block; max-width:100%; border:1px solid #ddd; border-radius:4px; margin:10px 0; }
+  .step-body .img-caption { font-size:11px; color:#888; margin-top:-4px; font-style:italic; }
+  .step-body .rule-block {
+    background:#f9f9f9; border-left:3px solid #1a8a7d;
+    padding:10px 14px; margin:10px 0; border-radius:0 4px 4px 0;
+  }
+  .step-body .rule-block-title { font-weight:700; color:#1a8a7d; font-size:12.5px; margin-bottom:6px; }
+  .step-body .danger {
+    background:#fff0f0; border-left:3px solid #c62828;
+    padding:8px 12px; margin:6px 0; font-size:12px;
+    color:#7a1a1a; border-radius:0 4px 4px 0; font-weight:600;
+  }
+  .meta-box { background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px; }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title { font-size:13px; font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid; }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .right-section-body ol { margin:0 0 0 18px; padding:0; }
+  .right-section-body ol li { margin-bottom:4px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#1a8a7d; border-color:#1a8a7d; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Movimentos de Stock &mdash; Consumos e Transferências</h1>
+      <p>Função diária &mdash; Caixeiro</p>
+    </div>
+    <div class="header-icon"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 20 H48 L42 14 M48 20 L42 26" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M52 44 H16 L22 38 M16 44 L22 50" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg></div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+      <div class="intro">Os movimentos de stock são a forma como o armazém regista saídas, entradas e transferências que <strong>não passam por uma fatura de cliente</strong>. Cada tipo de movimento tem uma designação e uma descrição obrigatórias &mdash; seguir estas regras é o que garante rastreabilidade e fecho de inventário correto.</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">1. Correção de stock a negativo para devoluções</div>
+          <div class="step-body"><span class="danger">&#9888; DE EVITAR POR COMPLETO QUE ISTO ACONTEÇA.</span>
+      Se for necessário <strong>debitar algo que vai ser devolvido</strong>, debitar pelo artigo <span class="code">&ndash;</span> (traço).
+      <div class="warn">O traço apenas é admissível nas VENDAS nestes casos. <strong>Não é aceite nas COMPRAS</strong>.</div>
+      Movimento: <span class="code">Entrada P/ Devolução</span><br>
+      Descrição: <span class="code">Entrada para Devolução | *N.º Ordem de Serviço* | *Matrícula*</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">2. Transferência entre armazéns</div>
+          <div class="step-body"><strong>Apenas para artigos que não são debitados/vendidos diretamente em obra.</strong>
+      <div class="warn">Trocas de peças/consumíveis/lubrificantes entre oficinas passam a ser feitas através de <strong>faturas internas</strong>, não de transferências.</div>
+      Movimento de saída/entrada: <span class="code">Transf. Requisição Interna</span><br>
+      Descrição: <span class="code">*Nome Colaborador* | *Local de Ida*</span> (Mecânica Lisboa / Mecânica Cacém / Colisão Bela Vista / Colisão Taguspark)</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">3. Retirada de consumíveis (não passíveis de débito em OSV)</div>
+          <div class="step-body">Consumíveis usados em <strong>mais do que uma viatura</strong> (sprays lubrificantes, silicone, etc.).<br><br>
+      Movimento de saída: <span class="code">Saída Registo Consumos</span><br>
+      Descrição: <span class="code">*Nome Colaborador* | *Local de Ida*</span> (Mecânica Lisboa / Mecânica Cacém / Colisão Bela Vista / Colisão Taguspark)</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">4. Correção de débitos incorretos</div>
+          <div class="step-body">Se nas OSV foram colocados artigos errados, é preciso <strong>ENTRADA + SAÍDA</strong> para corrigir.
+      <span class="danger">&#9888; DE EVITAR POR COMPLETO &mdash; reforçar com a receção a necessidade de ser o armazém a garantir o débito correto.</span>
+      <div class="rule-block">
+        <div class="rule-block-title">Entrada</div>
+        Movimento: <span class="code">Entrada Acerto Erro Débito</span><br>
+        Descrição: <span class="code">Acerto Stock *OSV BFXXX/XXX* *MATRICULA*</span><br>
+        Preencher também o campo MATRÍCULA.
+      </div>
+      <div class="rule-block">
+        <div class="rule-block-title">Saída</div>
+        Movimento: <span class="code">Saída Acerto Erro Débito</span><br>
+        Descrição: <span class="code">Acerto Stock *OSV BFXXX/XXX* *MATRICULA*</span><br>
+        Preencher também o campo MATRÍCULA.
+      </div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">5. Correção de falta de débitos</div>
+          <div class="step-body">Quando não foram colocados na OSV artigos que deveriam ter sido &mdash; é necessário um movimento de <strong>SAÍDA</strong> para corrigir o stock.
+      <span class="danger">&#9888; DE EVITAR POR COMPLETO &mdash; reforçar com a receção o débito correto.</span><br><br>
+      Movimento: <span class="code">Saída Correção Falta Débito</span><br>
+      Descrição: <span class="code">Acerto Stock *OSV BFXXX/XXX* *MATRICULA*</span><br>
+      Preencher também o campo MATRÍCULA.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">6. Regras gerais sobre débitos e descontos</div>
+          <div class="step-body">Sprays de limpeza de travões, abraçadeiras, rebites, anilhas, fusíveis &mdash; <strong>tudo o que é passível de ser debitado numa viatura</strong> tem de ser OBRIGATORIAMENTE debitado nas obras aquando da saída do armazém.<br><br>
+      <span class="warn">Avisar a receção para NÃO retirar peças das OSV. Se quiserem oferecer, aplicar <strong>desconto</strong> e não retirar.</span><br>
+      Qualquer outro tipo de movimento tem de ser <strong>devidamente solicitado</strong> antes de ser efetuado.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <div class="step-title">7. Regra revogada: correção consumos colisão</div>
+          <div class="step-body"><div class="rule-block">
+        <div class="rule-block-title">A regra anterior &mdash; JÁ NÃO SE APLICA</div>
+        Anteriormente, após transferências entre armazéns, fazia-se <span class="code">Saída Registo Consumos</span> com descrição "Correção Consumos Colisão" para artigos CP... não debitados.<br>
+        <strong>Esta regra deixou de existir</strong>, sendo substituída pelas recontagens mensais descritas no passo seguinte.
+      </div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">8</div>
+        <div class="step-content">
+          <div class="step-title">8. Recontagens / Inventário mensal</div>
+          <div class="step-body">Aplicável aos armazéns <strong>Lisboa, Bela Vista, Consumíveis e Taguspark</strong>, dos seguintes artigos:
+      <ul>
+        <li>Consumíveis</li>
+        <li>Lubrificantes</li>
+        <li>Escovas</li>
+        <li>Lâmpadas</li>
+        <li>Consumíveis de oficina</li>
+        <li>Consumíveis de pintura (incluindo tintas)</li>
+      </ul>
+      <div class="rule-block">
+        <div class="rule-block-title">Regras da recontagem mensal</div>
+        <ul>
+          <li>Aplica-se a <strong>todos</strong> os armazéns.</li>
+          <li>Se for necessário um (ou mais) dia extra para a fazer, será <strong>ressarcido pela empresa</strong> desde que atempadamente informado.</li>
+          <li>Tem de ficar <strong>fechada até dia 5</strong> de cada mês.</li>
+          <li><strong>Não se aplica</strong> nos meses de fecho de trimestre de inventário.</li>
+        </ul>
+      </div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Armazém &mdash; Officegest</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Caixeiro</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Coordenação, Receção e Direção</div></div>
+        <div class="meta-field"><div class="meta-label">Periodicidade:</div><div class="meta-value">Diária e mensal (recontagens)</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body"><p>As regras de acerto (passos 1, 4 e 5) <strong>devem ser evitadas ao máximo</strong>. Quando são usadas, sinalizam falhas que devem ser corrigidas a montante.</p>
+<p>Qualquer movimento fora dos tipos listados tem de ser <strong>previamente autorizado</strong>.</p>
+<p>A recontagem mensal <strong>substitui</strong> a antiga correção de consumos colisão.</p></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body"><ol><li>Stock espelhado entre Officegest e realidade física;</li>
+<li>Rastreabilidade total dos movimentos (quem, para onde, porquê);</li>
+<li>Redução de acertos por erros de débito;</li>
+<li>Recontagens mensais fechadas até dia 5;</li>
+<li>Menor necessidade de acertos em inventário trimestral.</li></ol></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Funções do Caixeiro &mdash; Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>

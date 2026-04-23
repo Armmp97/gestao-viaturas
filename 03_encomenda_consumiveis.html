@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encomenda de Consumíveis e Artigos de Stock</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:900px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#1a8a7d; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#1a8a7d; margin-bottom:18px; }
+  .intro {
+    font-size:13px; color:#444; line-height:1.7;
+    background:#f0faf8; border-left:3px solid #1a8a7d;
+    padding:12px 14px; border-radius:0 4px 4px 0; margin-bottom:22px;
+  }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#1a8a7d;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 6px 18px; }
+  .step-body li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#1a8a7d; font-weight:600; font-size:12px;
+  }
+  .step-body .warn {
+    display:inline-block; background:#fff3e0; border-left:3px solid #e8833a;
+    padding:4px 8px; margin:4px 0; font-size:12px; font-weight:600;
+    color:#c25700; border-radius:0 4px 4px 0;
+  }
+  .step-body .code {
+    font-family: 'SF Mono', Consolas, monospace; background:#f5f5f5;
+    padding:2px 6px; border-radius:3px; font-size:11.5px; color:#333;
+  }
+  .step-body .example {
+    background:#f7f7f7; border-radius:4px; padding:10px 12px;
+    margin:8px 0; font-size:11.5px; color:#333; line-height:1.6;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .step-body img { display:block; max-width:100%; border:1px solid #ddd; border-radius:4px; margin:10px 0; }
+  .step-body .img-caption { font-size:11px; color:#888; margin-top:-4px; font-style:italic; }
+  .step-body .rule-block {
+    background:#f9f9f9; border-left:3px solid #1a8a7d;
+    padding:10px 14px; margin:10px 0; border-radius:0 4px 4px 0;
+  }
+  .step-body .rule-block-title { font-weight:700; color:#1a8a7d; font-size:12.5px; margin-bottom:6px; }
+  .step-body .danger {
+    background:#fff0f0; border-left:3px solid #c62828;
+    padding:8px 12px; margin:6px 0; font-size:12px;
+    color:#7a1a1a; border-radius:0 4px 4px 0; font-weight:600;
+  }
+  .meta-box { background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px; }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title { font-size:13px; font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid; }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .right-section-body ol { margin:0 0 0 18px; padding:0; }
+  .right-section-body ol li { margin-bottom:4px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#1a8a7d; border-color:#1a8a7d; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Encomenda de Consumíveis e Artigos de Stock</h1>
+      <p>Função diária &mdash; Caixeiro</p>
+    </div>
+    <div class="header-icon"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="22" width="34" height="22" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+  <path d="M38 28 H52 L58 36 V44 H38 Z" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+  <circle cx="16" cy="48" r="4" stroke="white" stroke-width="2" fill="#1a8a7d"/>
+  <circle cx="46" cy="48" r="4" stroke="white" stroke-width="2" fill="#1a8a7d"/>
+  <line x1="42" y1="32" x2="52" y2="32" stroke="white" stroke-width="1.5"/>
+</svg></div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+      <div class="intro">Ao contrário das peças adjudicadas para uma viatura concreta, os consumíveis e artigos de stock (sprays, abraçadeiras, lubrificantes para uso geral, etc.) são comprados pelo armazém para alimentar o próprio stock. Nestes casos, o critério não é o prazo mais rápido, mas sim <strong>o melhor preço, o melhor prazo de pagamento e a união entre armazéns</strong>.</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Garantir o melhor preço</div>
+          <div class="step-body">Consultar mais do que um fornecedor sempre que possível e <strong>negociar condições</strong>. Não há pressão de prazo como nas peças adjudicadas, pelo que o preço passa a ser o critério principal.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Garantir os melhores prazos de pagamento</div>
+          <div class="step-body">Pagamento a prazo é sempre preferível a pronto pagamento, desde que o preço não seja prejudicado. Confirmar <strong>condições negociadas</strong> antes de fechar a encomenda.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">União entre armazéns</div>
+          <div class="step-body">Sempre que algo for necessário, confirmar com <strong>TODOS OS ARMAZÉNS DO GRUPO</strong> se também precisam do mesmo artigo.<br><br>
+          Compras conjuntas significam:
+          <ul>
+            <li>Compras maiores &rarr; melhor poder negocial</li>
+            <li>Melhores preços por volume</li>
+            <li>Uniformização de stocks entre Cacém e Lisboa</li>
+          </ul>
+          <span class="dest">&#10148; É a única forma de ter preços de custo coerentes entre armazéns.</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Armazém (Cacém / Lisboa)</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Caixeiro</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Coordenação e Direção</div></div>
+        <div class="meta-field"><div class="meta-label">Periodicidade:</div><div class="meta-value">Diária &mdash; conforme necessidade</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body"><p>Evitar compras isoladas quando o outro armazém também precisa &mdash; resulta em <strong>preços de custo díspares</strong> e problemas no débito.</p>
+<p>Se um armazém costuma comprar em <strong>bidons de 208L</strong> e o outro não, coordenar transferências antes de comprar em formato pequeno.</p>
+<p>Nunca alterar preço de custo só porque um fornecedor puxou para cima &mdash; confirmar primeiro.</p></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body"><ol><li>Preço de custo otimizado por volume e negociação conjunta;</li>
+<li>Prazos de pagamento alinhados com a tesouraria da empresa;</li>
+<li>Coerência de preços entre armazéns Cacém e Lisboa;</li>
+<li>Menor necessidade de transferências urgentes entre oficinas.</li></ol></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Funções do Caixeiro &mdash; Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>

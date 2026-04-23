@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise de Stock e Controlo de NGTs</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:900px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#1a8a7d; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#1a8a7d; margin-bottom:18px; }
+  .intro {
+    font-size:13px; color:#444; line-height:1.7;
+    background:#f0faf8; border-left:3px solid #1a8a7d;
+    padding:12px 14px; border-radius:0 4px 4px 0; margin-bottom:22px;
+  }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#1a8a7d;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 6px 18px; }
+  .step-body li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#1a8a7d; font-weight:600; font-size:12px;
+  }
+  .step-body .warn {
+    display:inline-block; background:#fff3e0; border-left:3px solid #e8833a;
+    padding:4px 8px; margin:4px 0; font-size:12px; font-weight:600;
+    color:#c25700; border-radius:0 4px 4px 0;
+  }
+  .step-body .code {
+    font-family: 'SF Mono', Consolas, monospace; background:#f5f5f5;
+    padding:2px 6px; border-radius:3px; font-size:11.5px; color:#333;
+  }
+  .step-body .example {
+    background:#f7f7f7; border-radius:4px; padding:10px 12px;
+    margin:8px 0; font-size:11.5px; color:#333; line-height:1.6;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .step-body img { display:block; max-width:100%; border:1px solid #ddd; border-radius:4px; margin:10px 0; }
+  .step-body .img-caption { font-size:11px; color:#888; margin-top:-4px; font-style:italic; }
+  .step-body .rule-block {
+    background:#f9f9f9; border-left:3px solid #1a8a7d;
+    padding:10px 14px; margin:10px 0; border-radius:0 4px 4px 0;
+  }
+  .step-body .rule-block-title { font-weight:700; color:#1a8a7d; font-size:12.5px; margin-bottom:6px; }
+  .step-body .danger {
+    background:#fff0f0; border-left:3px solid #c62828;
+    padding:8px 12px; margin:6px 0; font-size:12px;
+    color:#7a1a1a; border-radius:0 4px 4px 0; font-weight:600;
+  }
+  .meta-box { background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px; }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title { font-size:13px; font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid; }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .right-section-body ol { margin:0 0 0 18px; padding:0; }
+  .right-section-body ol li { margin-bottom:4px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#1a8a7d; border-color:#1a8a7d; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Análise de Stock e Controlo de NGTs</h1>
+      <p>Função semanal &mdash; Caixeiro</p>
+    </div>
+    <div class="header-icon"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="8" y="8" width="48" height="48" rx="3" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+  <rect x="16" y="36" width="6" height="12" fill="white"/>
+  <rect x="28" y="26" width="6" height="22" fill="white"/>
+  <rect x="40" y="18" width="6" height="30" fill="white"/>
+</svg></div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+      <div class="intro">Uma vez por semana, o caixeiro faz uma <strong>análise global do stock do seu armazém</strong> para identificar stocks desnecessários (capital parado) e stocks negativos (erros a corrigir). Em paralelo, revê as notas de devolução de mercadoria (NGTs) ainda por creditar, para garantir que nenhum crédito fica esquecido.</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Extrair o stock atual</div>
+          <div class="step-body">Em <strong>Officegest &rarr; Relatórios &rarr; Stocks &rarr; Stock Atual</strong>, filtrando pelo armazém a consultar.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Analisar stocks anormais</div>
+          <div class="step-body">Procurar:
+          <ul>
+            <li><strong>Stocks não necessários</strong> &mdash; artigos em excesso que podem ser devolvidos ou transferidos;</li>
+            <li><strong>Stocks negativos</strong> &mdash; inadmissíveis, indicam erro de débito, falta de entrada, ou movimento mal feito.</li>
+          </ul>
+          <div class="warn" style="display:block;margin-top:10px;">&#9888; Os stocks negativos têm de ser <strong>ANALISADOS COM OLHOS DE VER</strong> no histórico e na conta corrente de <strong>cada artigo individualmente</strong>, para ENTENDER a falha e tomar a <strong>ação corretiva necessária</strong>.</div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Efetuar devoluções de material</div>
+          <div class="step-body">Para os artigos em excesso, contactar o fornecedor e efetuar as devoluções possíveis (respeitando prazos). Resultado final: redução de imobilizado em armazém.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Controlo de NGTs ainda não creditadas</div>
+          <div class="step-body">Em <strong>Officegest &rarr; Relatórios &rarr; Personalizado &rarr; Devoluçõesporcreditar</strong>:
+          <ul>
+            <li>Filtrar sem qualquer edição &mdash; aparecem todas as NGT em aberto;</li>
+            <li>Agora sim, filtrar pelas <strong>séries respetivas</strong> do seu armazém (1.ª coluna <span class="code">Documento</span>);</li>
+            <li>Poderão existir NGTs de anos anteriores &mdash; na série correta (ex.: <span class="code">241</span> = Cacém 2024, <span class="code">243</span> = Lisboa 2024).</li>
+          </ul>
+          Para cada NGT aberta, <strong>insistir com o fornecedor</strong> para emissão do crédito correspondente.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Armazém &mdash; Officegest</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Caixeiro</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Coordenação e Direção</div></div>
+        <div class="meta-field"><div class="meta-label">Periodicidade:</div><div class="meta-value">Semanal</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body"><p>Stock negativo é sempre um erro &mdash; não &quot;se corrige sozinho&quot;. Investigar a causa.</p>
+<p>NGTs de anos anteriores tendem a ser &quot;esquecidas&quot;. São dinheiro da empresa que ainda não voltou.</p></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body"><ol><li>Relatório semanal de stock revisto e atuado;</li>
+<li>Devoluções de excedentes efetuadas dentro dos prazos;</li>
+<li>Nenhum stock negativo em aberto;</li>
+<li>Lista de NGTs por creditar acompanhada, com insistência ativa aos fornecedores;</li>
+<li>Redução do imobilizado e do risco de créditos perdidos.</li></ol></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Funções do Caixeiro &mdash; Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Caixas de Email</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:900px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#1a8a7d; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#1a8a7d; margin-bottom:18px; }
+  .intro {
+    font-size:13px; color:#444; line-height:1.7;
+    background:#f0faf8; border-left:3px solid #1a8a7d;
+    padding:12px 14px; border-radius:0 4px 4px 0; margin-bottom:22px;
+  }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#1a8a7d;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 6px 18px; }
+  .step-body li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#1a8a7d; font-weight:600; font-size:12px;
+  }
+  .step-body .warn {
+    display:inline-block; background:#fff3e0; border-left:3px solid #e8833a;
+    padding:4px 8px; margin:4px 0; font-size:12px; font-weight:600;
+    color:#c25700; border-radius:0 4px 4px 0;
+  }
+  .step-body .code {
+    font-family: 'SF Mono', Consolas, monospace; background:#f5f5f5;
+    padding:2px 6px; border-radius:3px; font-size:11.5px; color:#333;
+  }
+  .step-body .example {
+    background:#f7f7f7; border-radius:4px; padding:10px 12px;
+    margin:8px 0; font-size:11.5px; color:#333; line-height:1.6;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .step-body img { display:block; max-width:100%; border:1px solid #ddd; border-radius:4px; margin:10px 0; }
+  .step-body .img-caption { font-size:11px; color:#888; margin-top:-4px; font-style:italic; }
+  .step-body .rule-block {
+    background:#f9f9f9; border-left:3px solid #1a8a7d;
+    padding:10px 14px; margin:10px 0; border-radius:0 4px 4px 0;
+  }
+  .step-body .rule-block-title { font-weight:700; color:#1a8a7d; font-size:12.5px; margin-bottom:6px; }
+  .step-body .danger {
+    background:#fff0f0; border-left:3px solid #c62828;
+    padding:8px 12px; margin:6px 0; font-size:12px;
+    color:#7a1a1a; border-radius:0 4px 4px 0; font-weight:600;
+  }
+  .meta-box { background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px; }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title { font-size:13px; font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid; }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .right-section-body ol { margin:0 0 0 18px; padding:0; }
+  .right-section-body ol li { margin-bottom:4px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#1a8a7d; border-color:#1a8a7d; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Gestão de Caixas de Email</h1>
+      <p>Função transversal &mdash; Caixeiro</p>
+    </div>
+    <div class="header-icon"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="12" y="6" width="40" height="52" rx="2" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+  <line x1="18" y1="16" x2="46" y2="16" stroke="white" stroke-width="1.5"/>
+  <line x1="18" y1="24" x2="46" y2="24" stroke="white" stroke-width="1.5"/>
+  <line x1="18" y1="32" x2="38" y2="32" stroke="white" stroke-width="1.5"/>
+  <line x1="18" y1="40" x2="46" y2="40" stroke="white" stroke-width="1.5"/>
+  <text x="32" y="52" fill="white" font-size="8" font-weight="700" text-anchor="middle" font-family="Inter">€</text>
+</svg></div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+      <div class="intro">O caixeiro é o principal ponto de contacto escrito entre fornecedores, recepção, coordenação e direcção. A gestão correcta das <strong>caixas de email</strong> &mdash; pessoal e partilhadas &mdash; é por isso uma função <strong>crítica</strong>, ao mesmo nível das restantes funções operacionais. Emails mal encaminhados, não lidos ou esquecidos traduzem-se directamente em peças não encomendadas, devoluções perdidas, viaturas paradas, problemas de contabilidade e queixas de clientes. Este processo define a disciplina que cada caixeiro tem de manter nas várias caixas a que tem acesso.</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Caixa pessoal &mdash; user@domuscar.com</div>
+          <div class="step-body">Cada colaborador tem uma caixa pessoal <span class="code">user@domuscar.com</span>. Esta caixa serve para:
+          <ul>
+            <li>Comunicações internas direccionadas ao colaborador;</li>
+            <li>Convites de reunião, avisos de RH, Direcção, IT.</li>
+          </ul>
+          <span class="dest">&#10148; A caixa pessoal <strong>não substitui</strong> as caixas partilhadas &mdash; o trabalho de compras passa pelas partilhadas, para que todos os caixeiros tenham visibilidade.</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Caixas partilhadas &mdash; disciplina de equipa</div>
+          <div class="step-body">Existem <strong>cinco caixas partilhadas</strong>, todas com acesso simultâneo dos caixeiros:
+          <div class="rule-block">
+            <div class="rule-block-title">Domínio @domuscar.com</div>
+            <ul>
+              <li><span class="code">compras.cacem@domuscar.com</span></li>
+              <li><span class="code">compras.lisboa@domuscar.com</span></li>
+              <li><span class="code">compras.colisao@domuscar.com</span></li>
+            </ul>
+          </div>
+          <div class="rule-block">
+            <div class="rule-block-title">Domínio @boschcarservice.pt</div>
+            <ul>
+              <li><span class="code">domuscar.cacem@boschcarservice.pt</span></li>
+              <li><span class="code">domuscar.lisboa@boschcarservice.pt</span></li>
+            </ul>
+          </div>
+          Como são partilhadas, <strong>a regra de ouro é</strong>: nunca abrir um email sem dar o correcto seguimento. Abrir e deixar &ldquo;por ler&rdquo; não existe &mdash; ou se trata, ou se responde, ou se encaminha, ou se move para <span class="code">Tratados</span>. <em>Meio caminho andado</em> cria confusão entre colegas e duplica trabalho.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Verificação constante</div>
+          <div class="step-body">As caixas partilhadas devem ser <strong>verificadas constantemente</strong> ao longo do dia &mdash; na prática, manter o Outlook aberto e olhar para as entradas sempre que há um momento livre. Não existe &ldquo;hora de abrir o mail&rdquo;: a caixa acompanha o ritmo do armazém.
+          <span class="warn">&#9888; Uma encomenda urgente que espera duas horas numa caixa partilhada pode custar um dia de agenda a uma viatura.</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Pasta &ldquo;Tratados&rdquo; &mdash; exclusiva das caixas @boschcarservice.pt</div>
+          <div class="step-body"><strong>Apenas as caixas partilhadas <span class="code">@boschcarservice.pt</span></strong> (<span class="code">domuscar.cacem@boschcarservice.pt</span> e <span class="code">domuscar.lisboa@boschcarservice.pt</span>) têm <strong>pasta <span class="code">Tratados</span></strong>. Nessas duas caixas, a disciplina é:
+          <ul>
+            <li>Email lido e <strong>resolvido pelo caixeiro</strong> &rarr; mover para <span class="code">Tratados</span>;</li>
+            <li>Email reencaminhado para colega/equipa responsável &rarr; mover para <span class="code">Tratados</span>;</li>
+            <li>Email em <strong>curso</strong> (à espera de resposta do fornecedor, por exemplo) &rarr; <strong>manter na Inbox</strong> e, se possível, sinalizar/flag, até que fique resolvido.</li>
+          </ul>
+          <span class="dest">&#10148; Nas caixas <span class="code">@boschcarservice.pt</span>, a Inbox deve tender para <strong>vazio</strong>. O que lá está é o que ainda falta tratar. Nas caixas <span class="code">compras.*@domuscar.com</span> não se usa a pasta <span class="code">Tratados</span>.</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Tratamento dos emails nas caixas @boschcarservice.pt</div>
+          <div class="step-body">As caixas <span class="code">domuscar.cacem@boschcarservice.pt</span> e <span class="code">domuscar.lisboa@boschcarservice.pt</span> recebem comunicações da rede Bosch Car Service, clientes e fornecedores que respondem a essa identidade, e ainda pedidos que pertencem a outros departamentos do grupo. Regras de tratamento (todas terminam no movimento para <span class="code">Tratados</span>):
+          <ul>
+            <li>Email <strong>direccionado ao sector de compras/armazém</strong> &rarr; o caixeiro <strong>trata directamente</strong> e move para <span class="code">Tratados</span>;</li>
+            <li>Email <strong>destinado à recepção</strong> (marcações, orçamentos, contactos de clientes) &rarr; <strong>reencaminhar aos colegas da recepção</strong> e mover o original para <span class="code">Tratados</span>;</li>
+            <li>Email <strong>Bosch</strong> (Service Bulletins, campanhas, qualidade) &rarr; reencaminhar ao coordenador de oficina e mover para <span class="code">Tratados</span>;</li>
+            <li>Email para <strong>Contabilidade</strong> (facturas em atraso, extractos, reclamações de pagamento, pedidos de contabilística) &rarr; reencaminhar para <span class="code">contabilidade@domuscar.com</span> e mover para <span class="code">Tratados</span>;</li>
+            <li>Email para <strong>Recursos Humanos</strong> (pedidos de colaboradores, ACT, SS, seguros de acidentes de trabalho) &rarr; reencaminhar para <span class="code">recursoshumanos@domuscar.com</span> e mover para <span class="code">Tratados</span>.</li>
+          </ul>
+          <span class="dest">&#10148; Nestes reencaminhamentos o caixeiro <strong>não responde</strong> nem deixa em aberto &mdash; o papel é apenas garantir que o email chega ao destinatário correcto e sai da Inbox da caixa Bosch.</span></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">Regras gerais de higiene de caixa</div>
+          <div class="step-body"><ul>
+            <li>Não usar as caixas partilhadas para <strong>comunicação pessoal</strong>;</li>
+            <li>Ao responder a partir de uma caixa partilhada, usar <strong>sempre a assinatura da caixa partilhada</strong> &mdash; nunca o nome pessoal ou assinatura pessoal. A mensagem sai em nome do armazém, não do colaborador individual.</li>
+          </ul></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Outlook (Web e Desktop)</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Caixeiro</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Recepção, Coordenação, Contabilidade, Recursos Humanos</div></div>
+        <div class="meta-field"><div class="meta-label">Periodicidade:</div><div class="meta-value">Contínua &mdash; ao longo de todo o dia</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body"><p>A pasta <span class="code">Tratados</span> existe <strong>apenas nas caixas <span class="code">@boschcarservice.pt</span></strong>. É nessas duas caixas que a Inbox tende para vazio. Nas caixas <span class="code">compras.*@domuscar.com</span> não se usa <span class="code">Tratados</span>.</p>
+<p>Reencaminhar para contabilidade@ / recursoshumanos@ <strong>não é</strong> desresponsabilização &mdash; é a rota correcta e mais rápida para o cliente/fornecedor ser atendido.</p>
+<p>Emails da Bosch (campanhas, qualidade, formações) <strong>não ficam</strong> na caixa do armazém &mdash; vão para o coordenador de oficina ou direcção conforme o conteúdo.</p>
+<p>Um email aberto e não tratado é <strong>pior</strong> do que um email não lido: induz os colegas em erro sobre o estado da Inbox.</p></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body"><ol><li>Caixas partilhadas <span class="code">@boschcarservice.pt</span> com Inbox próxima de vazio e pasta <span class="code">Tratados</span> organizada;</li>
+<li>Zero emails &ldquo;perdidos&rdquo; por terem sido abertos sem seguimento;</li>
+<li>Recepção, contabilidade e RH a receber em tempo útil o que lhes pertence;</li>
+<li>Comunicação com a rede Bosch Car Service tratada nos canais internos correctos;</li>
+<li>Menos tempo gasto por cada caixeiro a perceber o que está ou não tratado na caixa partilhada.</li></ol></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Funções do Caixeiro &mdash; Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>

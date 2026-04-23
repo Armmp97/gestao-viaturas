@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lançamento de Faturas e Criação de Artigos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#f0f0f0; color:#222; }
+  .page {
+    max-width:900px; margin:24px auto; background:#fff;
+    border-radius:8px; box-shadow:0 2px 16px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  .header {
+    background:#1a8a7d; color:#fff; padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px 8px 0 0;
+  }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:.85; }
+  .header-icon {
+    width:72px; height:72px; flex-shrink:0; margin-left:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .header-icon svg { width:64px; height:64px; }
+  .content { display:flex; gap:24px; padding:28px 32px 32px; }
+  .left { flex:0 0 58%; }
+  .right { flex:1; }
+  .section-title { font-size:15px; font-weight:700; color:#1a8a7d; margin-bottom:18px; }
+  .intro {
+    font-size:13px; color:#444; line-height:1.7;
+    background:#f0faf8; border-left:3px solid #1a8a7d;
+    padding:12px 14px; border-radius:0 4px 4px 0; margin-bottom:22px;
+  }
+  .step { display:flex; gap:14px; margin-bottom:20px; }
+  .step-num {
+    width:28px; height:28px; border-radius:50%; background:#1a8a7d;
+    color:#fff; font-size:13px; font-weight:700; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-content { flex:1; min-width:0; }
+  .step-title { font-size:13px; font-weight:700; color:#222; margin-bottom:5px; }
+  .step-body { font-size:12.5px; color:#444; line-height:1.7; }
+  .step-body ul { margin:6px 0 6px 18px; }
+  .step-body li { margin-bottom:3px; }
+  .step-body .dest {
+    display:block; margin-top:6px; color:#1a8a7d; font-weight:600; font-size:12px;
+  }
+  .step-body .warn {
+    display:inline-block; background:#fff3e0; border-left:3px solid #e8833a;
+    padding:4px 8px; margin:4px 0; font-size:12px; font-weight:600;
+    color:#c25700; border-radius:0 4px 4px 0;
+  }
+  .step-body .code {
+    font-family: 'SF Mono', Consolas, monospace; background:#f5f5f5;
+    padding:2px 6px; border-radius:3px; font-size:11.5px; color:#333;
+  }
+  .step-body .example {
+    background:#f7f7f7; border-radius:4px; padding:10px 12px;
+    margin:8px 0; font-size:11.5px; color:#333; line-height:1.6;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .step-body img { display:block; max-width:100%; border:1px solid #ddd; border-radius:4px; margin:10px 0; }
+  .step-body .img-caption { font-size:11px; color:#888; margin-top:-4px; font-style:italic; }
+  .step-body .rule-block {
+    background:#f9f9f9; border-left:3px solid #1a8a7d;
+    padding:10px 14px; margin:10px 0; border-radius:0 4px 4px 0;
+  }
+  .step-body .rule-block-title { font-weight:700; color:#1a8a7d; font-size:12.5px; margin-bottom:6px; }
+  .step-body .danger {
+    background:#fff0f0; border-left:3px solid #c62828;
+    padding:8px 12px; margin:6px 0; font-size:12px;
+    color:#7a1a1a; border-radius:0 4px 4px 0; font-weight:600;
+  }
+  .meta-box { background:#f7f7f7; border-radius:6px; padding:16px 18px; margin-bottom:16px; }
+  .meta-field { margin-bottom:10px; }
+  .meta-field:last-child { margin-bottom:0; }
+  .meta-label { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+  .meta-value { font-size:12.5px; color:#222; margin-top:2px; }
+  .right-section { margin-bottom:18px; }
+  .right-section-title { font-size:13px; font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid; }
+  .right-section-body { font-size:12px; color:#444; line-height:1.7; }
+  .right-section-body p { margin-bottom:6px; }
+  .right-section-body ol { margin:0 0 0 18px; padding:0; }
+  .right-section-body ol li { margin-bottom:4px; }
+  .note-title { color:#e8833a; border-color:#e8833a; }
+  .results-title { color:#1a8a7d; border-color:#1a8a7d; }
+  .footer {
+    border-top:1px solid #ddd; padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; color:#999;
+  }
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; margin:0; max-width:100%; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>Lançamento de Faturas e Criação de Artigos</h1>
+      <p>Função diária &mdash; Caixeiro</p>
+    </div>
+    <div class="header-icon"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="12" y="6" width="40" height="52" rx="2" stroke="white" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+  <line x1="18" y1="16" x2="46" y2="16" stroke="white" stroke-width="1.5"/>
+  <line x1="18" y1="24" x2="46" y2="24" stroke="white" stroke-width="1.5"/>
+  <line x1="18" y1="32" x2="38" y2="32" stroke="white" stroke-width="1.5"/>
+  <line x1="18" y1="40" x2="46" y2="40" stroke="white" stroke-width="1.5"/>
+  <text x="32" y="52" fill="white" font-size="8" font-weight="700" text-anchor="middle" font-family="Inter">€</text>
+</svg></div>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="section-title">Passo a passo</div>
+      <div class="intro">O lançamento correto de faturas e a criação rigorosa de fichas de artigo são a espinha dorsal da rastreabilidade financeira da empresa. Um lançamento mal feito compromete margens, débitos em viatura e, no limite, a própria contabilidade. As regras abaixo têm de ser <strong>seguidas sem exceção</strong>.</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Tipos de documentos &mdash; FAF, FRF e NCF</div>
+          <div class="step-body">Documentos ligados a <strong>custos variáveis imputados a um automóvel</strong>:
+      <ul>
+        <li><span class="code">FAF</span> (Fatura Fornecedor) &mdash; custos variáveis <strong>a prazo</strong>;</li>
+        <li><span class="code">FRF</span> (Fatura Recibo Fornecedor) &mdash; custos variáveis em <strong>pronto pagamento</strong>;</li>
+        <li><span class="code">NCF</span> (Nota de Crédito Fornecedor) &mdash; todas as notas de crédito de FAF/FRF, independentemente da forma de pagamento.</li>
+      </ul>
+      <span class="warn">&#9888; Um documento FAF ou FRF que <strong>tenha qualquer nota de crédito associada</strong> deve ser lançado em NCF.</span>
+      <div class="rule-block">
+        <div class="rule-block-title">Regra NCF &rarr; NGT</div>
+        Toda a <strong>NCF</strong> tem de ser lançada <strong>com associação no Officegest à NGT</strong> (Guia de Transporte) respetiva. É essa associação que fecha o ciclo da devolução e garante que o crédito regista corretamente no stock e na conta corrente do fornecedor.
+      </div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Regras no lançamento de qualquer documento</div>
+          <div class="step-body"><div class="rule-block">
+        <div class="rule-block-title">Campos obrigatórios no lançamento</div>
+        <ul>
+          <li><strong>Fornecedor</strong></li>
+          <li><strong>N.º do documento</strong> &mdash; escrito de forma <strong>IGUAL</strong> ao documento físico</li>
+          <li><strong>Data do documento</strong> &mdash; conforme documento físico</li>
+          <li><strong>Série</strong> &mdash; igual à série que vai efetuar a venda da compra</li>
+          <li><strong>Prazo de pagamento e data de vencimento</strong> &mdash; iguais ao documento físico</li>
+          <li><strong>Inserção de artigos</strong> (regras no passo seguinte)</li>
+          <li><strong>Armazém correto</strong> &mdash; local onde fica a compra</li>
+          <li><strong>Centro de custo correto</strong> &mdash; igual ao da venda da compra em questão</li>
+        </ul>
+      </div>
+      <div class="rule-block">
+        <div class="rule-block-title">Série do documento &mdash; regra especial</div>
+        Quando o documento contém artigos de <strong>mais do que um centro de custo</strong>, a <strong>série do documento deve ser a Geral</strong>. Só assim o Officegest aceita a repartição correcta entre centros e impede que a venda subsequente fique com série incorrecta.
+      </div>
+      <div class="rule-block">
+        <div class="rule-block-title">Anexo obrigatório</div>
+        O <strong>anexo do documento físico (PDF/imagem)</strong> é <strong>obrigatório</strong> em todos os lançamentos (FAF, FRF e NCF). Sem anexo o lançamento <strong>não fica fechado</strong> &mdash; a contabilidade e a direcção têm de conseguir aceder ao documento original sem depender do armazém.
+      </div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Regras na criação / edição de artigos</div>
+          <div class="step-body"><div class="rule-block">
+        <div class="rule-block-title">Referências e descrição</div>
+        <ul>
+          <li>A referência do artigo tem de entrar no <strong>Tecdoc</strong> (preferencial) ou GTEstimate;</li>
+          <li>Peça aftermarket sem referência no Tecdoc &rarr; criar com outra referência Tecdoc de <em>uma marca comum</em> com boa ficha de preenchimento;</li>
+          <li>Peça original &rarr; referência <strong>TEM</strong> de entrar no GTEstimate;</li>
+          <li>Descrição do artigo <strong>IGUAL</strong> à descrição Tecdoc / GTEstimate;</li>
+          <li>Pneus &rarr; descrição no formato: <span class="code">Pneu *MARCA* *XXX / XX R XX" "MODELO" "INDICES"</span>, com seleção do <em>pisco</em> indicativo de pneu (campos adicionais obrigatórios);</li>
+          <li>Preencher Família, Sub-Família e Sub-sub-família (quando existentes);</li>
+          <li>Código de barras preenchido quando for artigo Tecdoc, conforme ficha no Website.</li>
+        </ul>
+      </div>
+      <div class="rule-block">
+        <div class="rule-block-title">Margens de lucro</div>
+        <ul>
+          <li>Bosch (exceto baterias e injeção): <strong>177%</strong> &mdash; restantes Bosch: <strong>30%</strong></li>
+          <li>Aftermarket / usados: <strong>100%</strong></li>
+          <li>Peças originais: respeitar <strong>PVP da fatura</strong></li>
+          <li>Pneus: <strong>1&euro; de incremento</strong> ao valor líquido</li>
+          <li>Serviços externos: <strong>100%</strong></li>
+        </ul>
+      </div>
+      <div class="rule-block">
+        <div class="rule-block-title">Imputação no lançamento</div>
+        Garantir a existência de uma <strong>matrícula</strong> para correto débito, salvo exceções de compras para stock.
+      </div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Artigos com taxas (Ecolub, Ecovalor, SGPU, etc.)</div>
+          <div class="step-body"><ul>
+        <li>Na <strong>criação</strong>, não adicionar como artigo complementar;</li>
+        <li>Na <strong>edição</strong>, confirmar se não existe como artigo complementar;</li>
+        <li>No <strong>lançamento da compra</strong>, lançar as taxas no artigo <span class="code">GA &mdash; Gestão Ambiental</span> <strong>com matrícula preenchida obrigatoriamente</strong> &mdash; é a matrícula que permite debitar a taxa na OSV do cliente que efectivamente consumiu o artigo gerador da taxa.</li>
+      </ul>
+      Em documentos com <strong>portes associados</strong>, <strong>não</strong> se incrementa o valor ao PVP dos artigos. Os portes são lançados com o <strong>artigo Portes</strong> e devem ter <strong>matrícula associada</strong>, para serem debitados na Ordem de Serviço respetiva.</div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Artigos de casco</div>
+          <div class="step-body"><div class="rule-block">
+        <div class="rule-block-title">Regras específicas para cascos</div>
+        <ul>
+          <li>Referência do artigo principal com adição da letra <span class="code">C</span> no fim;</li>
+          <li>Descrição começa sempre por <span class="code">Casco &mdash;</span> seguida da descrição do artigo principal;</li>
+          <li>Restante ficha igual ao artigo principal, <strong>EXCETO</strong> código de barras e preços (preço de custo do casco = PVP, margem a 0%).</li>
+        </ul>
+      </div></div>
+        </div>
+      </div>
+<div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">Lubrificantes</div>
+          <div class="step-body"><ul>
+        <li>Todos os óleos comprados são lançados através da referência <span class="code">OLEO</span> nova (ver <em>Processo de Óleos de Motor</em>);</li>
+        <li><strong>Muita atenção aos valores de compra</strong>: se um armazém compra em bidons de 208L e o outro em formato pequeno, coordenar transferência em vez de comprar por engano;</li>
+        <li>Se a compra foi feita por engano, <strong>não dar entrada</strong>: dar em artigo <span class="code">&ndash;</span> e devolver no momento.</li>
+      </ul></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right">
+      <div style="font-size:11px;font-weight:700;color:#999;letter-spacing:.3px;margin-bottom:10px;">DETALHES DO PROCESSO</div>
+      <div class="meta-box">
+        <div class="meta-field"><div class="meta-label">Local de aplicação:</div><div class="meta-value">Armazém &mdash; Officegest</div></div>
+        <div class="meta-field"><div class="meta-label">Responsável:</div><div class="meta-value">Caixeiro</div></div>
+        <div class="meta-field"><div class="meta-label">Destinatários:</div><div class="meta-value">Contabilidade, Direção e Oficina</div></div>
+        <div class="meta-field"><div class="meta-label">Periodicidade:</div><div class="meta-value">Diária &mdash; conforme chegada de faturas</div></div>
+        <div class="meta-field"><div class="meta-label">Criado em:</div><div class="meta-value">Abril de 2026</div></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title note-title">Nota importante</div>
+        <div class="right-section-body"><p>Um documento FAF/FRF com nota de crédito deve ser lançado em <strong>NCF</strong>, <strong>com associação à NGT</strong> respetiva.</p>
+<p>Sem matrícula no lançamento da compra <strong>não há débito possível</strong> ao cliente.</p>
+<p>Taxas de Gestão Ambiental e portes são gerados no sistema de forma distinta do artigo principal &mdash; GA exige <strong>matrícula obrigatória</strong> para débito em OSV e respeitar as regras evita correções posteriores.</p></div>
+      </div>
+
+      <div class="right-section">
+        <div class="right-section-title results-title">Resultados esperados</div>
+        <div class="right-section-body"><ol><li>Faturas lançadas com o documento correto (FAF, FRF ou NCF), com NCF sempre associada à NGT no Officegest;</li>
+<li>Fichas de artigo criadas e editadas segundo regras de Tecdoc/GTEstimate e margem;</li>
+<li>Taxas (GA) e portes corretamente imputados, sem impacto na margem do artigo principal;</li>
+<li>Cascos, pneus e lubrificantes criados conforme regras específicas;</li>
+<li>Débito ao cliente possível em todos os casos em que existe viatura associada.</li></ol></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DomusCar &bull; Walkingarage, Lda.</span>
+    <span>Funções do Caixeiro &mdash; Processos Operacionais</span>
+  </div>
+</div>
+</body>
+</html>
