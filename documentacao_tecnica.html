@@ -9,10 +9,14 @@
 <style>
 :root {
   --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
-  --accent: #007BC0; --accent-light: #4DA8DA; --white: #FFFFFF; --off-white: #F5F7FA;
+  --accent: #007BC0; --accent-dark: #005A8C; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
   --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF;
   --gray-600: #6B7280; --text-dark: #1A2A3A; --text-body: #475569;
-  --radius: 16px; --transition: .3s cubic-bezier(.4,0,.2,1);
+  --radius: 16px; --radius-sm: 12px;
+  --card-shadow: 0 4px 24px rgba(0,59,115,.08);
+  --card-hover: 0 8px 40px rgba(0,59,115,.14);
+  --transition: .3s cubic-bezier(.4,0,.2,1);
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior:smooth; font-size:16px; }
@@ -22,6 +26,8 @@ body {
   -webkit-font-smoothing:antialiased;
 }
 .container { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+/* ═══ HERO ═══ */
 .hero {
   position:relative;
   background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
@@ -38,47 +44,161 @@ body {
   font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
   line-height:1.15; margin-bottom:16px;
 }
-.hero h1 em { font-style:normal; color:var(--accent); }
+.hero h1 em { font-style:normal; color:var(--accent-light); }
 .hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
 .hero-bar {
   position:absolute; bottom:0; left:0; right:0; height:5px;
   background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 70%,var(--navy-light) 70%);
 }
-.placeholder-section {
-  padding:80px 0; text-align:center;
+
+/* ═══ CARDS GRID ═══ */
+.docs-section { padding:60px 0 80px; }
+.section-intro {
+  font-size:1.15rem; font-weight:600; color:var(--navy); margin-bottom:8px;
 }
-.placeholder-icon {
-  width:80px; height:80px; margin:0 auto 24px;
-  background:rgba(0,59,115,.06); border-radius:20px;
+.section-intro-desc {
+  font-size:.95rem; color:var(--gray-600); margin-bottom:32px;
+}
+.docs-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
+}
+.doc-card {
+  background:var(--white); border:2px solid var(--gray-200);
+  border-radius:var(--radius); padding:28px 32px;
+  cursor:pointer; transition:var(--transition);
+  display:flex; align-items:center; gap:18px;
+  text-align:left; position:relative; overflow:hidden;
+}
+.doc-card:hover {
+  border-color:var(--navy); box-shadow:var(--card-hover);
+  transform:translateY(-2px);
+}
+.doc-icon {
+  width:52px; height:52px; flex-shrink:0;
+  background:rgba(0,59,115,.06); border-radius:14px;
   display:flex; align-items:center; justify-content:center;
+  transition:var(--transition);
 }
-.placeholder-icon svg { width:36px; height:36px; color:var(--navy); }
-.placeholder-title {
-  font-size:1.4rem; font-weight:700; color:var(--navy); margin-bottom:12px;
+.doc-icon svg { width:26px; height:26px; color:var(--navy); transition:var(--transition); }
+.doc-card:hover .doc-icon {
+  background:linear-gradient(135deg,var(--accent) 0%,var(--navy-light) 100%);
 }
-.placeholder-text {
-  font-size:1rem; color:var(--gray-600); max-width:500px; margin:0 auto;
+.doc-card:hover .doc-icon svg { color:var(--white); }
+.doc-content { flex:1; min-width:0; }
+.doc-title {
+  font-size:1.05rem; font-weight:700; color:var(--navy);
+  margin-bottom:4px; transition:var(--transition);
+}
+.doc-subtitle { font-size:.85rem; color:var(--gray-600); transition:var(--transition); }
+.doc-card.em-breve { cursor:default; pointer-events:none; opacity:.55; }
+.doc-card.em-breve::after {
+  content:'EM BREVE';
+  position:absolute; top:14px; right:14px;
+  font-size:.65rem; font-weight:700; letter-spacing:1px;
+  background:var(--gray-100); color:var(--gray-600);
+  padding:3px 10px; border-radius:20px;
+}
+
+/* ═══ DETAIL (IFRAME) ═══ */
+.detail-section { display:none; padding:32px 0 60px; }
+.detail-section.visible { display:block; }
+.back-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  background:none; border:none; color:var(--navy); font-weight:600;
+  font-size:.95rem; cursor:pointer; padding:8px 0; margin-bottom:20px;
+  font-family:inherit;
+}
+.back-btn:hover { color:var(--accent); }
+.back-btn svg { width:18px; height:18px; }
+.detail-frame-wrap {
+  background:var(--white); border:1px solid var(--gray-200);
+  border-radius:var(--radius); overflow:hidden;
+  box-shadow:var(--card-shadow);
+}
+.detail-frame {
+  width:100%; border:none; display:block; min-height:800px;
 }
 </style>
 </head>
 <body>
+
 <div class="hero">
   <div class="container">
     <div class="hero-inner">
-      <h1>Documentação Técnica</h1>
-      <p class="hero-desc">Manuais técnicos, fichas de procedimento e documentação de referência.</p>
+      <h1>Documentação <em>Técnica</em></h1>
+      <p class="hero-desc">Manuais técnicos, fichas de procedimento e documentação de referência para toda a equipa.</p>
     </div>
   </div>
   <div class="hero-bar"></div>
 </div>
-<div class="placeholder-section">
+
+<!-- ═══ GRID DE DOCUMENTOS ═══ -->
+<div class="docs-section" id="docsGrid">
   <div class="container">
-    <div class="placeholder-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    <p class="section-intro">Documentos Disponíveis</p>
+    <p class="section-intro-desc">Clique num documento para consultar o conteúdo detalhado.</p>
+
+    <div class="docs-grid">
+
+      <!-- GARANTIAS -->
+      <div class="doc-card" onclick="openDoc('garantias')">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <div class="doc-content">
+          <div class="doc-title">Garantias</div>
+          <div class="doc-subtitle">Regras e Base Legal</div>
+        </div>
+      </div>
+
     </div>
-    <div class="placeholder-title">Conteúdo em preparação</div>
-    <p class="placeholder-text">Esta secção está a ser desenvolvida. Em breve estará disponível com informação completa para toda a equipa.</p>
   </div>
 </div>
+
+<!-- ═══ DETAIL VIEW ═══ -->
+<div class="detail-section" id="detailSection">
+  <div class="container">
+    <button class="back-btn" onclick="hideDoc()" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+      Voltar à Documentação Técnica
+    </button>
+    <div class="detail-frame-wrap">
+      <iframe id="detailFrame" class="detail-frame" src="" title="Documento"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+var docPages = {
+  garantias: { title: 'Garantias — Regras e Base Legal', url: 'garantias.html' }
+};
+
+function openDoc(id) {
+  var doc = docPages[id];
+  if (!doc) return;
+  document.getElementById('docsGrid').style.display = 'none';
+  var detail = document.getElementById('detailSection');
+  var frame = document.getElementById('detailFrame');
+  frame.src = doc.url + '?v=' + Date.now();
+  frame.title = doc.title;
+  frame.onload = function() {
+    try {
+      var h = frame.contentWindow.document.body.scrollHeight;
+      if (h && h > 400) frame.style.height = (h + 40) + 'px';
+    } catch(e) { /* ignore cross-origin */ }
+  };
+  detail.classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideDoc() {
+  document.getElementById('detailSection').classList.remove('visible');
+  document.getElementById('detailFrame').src = '';
+  document.getElementById('docsGrid').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
 </body>
 </html>

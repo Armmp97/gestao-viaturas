@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Garantias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-dark: #005A8C; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF;
+  --gray-600: #6B7280; --text-dark: #1A2A3A; --text-body: #475569;
+  --success: #10B981; --warning: #F59E0B; --info: #3B82F6;
+  --radius: 16px; --radius-sm: 12px;
+  --card-shadow: 0 4px 24px rgba(0,59,115,.08);
+  --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--off-white); color:var(--text-body); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.container { max-width:1080px; margin:0 auto; padding:0 24px; }
+
+/* ═══ HERO ═══ */
+.hero {
+  position:relative;
+  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
+  color:var(--white); overflow:hidden; min-height:260px; display:flex; align-items:center;
+}
+.hero::before {
+  content:''; position:absolute; top:-40%; right:-10%;
+  width:600px; height:600px;
+  background:radial-gradient(circle,rgba(0,123,192,.12) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.hero-inner { position:relative; z-index:2; padding:48px 0 40px; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.12); padding:6px 14px; border-radius:20px;
+  font-size:.8rem; font-weight:600; letter-spacing:.5px;
+  backdrop-filter:blur(10px); margin-bottom:16px;
+}
+.hero-badge svg { width:14px; height:14px; }
+.hero h1 {
+  font-size:clamp(1.8rem,4vw,2.4rem); font-weight:900;
+  line-height:1.15; margin-bottom:12px;
+}
+.hero h1 em { font-style:normal; color:var(--accent-light); }
+.hero-desc { font-size:1rem; line-height:1.7; max-width:640px; opacity:.85; }
+.hero-bar {
+  position:absolute; bottom:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 40%,var(--navy-light) 40%);
+}
+
+/* ═══ MAIN ═══ */
+.main-section { padding:48px 0 72px; }
+
+/* ═══ CATEGORY CARDS ═══ */
+.category-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:24px; margin-bottom:40px;
+}
+.category-card {
+  background:var(--white); border:1px solid var(--gray-200);
+  border-radius:var(--radius); padding:32px 28px;
+  box-shadow:var(--card-shadow); position:relative; overflow:hidden;
+  transition:var(--transition);
+}
+.category-card::before {
+  content:''; position:absolute; top:0; left:0;
+  width:5px; height:100%; background:var(--accent);
+}
+.category-card:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 40px rgba(0,59,115,.14);
+}
+.category-header {
+  display:flex; align-items:center; gap:14px; margin-bottom:20px;
+  padding-bottom:16px; border-bottom:1px solid var(--gray-200);
+}
+.category-icon {
+  width:48px; height:48px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--navy-light) 100%);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem;
+}
+.category-title { font-size:1.1rem; font-weight:800; color:var(--navy); line-height:1.3; }
+
+.warranty-row {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap:12px; padding:14px 0; border-bottom:1px dashed var(--gray-200);
+}
+.warranty-row:last-child { border-bottom:none; padding-bottom:0; }
+.warranty-row:first-of-type { padding-top:0; }
+.warranty-label {
+  font-size:.88rem; font-weight:600; color:var(--text-dark);
+  flex:1; min-width:120px;
+}
+.warranty-value {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--gray-100); color:var(--navy);
+  font-size:.82rem; font-weight:700;
+  padding:6px 12px; border-radius:20px; white-space:nowrap;
+}
+.warranty-value.highlight {
+  background:linear-gradient(135deg,rgba(0,123,192,.12) 0%,rgba(0,80,143,.12) 100%);
+  color:var(--accent-dark);
+}
+.warranty-note {
+  display:block; font-size:.78rem; color:var(--gray-600);
+  font-weight:400; margin-top:4px; line-height:1.5;
+  font-style:italic;
+}
+
+/* ═══ FABRICANTE (full width) ═══ */
+.fabricante-card {
+  background:linear-gradient(135deg,#FFF9E6 0%,#FFF4CC 100%);
+  border:1px solid #F5D77A;
+  border-radius:var(--radius); padding:28px 32px;
+  margin-bottom:40px;
+  position:relative; overflow:hidden;
+}
+.fabricante-card::before {
+  content:''; position:absolute; top:0; left:0;
+  width:5px; height:100%; background:var(--warning);
+}
+.fabricante-header {
+  display:flex; align-items:center; gap:14px; margin-bottom:16px;
+}
+.fabricante-icon {
+  width:44px; height:44px; flex-shrink:0;
+  background:var(--warning); color:var(--white);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem;
+}
+.fabricante-title { font-size:1.05rem; font-weight:800; color:var(--text-dark); line-height:1.3; }
+.fabricante-list { list-style:none; padding:0; margin:0; }
+.fabricante-list li {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:8px 0; font-size:.92rem; color:var(--text-dark);
+}
+.fabricante-list li svg {
+  width:18px; height:18px; flex-shrink:0; margin-top:3px;
+}
+.icon-check { color:var(--success); }
+.icon-warn { color:var(--warning); }
+.fabricante-list strong { color:var(--navy); }
+.fabricante-list .sub {
+  display:block; font-size:.82rem; color:var(--gray-600);
+  font-weight:400; margin-top:3px; font-style:italic;
+}
+
+/* ═══ BASE LEGAL ═══ */
+.legal-section { margin-top:48px; }
+.legal-header {
+  display:flex; align-items:center; gap:14px; margin-bottom:20px;
+}
+.legal-icon {
+  width:44px; height:44px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%);
+  color:var(--white); border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+}
+.legal-icon svg { width:22px; height:22px; }
+.legal-title {
+  font-size:1.3rem; font-weight:800; color:var(--navy); line-height:1.3;
+}
+.legal-sub {
+  font-size:.85rem; color:var(--gray-600); margin-top:2px;
+}
+.legal-card {
+  background:var(--white); border:1px solid var(--gray-200);
+  border-radius:var(--radius); padding:24px; box-shadow:var(--card-shadow);
+}
+.legal-card img {
+  width:100%; height:auto; display:block;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--gray-200);
+}
+.legal-caption {
+  margin-top:14px; font-size:.82rem; color:var(--gray-600);
+  text-align:center; font-style:italic;
+}
+
+/* ═══ FOOTER ═══ */
+.doc-footer {
+  margin-top:48px; padding-top:24px;
+  border-top:1px solid var(--gray-200);
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:.8rem; color:var(--gray-600);
+  flex-wrap:wrap; gap:12px;
+}
+.doc-footer strong { color:var(--navy); }
+
+@media (max-width: 640px) {
+  .warranty-row { flex-direction:column; align-items:flex-start; }
+  .warranty-value { align-self:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Regras e Base Legal
+      </div>
+      <h1><em>Garantias</em> &mdash; Walkingarage</h1>
+      <p class="hero-desc">Resumo das regras aplicadas pela oficina relativamente a peças, serviços, peças recondicionadas e garantia do fabricante, acompanhado da base legal (Decreto-Lei n.º 84/2021).</p>
+    </div>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+
+<div class="main-section">
+  <div class="container">
+
+    <!-- ═══ CATEGORIAS ═══ -->
+    <div class="category-grid">
+
+      <!-- PEÇAS NOVAS -->
+      <div class="category-card">
+        <div class="category-header">
+          <div class="category-icon">🔧</div>
+          <div class="category-title">Peças novas</div>
+        </div>
+        <div class="warranty-row">
+          <div class="warranty-label">Faturas a empresas</div>
+          <div class="warranty-value">1 ano</div>
+        </div>
+        <div class="warranty-row">
+          <div>
+            <div class="warranty-label">Faturas a particulares</div>
+            <span class="warranty-note">O 3.º ano depende de prova de defeito de fabrico ou anomalias documentadas nos primeiros 2 anos.</span>
+          </div>
+          <div class="warranty-value highlight">2 + 1 anos</div>
+        </div>
+      </div>
+
+      <!-- SERVIÇOS -->
+      <div class="category-card">
+        <div class="category-header">
+          <div class="category-icon">🛠️</div>
+          <div class="category-title">Serviços</div>
+        </div>
+        <div class="warranty-row">
+          <div class="warranty-label">Faturas a empresas</div>
+          <div class="warranty-value">1 ano</div>
+        </div>
+        <div class="warranty-row">
+          <div>
+            <div class="warranty-label">Faturas a particulares</div>
+            <span class="warranty-note">O 3.º ano depende de prova de defeito de fabrico ou anomalias documentadas nos primeiros 2 anos.</span>
+          </div>
+          <div class="warranty-value highlight">2 + 1 anos</div>
+        </div>
+      </div>
+
+      <!-- PEÇAS RECONDICIONADAS / RECONSTRUÍDAS / USADAS -->
+      <div class="category-card">
+        <div class="category-header">
+          <div class="category-icon">🔄</div>
+          <div class="category-title">Peças recondicionadas,<br>reconstruídas ou usadas</div>
+        </div>
+        <div class="warranty-row">
+          <div class="warranty-label">Faturas a empresas</div>
+          <div class="warranty-value">1 ano</div>
+        </div>
+        <div class="warranty-row">
+          <div>
+            <div class="warranty-label">Faturas a particulares</div>
+            <span class="warranty-note">Por mútuo acordo. Condições descritas em orçamento / fatura.</span>
+          </div>
+          <div class="warranty-value highlight">18 meses</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ GARANTIA FABRICANTE ═══ -->
+    <div class="fabricante-card">
+      <div class="fabricante-header">
+        <div class="fabricante-icon">🛡️</div>
+        <div class="fabricante-title">Garantia do fabricante<br><span style="font-size:.82rem;font-weight:500;color:var(--gray-600);">Em serviços / revisões efetuadas nas nossas oficinas</span></div>
+      </div>
+      <ul class="fabricante-list">
+        <li>
+          <svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+          <div><strong>Não perde</strong> a garantia legal.</div>
+        </li>
+        <li>
+          <svg class="icon-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <strong>Pode perder</strong> a garantia comercial.
+            <span class="sub">Ex.: extensões ou prazos extra atribuídos pela marca.</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ═══ BASE LEGAL ═══ -->
+    <div class="legal-section">
+      <div class="legal-header">
+        <div class="legal-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="legal-title">Base Legal &mdash; Garantia 2 + 1</div>
+          <div class="legal-sub">Decreto-Lei n.º 84/2021, de 18 de outubro</div>
+        </div>
+      </div>
+      <div class="legal-card">
+        <img src="garantia_base_legal.png" alt="Base legal da Garantia 2+1 — Decreto-Lei n.º 84/2021, publicado no Diário da República 1.ª série, N.º 202, 18 de outubro de 2021" loading="lazy">
+        <div class="legal-caption">Diário da República, 1.ª série — N.º 202 — 18 de outubro de 2021 (Decreto-Lei n.º 84/2021).</div>
+      </div>
+    </div>
+
+    <!-- ═══ FOOTER ═══ -->
+    <div class="doc-footer">
+      <span><strong>DomusCar &bull; Walkingarage, Lda.</strong></span>
+      <span>Documento interno de referência &mdash; Garantias</span>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
