@@ -100,6 +100,60 @@ body {
   padding:3px 10px; border-radius:20px;
 }
 
+/* ═══ LINK CARDS (dentro das categorias) ═══ */
+.link-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+}
+.link-card {
+  background:var(--white); border:1px solid var(--gray-200);
+  border-radius:var(--radius-sm); padding:16px 18px;
+  text-decoration:none; color:inherit;
+  display:flex; align-items:center; gap:14px;
+  transition:var(--transition); position:relative;
+}
+.link-card:hover {
+  border-color:var(--accent); box-shadow:var(--card-hover);
+  transform:translateY(-2px);
+}
+.link-card.pending {
+  opacity:.55; pointer-events:none; cursor:default;
+}
+.link-card.pending::after {
+  content:'URL PENDENTE';
+  position:absolute; top:8px; right:10px;
+  font-size:.6rem; font-weight:700; letter-spacing:.8px;
+  background:#FEF3C7; color:#92400E;
+  padding:2px 8px; border-radius:12px;
+}
+.link-icon {
+  width:40px; height:40px; flex-shrink:0;
+  background:linear-gradient(135deg,rgba(0,123,192,.10) 0%,rgba(0,80,143,.10) 100%);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  transition:var(--transition);
+}
+.link-icon svg { width:20px; height:20px; color:var(--accent-dark); }
+.link-card:hover .link-icon {
+  background:linear-gradient(135deg,var(--accent) 0%,var(--navy-light) 100%);
+}
+.link-card:hover .link-icon svg { color:var(--white); }
+.link-title {
+  font-size:.95rem; font-weight:700; color:var(--navy);
+  line-height:1.2; margin-bottom:2px;
+}
+.link-url {
+  font-size:.72rem; color:var(--gray-600);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:100%; display:block;
+}
+.link-content { flex:1; min-width:0; }
+.link-external {
+  width:16px; height:16px; color:var(--gray-400);
+  flex-shrink:0; transition:var(--transition);
+}
+.link-card:hover .link-external { color:var(--accent); }
+
 /* ═══ DETAIL (IFRAME) ═══ */
 .detail-section { display:none; padding:32px 0 60px; }
 .detail-section.visible { display:block; }
@@ -167,7 +221,7 @@ body {
   </div>
 </div>
 
-<!-- ═══ LINKS ÚTEIS (SUB-GRID) ═══ -->
+<!-- ═══ LINKS ÚTEIS (SUB-GRID DE CATEGORIAS) ═══ -->
 <div class="docs-section" id="linksUteisSection" style="display:none;">
   <div class="container">
     <button class="back-btn" onclick="hideLinksUteis()" aria-label="Voltar">
@@ -179,7 +233,7 @@ body {
 
     <div class="docs-grid">
 
-      <div class="doc-card em-breve">
+      <div class="doc-card" onclick="openLinkGroup('correio')">
         <div class="doc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         </div>
@@ -189,7 +243,7 @@ body {
         </div>
       </div>
 
-      <div class="doc-card em-breve">
+      <div class="doc-card" onclick="openLinkGroup('pecas')">
         <div class="doc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="7" x2="11" y2="15"/><line x1="7" y1="11" x2="15" y2="11"/></svg>
         </div>
@@ -199,7 +253,7 @@ body {
         </div>
       </div>
 
-      <div class="doc-card em-breve">
+      <div class="doc-card" onclick="openLinkGroup('fornecedores')">
         <div class="doc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16,8 20,8 23,11 23,16 16,16 16,8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
         </div>
@@ -209,7 +263,7 @@ body {
         </div>
       </div>
 
-      <div class="doc-card em-breve">
+      <div class="doc-card" onclick="openLinkGroup('uteis')">
         <div class="doc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
         </div>
@@ -219,7 +273,7 @@ body {
         </div>
       </div>
 
-      <div class="doc-card em-breve">
+      <div class="doc-card" onclick="openLinkGroup('locadoras')">
         <div class="doc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
         </div>
@@ -233,7 +287,20 @@ body {
   </div>
 </div>
 
-<!-- ═══ DETAIL VIEW ═══ -->
+<!-- ═══ LINK GROUP (mostrado ao clicar numa categoria) ═══ -->
+<div class="docs-section" id="linkGroupSection" style="display:none;">
+  <div class="container">
+    <button class="back-btn" onclick="hideLinkGroup()" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+      Voltar a Links Úteis
+    </button>
+    <p class="section-intro" id="linkGroupTitle">—</p>
+    <p class="section-intro-desc" id="linkGroupDesc">—</p>
+    <div class="link-grid" id="linkGroupGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL VIEW (Garantias) ═══ -->
 <div class="detail-section" id="detailSection">
   <div class="container">
     <button class="back-btn" onclick="hideDoc()" aria-label="Voltar">
@@ -247,6 +314,137 @@ body {
 </div>
 
 <script>
+/* ═══ SVG ICONS ═══ */
+var ICONS = {
+  mail:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+  shop:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>',
+  cloud:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>',
+  wrench:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>',
+  car:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14l-1.5-5.5a2 2 0 00-1.9-1.5H8.4a2 2 0 00-1.9 1.5L5 17z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
+  doc:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>',
+  book:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+  search:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  grid:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+  box:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  leaf:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 014 13V8a4 4 0 018 0v5a7 7 0 01-7 7"/><path d="M15 6a8 8 0 018 8v7a1 1 0 01-1 1H15"/></svg>',
+  clock:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>',
+  invoice:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
+  zap:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>',
+  key:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
+  oil:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.09 3.26L16 6l-2.91.74L12 10l-1.09-3.26L8 6l2.91-.74z"/><path d="M8 14v5a2 2 0 002 2h4a2 2 0 002-2v-5"/><path d="M6 14h12"/></svg>',
+  word:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8l2 8 2-6 2 6 2-8"/></svg>',
+  excel:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>',
+  external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+};
+
+/* ═══ LINK GROUPS (dados) ═══ */
+var linkGroups = {
+  correio: {
+    title: 'Caixas de Correio',
+    desc: 'Acessos diretos às caixas de correio pessoais e partilhadas.',
+    links: [
+      { name: 'Correio Pessoal',          url: 'https://outlook.office365.com/mail/', icon: 'mail' },
+      { name: 'Correio Colisão',          url: '', icon: 'mail' },
+      { name: 'Correio Compras Lisboa',   url: '', icon: 'mail' },
+      { name: 'Correio Compras Cacém',    url: 'https://outlook.office365.com/mail/compras.cacem@domuscar.com/', icon: 'mail' },
+      { name: 'Correio Compras Colisão',  url: 'https://outlook.office365.com/mail/compras.colisao@domuscar.com/', icon: 'mail' },
+      { name: 'Correio Bosch',            url: 'https://webmail.boschcarservice.pt/', icon: 'mail' }
+    ]
+  },
+  pecas: {
+    title: 'Identificação de Peças',
+    desc: 'Portais e catálogos para identificação e consulta de peças.',
+    links: [
+      { name: 'TecDoc',      url: 'https://web.tecalliance.net/tecdocpt/pt/login', icon: 'search' },
+      { name: 'GTEstimate',  url: 'https://estimate.mygtmotive.com/account/login', icon: 'grid' },
+      { name: 'PartsLink',   url: 'https://www.partslink24.com/partslink24/user/brandMenu.do', icon: 'box' },
+      { name: 'Motul',       url: 'https://www.motul.com/pt-PT', icon: 'oil' }
+    ]
+  },
+  fornecedores: {
+    title: 'Fornecedores',
+    desc: 'Portais de encomenda e gestão de fornecedores.',
+    links: [
+      { name: 'Drive360',       url: 'https://drive360.brightmotive.com/', icon: 'cloud' },
+      { name: 'Bombóleo',       url: 'http://shop.bomboleo.com/', icon: 'shop' },
+      { name: 'Onedrive',       url: 'https://portal.onedrive.pt/cambiar_pass', icon: 'key' },
+      { name: 'R.S. Contreras', url: 'https://www.rscontreras.pt/', icon: 'car' },
+      { name: 'Mcoutinho',      url: 'https://www.mcoutinhopecas.pt/', icon: 'car' },
+      { name: 'Caetano Parts',  url: 'https://pecas.caetanoretail.pt/', icon: 'box' },
+      { name: 'Tesla',          url: 'https://epc.tesla.com/pt-PT/catalogs', icon: 'zap' },
+      { name: 'B-Parts',        url: 'https://www.b-parts.com/pt', icon: 'box' },
+      { name: 'RacTronicos',    url: 'https://www.ractronicos.pt/', icon: 'zap' }
+    ]
+  },
+  uteis: {
+    title: 'Úteis',
+    desc: 'Ferramentas e recursos diversos de uso diário.',
+    links: [
+      { name: 'CRM Officegest',  url: 'https://walkinggarage.officegest.com/login', icon: 'wrench' },
+      { name: 'Planner',         url: 'https://tasks.office.com/domuscar.com/pt-BR/Home/Planner/', icon: 'calendar' },
+      { name: 'Siliamb',         url: 'https://siliamb.apambiente.pt/pages/public/login.xhtml', icon: 'leaf' },
+      { name: 'Portal 2Smart',   url: 'https://walkingarage.2smart.pt/', icon: 'clock' },
+      { name: 'Microsoft Word',  url: 'https://word.cloud.microsoft/?wdOrigin=MARKETING.FREE.GO-TO-WORD', icon: 'word' },
+      { name: 'Microsoft Excel', url: 'https://excel.cloud.microsoft/?wdOrigin=MARKETING.FREE.GO-TO-EXCEL', icon: 'excel' }
+    ]
+  },
+  locadoras: {
+    title: 'Locadoras',
+    desc: 'Portais de rent-a-car e plataformas de parceiros.',
+    links: [
+      { name: 'SIM Ayvens',      url: '', icon: 'invoice' },
+      { name: 'Ayvens Faturas',  url: '', icon: 'invoice' },
+      { name: 'Ayvens Agenda',   url: '', icon: 'calendar' },
+      { name: 'GTEstimate Kinto',url: '', icon: 'grid' }
+    ]
+  }
+};
+
+/* ═══ Render do grupo de links ═══ */
+function openLinkGroup(groupId) {
+  var group = linkGroups[groupId];
+  if (!group) return;
+  document.getElementById('linksUteisSection').style.display = 'none';
+  document.getElementById('linkGroupTitle').textContent = group.title;
+  document.getElementById('linkGroupDesc').textContent = group.desc;
+  var grid = document.getElementById('linkGroupGrid');
+  grid.innerHTML = '';
+  group.links.forEach(function(link) {
+    var pending = !link.url;
+    var hostname = '';
+    if (link.url) {
+      try { hostname = new URL(link.url).hostname.replace(/^www\./,''); } catch(e){ hostname = link.url; }
+    } else {
+      hostname = 'aguarda URL';
+    }
+    var safeUrl = link.url || '#';
+    var anchor = pending ? 'div' : 'a';
+    var attrs = pending
+      ? 'class="link-card pending"'
+      : 'class="link-card" href="' + safeUrl + '" target="_blank" rel="noopener noreferrer"';
+    grid.innerHTML +=
+      '<' + anchor + ' ' + attrs + '>'
+      + '<div class="link-icon">' + (ICONS[link.icon] || ICONS.book) + '</div>'
+      + '<div class="link-content">'
+      + '<div class="link-title">' + link.name + '</div>'
+      + '<span class="link-url">' + hostname + '</span>'
+      + '</div>'
+      + (pending ? '' : '<svg class="link-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>')
+      + '</' + anchor + '>';
+  });
+  document.getElementById('linkGroupSection').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideLinkGroup() {
+  document.getElementById('linkGroupSection').style.display = 'none';
+  document.getElementById('linkGroupGrid').innerHTML = '';
+  document.getElementById('linksUteisSection').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══ Doc (Garantias) em iframe ═══ */
 var docPages = {
   garantias: { title: 'Garantias — Regras e Base Legal', url: 'garantias.html' }
 };
@@ -256,6 +454,7 @@ function openDoc(id) {
   if (!doc) return;
   document.getElementById('docsGrid').style.display = 'none';
   document.getElementById('linksUteisSection').style.display = 'none';
+  document.getElementById('linkGroupSection').style.display = 'none';
   var detail = document.getElementById('detailSection');
   var frame = document.getElementById('detailFrame');
   frame.src = doc.url + '?v=' + Date.now();
@@ -277,6 +476,7 @@ function hideDoc() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+/* ═══ Links Úteis nav ═══ */
 function openLinksUteis() {
   document.getElementById('docsGrid').style.display = 'none';
   document.getElementById('linksUteisSection').style.display = '';
