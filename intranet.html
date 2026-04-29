@@ -2346,7 +2346,8 @@
             var initials = name.split(' ').map(function(n){ return n[0]; }).join('').substring(0,2).toUpperCase();
             document.getElementById('userName').textContent = name;
             document.getElementById('userAvatar').textContent = initials;
-            document.getElementById('userRole').textContent = currentUserPermissions.role === 'admin' ? 'Administrador' : 'Utilizador';
+            var headerRoleLabels = { admin: 'Administrador', coordenador: 'Coordenador', rh: 'Recursos Humanos', colaborador: 'Colaborador', user: 'Utilizador' };
+            document.getElementById('userRole').textContent = headerRoleLabels[currentUserPermissions.role] || 'Utilizador';
         }
 
         renderFeed();
@@ -3217,7 +3218,9 @@
             userCount++;
             var user = USER_PERMISSIONS[email];
             var tr = document.createElement('tr');
-            tr.innerHTML = '<td data-label="Nome">' + user.name + '</td><td data-label="Email">' + email + '</td><td data-label="Função">' + (user.role === 'admin' ? 'Administrador' : 'Utilizador') + '</td><td data-label="Módulos">' + user.modules.length + ' módulos</td>';
+            var roleLabels = { admin: 'Administrador', coordenador: 'Coordenador', rh: 'Recursos Humanos', colaborador: 'Colaborador', user: 'Utilizador' };
+            var roleLabel = roleLabels[user.role] || 'Utilizador';
+            tr.innerHTML = '<td data-label="Nome">' + user.name + '</td><td data-label="Email">' + email + '</td><td data-label="Função">' + roleLabel + '</td><td data-label="Módulos">' + user.modules.length + ' módulos</td>';
             tbody.appendChild(tr);
         });
         // Update active users count
