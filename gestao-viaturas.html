@@ -1657,11 +1657,17 @@
         if (!tbody) return;
         tbody.innerHTML = '';
         FLEET.forEach(v => {
-            const activeBooking = bookings.find(b =>
+            // Filtra todas as reservas activas para esta viatura
+            const vehicleBookings = bookings.filter(b =>
                 b.matricula === v.matricula &&
                 (b.estado === 'Agendado' || b.estado === 'Levantado') &&
                 (!currentLocation || b.localizacao === currentLocation)
             );
+            // Prioridade: Levantado (em serviço) > Agendado (futuro).
+            // Se a viatura está actualmente na rua, a acção correcta é "Devolução",
+            // não "Levantamento" de uma reserva futura.
+            const activeBooking = vehicleBookings.find(b => b.estado === 'Levantado')
+                              || vehicleBookings.find(b => b.estado === 'Agendado');
             let statusHtml = '<span class="status-badge" style="background:#e6f4ea;color:#0d904f;">Disponível</span>';
             if (activeBooking) {
                 if (activeBooking.estado === 'Agendado') statusHtml = '<span class="status-badge agendado">Agendado — ' + activeBooking.nomeCliente + '</span> <span class="location-badge ' + getLocationClass(activeBooking.localizacao) + '">' + activeBooking.localizacao + '</span>';
