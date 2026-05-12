@@ -1335,7 +1335,7 @@
     // Atualizar este valor sempre que se carrega um novo mês em Indicadores e Objetivos.
     // Formato: "Mês AAAA" (ex: "Março 2026"). A Margem Provisória só mostra dados
     // se o seu período de referência for POSTERIOR a este mês.
-    var MARGEM_REAL_ULTIMO_MES = "Março 2026";
+    var MARGEM_REAL_ULTIMO_MES = "Abril 2026";
 
     // ======== MARGEM DATA (FALLBACK) ========
     // Hardcoded fallback — used when SP is unavailable (403, no permissions, etc.)
@@ -3448,10 +3448,10 @@
                 '</div></div>';
         }
         content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">' +
-            buildCard('Mecânica Cacém', 26.44, '27.660 €', '104.622 €', false) +
-            buildCard('Mecânica Lisboa', 25.90, '20.507 €', '79.170 €', false) +
-            buildCard('Colisão', 15.52, '17.084 €', '110.044 €', false) +
-            buildCard('DomusCar (Empresa)', 22.21, '65.251 €', '293.836 €', true) +
+            buildCard('Mecânica Cacém', 21.86, '21.813 €', '99.774 €', false) +
+            buildCard('Mecânica Lisboa', 35.30, '36.791 €', '104.212 €', false) +
+            buildCard('Colisão', -2.20, '-1.926 €', '87.662 €', false) +
+            buildCard('DomusCar (Empresa)', 20.07, '59.000 €', '293.970 €', true) +
             '</div>';
     }
 
