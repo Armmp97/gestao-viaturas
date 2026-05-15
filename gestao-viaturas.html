@@ -240,6 +240,7 @@
         .toast.error { background: var(--danger); }
         .toast.warning { background: var(--warning); }
         @keyframes toastSlideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         /* Config banner */
         .config-banner { background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius); padding: 12px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 14px; }
@@ -3027,6 +3028,71 @@
         }
     }
 
+    /**
+     * Lista ficheiros de uma reserva/etapa no SharePoint, categoriza-os por
+     * padrão do nome (Foto/CC_Frente/CC_Verso/Carta_Frente/Carta_Verso/Orcamento/DocAssinado)
+     * e devolve um objecto no mesmo formato que o fileStore local
+     * ({fotos:[], ccFrente:[], ...}). Imagens são descarregadas e convertidas
+     * em data-URL para preview inline; outros tipos usam o webUrl directo.
+     */
+    function loadFilesFromSP(bookingId, stage) {
+        if (!spDriveId) return Promise.resolve(null);
+        var folderPath = bookingId + '/' + stage;
+        return getAccessToken().then(function(token) {
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + ':/children?$select=id,name,webUrl,file,size,@microsoft.graph.downloadUrl', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+        }).then(function(resp) {
+            if (!resp || !resp.ok) {
+                if (resp && resp.status === 404) {
+                    console.log('[SP-Files] Pasta inexistente:', folderPath);
+                } else {
+                    console.warn('[SP-Files] Erro a listar:', folderPath, resp ? resp.status : 'no response');
+                }
+                return null;
+            }
+            return resp.json();
+        }).then(function(data) {
+            if (!data || !data.value || data.value.length === 0) return null;
+            var result = { fotos: [], ccFrente: [], ccVerso: [], cartaFrente: [], cartaVerso: [], orcamento: [], documentoAssinado: [] };
+            var promises = data.value.map(function(item) {
+                if (!item.file) return Promise.resolve();
+                var name = item.name || '';
+                var category = null;
+                if (/_DocAssinado_/i.test(name)) category = 'documentoAssinado';
+                else if (/_CC_Frente_/i.test(name)) category = 'ccFrente';
+                else if (/_CC_Verso_/i.test(name)) category = 'ccVerso';
+                else if (/_Carta_Frente_/i.test(name)) category = 'cartaFrente';
+                else if (/_Carta_Verso_/i.test(name)) category = 'cartaVerso';
+                else if (/_Orcamento_/i.test(name)) category = 'orcamento';
+                else if (/_Foto/i.test(name)) category = 'fotos';
+                if (!category) return Promise.resolve();
+                var mime = (item.file && item.file.mimeType) || '';
+                var downloadUrl = item['@microsoft.graph.downloadUrl'];
+                if (mime.indexOf('image/') === 0 && downloadUrl) {
+                    return fetch(downloadUrl).then(function(r) { return r.blob(); }).then(function(blob) {
+                        return new Promise(function(resolve) {
+                            var reader = new FileReader();
+                            reader.onloadend = function() {
+                                result[category].push({ name: name, type: mime, data: reader.result });
+                                resolve();
+                            };
+                            reader.onerror = function() { resolve(); };
+                            reader.readAsDataURL(blob);
+                        });
+                    }).catch(function() { return null; });
+                } else {
+                    result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
+                    return Promise.resolve();
+                }
+            });
+            return Promise.all(promises).then(function() { return result; });
+        }).catch(function(e) {
+            console.error('[SP-Files] Erro de carregamento:', e);
+            return null;
+        });
+    }
+
     function viewHistoryFiles(bookingId, stage) {
         var files = fileStore[bookingId] && fileStore[bookingId][stage] ? fileStore[bookingId][stage] : {};
         var b = bookings.find(function(x) { return x.id === bookingId; });
@@ -3035,7 +3101,6 @@
         document.getElementById('fileGalleryBackBtn').setAttribute('onclick', "navigate('" + backPage + "')");
         document.getElementById('fileGalleryTitle').textContent = 'Ficheiros — ' + (b ? b.matricula + ' | ' + b.nomeCliente : bookingId);
         var content = document.getElementById('fileGalleryContent');
-        content.innerHTML = '';
 
         function renderSection(title, fileArr) {
             var html = '<div class="card"><div class="card-title">' + title + '</div>';
@@ -3046,6 +3111,8 @@
                 fileArr.forEach(function(f) {
                     if (f.type && f.type.startsWith('image/')) {
                         html += '<div class="file-preview" style="aspect-ratio:auto;"><img src="' + f.data + '" style="width:100%;height:180px;object-fit:cover;cursor:pointer;" onclick="openImageModal(this.src)"><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
+                    } else if (f.isWebUrl) {
+                        html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="window.open(\'' + f.data + '\', \'_blank\')"><div class="file-icon">&#128196;</div><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
                     } else {
                         html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="openFileInNewTab(\'' + f.data + '\')"><div class="file-icon">&#128196;</div><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
                     }
@@ -3053,23 +3120,58 @@
                 html += '</div>';
             }
             html += '</div>';
-            content.innerHTML += html;
+            return html;
         }
 
-        if (stage === 'levantamento') {
-            renderSection('Fotos da Viatura', files.fotos);
-            renderSection('CC Frente', files.ccFrente);
-            renderSection('CC Verso', files.ccVerso);
-            renderSection('Carta de Condução Frente', files.cartaFrente);
-            renderSection('Carta de Condução Verso', files.cartaVerso);
-            renderSection('Documento Assinado', files.documentoAssinado);
-        } else {
-            renderSection('Fotos Estado Final', files.fotos);
-            renderSection('Orçamento de Danos', files.orcamento);
-            renderSection('Documento Assinado', files.documentoAssinado);
+        function renderAll(fileObj, loadingMsg) {
+            var html = '';
+            if (loadingMsg) {
+                html += '<div style="padding:10px 14px;background:#e8f0fe;border-left:3px solid var(--primary);border-radius:4px;font-size:13px;color:#1a73e8;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid #1a73e8;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span><span>' + loadingMsg + '</span></div>';
+            }
+            if (stage === 'levantamento') {
+                html += renderSection('Fotos da Viatura', fileObj.fotos);
+                html += renderSection('CC Frente', fileObj.ccFrente);
+                html += renderSection('CC Verso', fileObj.ccVerso);
+                html += renderSection('Carta de Condução Frente', fileObj.cartaFrente);
+                html += renderSection('Carta de Condução Verso', fileObj.cartaVerso);
+                html += renderSection('Documento Assinado', fileObj.documentoAssinado);
+            } else {
+                html += renderSection('Fotos Estado Final', fileObj.fotos);
+                html += renderSection('Orçamento de Danos', fileObj.orcamento);
+                html += renderSection('Documento Assinado', fileObj.documentoAssinado);
+            }
+            content.innerHTML = html;
         }
 
+        // 1. Render imediato com cache local (se houver) + indicador SP
+        renderAll(files, spDriveId ? 'A carregar ficheiros do SharePoint…' : null);
         navigate('fileGallery');
+
+        // 2. Buscar do SharePoint em paralelo e fazer merge (SP é fonte de verdade entre browsers)
+        if (!spDriveId) return;
+        loadFilesFromSP(bookingId, stage).then(function(spFiles) {
+            if (!spFiles) {
+                // Não há nada no SP — manter cache local sem indicador
+                renderAll(files);
+                return;
+            }
+            // Merge: SP files primeiro; adicionar locais não presentes (por nome) no fim
+            var merged = {};
+            Object.keys(spFiles).forEach(function(k) { merged[k] = (spFiles[k] || []).slice(); });
+            Object.keys(files).forEach(function(k) {
+                if (!Array.isArray(files[k])) return;
+                if (!merged[k]) merged[k] = [];
+                var existing = {};
+                merged[k].forEach(function(f) { if (f && f.name) existing[f.name] = true; });
+                files[k].forEach(function(f) {
+                    if (f && f.name && !existing[f.name]) merged[k].push(f);
+                });
+            });
+            renderAll(merged);
+        }).catch(function(e) {
+            console.error('[SP-Files] Erro inesperado:', e);
+            renderAll(files);
+        });
     }
 
     function openImageModal(src) {
