@@ -3036,13 +3036,23 @@
      * em data-URL para preview inline; outros tipos usam o webUrl directo.
      */
     function loadFilesFromSP(bookingId, stage) {
-        if (!spDriveId) return Promise.resolve(null);
         var folderPath = bookingId + '/' + stage;
-        return getAccessToken().then(function(token) {
+        // Esperar pelo _ensureSpReady — quando o user clica em Ver Ficheiros pode ainda
+        // não haver spDriveId (init SP é assíncrono). Sem esta espera, returnaríamos null silenciosamente.
+        var spReadyPromise = (typeof _ensureSpReady === 'function') ? _ensureSpReady() : Promise.resolve();
+        return spReadyPromise.then(function() {
+            if (!spDriveId) {
+                console.warn('[SP-Files] spDriveId indisponível mesmo após _ensureSpReady');
+                return null;
+            }
+            return getAccessToken();
+        }).then(function(token) {
+            if (!token) return null;
             return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + ':/children?$select=id,name,webUrl,file,size,@microsoft.graph.downloadUrl', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
         }).then(function(resp) {
+            if (!resp) return null;
             if (!resp || !resp.ok) {
                 if (resp && resp.status === 404) {
                     console.log('[SP-Files] Pasta inexistente:', folderPath);
@@ -3144,11 +3154,15 @@
         }
 
         // 1. Render imediato com cache local (se houver) + indicador SP
-        renderAll(files, spDriveId ? 'A carregar ficheiros do SharePoint…' : null);
+        //    Mostra-se o spinner sempre que a config SP está activa, mesmo se spDriveId
+        //    ainda não estiver pronto — a init é assíncrona e o spinner é removido
+        //    pelo callback do loadFilesFromSP() abaixo.
+        var spActive = (CONFIG && CONFIG.storageMode === 'sharepoint') || !!spDriveId;
+        renderAll(files, spActive ? 'A carregar ficheiros do SharePoint…' : null);
         navigate('fileGallery');
 
         // 2. Buscar do SharePoint em paralelo e fazer merge (SP é fonte de verdade entre browsers)
-        if (!spDriveId) return;
+        if (!spActive) return;
         loadFilesFromSP(bookingId, stage).then(function(spFiles) {
             if (!spFiles) {
                 // Não há nada no SP — manter cache local sem indicador
