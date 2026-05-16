@@ -2789,7 +2789,27 @@
         });
     }
 
+    // ============================================
+    // CAMADA DE SEGURANÇA — APENAS ADMINS PODEM ELIMINAR
+    // ============================================
+    // Eliminação de ficheiros do SharePoint exige role 'admin' em USER_PERMISSIONS.
+    // Esta verificação é feita ANTES de qualquer pedido Graph API, mesmo quando a
+    // função é chamada pela consola do browser. As UIs já escondem os botões para
+    // non-admins, mas esta defesa-em-profundidade impede uso indevido.
+    function _requireAdminForDelete(opName) {
+        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
+            var msg = 'Acesso negado: a operação "' + opName + '" exige permissões de administrador.';
+            console.warn('[SP-Delete] ' + msg);
+            try { alert(msg); } catch(e) {}
+            return false;
+        }
+        return true;
+    }
+
     function deleteSharePointFile(fileId) {
+        if (!_requireAdminForDelete('deleteSharePointFile')) {
+            return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        }
         var driveId = getDriveId();
         if (!driveId) return Promise.reject('SharePoint not initialized');
         // DELETE requires write token — do NOT fallback to read-only
@@ -2809,6 +2829,7 @@
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'saveToSharePoint') return;
         var data = event.data;
+        var cid = data.correlationId || null;
         // Convert base64 data URL to ArrayBuffer if needed
         var content = data.fileContent;
         if (typeof content === 'string' && content.indexOf('data:') === 0) {
@@ -2823,10 +2844,10 @@
         }
         uploadToSharePoint(data.folderKey, data.fileName, content, data.contentType)
             .then(function(result) {
-                event.source.postMessage({ type: 'saveToSharePointResult', success: true, fileName: data.fileName }, '*');
+                try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: true, fileName: data.fileName }, '*'); } catch(e) {}
             })
             .catch(function(err) {
-                event.source.postMessage({ type: 'saveToSharePointResult', success: false, error: err.message }, '*');
+                try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: false, error: err && err.message ? err.message : String(err), fileName: data.fileName }, '*'); } catch(e) {}
             });
     });
 
@@ -3035,6 +3056,11 @@
         return currentUserPermissions;
     };
     window.deleteDivCoordFile = function(fileId) {
+        // deleteSharePointFile já tem _requireAdminForDelete embutido, mas duplicamos aqui
+        // para que a verificação aconteça MESMO se a função for chamada do iframe coord.
+        if (!_requireAdminForDelete('deleteDivCoordFile')) {
+            return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        }
         return deleteSharePointFile(fileId);
     };
 
@@ -3798,6 +3824,7 @@
     }
 
     function confirmDeleteFile(fileId, fileName) {
+        if (!_requireAdminForDelete('confirmDeleteFile')) return;
         if (!confirm('Tem a certeza que deseja eliminar "' + fileName + '"?')) return;
         deleteSharePointFile(fileId).then(function() {
             browseSharePoint(currentSpFolder);

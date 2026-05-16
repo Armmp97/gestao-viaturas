@@ -1319,27 +1319,59 @@
         } catch(e) { return '.bin'; }
     }
 
-    var _spFileQueue = []; // queue de ficheiros para upload quando SP estiver pronto
+    // ============================================
+    // SP UPLOAD QUEUE (persistido em localStorage)
+    // ============================================
+    // Estrutura: array de { path, base64Data, mime, fileName } — guardado em wg_spFileQueue
+    // Persistência garante que ficheiros não-enviados sobrevivem a fecho de browser.
+    var _spFileQueue = [];
+    try {
+        var _persistedQ = localStorage.getItem('wg_spFileQueue');
+        if (_persistedQ) _spFileQueue = JSON.parse(_persistedQ) || [];
+    } catch(e) { _spFileQueue = []; }
 
-    function spUploadFile(bookingId, stage, fileName, base64Data) {
-        // Converter base64 para blob
+    function _persistSpFileQueue() {
+        try {
+            // Guardamos base64Data em vez de Blob (Blob não é serializável)
+            var serializable = _spFileQueue.map(function(item) {
+                return { path: item.path, base64Data: item.base64Data, mime: item.mime, fileName: item.fileName };
+            });
+            localStorage.setItem('wg_spFileQueue', JSON.stringify(serializable));
+        } catch(e) { console.error('[SP-Upload] Falha ao persistir queue:', e); }
+    }
+
+    function _base64ToBlob(base64Data) {
         var parts = base64Data.split(',');
-        var mime = parts[0].match(/:(.*?);/)[1];
+        if (parts.length < 2) throw new Error('base64 inválido');
+        var matchMime = parts[0].match(/:(.*?);/);
+        var mime = matchMime ? matchMime[1] : 'application/octet-stream';
         var binary = atob(parts[1]);
         var array = new Uint8Array(binary.length);
         for (var i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
-        var blob = new Blob([array], { type: mime });
-        var path = bookingId + '/' + stage + '/' + fileName;
+        return { blob: new Blob([array], { type: mime }), mime: mime };
+    }
 
-        if (!spSiteId || !spDriveId) {
-            // SP nao pronto — adicionar a queue para retry automatico
-            console.log('[SP-Upload] SP nao pronto, ficheiro enfileirado:', fileName);
-            _spFileQueue.push({ path: path, blob: blob, mime: mime, fileName: fileName });
-            // Tentar inicializar SP em background; quando pronto, processar queue
-            _ensureSpReady().then(function() { _processFileQueue(); }).catch(function() {});
-            return Promise.resolve();
+    /**
+     * Faz upload de um ficheiro ao SharePoint. Retorna Promise que resolve com
+     * { ok: true, fileName } em caso de sucesso, ou rejeita com Error.
+     * Se SP não estiver pronto, enfileira (persistido em localStorage) e resolve com
+     * { ok: true, queued: true, fileName } — não é falha, será retransmitido.
+     */
+    function spUploadFile(bookingId, stage, fileName, base64Data) {
+        var path = bookingId + '/' + stage + '/' + fileName;
+        try {
+            var conv = _base64ToBlob(base64Data);
+        } catch(e) {
+            return Promise.reject(new Error('base64 inválido para ' + fileName + ': ' + e.message));
         }
-        return _doSpUpload(path, blob, mime, fileName);
+        if (!spSiteId || !spDriveId) {
+            console.log('[SP-Upload] SP nao pronto, ficheiro enfileirado:', fileName);
+            _spFileQueue.push({ path: path, base64Data: base64Data, mime: conv.mime, fileName: fileName });
+            _persistSpFileQueue();
+            _ensureSpReady().then(function() { _processFileQueue(); }).catch(function() {});
+            return Promise.resolve({ ok: true, queued: true, fileName: fileName });
+        }
+        return _doSpUpload(path, conv.blob, conv.mime, fileName);
     }
 
     function _doSpUpload(path, blob, mime, fileName) {
@@ -1352,10 +1384,11 @@
         }).then(function(resp) {
             if (resp && resp.ok) {
                 console.log('[SP-Upload] Ficheiro enviado:', fileName);
-            } else {
-                console.warn('[SP-Upload] Upload falhou para:', fileName, resp ? resp.status : 'no response');
+                return { ok: true, fileName: fileName };
             }
-            return resp;
+            var statusInfo = resp ? resp.status + ' ' + resp.statusText : 'no response';
+            console.warn('[SP-Upload] Upload falhou para:', fileName, statusInfo);
+            throw new Error('Falha SP (' + statusInfo + ') ao enviar ' + fileName);
         });
     }
 
@@ -1364,13 +1397,26 @@
         console.log('[SP-Upload] A processar', _spFileQueue.length, 'ficheiros pendentes...');
         var queue = _spFileQueue.slice();
         _spFileQueue = [];
+        _persistSpFileQueue();
         var chain = Promise.resolve();
+        var failedRetry = [];
         queue.forEach(function(item) {
             chain = chain.then(function() {
-                return _doSpUpload(item.path, item.blob, item.mime, item.fileName);
+                var blob;
+                try { blob = _base64ToBlob(item.base64Data).blob; }
+                catch(e) { throw e; }
+                return _doSpUpload(item.path, blob, item.mime, item.fileName);
             }).catch(function(e) {
                 console.error('[SP-Upload] Erro ao enviar ficheiro pendente:', item.fileName, e);
+                failedRetry.push(item); // re-enfileirar para próxima tentativa
             });
+        });
+        return chain.then(function() {
+            if (failedRetry.length > 0) {
+                _spFileQueue = _spFileQueue.concat(failedRetry);
+                _persistSpFileQueue();
+                console.warn('[SP-Upload]', failedRetry.length, 'ficheiros voltaram para queue para retry.');
+            }
         });
     }
 
@@ -2208,9 +2254,30 @@
         b.estado = 'Levantado';
         b.atualizadoEm = new Date().toISOString();
         b.atualizadoPor = getUserStamp();
-        try { saveUploadedFiles(id, 'levantamento'); } catch(err) { console.warn('saveUploadedFiles error:', err); }
+        // Iniciar upload dos ficheiros (assíncrono). Mostramos sucesso provisório;
+        // se algum upload falhar, o user recebe toast de erro com a contagem.
+        var uploadPromise;
+        try {
+            uploadPromise = saveUploadedFiles(id, 'levantamento');
+        } catch(err) {
+            console.warn('saveUploadedFiles error:', err);
+            uploadPromise = Promise.resolve({ totalAttempted: 0, failed: [], queued: [] });
+        }
         try { saveData(); } catch(err) { console.warn('saveData error:', err); }
-        showToast('Levantamento registado com sucesso!', 'success');
+        showToast('Levantamento registado. A enviar ficheiros…', 'success');
+        if (uploadPromise && typeof uploadPromise.then === 'function') {
+            uploadPromise.then(function(report) {
+                if (!report || report.totalAttempted === 0) return;
+                if (report.failed && report.failed.length > 0) {
+                    console.error('[Upload-Report] Falhas:', report.failed);
+                    showToast('⚠️ ' + report.failed.length + ' ficheiros NÃO foram guardados no SharePoint. Veja a consola e contacte o admin para garantir que ficam.', 'error');
+                } else if (report.queued && report.queued.length > 0) {
+                    showToast('Levantamento OK. ' + report.queued.length + ' ficheiros em fila — serão enviados quando o SharePoint estiver pronto.', 'warning');
+                } else {
+                    showToast('Levantamento + ' + report.totalAttempted + ' ficheiros enviados com sucesso.', 'success');
+                }
+            });
+        }
         // Generate printable document
         try { printPickupDocument(b); } catch(err) { console.warn('printPickupDocument error:', err); }
         // Show signed document upload
@@ -2438,16 +2505,28 @@
         var b = bookings.find(function(x) { return x.id === bookingId; });
         var mat = b ? b.matricula : bookingId;
         var opId = (b && b.levantamento && b.levantamento.id) ? b.levantamento.id : 'LEV';
-        uploadedFiles['signedDocPreview'].forEach(function(base64, idx) {
-            var ext = getExtFromBase64(base64);
+        var jobsSig = [];
+        uploadedFiles['signedDocPreview'].forEach(function(f, idx) {
+            var data = f && f.data ? f.data : f;
+            var ext = getExtFromBase64(data);
             var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
-            spUploadFile(bookingId, 'levantamento', name, base64);
-            mirrorToIntranet('gv_docs_assinados_lev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), base64);
+            jobsSig.push(function() { return spUploadFile(bookingId, 'levantamento', name, data); });
+            jobsSig.push(function() { return mirrorToIntranet('gv_docs_assinados_lev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedDocPreview'];
         if (b && b.levantamento) b.levantamento.documentoAssinado = true;
         saveData();
-        showToast('Documento assinado guardado com sucesso!', 'success');
+        showToast('A enviar documento assinado…', 'success');
+        _runUploadBatch(jobsSig).then(function(report) {
+            if (report.failed && report.failed.length > 0) {
+                console.error('[Upload-Report] DocAssinado falhas:', report.failed);
+                showToast('⚠️ Doc Assinado: ' + report.failed.length + ' uploads falharam. Veja consola.', 'error');
+            } else if (report.queued && report.queued.length > 0) {
+                showToast('Doc Assinado em fila — será enviado quando o SP estiver pronto.', 'warning');
+            } else {
+                showToast('Documento assinado guardado com sucesso!', 'success');
+            }
+        });
         skipSignedDocUpload();
     }
 
@@ -2576,9 +2655,28 @@
         var dataDevolucaoReal = new Date().toISOString().split('T')[0];
         b.dataSaida = dataDevolucaoReal;
         b.atualizadoEm = new Date().toISOString();
-        try { saveUploadedFiles(id, 'devolucao'); } catch(err) { console.warn('saveUploadedFiles error:', err); }
+        var uploadPromiseRet;
+        try {
+            uploadPromiseRet = saveUploadedFiles(id, 'devolucao');
+        } catch(err) {
+            console.warn('saveUploadedFiles error:', err);
+            uploadPromiseRet = Promise.resolve({ totalAttempted: 0, failed: [], queued: [] });
+        }
         try { saveData(); } catch(err) { console.warn('saveData error:', err); }
-        showToast('Devolução registada com sucesso!', 'success');
+        showToast('Devolução registada. A enviar ficheiros…', 'success');
+        if (uploadPromiseRet && typeof uploadPromiseRet.then === 'function') {
+            uploadPromiseRet.then(function(report) {
+                if (!report || report.totalAttempted === 0) return;
+                if (report.failed && report.failed.length > 0) {
+                    console.error('[Upload-Report] Falhas:', report.failed);
+                    showToast('⚠️ ' + report.failed.length + ' ficheiros NÃO foram guardados no SharePoint. Veja a consola e contacte o admin.', 'error');
+                } else if (report.queued && report.queued.length > 0) {
+                    showToast('Devolução OK. ' + report.queued.length + ' ficheiros em fila — serão enviados quando o SharePoint estiver pronto.', 'warning');
+                } else {
+                    showToast('Devolução + ' + report.totalAttempted + ' ficheiros enviados com sucesso.', 'success');
+                }
+            });
+        }
         // Generate printable return document
         try { printReturnDocument(b); } catch(err) { console.warn('printReturnDocument error:', err); }
         // Show signed document upload
@@ -2699,16 +2797,28 @@
         var b = bookings.find(function(x) { return x.id === bookingId; });
         var mat = b ? b.matricula : bookingId;
         var opId = (b && b.devolucao && b.devolucao.id) ? b.devolucao.id : 'DEV';
-        uploadedFiles['signedReturnDocPreview'].forEach(function(base64, idx) {
-            var ext = getExtFromBase64(base64);
+        var jobsSigDev = [];
+        uploadedFiles['signedReturnDocPreview'].forEach(function(f, idx) {
+            var data = f && f.data ? f.data : f;
+            var ext = getExtFromBase64(data);
             var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
-            spUploadFile(bookingId, 'devolucao', name, base64);
-            mirrorToIntranet('gv_docs_assinados_dev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), base64);
+            jobsSigDev.push(function() { return spUploadFile(bookingId, 'devolucao', name, data); });
+            jobsSigDev.push(function() { return mirrorToIntranet('gv_docs_assinados_dev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedReturnDocPreview'];
         if (b && b.devolucao) b.devolucao.documentoAssinado = true;
         saveData();
-        showToast('Documento de devolução assinado guardado com sucesso!', 'success');
+        showToast('A enviar documento de devolução assinado…', 'success');
+        _runUploadBatch(jobsSigDev).then(function(report) {
+            if (report.failed && report.failed.length > 0) {
+                console.error('[Upload-Report] DocAssinado Dev falhas:', report.failed);
+                showToast('⚠️ Doc Assinado Devolução: ' + report.failed.length + ' uploads falharam. Veja consola.', 'error');
+            } else if (report.queued && report.queued.length > 0) {
+                showToast('Doc Assinado Devolução em fila — será enviado quando o SP estiver pronto.', 'warning');
+            } else {
+                showToast('Documento de devolução assinado guardado com sucesso!', 'success');
+            }
+        });
         var container = document.getElementById('signedDocUploadCardReturn');
         if (container) container.style.display = 'none';
         document.getElementById('returnSearchCard').style.display = 'block';
@@ -2826,18 +2936,94 @@
         return dateStr + '_' + tipo + '_' + matricula + '_' + codigo + ext;
     }
 
-    // Mirror file to intranet's Documentos drive via postMessage
+    // Mirror file to intranet's Documentos drive via postMessage. Retorna Promise
+    // que resolve com o resultado reportado pelo parent. Usa correlationId para
+    // associar request/response. Timeout de 30s para evitar promises penduradas.
+    var _mirrorPending = {};
     function mirrorToIntranet(folderKey, fileName, base64Data) {
-        if (!window.parent || window.parent === window) return;
-        window.parent.postMessage({
-            type: 'saveToSharePoint',
-            folderKey: folderKey,
-            fileName: fileName,
-            fileContent: base64Data,
-            contentType: base64Data.split(',')[0].match(/:(.*?);/)[1]
-        }, '*');
+        if (!window.parent || window.parent === window) {
+            return Promise.resolve({ ok: true, queued: false, skipped: 'no-parent' });
+        }
+        try {
+            var matchMime = base64Data.split(',')[0].match(/:(.*?);/);
+            var mime = matchMime ? matchMime[1] : 'application/octet-stream';
+        } catch(e) {
+            return Promise.reject(new Error('base64 inválido para mirror ' + fileName + ': ' + e.message));
+        }
+        var cid = 'mir_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        return new Promise(function(resolve, reject) {
+            _mirrorPending[cid] = { resolve: resolve, reject: reject, fileName: fileName };
+            try {
+                window.parent.postMessage({
+                    type: 'saveToSharePoint',
+                    correlationId: cid,
+                    folderKey: folderKey,
+                    fileName: fileName,
+                    fileContent: base64Data,
+                    contentType: mime
+                }, '*');
+            } catch(e) {
+                delete _mirrorPending[cid];
+                reject(new Error('postMessage falhou: ' + e.message));
+                return;
+            }
+            // Timeout — não bloquear UI indefinidamente
+            setTimeout(function() {
+                if (_mirrorPending[cid]) {
+                    delete _mirrorPending[cid];
+                    // Tratamos timeout como "queued": o parent pode ainda processar
+                    // assincronamente quando SP ficar pronto.
+                    resolve({ ok: true, queued: true, fileName: fileName, note: 'timeout-mirror' });
+                }
+            }, 30000);
+        });
     }
 
+    // Listener para respostas do parent
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'saveToSharePointResult') return;
+        var cid = event.data.correlationId;
+        if (cid && _mirrorPending[cid]) {
+            var pending = _mirrorPending[cid];
+            delete _mirrorPending[cid];
+            if (event.data.success) pending.resolve({ ok: true, fileName: pending.fileName });
+            else pending.resolve({ ok: false, error: event.data.error || 'mirror falhou', fileName: pending.fileName });
+        }
+    });
+
+    // Helper interno: queue + report de uploads. Recolhe todas as promises e devolve
+    // um relatório { totalAttempted, failed, queued } que callers podem usar para
+    // mostrar toast apropriado. Erros são apanhados aqui — não rejeita.
+    function _runUploadBatch(jobs) {
+        // jobs: array de funções () => Promise<{ok, queued?}> (1 chamada por upload)
+        var results = jobs.map(function(job) {
+            try {
+                return job().then(function(r) {
+                    return r || { ok: true };
+                }).catch(function(e) {
+                    return { ok: false, error: e && e.message ? e.message : String(e) };
+                });
+            } catch(e) {
+                return Promise.resolve({ ok: false, error: e && e.message ? e.message : String(e) });
+            }
+        });
+        return Promise.all(results).then(function(arr) {
+            var failed = arr.filter(function(r) { return r && r.ok === false; });
+            var queued = arr.filter(function(r) { return r && r.queued === true; });
+            return { totalAttempted: arr.length, failed: failed, queued: queued };
+        });
+    }
+
+    /**
+     * Persiste localmente os ficheiros do formulario E faz upload para SP (paths
+     * primario {bookingId}/{stage}/ + mirror Intranet/Gestao_Viaturas/...).
+     * Retorna Promise<{totalAttempted, failed[], queued[]}>. Erros NAO sao
+     * propagados — o caller usa o relatório para mostrar toast apropriado.
+     * NOTE: uploadedFiles['*Preview'] são arrays de {name, type, data}. Antes da
+     * correcção em Maio/2026, o forEach passava o OBJECTO inteiro às funcoes de
+     * upload (que esperavam string base64), o que disparava TypeError apanhado
+     * silenciosamente — daí nenhum ficheiro chegar ao SharePoint.
+     */
     function saveUploadedFiles(bookingId, stage) {
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId][stage]) fileStore[bookingId][stage] = { fotos: [], docs: [] };
@@ -2845,44 +3031,55 @@
         var mat = b ? b.matricula : bookingId;
         var ts = getTs();
         var now = new Date();
+        var jobs = []; // array de () => Promise
+
         if (stage === 'levantamento') {
             var levId = (b && b.levantamento && b.levantamento.id) ? b.levantamento.id : 'LEV';
             if (uploadedFiles['pk_fotosPreview']) {
                 fileStore[bookingId][stage].fotos = uploadedFiles['pk_fotosPreview'];
-                uploadedFiles['pk_fotosPreview'].forEach(function(base64, i) {
-                    var oldName = mat + '_' + levId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64);
-                    spUploadFile(bookingId, stage, oldName, base64);
-                    // Mirror to intranet with new naming
-                    var newName = buildFileName(now, 'Foto' + (i+1), mat, levId, getExtFromBase64(base64));
-                    mirrorToIntranet('gv_fotos_levantamento', newName, base64);
+                uploadedFiles['pk_fotosPreview'].forEach(function(f, i) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    var oldName = mat + '_' + levId + '_Foto' + (i+1) + '_' + ts + ext;
+                    var newName = buildFileName(now, 'Foto' + (i+1), mat, levId, ext);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, oldName, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_fotos_levantamento', newName, data); });
                 });
             }
             if (uploadedFiles['pk_ccFrentePreview']) {
                 fileStore[bookingId][stage].ccFrente = uploadedFiles['pk_ccFrentePreview'];
-                uploadedFiles['pk_ccFrentePreview'].forEach(function(base64) {
-                    spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Frente_' + ts + getExtFromBase64(base64), base64);
-                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'CC_Frente', mat, levId, getExtFromBase64(base64)), base64);
+                uploadedFiles['pk_ccFrentePreview'].forEach(function(f) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Frente_' + ts + ext, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'CC_Frente', mat, levId, ext), data); });
                 });
             }
             if (uploadedFiles['pk_ccVersoPreview']) {
                 fileStore[bookingId][stage].ccVerso = uploadedFiles['pk_ccVersoPreview'];
-                uploadedFiles['pk_ccVersoPreview'].forEach(function(base64) {
-                    spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Verso_' + ts + getExtFromBase64(base64), base64);
-                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'CC_Verso', mat, levId, getExtFromBase64(base64)), base64);
+                uploadedFiles['pk_ccVersoPreview'].forEach(function(f) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, mat + '_' + levId + '_CC_Verso_' + ts + ext, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'CC_Verso', mat, levId, ext), data); });
                 });
             }
             if (uploadedFiles['pk_cartaFrentePreview']) {
                 fileStore[bookingId][stage].cartaFrente = uploadedFiles['pk_cartaFrentePreview'];
-                uploadedFiles['pk_cartaFrentePreview'].forEach(function(base64) {
-                    spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Frente_' + ts + getExtFromBase64(base64), base64);
-                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'Carta_Frente', mat, levId, getExtFromBase64(base64)), base64);
+                uploadedFiles['pk_cartaFrentePreview'].forEach(function(f) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Frente_' + ts + ext, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'Carta_Frente', mat, levId, ext), data); });
                 });
             }
             if (uploadedFiles['pk_cartaVersoPreview']) {
                 fileStore[bookingId][stage].cartaVerso = uploadedFiles['pk_cartaVersoPreview'];
-                uploadedFiles['pk_cartaVersoPreview'].forEach(function(base64) {
-                    spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Verso_' + ts + getExtFromBase64(base64), base64);
-                    mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'Carta_Verso', mat, levId, getExtFromBase64(base64)), base64);
+                uploadedFiles['pk_cartaVersoPreview'].forEach(function(f) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, mat + '_' + levId + '_Carta_Verso_' + ts + ext, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_docs_cliente', buildFileName(now, 'Carta_Verso', mat, levId, ext), data); });
                 });
             }
             delete uploadedFiles['pk_fotosPreview']; delete uploadedFiles['pk_ccFrentePreview']; delete uploadedFiles['pk_ccVersoPreview']; delete uploadedFiles['pk_cartaFrentePreview']; delete uploadedFiles['pk_cartaVersoPreview'];
@@ -2890,20 +3087,25 @@
             var devId = (b && b.devolucao && b.devolucao.id) ? b.devolucao.id : 'DEV';
             if (uploadedFiles['rt_fotosPreview']) {
                 fileStore[bookingId][stage].fotos = uploadedFiles['rt_fotosPreview'];
-                uploadedFiles['rt_fotosPreview'].forEach(function(base64, i) {
-                    spUploadFile(bookingId, stage, mat + '_' + devId + '_Foto' + (i+1) + '_' + ts + getExtFromBase64(base64), base64);
-                    mirrorToIntranet('gv_fotos_devolucao', buildFileName(now, 'Foto' + (i+1), mat, devId, getExtFromBase64(base64)), base64);
+                uploadedFiles['rt_fotosPreview'].forEach(function(f, i) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, mat + '_' + devId + '_Foto' + (i+1) + '_' + ts + ext, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_fotos_devolucao', buildFileName(now, 'Foto' + (i+1), mat, devId, ext), data); });
                 });
             }
             if (uploadedFiles['rt_orcamentoPreview']) {
                 fileStore[bookingId][stage].orcamento = uploadedFiles['rt_orcamentoPreview'];
-                uploadedFiles['rt_orcamentoPreview'].forEach(function(base64) {
-                    spUploadFile(bookingId, stage, mat + '_' + devId + '_Orcamento_' + ts + getExtFromBase64(base64), base64);
-                    mirrorToIntranet('gv_orcamentos', buildFileName(now, 'Orcamento', mat, devId, getExtFromBase64(base64)), base64);
+                uploadedFiles['rt_orcamentoPreview'].forEach(function(f) {
+                    var data = f && f.data ? f.data : f;
+                    var ext = getExtFromBase64(data);
+                    jobs.push(function() { return spUploadFile(bookingId, stage, mat + '_' + devId + '_Orcamento_' + ts + ext, data); });
+                    jobs.push(function() { return mirrorToIntranet('gv_orcamentos', buildFileName(now, 'Orcamento', mat, devId, ext), data); });
                 });
             }
             delete uploadedFiles['rt_fotosPreview']; delete uploadedFiles['rt_orcamentoPreview'];
         }
+        return _runUploadBatch(jobs);
     }
 
     /* ============================================
@@ -3238,6 +3440,20 @@
     // refreshData() ja definida acima no bloco LOAD/SAVE — removida duplicacao que causava perda de sync SP
 
     function clearAllData() {
+        // Apenas administradores podem invocar a limpeza global de dados.
+        try {
+            var perms = window.parent && window.parent.getCurrentUserPermissions && window.parent.getCurrentUserPermissions();
+            if (!perms || perms.role !== 'admin') {
+                var msg = 'Acesso negado: apenas administradores podem apagar todos os dados.';
+                console.warn('[gestao-viaturas] ' + msg);
+                try { alert(msg); } catch(e) {}
+                return;
+            }
+        } catch(e) {
+            // Se não conseguimos verificar permissões, recusamos por defeito (fail-closed)
+            try { alert('Não foi possível verificar permissões. Operação cancelada.'); } catch(e2) {}
+            return;
+        }
         if (!confirm('ATENÇÃO: Tem a certeza que deseja apagar TODOS os dados?\n\n• Todas as marcações do calendário\n• Todos os levantamentos\n• Todas as devoluções\n• Todos os ficheiros associados\n\nEsta ação é irreversível!')) return;
         if (!confirm('Confirmação final: Apagar TUDO?')) return;
         bookings = [];
@@ -3323,6 +3539,21 @@
             if (spSiteField) spSiteField.value = CONFIG.sharepoint.siteUrl;
             // Sincronizar dados com SharePoint (background)
             setTimeout(function() { loadDataFromSharePoint(); }, 1500);
+            // Re-processar queue de ficheiros pendentes (persistida em localStorage)
+            // que ficaram por enviar em sessões anteriores. _ensureSpReady garante
+            // que esperamos pela init antes de tentar.
+            if (_spFileQueue && _spFileQueue.length > 0) {
+                console.log('[SP-Upload] Detetados', _spFileQueue.length, 'ficheiros em queue persistida. A retomar upload...');
+                _ensureSpReady().then(function() {
+                    _processFileQueue();
+                    setTimeout(function() {
+                        // Após processamento, verificar se ainda há pendências
+                        if (_spFileQueue && _spFileQueue.length > 0) {
+                            try { showToast('⚠️ ' + _spFileQueue.length + ' ficheiros ainda por enviar ao SharePoint. Permanecem em fila.', 'warning'); } catch(e) {}
+                        }
+                    }, 3000);
+                }).catch(function(e) { console.error('[SP-Upload] _ensureSpReady falhou no startup retry:', e); });
+            }
         }
 
         // Restore location from session (overlay is hidden by default now)
