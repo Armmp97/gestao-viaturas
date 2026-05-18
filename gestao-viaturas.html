@@ -2498,23 +2498,31 @@
             showToast('Carregue o documento assinado antes de guardar.', 'error');
             return;
         }
+        // Bug corrigido em 18/Mai/2026: anteriormente esta função aceitava `stage`
+        // mas ignorava-o internamente (hardcoded 'levantamento'). Quando chamada
+        // a partir do Hist. Devoluções (via showSignedDocUploadFromHistory), o doc
+        // assinado de uma devolução acabava no SP em "Levantamentos/Docs_Assinados"
+        // e dava "desaparecido" no Ver Ficheiros da devolução.
         if (!fileStore[bookingId]) fileStore[bookingId] = {};
         if (!fileStore[bookingId][stage]) fileStore[bookingId][stage] = {};
         fileStore[bookingId][stage].documentoAssinado = uploadedFiles['signedDocPreview'];
-        // Upload to SharePoint with descriptive name
         var b = bookings.find(function(x) { return x.id === bookingId; });
         var mat = b ? b.matricula : bookingId;
-        var opId = (b && b.levantamento && b.levantamento.id) ? b.levantamento.id : 'LEV';
+        // Identificadores e folder-key dependem do stage real
+        var isDev = (stage === 'devolucao');
+        var stageObj = b && (isDev ? b.devolucao : b.levantamento);
+        var opId = (stageObj && stageObj.id) ? stageObj.id : (isDev ? 'DEV' : 'LEV');
+        var mirrorFolderKey = isDev ? 'gv_docs_assinados_dev' : 'gv_docs_assinados_lev';
         var jobsSig = [];
         uploadedFiles['signedDocPreview'].forEach(function(f, idx) {
             var data = f && f.data ? f.data : f;
             var ext = getExtFromBase64(data);
             var name = mat + '_' + opId + '_DocAssinado_' + getTs() + ext;
-            jobsSig.push(function() { return spUploadFile(bookingId, 'levantamento', name, data); });
-            jobsSig.push(function() { return mirrorToIntranet('gv_docs_assinados_lev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
+            jobsSig.push(function() { return spUploadFile(bookingId, stage, name, data); });
+            jobsSig.push(function() { return mirrorToIntranet(mirrorFolderKey, buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedDocPreview'];
-        if (b && b.levantamento) b.levantamento.documentoAssinado = true;
+        if (b && stageObj) stageObj.documentoAssinado = true;
         saveData();
         showToast('A enviar documento assinado…', 'success');
         _runUploadBatch(jobsSig).then(function(report) {
