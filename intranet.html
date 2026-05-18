@@ -2806,13 +2806,12 @@
         return true;
     }
 
-    function deleteSharePointFile(fileId) {
-        if (!_requireAdminForDelete('deleteSharePointFile')) {
-            return Promise.reject(new Error('Sem permissão (apenas administradores)'));
-        }
+    // Função RAW sem verificação de admin — só pode ser chamada por handlers
+    // internos confiáveis (e.g., submissão de validação de divergências, que move
+    // ficheiro Pendente → Respondido). NUNCA expor a iframes nem chamar diretamente.
+    function _deleteSharePointFileRaw(fileId) {
         var driveId = getDriveId();
         if (!driveId) return Promise.reject('SharePoint not initialized');
-        // DELETE requires write token — do NOT fallback to read-only
         return getGraphToken().then(function(token) {
             return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
                 method: 'DELETE',
@@ -2822,6 +2821,14 @@
             if (!resp.ok && resp.status !== 204) throw new Error('Delete failed: ' + resp.status);
             console.log('[SP-Delete] Ficheiro eliminado: ' + fileId);
         });
+    }
+
+    // Wrapper público com proteção admin-only.
+    function deleteSharePointFile(fileId) {
+        if (!_requireAdminForDelete('deleteSharePointFile')) {
+            return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        }
+        return _deleteSharePointFileRaw(fileId);
     }
 
     // Listen for messages from iframe modules (margem, divergencias) to save files
@@ -2986,15 +2993,23 @@
         if (!event.data || event.data.type !== 'divCoordRespond') return;
         var d = event.data;
         // d = { unit, fileName, htmlContent, originalFileId }
+        // Verificação de role: a submissão move ficheiro Pendente → Respondido,
+        // operação permitida a admins E coordenadores (são quem valida divergências).
+        var role = currentUserPermissions && currentUserPermissions.role;
+        if (role !== 'admin' && role !== 'coordenador') {
+            event.source.postMessage({ type: 'divCoordRespondResult', success: false, error: 'Sem permissão para submeter validação' }, '*');
+            return;
+        }
         var coordInfo = DIV_COORD_MAP[d.unit];
         if (!coordInfo) return;
         var content = new Blob([d.htmlContent], {type: 'text/html'});
         // 1. Save responded version to Respondido folder
         uploadToSharePoint(coordInfo.respondido, d.fileName, content, 'text/html')
             .then(function() {
-                // 2. Delete original from Pendente folder
+                // 2. Delete original from Pendente folder (fluxo de "mover", não
+                //    eliminação destrutiva — usa versão raw que ignora check admin).
                 if (d.originalFileId) {
-                    return deleteSharePointFile(d.originalFileId).catch(function(e) {
+                    return _deleteSharePointFileRaw(d.originalFileId).catch(function(e) {
                         console.warn('[DivCoord] Could not delete original:', e);
                     });
                 }
