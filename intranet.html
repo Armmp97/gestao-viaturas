@@ -2072,11 +2072,11 @@
             modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'mario.perez@domuscar.com': {
-            role: 'coordenador', name: 'Mário Perez',
+            role: 'coordenador', name: 'Mário Perez (Colisão Bela Vista)',
             modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'nuno.montes@domuscar.com': {
-            role: 'coordenador', name: 'Nuno Montes',
+            role: 'coordenador', name: 'Nuno Montes (Colisão Tagus Park)',
             modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'diogolj009@gmail.com': {
@@ -2506,6 +2506,10 @@
             dashboard_state: 'Intranet/Dashboard_State',
             div_colisao_pendente: 'Intranet/Divergencias_Coord/Colisao/Pendente',
             div_colisao_respondido: 'Intranet/Divergencias_Coord/Colisao/Respondido',
+            div_colisao_belavista_pendente: 'Intranet/Divergencias_Coord/ColisaoBelaVista/Pendente',
+            div_colisao_belavista_respondido: 'Intranet/Divergencias_Coord/ColisaoBelaVista/Respondido',
+            div_colisao_taguspark_pendente: 'Intranet/Divergencias_Coord/ColisaoTagusPark/Pendente',
+            div_colisao_taguspark_respondido: 'Intranet/Divergencias_Coord/ColisaoTagusPark/Respondido',
             div_lisboa_pendente: 'Intranet/Divergencias_Coord/MecanicaLisboa/Pendente',
             div_lisboa_respondido: 'Intranet/Divergencias_Coord/MecanicaLisboa/Respondido',
             div_cacem_pendente: 'Intranet/Divergencias_Coord/MecanicaCacem/Pendente',
@@ -2928,7 +2932,9 @@
 
     // ======== DIVERGENCIAS COORD: Save per coordinator + notify ========
     var DIV_COORD_MAP = {
-        'colisao': { email: 'mario.perez@domuscar.com', name: 'Mário Perez', pendente: 'div_colisao_pendente', respondido: 'div_colisao_respondido' },
+        // Colisão dividida em 2 unidades físicas: Bela Vista (Mário) + Tagus Park (Nuno)
+        'colisao_belavista': { email: 'mario.perez@domuscar.com', name: 'Mário Perez (Colisão Bela Vista)', pendente: 'div_colisao_belavista_pendente', respondido: 'div_colisao_belavista_respondido' },
+        'colisao_taguspark': { email: 'nuno.montes@domuscar.com', name: 'Nuno Montes (Colisão Tagus Park)', pendente: 'div_colisao_taguspark_pendente', respondido: 'div_colisao_taguspark_respondido' },
         'mecanica_lisboa': { email: 'fabio.ramalho@domuscar.com', name: 'Fábio Ramalho', pendente: 'div_lisboa_pendente', respondido: 'div_lisboa_respondido' },
         'mecanica_cacem': { email: 'jose.rodriguez@domuscar.com', name: 'José Rodriguez', pendente: 'div_cacem_pendente', respondido: 'div_cacem_respondido' }
     };

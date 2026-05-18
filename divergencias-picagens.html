@@ -63,10 +63,33 @@ h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
 <div id="resultsScreen" class="results">
 <div class="upload-area" style="text-align:center">
 <h2 style="margin-bottom:5px">Relatórios gerados com sucesso!</h2>
-<p style="color:#666;font-size:0.85em;margin-bottom:20px">Descarregue os 3 HTMLs e envie cada um ao respetivo coordenador.</p>
+<p style="color:#666;font-size:0.85em;margin-bottom:20px">Descarregue os HTMLs e envie cada um ao respetivo coordenador.</p>
 <div id="resultCards"></div>
 <div class="btn-back" id="backBtn">Importar novos ficheiros</div>
 </div>
+</div>
+
+<!-- Modal: atribuição diária dos colaboradores de Colisão a Bela Vista ou Tagus Park -->
+<div id="colisaoAssignModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:10px;max-width:680px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,0.3);">
+        <div style="padding:20px 24px;border-bottom:2px solid #2c3e50;background:#2c3e50;color:white;border-radius:10px 10px 0 0;">
+            <h2 style="margin:0;font-size:18px;font-weight:600;">Atribuição de Unidade — Colisão</h2>
+            <p style="margin:6px 0 0 0;font-size:13px;opacity:0.85;">Para cada colaborador que aparece no dia, indica se trabalhou em <strong>Bela Vista</strong> ou <strong>Tagus Park</strong>. A escolha é guardada para que da próxima vez já apareça pré-seleccionada (mas podes sempre mudar).</p>
+        </div>
+        <div id="colisaoAssignBody" style="padding:14px 24px;">
+            <!-- preenchido dinamicamente -->
+        </div>
+        <div style="padding:14px 24px;border-top:1px solid #eaeef2;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="display:flex;gap:6px;">
+                <button type="button" id="colisaoAssignAllBV" style="padding:6px 12px;background:#e3f2fd;color:#1976d2;border:1px solid #90caf9;border-radius:6px;font-size:12px;cursor:pointer;">Todos → Bela Vista</button>
+                <button type="button" id="colisaoAssignAllTP" style="padding:6px 12px;background:#fff3e0;color:#e65100;border:1px solid #ffb74d;border-radius:6px;font-size:12px;cursor:pointer;">Todos → Tagus Park</button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button type="button" id="colisaoAssignCancel" style="padding:8px 16px;background:#e0e0e0;color:#333;border:none;border-radius:6px;font-weight:600;cursor:pointer;">Cancelar</button>
+                <button type="button" id="colisaoAssignConfirm" style="padding:8px 18px;background:#27ae60;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;">Confirmar e Gerar</button>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 
@@ -77,18 +100,39 @@ h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
 const MY_EMAIL = "recursoshumanos@domuscar.com";
 const CC_EMAILS = "andre.pereira@domuscar.com,vanessa.borges@domuscar.com,recursoshumanos@domuscar.com";
 const COORDINATORS = {
-    "Colisão": {nome: "Mario Peres", email: "colisao@domuscar.com"},
-    "Mecânica Cacém": {nome: "Jose Rodriguez", email: "jose.rodriguez@domuscar.com"},
-    "Mecânica Lisboa": {nome: "Fabio Ramalho", email: "fabio.ramalho@domuscar.com"},
+    "Colisão Bela Vista": {nome: "Mário Perez", email: "mario.perez@domuscar.com"},
+    "Colisão Tagus Park": {nome: "Nuno Montes", email: "nuno.montes@domuscar.com"},
+    "Mecânica Cacém": {nome: "José Rodriguez", email: "jose.rodriguez@domuscar.com"},
+    "Mecânica Lisboa": {nome: "Fábio Ramalho", email: "fabio.ramalho@domuscar.com"},
 };
 const COORDINATOR_EMAILS = {
-    "Colisão": "mario.perez@domuscar.com",
+    "Colisão Bela Vista": "mario.perez@domuscar.com",
+    "Colisão Tagus Park": "nuno.montes@domuscar.com",
     "Mecânica Cacém": "jose.rodriguez@domuscar.com",
     "Mecânica Lisboa": "fabio.ramalho@domuscar.com"
 };
+// Pool partilhado de colaboradores de Colisão. Como rodam diariamente entre Bela Vista
+// e Tagus Park, a atribuição é feita no momento da geração (passo extra: admin escolhe
+// a unidade de cada colaborador para o dia em causa).
+const COLISAO_POOL = [
+    "Carlos Miguel Fernandes Gonçalves Antunes",
+    "Diogo Henrique Gomes Fernandes",
+    "Gyanu Pujara",
+    "José Avelino da Cruz Fernandes",
+    "José João Ferreira Borges",
+    "João Paulo São Pedro Bizarro",
+    "Pedro Filipe de Castro Jana",
+    "Vitor Manuel Vilarinho Soutilha"
+];
 const UNITS = {
-    "Colisão": {
-        colaboradores: ["Carlos Miguel Fernandes Gonçalves Antunes","Diogo Henrique Gomes Fernandes","Gyanu Pujara","José Avelino da Cruz Fernandes","José João Ferreira Borges","João Paulo São Pedro Bizarro","Nuno Alexandre Carvalho Montês","Pedro Filipe de Castro Jana","Vitor Manuel Vilarinho Soutilha"],
+    "Colisão Bela Vista": {
+        // Lista preenchida dinamicamente pelo admin antes de gerar (default: vazia)
+        colaboradores: [],
+        horarios: {},
+        nota_horario: "Sem horário rígido, mínimo 8h diárias"
+    },
+    "Colisão Tagus Park": {
+        colaboradores: [],
         horarios: {},
         nota_horario: "Sem horário rígido, mínimo 8h diárias"
     },
@@ -830,6 +874,86 @@ function generateUnitHTML(unitName, smart2, ogData) {
 // ============================================================
 // MAIN GENERATION FLOW
 // ============================================================
+// Mostra o modal de atribuição dos colaboradores de Colisão a Bela Vista / Tagus Park.
+// Devolve uma Promise com { 'Colisão Bela Vista': [nomes], 'Colisão Tagus Park': [nomes] }
+// ou null se o admin cancelar.
+function askColisaoAssignment(smart2, ogData) {
+    return new Promise(function(resolve) {
+        // Construir lista de colaboradores que TÊM dados hoje (picagens OU intervenções OG)
+        var candidates = COLISAO_POOL.filter(function(name) {
+            return findInDict(smart2, name) || (findInDict(ogData, name) && findInDict(ogData, name).length > 0);
+        });
+        // Se nenhum colaborador de Colisão tem dados, salta o modal
+        if (candidates.length === 0) {
+            resolve({ 'Colisão Bela Vista': [], 'Colisão Tagus Park': [] });
+            return;
+        }
+        // Carregar última escolha de localStorage (se existir)
+        var lastAssignment = {};
+        try {
+            var saved = localStorage.getItem('div_colisao_lastAssignment');
+            if (saved) lastAssignment = JSON.parse(saved) || {};
+        } catch(e) {}
+
+        var body = document.getElementById('colisaoAssignBody');
+        body.innerHTML = '';
+        candidates.forEach(function(name, idx) {
+            var defaultLoc = lastAssignment[name] || 'belavista'; // default: Bela Vista
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid #f0f0f0;gap:12px;flex-wrap:wrap;';
+            row.innerHTML =
+                '<div style="font-size:14px;font-weight:600;color:#2c3e50;flex:1;min-width:200px;">' + name + '</div>' +
+                '<div style="display:flex;gap:6px;">' +
+                    '<label style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:#e3f2fd;color:#1976d2;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">' +
+                        '<input type="radio" name="colisaoAssign_' + idx + '" value="belavista" data-name="' + name.replace(/"/g, '&quot;') + '"' + (defaultLoc === 'belavista' ? ' checked' : '') + '> Bela Vista' +
+                    '</label>' +
+                    '<label style="display:flex;align-items:center;gap:4px;padding:5px 10px;background:#fff3e0;color:#e65100;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">' +
+                        '<input type="radio" name="colisaoAssign_' + idx + '" value="taguspark" data-name="' + name.replace(/"/g, '&quot;') + '"' + (defaultLoc === 'taguspark' ? ' checked' : '') + '> Tagus Park' +
+                    '</label>' +
+                '</div>';
+            body.appendChild(row);
+        });
+
+        var modal = document.getElementById('colisaoAssignModal');
+        modal.style.display = 'flex';
+
+        function cleanup() {
+            modal.style.display = 'none';
+            document.getElementById('colisaoAssignConfirm').onclick = null;
+            document.getElementById('colisaoAssignCancel').onclick = null;
+            document.getElementById('colisaoAssignAllBV').onclick = null;
+            document.getElementById('colisaoAssignAllTP').onclick = null;
+        }
+
+        document.getElementById('colisaoAssignAllBV').onclick = function() {
+            body.querySelectorAll('input[value="belavista"]').forEach(function(r) { r.checked = true; });
+        };
+        document.getElementById('colisaoAssignAllTP').onclick = function() {
+            body.querySelectorAll('input[value="taguspark"]').forEach(function(r) { r.checked = true; });
+        };
+        document.getElementById('colisaoAssignCancel').onclick = function() {
+            cleanup();
+            resolve(null);
+        };
+        document.getElementById('colisaoAssignConfirm').onclick = function() {
+            var assignment = { 'Colisão Bela Vista': [], 'Colisão Tagus Park': [] };
+            var toSave = {};
+            body.querySelectorAll('input[type=radio]:checked').forEach(function(r) {
+                var n = r.getAttribute('data-name');
+                if (r.value === 'belavista') { assignment['Colisão Bela Vista'].push(n); toSave[n] = 'belavista'; }
+                else { assignment['Colisão Tagus Park'].push(n); toSave[n] = 'taguspark'; }
+            });
+            // Preservar atribuições de colaboradores não-presentes hoje (não sobrescrever)
+            Object.keys(lastAssignment).forEach(function(n) {
+                if (!(n in toSave)) toSave[n] = lastAssignment[n];
+            });
+            try { localStorage.setItem('div_colisao_lastAssignment', JSON.stringify(toSave)); } catch(e) {}
+            cleanup();
+            resolve(assignment);
+        };
+    });
+}
+
 async function generate() {
     var btn = document.getElementById('generateBtn');
     btn.disabled = true;
@@ -849,9 +973,24 @@ async function generate() {
         setProgress(40, 'A carregar Officegest...');
         var ogData = await extractExcel(xlsxFile);
 
+        // Atribuir colaboradores de Colisão a Bela Vista / Tagus Park (passo manual)
+        setProgress(55, 'A pedir atribuição de Colisão...');
+        var colisaoAssign = await askColisaoAssignment(smart2, ogData);
+        if (!colisaoAssign) {
+            // Admin cancelou
+            setProgress(0, 'Operação cancelada.');
+            btn.disabled = false;
+            return;
+        }
+        // Aplicar as listas escolhidas às unidades de Colisão
+        UNITS['Colisão Bela Vista'].colaboradores = colisaoAssign['Colisão Bela Vista'];
+        UNITS['Colisão Tagus Park'].colaboradores = colisaoAssign['Colisão Tagus Park'];
+
         setProgress(60, 'A gerar relatórios...');
         var htmlFiles = {};
         for(var unit in UNITS) {
+            // Saltar unidades de Colisão que ficaram sem colaboradores no dia
+            if ((unit === 'Colisão Bela Vista' || unit === 'Colisão Tagus Park') && UNITS[unit].colaboradores.length === 0) continue;
             htmlFiles[unit] = generateUnitHTML(unit, smart2, ogData);
         }
 
@@ -860,7 +999,8 @@ async function generate() {
         cardsDiv.innerHTML = '';
         var generatedReports = [];
         var unitToCoord = {
-            'Colisão': 'colisao',
+            'Colisão Bela Vista': 'colisao_belavista',
+            'Colisão Tagus Park': 'colisao_taguspark',
             'Mecânica Lisboa': 'mecanica_lisboa',
             'Mecânica Cacém': 'mecanica_cacem'
         };
@@ -946,6 +1086,8 @@ async function generate() {
         }
 
         for(var unit in UNITS) {
+            // Saltar unidades de Colisão sem colaboradores atribuídos no dia
+            if (!htmlFiles[unit]) continue;
             var safe = unit.toLowerCase().replace(/ã/g,'a').replace(/é/g,'e').replace(/ /g,'_');
             var fn = 'validacao_'+safe+'.html';
             generatedReports.push({ unit: unit, filename: fn, html: htmlFiles[unit], safe: safe });
