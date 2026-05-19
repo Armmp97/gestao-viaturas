@@ -151,7 +151,9 @@ body {
   <div class="filter-bar">
     <select id="filterUnit" onchange="applyFilters()">
       <option value="all">Todas as Unidades</option>
-      <option value="colisao">Colisão</option>
+      <option value="colisao_belavista">Colisão Bela Vista</option>
+      <option value="colisao_taguspark">Colisão Tagus Park</option>
+      <option value="colisao">Colisão (legacy)</option>
       <option value="mecanica_cacem">Mecânica Cacém</option>
       <option value="mecanica_lisboa">Mecânica Lisboa</option>
     </select>
@@ -180,10 +182,14 @@ body {
 'use strict';
 
 var allFiles = [];
+// UNIT_MAP inclui as duas variantes novas de Colisão (Bela Vista / Tagus Park) +
+// a entrada legacy 'colisao' para continuar a mostrar relatórios validados antes do split.
 var UNIT_MAP = {
-  'colisao':         { label: 'Colisão',         coord: 'Mário Perez',    badgeClass: 'badge-colisao',  folderKey: 'div_colisao_respondido' },
-  'mecanica_lisboa': { label: 'Mecânica Lisboa',  coord: 'Fábio Ramalho',  badgeClass: 'badge-lisboa',   folderKey: 'div_lisboa_respondido' },
-  'mecanica_cacem':  { label: 'Mecânica Cacém',   coord: 'José Rodriguez', badgeClass: 'badge-cacem',    folderKey: 'div_cacem_respondido' }
+  'colisao_belavista': { label: 'Colisão Bela Vista', coord: 'Mário Perez',    badgeClass: 'badge-colisao', folderKey: 'div_colisao_belavista_respondido' },
+  'colisao_taguspark': { label: 'Colisão Tagus Park', coord: 'Nuno Montes',    badgeClass: 'badge-colisao', folderKey: 'div_colisao_taguspark_respondido' },
+  'colisao':           { label: 'Colisão (legacy)',   coord: 'Mário Perez',    badgeClass: 'badge-colisao', folderKey: 'div_colisao_respondido' },
+  'mecanica_lisboa':   { label: 'Mecânica Lisboa',    coord: 'Fábio Ramalho',  badgeClass: 'badge-lisboa',  folderKey: 'div_lisboa_respondido' },
+  'mecanica_cacem':    { label: 'Mecânica Cacém',     coord: 'José Rodriguez', badgeClass: 'badge-cacem',   folderKey: 'div_cacem_respondido' }
 };
 
 function extractRefDate(name) {
@@ -204,6 +210,9 @@ function formatDate(iso) {
 
 function detectUnit(name) {
   var n = name.toLowerCase();
+  // Reconhece variantes novas (com sufixo de localização) antes da legacy 'colisao'
+  if (n.indexOf('tagus') >= 0) return 'colisao_taguspark';
+  if (n.indexOf('bela') >= 0 || n.indexOf('belavista') >= 0) return 'colisao_belavista';
   if (n.indexOf('colisao') >= 0 || n.indexOf('colisão') >= 0) return 'colisao';
   if (n.indexOf('cacem') >= 0 || n.indexOf('cacém') >= 0) return 'mecanica_cacem';
   if (n.indexOf('lisboa') >= 0) return 'mecanica_lisboa';
@@ -242,7 +251,8 @@ function loadAllValidated() {
 
 function updateStats() {
   var total = allFiles.length;
-  var colisao = allFiles.filter(function(f) { return f._unit === 'colisao'; }).length;
+  // Junta as 3 variantes de Colisão (Bela Vista + Tagus Park + legacy) num único stat
+  var colisao = allFiles.filter(function(f) { return f._unit === 'colisao' || f._unit === 'colisao_belavista' || f._unit === 'colisao_taguspark'; }).length;
   var cacem = allFiles.filter(function(f) { return f._unit === 'mecanica_cacem'; }).length;
   var lisboa = allFiles.filter(function(f) { return f._unit === 'mecanica_lisboa'; }).length;
   document.getElementById('statTotal').textContent = total;

@@ -649,7 +649,9 @@ select.form-input { cursor:pointer; }
       <div class="val-filter-bar">
         <select id="valFilterUnit" onchange="valApplyFilters()">
           <option value="all">Todas as Unidades</option>
-          <option value="colisao">Colisão</option>
+          <option value="colisao_belavista">Colisão Bela Vista</option>
+          <option value="colisao_taguspark">Colisão Tagus Park</option>
+          <option value="colisao">Colisão (legacy)</option>
           <option value="mecanica_cacem">Mecânica Cacém</option>
           <option value="mecanica_lisboa">Mecânica Lisboa</option>
         </select>
@@ -1031,9 +1033,11 @@ select.form-input { cursor:pointer; }
   var VAL_TRACKER_FOLDER = 'div_colisao_respondido'; // store tracker alongside reports
 
   var VAL_UNIT_MAP = {
-    'colisao':         { label: 'Colisão',         coord: 'Mário Perez',    badgeClass: 'val-badge-colisao',  folderKey: 'div_colisao_respondido' },
-    'mecanica_lisboa': { label: 'Mecânica Lisboa',  coord: 'Fábio Ramalho',  badgeClass: 'val-badge-lisboa',   folderKey: 'div_lisboa_respondido' },
-    'mecanica_cacem':  { label: 'Mecânica Cacém',   coord: 'José Rodriguez', badgeClass: 'val-badge-cacem',    folderKey: 'div_cacem_respondido' }
+    'colisao_belavista': { label: 'Colisão Bela Vista', coord: 'Mário Perez',    badgeClass: 'val-badge-colisao', folderKey: 'div_colisao_belavista_respondido' },
+    'colisao_taguspark': { label: 'Colisão Tagus Park', coord: 'Nuno Montes',    badgeClass: 'val-badge-colisao', folderKey: 'div_colisao_taguspark_respondido' },
+    'colisao':           { label: 'Colisão (legacy)',   coord: 'Mário Perez',    badgeClass: 'val-badge-colisao', folderKey: 'div_colisao_respondido' },
+    'mecanica_lisboa':   { label: 'Mecânica Lisboa',    coord: 'Fábio Ramalho',  badgeClass: 'val-badge-lisboa',  folderKey: 'div_lisboa_respondido' },
+    'mecanica_cacem':    { label: 'Mecânica Cacém',     coord: 'José Rodriguez', badgeClass: 'val-badge-cacem',   folderKey: 'div_cacem_respondido' }
   };
 
   function valExtractRefDate(name) {
