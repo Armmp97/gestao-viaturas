@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guião de Triagem de Avarias — Receção</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Paleta da intranet DomusCar */
+    --navy:#003B73; --navy-deep:#002B55; --navy-light:#00508F;
+    --accent:#007BC0; --accent-dark:#005A8C; --accent-light:#4DA8DA;
+    /* Mapeamento dos componentes */
+    --bg:#F5F7FA; --card:#FFFFFF; --ink:#1A2A3A; --muted:#6B7280;
+    --primary:#003B73; --primary-soft:#E8EFF6;
+    --eletr:#007BC0; --eletr-soft:#D7E8F4;
+    --mec:#003B73; --mec-soft:#DCE5F0;
+    --vermelho:#dc2626; --vermelho-soft:#fef2f2;
+    --amarelo:#d97706; --amarelo-soft:#fffbeb;
+    --cinza:#6B7280;
+    --line:#DEE2E8; --line-strong:#C2CCD6;
+    --radius:16px; --shadow:0 4px 24px rgba(0,59,115,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.55;font-size:15px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px 64px}
+
+  /* Cabeçalho "hero" — estilo Processos Operacionais da intranet */
+  header.hero{position:relative;overflow:hidden;margin-bottom:24px;color:#fff;
+    background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 52%,var(--navy-light) 100%)}
+  header.hero::before{content:'';position:absolute;top:-65%;right:-6%;width:520px;height:520px;
+    background:radial-gradient(circle,rgba(0,123,192,.20) 0%,transparent 70%);
+    border-radius:50%;pointer-events:none}
+  header.hero .wrap{position:relative;z-index:2;display:flex;align-items:center;
+    justify-content:space-between;gap:24px;flex-wrap:wrap;padding-top:30px;padding-bottom:34px}
+  header.hero h1{font-size:clamp(1.35rem,2.6vw,1.85rem);font-weight:800;letter-spacing:-.3px;line-height:1.22}
+  header.hero h1 em{font-style:normal;color:var(--accent-light)}
+  header.hero .sub{font-size:13.5px;color:#aec0d4;margin-top:6px;max-width:580px;font-weight:400}
+  .hero-logo{height:38px;width:auto;object-fit:contain;flex:none;
+    filter:brightness(0) invert(1);opacity:.96}
+  .hero-bar{position:absolute;left:0;right:0;bottom:0;height:5px;z-index:3;
+    background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 38%,var(--navy-light) 38%)}
+
+  /* Topbar: voltar + breadcrumb */
+  .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .btn{font-family:inherit;cursor:pointer;border-radius:8px;font-weight:600;font-size:14px;border:none}
+  .btn-back{background:#fff;color:var(--primary);border:1px solid var(--line-strong);padding:8px 14px}
+  .btn-back:hover{background:var(--primary-soft)}
+  .btn-print{background:#fff;color:var(--primary);border:1px solid var(--line-strong);padding:8px 14px}
+  .btn-print:hover{background:var(--primary-soft)}
+  .crumbs{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .crumbs a{color:var(--primary);cursor:pointer;font-weight:600}
+  .crumbs a:hover{text-decoration:underline}
+  .crumbs .sep{color:var(--line-strong)}
+
+  .intro{font-size:14px;color:var(--muted);margin-bottom:18px}
+  h2.sec{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);margin:22px 0 12px}
+
+  /* Cards de escolha */
+  .opt-grid{display:grid;gap:14px}
+  .opt-grid.c2{grid-template-columns:1fr 1fr}
+  .opt-grid.c3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.opt-grid.c2,.opt-grid.c3{grid-template-columns:1fr}}
+  .opt-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;cursor:pointer;transition:.15s;border-left:5px solid var(--primary)}
+  .opt-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(15,23,42,.1)}
+  .opt-card .t{font-size:16px;font-weight:700}
+  .opt-card .d{font-size:13px;color:var(--muted);margin-top:4px}
+  .opt-card.eletr{border-left-color:var(--eletr)}
+  .opt-card.mec{border-left-color:var(--mec)}
+  .opt-card.geral{border-left-color:var(--navy-light)}
+
+  /* Lista simples de sintomas */
+  .list-item{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    box-shadow:var(--shadow);padding:14px 16px;cursor:pointer;margin-bottom:10px;
+    display:flex;align-items:center;gap:12px;transition:.15s}
+  .list-item:hover{border-color:var(--primary);background:var(--primary-soft)}
+  .list-item .t{font-weight:600;font-size:15px;flex:1}
+  .list-item .arrow{color:var(--line-strong);font-weight:700}
+
+  /* Catálogo de luzes */
+  .filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{font-family:inherit;cursor:pointer;border:1px solid var(--line-strong);background:#fff;
+    color:var(--ink);font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .luz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.luz-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.luz-grid{grid-template-columns:1fr}}
+  .luz-card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);
+    padding:13px;cursor:pointer;border-top:4px solid var(--cinza);transition:.15s}
+  .luz-card:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(15,23,42,.1)}
+  .luz-card.vermelho{border-top-color:var(--vermelho)}
+  .luz-card.amarelo{border-top-color:var(--amarelo)}
+  .luz-card .ln{font-weight:700;font-size:14px}
+  .luz-card .ls{font-size:12px;color:var(--muted);margin-top:3px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}
+  .dot.vermelho{background:var(--vermelho)} .dot.amarelo{background:var(--amarelo)}
+
+  /* Detalhe */
+  .detail-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .detail-head h3{font-size:20px;font-weight:700}
+  .grav{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+    padding:4px 10px;border-radius:999px}
+  .grav.grave{background:var(--vermelho-soft);color:var(--vermelho)}
+  .grav.atencao{background:var(--amarelo-soft);color:var(--amarelo)}
+  .grav.info{background:#f1f5f9;color:var(--cinza)}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 20px;margin-bottom:16px}
+  .panel h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--muted);margin-bottom:10px}
+
+  .qlist{list-style:none}
+  .qlist li{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+  .qlist li:last-child{border-bottom:none}
+  .qlist .qn{flex:none;width:23px;height:23px;border-radius:6px;background:var(--primary);
+    color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+
+  .box-significado{background:var(--primary-soft);border-radius:10px;padding:13px 15px;font-size:14px;margin-bottom:14px}
+  .box-dizer{border-radius:10px;padding:13px 15px;font-size:14px;margin-bottom:14px;
+    border:1px solid var(--amarelo);background:var(--amarelo-soft)}
+  .box-dizer.grave{border-color:var(--vermelho);background:var(--vermelho-soft)}
+  .box-dizer .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--amarelo);display:block;margin-bottom:4px}
+  .box-dizer.grave .lbl{color:var(--vermelho)}
+
+  .box-oficina{background:#0f2438;color:#e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:8px}
+  .box-oficina .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;
+    color:#7da2c9;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  .box-oficina .lbl .ic{background:#7da2c9;color:#0f2438;width:18px;height:18px;border-radius:5px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+  .box-oficina .txt{font-size:14px}
+
+  .reminder{font-size:13px;color:var(--muted);background:#fff;border:1px dashed var(--line-strong);
+    border-radius:10px;padding:11px 14px;margin-top:14px}
+
+  .note{font-size:13px;color:var(--muted);background:var(--primary-soft);border-radius:9px;
+    padding:11px 13px;margin-bottom:14px}
+
+  footer{text-align:center;font-size:12px;color:var(--muted);margin-top:26px;padding-top:18px;
+    border-top:1px solid var(--line)}
+
+  @media print{
+    header.hero{background:#fff;color:#000;border-bottom:2px solid var(--navy)}
+    header.hero::before,.hero-bar{display:none}
+    header.hero h1,header.hero h1 em{color:var(--navy)}
+    header.hero .sub{color:#444}
+    .hero-logo{filter:brightness(0)}
+    .no-print{display:none!important}
+    .panel,.opt-card,.luz-card{box-shadow:none}
+    .box-oficina{background:#fff;color:#000;border:1px solid #000}
+    .box-oficina .lbl{color:#000} .box-oficina .lbl .ic{background:#000;color:#fff}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-text">
+      <h1>Guião de <em>Triagem</em> de Avarias</h1>
+      <div class="sub">Apoio à receção — recolher a informação certa para a oficina</div>
+    </div>
+    <img class="hero-logo" src="DomusCar%20_%20Logo.png" alt="DomusCar">
+  </div>
+  <div class="hero-bar"></div>
+</header>
+
+<div class="wrap">
+  <div id="app"><!-- preenchido por JS --></div>
+  <footer>
+    Guião de Triagem v1 · Ferramenta de apoio à receção · as perguntas servem para recolher informação;
+    o diagnóstico é sempre feito pela oficina.
+  </footer>
+</div>
+
+<script>
+/* ===================== CONTEÚDO DA TRIAGEM ===================== */
+const DADOS = {
+
+  /* Perguntas gerais — fazer sempre, em qualquer avaria */
+  geral: [
+    "Há quanto tempo é que isto começou? (hoje, há dias, há semanas, há meses)",
+    "Acontece sempre ou só de vez em quando?",
+    "Tem vindo a piorar desde que começou?",
+    "Em que situação acontece? Motor frio ou quente; carro parado ou a andar; a acelerar, a travar, a virar, a passar lombas.",
+    "A que velocidade ou em que altura se nota mais?",
+    "Aconteceu alguma coisa pouco antes de começar? (reparação recente, embate, passou por água funda, abasteceu combustível)",
+    "Sente o carro inseguro? Acha que não deve continuar a conduzi-lo?",
+    "Já mostrou este problema a outra oficina?"
+  ],
+
+  /* Catálogo de luzes do painel */
+  luzes: [
+    { id:"oleo", nome:"Pressão do óleo", cor:"vermelho",
+      simbolo:"Lata de óleo (recipiente a pingar)",
+      gravidade:"Grave",
+      significado:"O motor pode estar a ficar sem pressão de óleo. É das luzes mais sérias do painel.",
+      dizer:"Peça ao cliente para NÃO continuar a conduzir e desligar o motor logo que seja seguro. Conduzir assim pode danificar o motor de forma grave.",
+      perguntas:[
+        "A luz acendeu de repente ou foi aparecendo?",
+        "Está acesa fixa ou a piscar?",
+        "Ouviu algum barulho diferente no motor?",
+        "O carro veio a conduzir até aqui com a luz acesa? Durante quanto tempo?",
+        "Alguma vez verificou ou atestou o nível do óleo?"
+      ],
+      area:"Lubrificação / pressão de óleo. Verificar nível e pressão real antes de pôr o motor a trabalhar." },
+
+    { id:"temp", nome:"Temperatura do motor", cor:"vermelho",
+      simbolo:"Termómetro dentro de ondas (líquido)",
+      gravidade:"Grave",
+      significado:"O motor está a aquecer demais (sobreaquecimento).",
+      dizer:"Peça ao cliente para parar assim que for seguro e não continuar. O sobreaquecimento pode causar danos sérios e caros no motor.",
+      perguntas:[
+        "Viu o ponteiro da temperatura a subir para o máximo?",
+        "Saiu fumo ou vapor de debaixo do capô?",
+        "Encontrou manchas de líquido no chão onde estaciona?",
+        "O aquecimento dentro do carro está a funcionar normalmente?"
+      ],
+      area:"Sistema de arrefecimento. Verificar nível de líquido, fugas, ventilador, termostato e bomba de água." },
+
+    { id:"travao", nome:"Sistema de travões", cor:"vermelho",
+      simbolo:"Círculo com ponto de exclamação, ou a palavra BRAKE",
+      gravidade:"Grave",
+      significado:"Problema no sistema de travagem, nível de líquido de travões baixo — ou simplesmente o travão de mão puxado.",
+      dizer:"Confirme primeiro se o travão de mão está totalmente em baixo. Se a luz se mantém, o cliente deve conduzir com muita precaução ou não conduzir.",
+      perguntas:[
+        "Confirmou que o travão de mão está em baixo?",
+        "O pedal do travão está mais fundo ou mais mole que o costume?",
+        "A luz acende ao travar?",
+        "Ouve algum aviso sonoro a acompanhar a luz?"
+      ],
+      area:"Travagem. Verificar nível de líquido de travões, desgaste de pastilhas e sensores." },
+
+    { id:"bateria", nome:"Bateria / sistema de carga", cor:"vermelho",
+      simbolo:"Símbolo de bateria com sinais + e −",
+      gravidade:"Atenção",
+      significado:"O sistema que carrega a bateria pode ter avaria. A bateria pode estar a descarregar enquanto o carro anda.",
+      dizer:"O carro pode parar quando a bateria descarregar. Aconselhe a vir o quanto antes e a evitar desligar o motor pelo caminho.",
+      perguntas:[
+        "A luz acendeu com o carro em andamento?",
+        "Notou as luzes mais fracas, o rádio a falhar ou o carro 'mais fraco'?",
+        "O carro já se foi abaixo ou ainda anda normalmente?"
+      ],
+      area:"Sistema de carga. Verificar alternador, correia de acessórios e estado da bateria." },
+
+    { id:"airbag", nome:"Airbag (SRS)", cor:"vermelho",
+      simbolo:"Pessoa sentada com um círculo grande à frente",
+      gravidade:"Atenção",
+      significado:"O sistema de airbags pode estar inativo. O carro anda, mas os airbags podem não disparar num acidente.",
+      dizer:"Informe que é uma questão de segurança: o carro circula, mas convém verificar porque os airbags podem não funcionar.",
+      perguntas:[
+        "A luz está sempre acesa desde que liga o carro?",
+        "Houve algum embate, mesmo pequeno?",
+        "Mexeu-se nos bancos, ou houve água no chão do carro?"
+      ],
+      area:"Sistema SRS / airbag. Ler a centralina para identificar o código de avaria." },
+
+    { id:"direcao", nome:"Direção assistida", cor:"vermelho",
+      simbolo:"Volante com um ponto de exclamação ao lado",
+      gravidade:"Atenção",
+      significado:"Pode ter perdido, ou estar a perder, a assistência da direção.",
+      dizer:"Avise que o volante pode ficar bastante mais pesado, sobretudo a baixa velocidade e a estacionar.",
+      perguntas:[
+        "O volante está mais pesado que o normal?",
+        "A luz acende mais quando vira?",
+        "Ouve algum barulho ao rodar o volante?"
+      ],
+      area:"Direção assistida (elétrica ou hidráulica conforme o modelo). Ler centralina / verificar nível, conforme o tipo." },
+
+    { id:"motor", nome:"Gestão do motor (check engine)", cor:"amarelo",
+      simbolo:"Silhueta de um motor",
+      gravidade:"Atenção",
+      significado:"A centralina detetou algo no funcionamento do motor. Pode ser desde uma causa simples até uma mais séria — só a leitura de códigos esclarece.",
+      dizer:"Se o carro anda normal, pode circular com cuidado e marcar verificação. Se anda aos solavancos ou sem força, é melhor não conduzir.",
+      perguntas:[
+        "A luz está fixa ou a piscar? (a piscar é mais sério)",
+        "O carro perdeu força ou anda aos trancos?",
+        "Notou mais fumo no escape ou um aumento do consumo?",
+        "A luz acendeu logo a seguir a abastecer combustível?"
+      ],
+      area:"Gestão do motor. Leitura de códigos de avaria obrigatória antes de qualquer intervenção." },
+
+    { id:"abs", nome:"ABS", cor:"amarelo",
+      simbolo:"Letras ABS dentro de um círculo",
+      gravidade:"Atenção",
+      significado:"O sistema que evita o bloqueio das rodas numa travagem forte pode estar inativo.",
+      dizer:"Explique que o carro continua a travar, mas sem a ajuda do ABS numa travagem de emergência.",
+      perguntas:[
+        "A luz do ABS acendeu sozinha ou junto com a luz vermelha de travões?",
+        "Sente alguma diferença ao travar a fundo?",
+        "Acendeu depois de passar por água ou um buraco?"
+      ],
+      area:"ABS. Verificar sensores de roda e ler a centralina." },
+
+    { id:"esp", nome:"ESP / controlo de estabilidade", cor:"amarelo",
+      simbolo:"Carro visto de cima com duas linhas curvas (rasto)",
+      gravidade:"Atenção",
+      significado:"O controlo de estabilidade e tração pode estar desligado ou em avaria.",
+      dizer:"Informe que o carro perde a ajuda anti-derrapagem; deve conduzir-se com mais cuidado em piso molhado.",
+      perguntas:[
+        "A luz fica acesa fixa, ou só pisca em certas alturas?",
+        "Pode ter carregado sem querer no botão do ESP?",
+        "Acendeu sozinha ou com outras luzes (ABS, travões)?"
+      ],
+      area:"ESP / ASR. Ligado ao ABS e sensores; ler centralina." },
+
+    { id:"velas", nome:"Pré-aquecimento (diesel)", cor:"amarelo",
+      simbolo:"Espiral / mola enrolada",
+      gravidade:"Atenção",
+      significado:"Nos diesel indica o pré-aquecimento. Se fica acesa depois do arranque ou pisca, pode ser avaria de gestão do motor.",
+      dizer:"Se a luz fica acesa ou pisca, o carro pode arrancar mal a frio; convém verificar.",
+      perguntas:[
+        "O carro custa a pegar de manhã / com frio?",
+        "A luz fica acesa mesmo depois de o motor já estar a trabalhar?",
+        "Deita fumo branco quando arranca a frio?"
+      ],
+      area:"Pré-aquecimento / gestão diesel. Verificar velas de incandescência e ler centralina." },
+
+    { id:"fap", nome:"Filtro de partículas (FAP/DPF)", cor:"amarelo",
+      simbolo:"Caixa do escape com pontos no interior",
+      gravidade:"Atenção",
+      significado:"O filtro de partículas do escape (diesel) está saturado e precisa de regeneração/limpeza.",
+      dizer:"Muitas vezes resolve-se com uma viagem mais longa a velocidade de estrada. Se for ignorado, agrava-se e fica mais caro.",
+      perguntas:[
+        "Faz sobretudo trajetos curtos dentro da cidade?",
+        "Notou perda de força no carro?",
+        "Sente um cheiro diferente, mais forte, no escape?"
+      ],
+      area:"FAP / DPF. Avaliar regeneração; diagnóstico se não regenerar." },
+
+    { id:"tpms", nome:"Pressão dos pneus (TPMS)", cor:"amarelo",
+      simbolo:"Ferradura / U com um ponto de exclamação no meio",
+      gravidade:"Atenção",
+      significado:"Um ou mais pneus podem estar com a pressão baixa.",
+      dizer:"Aconselhe a calibrar os pneus. Se um pneu esvazia depressa, pode estar furado.",
+      perguntas:[
+        "Notou algum pneu visivelmente mais vazio?",
+        "O carro 'puxa' para um dos lados?",
+        "A luz acendeu com a chegada do tempo frio?"
+      ],
+      area:"Pneus / TPMS. Calibrar, inspecionar furos e verificar sensores." },
+
+    { id:"combustivel", nome:"Combustível baixo", cor:"amarelo",
+      simbolo:"Bomba de combustível",
+      gravidade:"Informativo",
+      significado:"Pouco combustível no depósito. Normalmente não é avaria.",
+      dizer:"Normalmente basta abastecer. Só é preciso verificar se a luz acende com o depósito cheio.",
+      perguntas:[
+        "Confirmou o nível de combustível?",
+        "A luz acende mesmo com o depósito cheio? (se sim, pode ser o sensor)"
+      ],
+      area:"Nível de combustível. Verificar sensor de nível apenas se acender com depósito cheio." },
+
+    { id:"adblue", nome:"AdBlue (diesel)", cor:"amarelo",
+      simbolo:"Símbolo de líquido / bomba com a palavra AdBlue",
+      gravidade:"Atenção",
+      significado:"O aditivo AdBlue está a acabar (diesel mais recentes).",
+      dizer:"É preciso atestar AdBlue. Se acabar por completo, o carro pode deixar de arrancar.",
+      perguntas:[
+        "A mensagem no painel indica quantos quilómetros faltam?",
+        "Alguma vez atestou AdBlue neste carro?"
+      ],
+      area:"Sistema AdBlue / SCR. Atestar; diagnóstico se a luz persistir após atestar." },
+
+    { id:"lampada", nome:"Avaria de lâmpada / iluminação", cor:"amarelo",
+      simbolo:"Lâmpada com um ponto de exclamação",
+      gravidade:"Atenção",
+      significado:"Uma luz exterior pode estar fundida (farol, mínimo, travão, pisca).",
+      dizer:"Aconselhe a verificar; circular com luzes fundidas é infração e questão de segurança.",
+      perguntas:[
+        "Alguém lhe fez sinais por causa das luzes?",
+        "Notou um pisca a piscar mais depressa que o outro lado?",
+        "Sabe dizer qual a luz que falha (frente/trás, qual)?"
+      ],
+      area:"Iluminação. Substituir lâmpada; verificar suporte e ligação de massa." }
+  ],
+
+  /* Sintomas elétricos que NÃO são luzes do painel */
+  eletricoOutros: [
+    { id:"e-arranca", titulo:"O carro não arranca / arranca mal",
+      perguntas:[
+        "Ao rodar a chave ou carregar no botão, o que acontece? Nada; um 'clique'; o motor roda devagar; roda mas não pega.",
+        "As luzes do painel acendem normalmente?",
+        "Começou de repente ou foi piorando ao longo dos dias?",
+        "Ficou alguma coisa ligada durante a noite (luz, porta mal fechada)?",
+        "É pior de manhã ou com frio?"
+      ],
+      area:"Arranque / carga. Se 'roda devagar' ou faz cliques: bateria / motor de arranque. Se 'roda mas não pega': gestão do motor, combustível ou imobilizador." },
+
+    { id:"e-descarrega", titulo:"A bateria descarrega / fica sem bateria",
+      perguntas:[
+        "Quantas vezes já aconteceu?",
+        "Acontece depois de o carro estar parado quanto tempo?",
+        "A bateria é recente ou já tem alguns anos?",
+        "Costuma ficar alguma coisa ligada quando sai do carro?"
+      ],
+      area:"Consumo parasita / bateria / alternador. Medir consumo em repouso e teste de carga." },
+
+    { id:"e-conforto", titulo:"Vidros, fechos ou espelhos elétricos não funcionam",
+      perguntas:[
+        "É só um, ou vários ao mesmo tempo?",
+        "Funcionam às vezes e outras não?",
+        "Ouve o motorzinho a tentar trabalhar?",
+        "O comando central das portas funciona?"
+      ],
+      area:"Elétrico de conforto. Verificar motor, interruptor, fusível e módulo da porta." },
+
+    { id:"e-luzes", titulo:"Luzes exteriores falham (faróis, mínimos, piscas)",
+      perguntas:[
+        "Quais as luzes que falham (frente/trás, esquerda/direita)?",
+        "Falham sempre ou de forma intermitente?",
+        "O pisca pisca mais depressa de um dos lados?",
+        "Já fundiu lâmpadas várias vezes no mesmo sítio?"
+      ],
+      area:"Iluminação. Verificar lâmpada, suporte, ligação de massa, relé e fusível." },
+
+    { id:"e-multimedia", titulo:"Rádio, ecrã ou eletrónica reinicia ou falha",
+      perguntas:[
+        "O equipamento desliga-se sozinho ou reinicia?",
+        "Acontece ao passar buracos (pode ser mau contacto)?",
+        "Coincide com o momento em que o carro arranca?"
+      ],
+      area:"Multimédia / alimentação. Verificar massa, fusível e estado da bateria." },
+
+    { id:"e-corte", titulo:"O carro vai-se abaixo sozinho em andamento",
+      perguntas:[
+        "Acontece a que velocidade ou em que situação?",
+        "Volta a pegar logo a seguir?",
+        "Acendeu alguma luz no painel no momento em que aconteceu?",
+        "Sente solavancos ou falhas antes de se ir abaixo?"
+      ],
+      area:"Corte de motor — diagnóstico prioritário por segurança. Gestão do motor, alimentação de combustível e sensores." }
+  ],
+
+  /* Sintomas mecânicos */
+  mecanico: {
+    barulho: {
+      titulo:"Barulhos e ruídos",
+      desc:"Ruídos novos ou estranhos: metálicos, a chiar, estalidos, batuques.",
+      perguntas:[
+        "De onde lhe parece vir o som? À frente, atrás, esquerda, direita, debaixo do carro, do motor, ou de dentro do habitáculo.",
+        "Em que momento aparece? A travar, a virar, a acelerar, a passar buracos, sempre a andar, ou com o carro parado.",
+        "Como descreveria o som? Metálico, a chiar, a ranger, estalido seco, batuque, ronco.",
+        "O som muda com a velocidade? Aumenta quando acelera?",
+        "Acontece com o motor frio, quente, ou sempre?"
+      ],
+      casos:[
+        { id:"m-b1", titulo:"Chiar ou raspar metálico ao travar",
+          perguntas:[
+            "O som só aparece quando carrega no travão?",
+            "É um chiar agudo ou um raspar áspero?",
+            "Sente o pedal do travão a vibrar?",
+            "Sabe há quanto tempo não muda pastilhas/discos?"
+          ],
+          area:"Travões — provável desgaste de pastilhas e/ou discos." },
+        { id:"m-b2", titulo:"Estalido 'clac-clac' ao virar",
+          perguntas:[
+            "O som aparece sobretudo a virar (rotundas, saídas de garagem)?",
+            "É mais notório para um dos lados?",
+            "Aparece a virar a baixa velocidade?"
+          ],
+          area:"Transmissão — provável junta homocinética / tripoide." },
+        { id:"m-b3", titulo:"Batuque seco ao passar buracos ou lombas",
+          perguntas:[
+            "É um som 'oco' ao passar irregularidades do piso?",
+            "Sente o carro mais solto ou a saltar?",
+            "Vem mais da frente ou de trás?"
+          ],
+          area:"Suspensão — amortecedores, casquilhos, barra estabilizadora ou apoios." },
+        { id:"m-b4", titulo:"Barulho no motor (tique-tique, batimento)",
+          perguntas:[
+            "O som acompanha a rotação do motor (aumenta ao acelerar)?",
+            "Aparece a frio e melhora a quente, ou ao contrário?",
+            "É mais um tique-tique fino ou um batimento mais grave?"
+          ],
+          area:"Motor — distribuição, tensores, válvulas ou correia de acessórios." },
+        { id:"m-b5", titulo:"Zumbido/ronco que aumenta com a velocidade",
+          perguntas:[
+            "É um zumbido contínuo que sobe com a velocidade?",
+            "O som muda quando vira para um lado ou para o outro?",
+            "Verificou o desgaste dos pneus recentemente?"
+          ],
+          area:"Rolamentos de roda (verificar também desgaste irregular de pneus)." },
+        { id:"m-b6", titulo:"Ronco forte vindo do escape",
+          perguntas:[
+            "O som é mais forte quando acelera?",
+            "Aumentou de repente ou foi gradual?",
+            "Sente cheiro a gases dentro do carro?"
+          ],
+          area:"Escape — fuga, junta ou suporte partido." },
+        { id:"m-b7", titulo:"Chiadeira aguda ao arrancar a frio",
+          perguntas:[
+            "É uma chiadeira aguda nos primeiros minutos?",
+            "Melhora ou desaparece quando o motor aquece?",
+            "Piora em dias de chuva/humidade?"
+          ],
+          area:"Correia de acessórios e tensor — desgaste ou folga." }
+      ]
+    },
+    vibracao: {
+      titulo:"Vibrações e trepidações",
+      desc:"O carro, o volante ou os pedais tremem.",
+      perguntas:[
+        "Onde sente a vibração? No volante, no banco/chão, nos pedais, ou no carro todo.",
+        "Quando acontece? A partir de certa velocidade, ao travar, com o carro parado ao ralenti, ou ao acelerar.",
+        "É constante, ou aparece e desaparece?",
+        "Bateu nalgum passeio ou buraco com força ultimamente?"
+      ],
+      casos:[
+        { id:"m-v1", titulo:"Vibração no volante a alta velocidade",
+          perguntas:[
+            "A vibração começa a partir de uma certa velocidade (ex.: 100 km/h)?",
+            "Mudou de pneus há pouco tempo?",
+            "Bateu nalgum passeio ou buraco com força?"
+          ],
+          area:"Equilibragem de rodas, estado dos pneus ou jante empenada." },
+        { id:"m-v2", titulo:"Vibração ao travar (volante ou pedal a pulsar)",
+          perguntas:[
+            "Sente o volante ou o pedal a tremer só quando trava?",
+            "É pior a travar vindo de velocidades altas?",
+            "Há quanto tempo não mexe nos travões?"
+          ],
+          area:"Discos de travão empenados / com desgaste irregular." },
+        { id:"m-v3", titulo:"Trepidação com o carro parado ao ralenti",
+          perguntas:[
+            "O carro treme parado, por exemplo num semáforo?",
+            "A trepidação melhora quando acelera um pouco?",
+            "Acendeu alguma luz no painel?"
+          ],
+          area:"Ralenti irregular e/ou apoios de motor. Avaliar gestão do motor." },
+        { id:"m-v4", titulo:"Vibração ao acelerar",
+          perguntas:[
+            "A vibração aparece quando acelera com força?",
+            "Piora em subida ou com o carro carregado?",
+            "Vem acompanhada de algum barulho?"
+          ],
+          area:"Transmissão, juntas homocinéticas ou apoios de motor." }
+      ]
+    },
+    zumbido: {
+      titulo:"Zumbidos, assobios e zoadas",
+      desc:"Sons contínuos e agudos: zumbidos, assobios e zoadas.",
+      perguntas:[
+        "Como descreveria o som: um zumbido grave e contínuo, ou um assobio mais agudo?",
+        "Acompanha a velocidade do carro, ou a rotação do motor?",
+        "Aparece com algum sistema ligado, como o ar condicionado?",
+        "Ouve-se mais dentro do habitáculo ou de fora?"
+      ],
+      casos:[
+        { id:"m-z1", titulo:"Zumbido contínuo que sobe com a velocidade",
+          perguntas:[
+            "O zumbido muda de intensidade quando vira para um dos lados?",
+            "Desaparece a certas velocidades?",
+            "Os pneus estão gastos de forma irregular?"
+          ],
+          area:"Rolamento de roda (confirmar também estado dos pneus)." },
+        { id:"m-z2", titulo:"Assobio com o motor a trabalhar",
+          perguntas:[
+            "O assobio muda quando acelera?",
+            "Ouve-se mais com o capô aberto, na zona do motor?",
+            "Apareceu depois de alguma reparação recente?"
+          ],
+          area:"Admissão de ar / fuga de vácuo / turbo." },
+        { id:"m-z3", titulo:"Zumbido com o ar condicionado ligado",
+          perguntas:[
+            "O som só aparece com o ar condicionado ligado?",
+            "Desaparece assim que desliga o A/C?",
+            "Vem da frente do carro, na zona do motor?"
+          ],
+          area:"Compressor do ar condicionado ou ventilador." },
+        { id:"m-z4", titulo:"Zumbido na traseira ao ligar a ignição",
+          perguntas:[
+            "Ouve-se um zumbido curto na traseira ao rodar a chave?",
+            "O carro pega bem a seguir?",
+            "O zumbido é curto, ou contínuo e forte?"
+          ],
+          area:"Bomba de combustível — um zumbido curto é normal; contínuo ou forte deve verificar-se." }
+      ]
+    }
+  }
+};
+
+/* ===================== NAVEGAÇÃO ===================== */
+let path = [{view:"home", label:"Início"}];
+let luzFiltro = "todas";
+
+function navTo(view, id, label){ path.push({view:view, id:id, label:label}); render(); }
+function truncate(i){ path = path.slice(0, i+1); render(); }
+function home(){ path = [{view:"home", label:"Início"}]; render(); }
+function back(){ if(path.length>1){ path.pop(); render(); } }
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ===================== COMPONENTES ===================== */
+function topbar(){
+  const crumbs = path.map((p,i) =>
+    (i < path.length-1)
+      ? '<a data-crumb="'+i+'">'+esc(p.label)+'</a><span class="sep">›</span>'
+      : '<span>'+esc(p.label)+'</span>'
+  ).join('');
+  const voltar = path.length>1
+    ? '<button class="btn btn-back no-print" data-action="back">‹ Voltar</button>' : '';
+  return '<div class="topbar">'+voltar+'<div class="crumbs">'+crumbs+'</div></div>';
+}
+
+function qlist(perguntas){
+  return '<ul class="qlist">' + perguntas.map((q,i) =>
+    '<li><span class="qn">'+(i+1)+'</span><span>'+esc(q)+'</span></li>'
+  ).join('') + '</ul>';
+}
+
+function boxOficina(area){
+  return '<div class="box-oficina"><div class="lbl"><span class="ic">!</span>'+
+    'Para a oficina — área provável a verificar</div>'+
+    '<div class="txt">'+esc(area)+'</div></div>';
+}
+
+function reminder(){
+  return '<div class="reminder no-print">Faça também as <b>perguntas gerais</b> e registe '+
+    'as respostas e a área provável na ficha de obra, para a oficina ter o quadro completo.</div>';
+}
+
+function printBtn(){
+  return '<button class="btn btn-print no-print" data-action="print" '+
+    'style="margin-bottom:14px">Imprimir este guião</button>';
+}
+
+/* ===================== VISTAS ===================== */
+function viewHome(){
+  return topbar() +
+    '<p class="intro">Esta ferramenta ajuda a recolher do cliente a informação certa sobre a avaria, '+
+    'em linguagem simples, para entregar à oficina. Escolha o tipo de avaria.</p>' +
+    '<div class="opt-grid c3">' +
+      '<div class="opt-card eletr" data-go="eletrico" data-label="Avaria elétrica">' +
+        '<div class="t">Avaria elétrica</div>' +
+        '<div class="d">Luzes acesas no painel e outros problemas elétricos.</div></div>' +
+      '<div class="opt-card mec" data-go="mecanico" data-label="Avaria mecânica">' +
+        '<div class="t">Avaria mecânica</div>' +
+        '<div class="d">Barulhos, vibrações, zumbidos e zoadas.</div></div>' +
+      '<div class="opt-card geral" data-go="geral" data-label="Perguntas gerais">' +
+        '<div class="t">Perguntas gerais</div>' +
+        '<div class="d">Perguntas a fazer em qualquer avaria.</div></div>' +
+    '</div>';
+}
+
+function viewGeral(){
+  return topbar() + printBtn() +
+    '<div class="detail-head"><h3>Perguntas gerais</h3></div>' +
+    '<p class="intro">Faça estas perguntas em <b>qualquer</b> avaria, seja elétrica ou mecânica.</p>' +
+    '<div class="panel"><h4>Perguntas a fazer ao cliente</h4>' + qlist(DADOS.geral) + '</div>' +
+    '<div class="note">Confirme sempre os dados da viatura: <b>matrícula, marca, modelo, ano e quilómetros</b>. ' +
+    'São o ponto de partida da ficha de obra.</div>';
+}
+
+function viewEletrico(){
+  return topbar() +
+    '<h2 class="sec">Avaria elétrica — que tipo?</h2>' +
+    '<div class="opt-grid c2">' +
+      '<div class="opt-card eletr" data-go="luzes" data-label="Luz no painel">' +
+        '<div class="t">Luz acesa no painel</div>' +
+        '<div class="d">O cliente tem uma luz avisadora acesa no painel de instrumentos.</div></div>' +
+      '<div class="opt-card eletr" data-go="eletrico-outros" data-label="Outro problema elétrico">' +
+        '<div class="t">Outro problema elétrico</div>' +
+        '<div class="d">Não arranca, bateria, vidros, luzes exteriores, eletrónica.</div></div>' +
+    '</div>';
+}
+
+function viewLuzes(){
+  const filtros = [["todas","Todas"],["vermelho","Vermelhas"],["amarelo","Amarelas"]];
+  const chips = filtros.map(f =>
+    '<button class="chip'+(luzFiltro===f[0]?' on':'')+'" data-action="filtro" data-id="'+f[0]+'">'+
+    f[1]+'</button>'
+  ).join('');
+  const lista = DADOS.luzes.filter(l => luzFiltro==="todas" || l.cor===luzFiltro);
+  const cards = lista.map(l =>
+    '<div class="luz-card '+l.cor+'" data-go="luz" data-id="'+l.id+'">' +
+    '<div class="ln">'+esc(l.nome)+'</div>' +
+    '<div class="ls"><span class="dot '+l.cor+'"></span>Símbolo: '+esc(l.simbolo)+'</div>' +
+    '</div>'
+  ).join('');
+  return topbar() +
+    '<h2 class="sec">Catálogo de luzes do painel</h2>' +
+    '<div class="note">Ajude o cliente a identificar a luz pela <b>cor</b> e pelo <b>símbolo</b>. '+
+    'Luzes <b>verdes ou azuis</b> são informativas (ex.: máximos, mínimos) e não indicam avaria — '+
+    'concentre-se nas vermelhas e amarelas.</div>' +
+    '<div class="filtros no-print">'+chips+'</div>' +
+    '<div class="luz-grid">'+cards+'</div>';
+}
+
+function viewLuz(id){
+  const l = DADOS.luzes.find(x => x.id===id);
+  if(!l) return topbar() + '<p>Luz não encontrada.</p>';
+  const gravClass = l.gravidade==="Grave" ? "grave" : (l.gravidade==="Atenção" ? "atencao" : "info");
+  return topbar() + printBtn() +
+    '<div class="detail-head">' +
+      '<h3>'+esc(l.nome)+'</h3>' +
+      '<span class="grav '+gravClass+'">'+esc(l.gravidade)+'</span>' +
+    '</div>' +
+    '<p class="intro">Luz '+(l.cor==="vermelho"?"vermelha":"amarela")+
+      ' · Símbolo: '+esc(l.simbolo)+'</p>' +
+    '<div class="box-significado"><b>O que significa:</b> '+esc(l.significado)+'</div>' +
+    '<div class="box-dizer'+(gravClass==="grave"?" grave":"")+'">' +
+      '<span class="lbl">O que dizer ao cliente</span>'+esc(l.dizer)+'</div>' +
+    '<div class="panel"><h4>Perguntas a fazer ao cliente</h4>'+qlist(l.perguntas)+'</div>' +
+    boxOficina(l.area) + reminder();
+}
+
+function viewEletricoOutros(){
+  const itens = DADOS.eletricoOutros.map(it =>
+    '<div class="list-item" data-go="sintoma" data-id="'+it.id+'" data-label="'+esc(it.titulo)+'">' +
+    '<span class="t">'+esc(it.titulo)+'</span><span class="arrow">›</span></div>'
+  ).join('');
+  return topbar() +
+    '<h2 class="sec">Outro problema elétrico — escolha o sintoma</h2>' + itens;
+}
+
+function viewMecanico(){
+  const fams = [["barulho","mec"],["vibracao","mec"],["zumbido","mec"]];
+  const cards = fams.map(f => {
+    const fam = DADOS.mecanico[f[0]];
+    return '<div class="opt-card mec" data-go="familia" data-id="'+f[0]+'" data-label="'+esc(fam.titulo)+'">' +
+      '<div class="t">'+esc(fam.titulo)+'</div>' +
+      '<div class="d">'+esc(fam.desc)+'</div></div>';
+  }).join('');
+  return topbar() +
+    '<h2 class="sec">Avaria mecânica — que tipo de sintoma?</h2>' +
+    '<div class="opt-grid c3">'+cards+'</div>';
+}
+
+function viewFamilia(id){
+  const fam = DADOS.mecanico[id];
+  if(!fam) return topbar() + '<p>Sintoma não encontrado.</p>';
+  const casos = fam.casos.map(c =>
+    '<div class="list-item" data-go="sintoma" data-id="'+c.id+'" data-label="'+esc(c.titulo)+'">' +
+    '<span class="t">'+esc(c.titulo)+'</span><span class="arrow">›</span></div>'
+  ).join('');
+  return topbar() +
+    '<div class="detail-head"><h3>'+esc(fam.titulo)+'</h3></div>' +
+    '<div class="panel"><h4>Perguntas gerais para este tipo de som / sintoma</h4>' +
+      qlist(fam.perguntas) + '</div>' +
+    '<h2 class="sec">Situação mais parecida — escolha para ver as perguntas específicas</h2>' +
+    casos;
+}
+
+function findSintoma(id){
+  for(const it of DADOS.eletricoOutros) if(it.id===id) return it;
+  for(const fk of ["barulho","vibracao","zumbido"])
+    for(const c of DADOS.mecanico[fk].casos) if(c.id===id) return c;
+  return null;
+}
+
+function viewSintoma(id){
+  const it = findSintoma(id);
+  if(!it) return topbar() + '<p>Sintoma não encontrado.</p>';
+  return topbar() + printBtn() +
+    '<div class="detail-head"><h3>'+esc(it.titulo)+'</h3></div>' +
+    '<div class="panel"><h4>Perguntas a fazer ao cliente</h4>'+qlist(it.perguntas)+'</div>' +
+    boxOficina(it.area) + reminder();
+}
+
+/* ===================== RENDER + EVENTOS ===================== */
+function render(){
+  const cur = path[path.length-1];
+  let body = "";
+  switch(cur.view){
+    case "home":             body = viewHome(); break;
+    case "geral":            body = viewGeral(); break;
+    case "eletrico":         body = viewEletrico(); break;
+    case "luzes":            body = viewLuzes(); break;
+    case "luz":              body = viewLuz(cur.id); break;
+    case "eletrico-outros":  body = viewEletricoOutros(); break;
+    case "mecanico":         body = viewMecanico(); break;
+    case "familia":          body = viewFamilia(cur.id); break;
+    case "sintoma":          body = viewSintoma(cur.id); break;
+    default:                 body = viewHome();
+  }
+  document.getElementById("app").innerHTML = body;
+  window.scrollTo(0,0);
+}
+
+document.getElementById("app").addEventListener("click", e => {
+  const goEl = e.target.closest("[data-go]");
+  if(goEl){
+    const view = goEl.dataset.go;
+    const label = goEl.dataset.label || view;
+    navTo(view, goEl.dataset.id, label);
+    return;
+  }
+  const crumb = e.target.closest("[data-crumb]");
+  if(crumb){ truncate(parseInt(crumb.dataset.crumb,10)); return; }
+  const act = e.target.closest("[data-action]");
+  if(act){
+    const a = act.dataset.action;
+    if(a==="back") back();
+    else if(a==="home") home();
+    else if(a==="print") window.print();
+    else if(a==="filtro"){ luzFiltro = act.dataset.id; render(); }
+    return;
+  }
+});
+
+render();
+</script>
+</body>
+</html>
