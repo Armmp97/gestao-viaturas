@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Indicadores e Objetivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA; --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF;
+  --gray-600: #6B7280; --text-dark: #1A2A3A; --text-body: #475569;
+  --green: #059669; --yellow: #D97706; --red: #DC2626;
+  --radius: 16px; --radius-sm: 12px; --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--off-white); color:var(--text-body); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Hero */
+.hero {
+  position:relative;
+  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
+  color:var(--white); overflow:hidden; padding:44px 0 34px;
+}
+.hero::before {
+  content:''; position:absolute; top:-40%; right:-10%;
+  width:700px; height:700px;
+  background:radial-gradient(circle,rgba(0,123,192,.12) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.hero-inner { position:relative; z-index:2; }
+.hero h1 { font-size:clamp(1.6rem,3.5vw,2.2rem); font-weight:900; margin-bottom:6px; }
+.hero h1 em { font-style:normal; color:var(--accent-light); }
+.hero-desc { font-size:.95rem; opacity:.8; max-width:600px; }
+.hero-bar { position:absolute; bottom:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 40%,var(--navy-light) 40%); }
+
+.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+.section { padding:36px 0; }
+
+/* Breadcrumb */
+.breadcrumb {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:16px 0; font-size:.84rem; color:var(--gray-600);
+}
+.breadcrumb a {
+  color:var(--accent); text-decoration:none; font-weight:600; cursor:pointer;
+}
+.breadcrumb a:hover { text-decoration:underline; }
+.breadcrumb .sep { color:var(--gray-400); }
+
+/* Category cards (level 1) */
+.cat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+.cat-card {
+  background:var(--white); border-radius:var(--radius); padding:32px 28px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  cursor:pointer; transition:var(--transition); position:relative; overflow:hidden;
+}
+.cat-card:hover { box-shadow:0 8px 28px rgba(0,59,115,.12); transform:translateY(-3px); }
+.cat-card::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  background:var(--accent); border-radius:2px 0 0 2px;
+}
+.cat-card-icon { font-size:2rem; margin-bottom:14px; }
+.cat-card h3 { font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
+.cat-card p { font-size:.88rem; color:var(--text-body); line-height:1.6; }
+
+/* Year pills (level 2) */
+.year-grid { display:flex; gap:16px; flex-wrap:wrap; }
+.year-card {
+  flex:1; min-width:200px; background:var(--white); border-radius:var(--radius);
+  padding:28px 24px; box-shadow:0 2px 12px rgba(0,59,115,.06);
+  border:1px solid var(--gray-200); cursor:pointer; transition:var(--transition);
+  text-align:center;
+}
+.year-card:hover { box-shadow:0 6px 24px rgba(0,59,115,.1); transform:translateY(-2px); border-color:var(--accent); }
+.year-card .year-num { font-size:2rem; font-weight:900; color:var(--navy); }
+.year-card p { font-size:.85rem; color:var(--gray-600); margin-top:4px; }
+
+/* Ticket subview pills */
+.subview-grid { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:28px; }
+.subview-card {
+  flex:1; min-width:200px; background:var(--white); border-radius:var(--radius);
+  padding:28px 24px; box-shadow:0 2px 12px rgba(0,59,115,.06);
+  border:1px solid var(--gray-200); cursor:pointer; transition:var(--transition);
+  text-align:center;
+}
+.subview-card:hover { box-shadow:0 6px 24px rgba(0,59,115,.1); transform:translateY(-2px); border-color:var(--accent); }
+.subview-card .sv-icon { font-size:2rem; margin-bottom:10px; }
+.subview-card h4 { font-size:1.1rem; font-weight:700; color:var(--navy); }
+.subview-card p { font-size:.82rem; color:var(--gray-600); margin-top:4px; }
+
+/* Ticket geral dashboard */
+.tg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:24px; }
+.tg-card {
+  background:var(--white); border-radius:var(--radius); padding:24px 22px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  position:relative; overflow:hidden;
+}
+.tg-card::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  border-radius:2px 0 0 2px;
+}
+.tg-card.lisboa::before { background:var(--accent); }
+.tg-card.cacem::before { background:var(--green); }
+.tg-card.colisao::before { background:var(--yellow); }
+.tg-card.domuscar::before { background:var(--navy); }
+.tg-card-title { font-size:.82rem; font-weight:700; color:var(--navy); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.tg-big { font-size:1.8rem; font-weight:900; color:var(--navy); line-height:1; }
+.tg-row { display:flex; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid var(--gray-100); }
+.tg-metric { text-align:center; flex:1; }
+.tg-metric-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.4px; color:var(--gray-600); font-weight:600; }
+.tg-metric-val { font-size:1rem; font-weight:700; color:var(--text-dark); margin-top:2px; }
+.tg-metric-sub { font-size:.72rem; color:var(--gray-400); }
+
+/* Ticket por Cliente block (breakdown by client type) */
+.tc-section { margin-top:32px; }
+.tc-section-title {
+  font-size:1.05rem; font-weight:800; color:var(--navy); margin-bottom:6px;
+  display:flex; align-items:center; gap:10px;
+}
+.tc-section-sub { font-size:.82rem; color:var(--text-body); margin-bottom:16px; }
+.tc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.tc-card {
+  background:var(--white); border-radius:var(--radius); padding:20px 22px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  position:relative; overflow:hidden;
+}
+.tc-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; border-radius:2px 0 0 2px; }
+.tc-card.lisboa::before { background:var(--accent); }
+.tc-card.cacem::before { background:var(--green); }
+.tc-card.colisao::before { background:var(--yellow); }
+.tc-card.domuscar::before { background:var(--navy); }
+.tc-card-title { font-size:.85rem; font-weight:700; color:var(--navy); margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.tc-card-title .tc-total { font-size:.72rem; color:var(--gray-600); font-weight:600; }
+.tc-row { display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px dashed var(--gray-100); font-size:.82rem; }
+.tc-row:last-child { border-bottom:none; }
+.tc-label { font-weight:700; }
+.tc-label.lp { color:#d97706; }
+.tc-label.em { color:#059669; }
+.tc-label.pa { color:#7c3aed; }
+.tc-label-sub { font-size:.7rem; color:var(--gray-600); font-weight:500; display:block; }
+.tc-val { font-weight:800; color:var(--navy); text-align:right; min-width:72px; }
+.tc-val-sm { font-size:.72rem; color:var(--gray-600); text-align:right; font-weight:600; }
+
+/* Tabela mensal por cliente */
+.tc-mensal-wrap { margin-top:24px; background:var(--white); border-radius:var(--radius); overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200); }
+.tc-mensal-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.tc-mensal-table th { background:var(--navy); color:var(--white); padding:10px 12px; text-align:center;
+  font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.3px; }
+.tc-mensal-table td { padding:9px 12px; text-align:right; border-bottom:1px solid var(--gray-100); }
+.tc-mensal-table td:first-child { text-align:left; font-weight:600; color:var(--navy); }
+.tc-mensal-table th.cat-lp { background:#d97706; }
+.tc-mensal-table th.cat-em { background:#059669; }
+.tc-mensal-table th.cat-pa { background:#7c3aed; }
+.tc-mensal-table tr.total-row { background:var(--gray-100); font-weight:800; }
+.tc-mensal-table tr.total-row td { color:var(--navy); }
+.tc-mensal-table .diff-pos { color:#059669; font-weight:700; }
+.tc-mensal-table .diff-neg { color:var(--gray-400); font-weight:500; }
+
+/* Comparativo */
+.comp-section {
+  margin-top:36px; background:var(--white); border-radius:var(--radius);
+  padding:32px 28px; box-shadow:0 2px 12px rgba(0,59,115,.06);
+  border:1px solid var(--gray-200); position:relative; overflow:hidden;
+}
+.comp-section::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  background:linear-gradient(180deg,var(--accent),var(--green)); border-radius:2px 0 0 2px;
+}
+.comp-title { font-size:1.1rem; font-weight:800; color:var(--navy); margin-bottom:4px; }
+.comp-subtitle { font-size:.85rem; color:var(--text-body); margin-bottom:20px; }
+.comp-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:24px; }
+.comp-kpi {
+  background:var(--off-white); border-radius:var(--radius-sm); padding:18px 16px;
+  text-align:center; border:1px solid var(--gray-100);
+}
+.comp-kpi-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-600); font-weight:600; margin-bottom:6px; }
+.comp-kpi-val { font-size:1.35rem; font-weight:800; color:var(--navy); }
+.comp-kpi-sub { font-size:.75rem; color:var(--gray-600); margin-top:4px; }
+.comp-kpi-delta { font-size:.8rem; font-weight:700; margin-top:4px; }
+.comp-kpi-delta.up { color:var(--green); }
+.comp-kpi-delta.down { color:var(--red); }
+.comp-chart-wrap { margin-top:8px; max-height:280px; }
+.comp-table-wrap { margin-top:20px; overflow-x:auto; }
+.comp-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.comp-table th { background:var(--navy); color:var(--white); padding:10px 12px; text-align:center; font-weight:600; font-size:.75rem; text-transform:uppercase; letter-spacing:.3px; }
+.comp-table td { padding:9px 12px; text-align:right; border-bottom:1px solid var(--gray-100); }
+.comp-table tr:hover td { background:rgba(0,123,192,.03); }
+.comp-table td:first-child { text-align:left; font-weight:600; color:var(--navy); }
+
+/* Unit pills (level 3) */
+.unit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.unit-card {
+  background:var(--white); border-radius:var(--radius-sm); padding:24px 22px;
+  box-shadow:0 2px 10px rgba(0,59,115,.05); border:1px solid var(--gray-200);
+  cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:16px;
+}
+.unit-card:hover { box-shadow:0 6px 20px rgba(0,59,115,.1); transform:translateY(-2px); border-color:var(--accent); }
+.unit-icon {
+  width:48px; height:48px; border-radius:var(--radius-sm); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+}
+.unit-icon.lisboa { background:rgba(0,123,192,.08); }
+.unit-icon.cacem { background:rgba(5,150,105,.08); }
+.unit-icon.colisao { background:rgba(217,119,6,.08); }
+.unit-icon.domuscar { background:rgba(0,43,85,.08); }
+.unit-card h4 { font-size:.95rem; font-weight:700; color:var(--navy); }
+.unit-card p { font-size:.8rem; color:var(--gray-600); }
+
+/* Data view (level 4) */
+.data-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:24px; flex-wrap:wrap; gap:12px;
+}
+.data-header h2 { font-size:1.2rem; font-weight:800; color:var(--navy); }
+.data-badge {
+  padding:6px 14px; border-radius:20px; font-size:.78rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.data-badge.placeholder { background:var(--gray-100); color:var(--gray-600); }
+
+.chart-container {
+  background:var(--white); border-radius:var(--radius); padding:24px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  margin-bottom:24px;
+}
+.chart-container canvas { max-height:320px; }
+
+.data-table-wrap {
+  background:var(--white); border-radius:var(--radius); overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+}
+.data-table {
+  width:100%; border-collapse:collapse; font-size:.85rem;
+}
+.data-table th {
+  text-align:left; padding:12px 16px; background:var(--navy);
+  color:var(--white); font-weight:600; font-size:.78rem;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.data-table th:first-child { border-radius:0; }
+.data-table td { padding:10px 16px; border-bottom:1px solid var(--gray-100); }
+.data-table tr:hover td { background:rgba(0,123,192,.02); }
+.data-table .placeholder-val { color:var(--gray-400); font-style:italic; }
+
+/* Back button */
+.btn-back {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 18px; border:1.5px solid var(--gray-200); border-radius:8px;
+  background:var(--white); color:var(--navy); font-family:inherit;
+  font-size:.84rem; font-weight:600; cursor:pointer; transition:var(--transition);
+}
+.btn-back:hover { border-color:var(--accent); background:rgba(0,123,192,.03); }
+
+/* Info banner */
+.info-banner {
+  background:rgba(0,123,192,.06); border:1px solid rgba(0,123,192,.15);
+  border-radius:var(--radius-sm); padding:16px 20px;
+  font-size:.88rem; color:var(--navy); margin-bottom:24px;
+  display:flex; align-items:center; gap:10px;
+}
+
+/* ══════ KPI por técnico (2026) ══════ */
+.tec-section { margin-top:28px; }
+.tec-section-title {
+  font-size:1rem; font-weight:800; color:var(--navy); text-transform:uppercase;
+  letter-spacing:.5px; margin:0 0 12px;
+  padding-bottom:8px; border-bottom:2px solid var(--gray-100);
+}
+.tec-month-tabs {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;
+}
+.tec-month-tab {
+  padding:8px 16px; border-radius:8px; border:1px solid var(--gray-200);
+  background:#fff; font-size:.85rem; font-weight:600; color:var(--gray-600);
+  cursor:pointer; transition:var(--transition);
+}
+.tec-month-tab:hover { border-color:var(--accent); color:var(--navy); }
+.tec-month-tab.active {
+  background:var(--navy); color:#fff; border-color:var(--navy);
+}
+.tec-month-tab.disabled {
+  opacity:.35; cursor:not-allowed; background:var(--gray-50);
+}
+.tec-subsection {
+  background:#fff; border:1px solid var(--gray-100);
+  border-radius:var(--radius-sm); padding:16px 18px; margin-bottom:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);
+}
+.tec-subsection-header {
+  font-size:.82rem; font-weight:800; color:var(--accent); text-transform:uppercase;
+  letter-spacing:.6px; margin-bottom:10px;
+}
+.tec-kpi-table, .tec-ranking-table {
+  width:100%; border-collapse:collapse; font-size:.83rem;
+}
+.tec-kpi-table th, .tec-ranking-table th {
+  background:var(--navy); color:#fff; text-align:left;
+  padding:8px 12px; font-weight:700; font-size:.75rem; text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.tec-kpi-table td, .tec-ranking-table td {
+  padding:8px 12px; border-bottom:1px solid var(--gray-100);
+}
+.tec-kpi-table tr:last-child td, .tec-ranking-table tr:last-child td { border-bottom:none; }
+.tec-kpi-table td.mes { font-weight:700; background:rgba(0,123,192,.04); }
+.tec-kpi-rankings { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:700px) { .tec-kpi-rankings { grid-template-columns:1fr; } }
+
+.tec-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;
+}
+.tec-card {
+  background:#fff; border:1px solid var(--gray-100); border-left:3px solid var(--accent);
+  border-radius:var(--radius-sm); padding:14px 14px 12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.tec-card.lisboa { border-left-color:#6366f1; }
+.tec-card.cacem { border-left-color:#059669; }
+.tec-card.colisao { border-left-color:#d97706; }
+.tec-card-name {
+  font-size:.95rem; font-weight:800; color:var(--navy); margin-bottom:10px;
+}
+.tec-card-weeks {
+  width:100%; font-size:.76rem; border-collapse:collapse; margin-bottom:10px;
+}
+.tec-card-weeks th, .tec-card-weeks td {
+  padding:4px 6px; text-align:center; border-bottom:1px solid var(--gray-50);
+}
+.tec-card-weeks th {
+  background:var(--gray-50); color:var(--gray-600); font-weight:700;
+  font-size:.68rem; text-transform:uppercase; letter-spacing:.3px;
+}
+.tec-card-weeks td:first-child { font-weight:700; color:var(--gray-600); }
+.tec-card-summary {
+  display:grid; grid-template-columns:1fr 1fr; gap:6px;
+  background:var(--gray-50); border-radius:6px; padding:8px 10px;
+  font-size:.74rem;
+}
+.tec-card-summary-item { display:flex; flex-direction:column; }
+.tec-card-summary-label {
+  font-size:.63rem; text-transform:uppercase; letter-spacing:.4px;
+  color:var(--gray-600); font-weight:700;
+}
+.tec-card-summary-value { font-size:.95rem; font-weight:800; color:var(--navy); }
+.tec-card-financials {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 10px; background:rgba(0,123,192,.06);
+  border-radius:6px; margin-bottom:8px; font-size:.78rem;
+}
+.tec-card-fin-item { display:flex; flex-direction:column; }
+.tec-card-fin-label {
+  font-size:.62rem; text-transform:uppercase; letter-spacing:.4px;
+  color:var(--gray-600); font-weight:700;
+}
+.tec-card-fin-value { font-size:.9rem; font-weight:800; color:var(--navy); }
+.tec-util-ok { color:#059669; font-weight:700; }
+.tec-util-warn { color:#d97706; font-weight:700; }
+.tec-util-bad { color:#dc2626; font-weight:700; }
+.tec-util-high { color:#2563eb; font-weight:700; }
+
+/* Responsive */
+@media(max-width:600px) {
+  .hero { padding:30px 0 22px; }
+  .cat-grid, .unit-grid { grid-template-columns:1fr; }
+  .year-grid { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <h1>Indicadores e <em>Objetivos</em></h1>
+      <p class="hero-desc">Acompanhamento de KPIs, ticket médio e margem mensal por unidade.</p>
+    </div>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+
+<div class="section">
+  <div class="container">
+    <div id="breadcrumb" class="breadcrumb"></div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var MONTHS_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  var CATEGORIES = [
+    {
+      id: 'kpis',
+      icon: '📈',
+      title: 'KPIs Coordenação',
+      desc: 'Indicadores-chave de desempenho por unidade — horas, eficiência produtiva e utilização.',
+      columns: ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponíveis', 'Eficiência Produtiva (%)', 'Utilização (%)'],
+      chartLabel: 'Eficiência Produtiva (%)',
+      chartIndex: 3
+    },
+    {
+      id: 'ticket',
+      icon: '🎫',
+      title: 'Ticket Médio',
+      desc: 'Valor médio por ordem de serviço — peças, mão-de-obra e total.',
+      columns: ['Ticket Médio Total (€)', 'Peças (€)', 'Mão-de-Obra (€)', 'Nº Ordens Serviço'],
+      chartLabel: 'Ticket Médio Total (€)',
+      chartIndex: 0
+    },
+    {
+      id: 'margem',
+      icon: '💰',
+      title: 'Margem Mensal',
+      desc: 'Margem operacional mensal — vendas, custos fixos/variáveis e resultado líquido.',
+      columns: ['Vendas s/ IVA (€)', 'Vendas MO (€)', 'Vendas Peças (€)', 'Custos Fixos (€)', 'Custos Var. (€)', 'Margem (€)', 'Margem (%)'],
+      chartLabel: 'Margem (%)',
+      chartIndex: 6
+    }
+  ];
+
+  // ══════ DADOS REAIS KPIs 2025 ══════
+  var KPI_DATA = {
+    2025: {
+      mecanica_lisboa: [
+        [312.77, 442.62, 414.80, 141.51, 75.40],
+        [241.08, 355.17, 299.63, 147.32, 80.46],
+        [295.68, 397.34, 340.00, 134.38, 86.96],
+        [266.23, 358.83, 361.25, 134.78, 73.70],
+        [342.02, 653.84, 380.80, 191.17, 89.82],
+        [239.39, 409.51, 346.80, 171.06, 69.03],
+        [373.33, 700.36, 428.40, 187.60, 87.15],
+        [311.39, 625.73, 346.80, 200.95, 89.79],
+        [395.40, 627.40, 439.88, 158.67, 89.89],
+        [526.09, 696.91, 625.60, 132.47, 84.09],
+        [318.33, 660.61, 358.28, 207.52, 88.85],
+        [235.84, 465.43, 272.85, 130.71, 86.43]
+      ],
+      mecanica_cacem: [
+        [575.59, 603.35, 655.10, 104.82, 87.86],
+        [493.88, 549.19, 555.90, 111.20, 88.84],
+        [478.11, 599.70, 532.44, 125.43, 89.80],
+        [421.38, 467.18, 487.90, 110.87, 86.37],
+        [470.19, 671.03, 509.15, 142.71, 92.35],
+        [457.66, 472.23, 527.94, 103.18, 86.69],
+        [621.58, 711.99, 654.50, 114.55, 94.97],
+        [468.31, 644.73, 482.80, 137.67, 97.00],
+        [548.40, 554.78, 567.80, 101.16, 96.58],
+        [625.59, 742.23, 639.20, 118.64, 97.87],
+        [616.11, 658.53, 693.60, 106.89, 88.83],
+        [477.31, 493.99, 529.55, 100.82, 90.13]
+      ],
+      colisao: [
+        [647.86, 654.03, 1054.43, 100.95, 61.44],
+        [894.00, 1110.07, 1175.97, 124.17, 76.02],
+        [784.27, 870.59, 1265.65, 111.01, 61.97],
+        [1043.37, 1031.85, 1163.65, 98.90, 89.66],
+        [1240.39, 921.14, 1360.85, 74.26, 91.15],
+        [1303.79, 1067.16, 1468.80, 81.85, 88.77],
+        [1505.49, 1720.20, 1890.40, 114.26, 79.64],
+        [1117.79, 1218.08, 1626.05, 108.97, 68.74],
+        [1339.53, 1135.57, 1718.70, 84.77, 77.94],
+        [1517.87, 1286.15, 1813.05, 84.73, 83.72],
+        [1178.46, 1097.31, 1431.40, 93.11, 82.33],
+        [1076.45, 777.24, 1190.00, 72.20, 90.46]
+      ]
+    },
+    2026: {
+      mecanica_lisboa: [
+        [344.50, 577.33, 344.68, 139.06, 99.69],
+        [345.68, 561.24, 361.42, 160.05, 95.76],
+        [356.55, 611.89, 322.15, 157.87, 132.37],
+        [394.39, 713.79, 370.60, 167.22, 106.77],
+        null, null, null, null, null, null, null, null
+      ],
+      mecanica_cacem: [
+        [574.31, 722.18, 610.30, 130.52, 93.90],
+        [499.58, 559.37, 556.75, 130.89, 90.79],
+        [575.80, 768.56, 589.90, 143.55, 97.84],
+        [520.82, 693.82, 484.50, 144.65, 107.11],
+        null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        [1446.31, 1026.25, 1469.65, 70.96, 98.41],
+        [1094.26, 1085.52, 1388.05, 99.20, 78.83],
+        [1371.22, 1210.26, 1513.00, 88.26, 90.63],
+        [1288.56, 1160.87, 1201.05, 106.73, 105.71],
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  // ══════ DADOS REAIS KPIs POR TÉCNICO 2026 (Jan/Fev/Mar) ══════
+  // Extraído dos Excel de Coordenação mensais (folhas LX/CA/CO KPIs).
+  // Array indexado por mês (0=Jan..11=Dez). Cada entrada: { unit:{...}, tecnicos:[...] }.
+  var KPI_TECNICOS_DATA = {"2026": {"mecanica_lisboa": [{"unit": {"ht": {"mes": 344.5, "s1": 59.65, "s2": 78.42, "s3": 106.15, "s4": 100.29}, "hv": {"mes": 575.83, "s1": 85.2, "s2": 150.5, "s3": 156.41, "s4": 183.72}, "hd": {"mes": 344.68, "s1": 60.77, "s2": 82.45, "s3": 102.0, "s4": 99.45}, "faltas": {"mes": 56.5, "s1": 48.5, "s2": 8.0, "s3": 0.0, "s4": 0.0}, "ferias": {"mes": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0}, "ef_global": {"mes": 138.07, "s1": 140.19, "s2": 182.53, "s3": 153.34, "s4": 184.74}, "ef_prod": {"mes": 138.62, "s1": 142.84, "s2": 191.91, "s3": 147.35, "s4": 183.19}, "utilizacao": {"mes": 99.69, "s1": 98.14, "s2": 95.11, "s3": 104.06, "s4": 100.84}}, "tecnicos": [{"name": "Emanuel", "weeks": [{"s": 1, "ht": 24.9, "hd": 26.8, "u": 92.9}, {"s": 2, "ht": 24.3, "hd": 26.8, "u": 90.9}, {"s": 3, "ht": 35.0, "hd": 34.0, "u": 103.0}, {"s": 4, "ht": 35.3, "hd": 32.3, "u": 109.3}], "ht_mes": 119.5, "hd_mes": 119.8, "utilizacao_mes": 99.7, "ht_prod": 115.4, "hd_prod": 115.8, "hf_mes": 202.8, "total_faturado": 28200.67, "ef_global": 175.2, "ef_prod": 175.7}, {"name": "Jorge", "weeks": [{"s": 1, "ht": 34.8, "hd": 34.0, "u": 102.3}, {"s": 2, "ht": 30.7, "hd": 31.4, "u": 97.7}, {"s": 3, "ht": 34.6, "hd": 34.0, "u": 101.7}, {"s": 4, "ht": 35.4, "hd": 33.6, "u": 105.4}], "ht_mes": 135.5, "hd_mes": 133.0, "utilizacao_mes": 101.8, "ht_prod": 127.2, "hd_prod": 124.8, "hf_mes": 157.1, "total_faturado": 23245.64, "ef_global": 125.9, "ef_prod": 123.5}, {"name": "Sérgio", "weeks": [{"s": 1, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 23.4, "hd": 24.2, "u": 96.4}, {"s": 3, "ht": 36.6, "hd": 34.0, "u": 107.5}, {"s": 4, "ht": 29.6, "hd": 33.6, "u": 88.1}], "ht_mes": 89.5, "hd_mes": 91.8, "utilizacao_mes": 97.5, "ht_prod": 72.2, "hd_prod": 74.5, "hf_mes": 84.2, "total_faturado": 11282.75, "ef_global": 113.1, "ef_prod": 116.7}, {"name": "Xavier", "weeks": [{"s": 1, "ht": 27.4, "hd": 27.2, "u": 100.6}, {"s": 2, "ht": 19.9, "hd": 24.6, "u": 80.6}, {"s": 3, "ht": 23.3, "hd": 27.2, "u": 85.8}, {"s": 4, "ht": 25.8, "hd": 27.2, "u": 94.7}], "ht_mes": 96.3, "hd_mes": 106.2, "utilizacao_mes": 90.7, "ht_prod": 94.0, "hd_prod": 103.9, "hf_mes": 102.3, "total_faturado": 9140.24, "ef_global": 98.5, "ef_prod": 106.2}]}, {"unit": {"ht": {"mes": 345.68, "s1": 92.83, "s2": 95.59, "s3": 71.97, "s4": 85.29}, "hv": {"mes": 561.24, "s1": 134.7, "s2": 142.79, "s3": 128.91, "s4": 154.84}, "hd": {"mes": 361.42, "s1": 101.32, "s2": 99.45, "s3": 79.05, "s4": 81.6}, "faltas": {"mes": 6.8, "s1": 0.8, "s2": 3.0, "s3": 3.0, "s4": 0.0}, "ferias": {"mes": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0}, "ef_global": {"mes": 152.7, "s1": 132.95, "s2": 143.58, "s3": 163.07, "s4": 189.75}, "ef_prod": {"mes": 160.05, "s1": 145.1, "s2": 149.38, "s3": 179.12, "s4": 181.54}, "utilizacao": {"mes": 95.76, "s1": 91.57, "s2": 96.09, "s3": 91.18, "s4": 111.63}}, "tecnicos": [{"name": "Emanuel", "weeks": [{"s": 1, "ht": 27.8, "hd": 33.3, "u": 83.3}, {"s": 2, "ht": 29.9, "hd": 31.4, "u": 95.1}, {"s": 3, "ht": 23.6, "hd": 24.6, "u": 95.6}, {"s": 4, "ht": 19.0, "hd": 13.6, "u": 140.1}], "ht_mes": 100.3, "hd_mes": 103.0, "utilizacao_mes": 97.3, "ht_prod": 86.4, "hd_prod": 89.2, "hf_mes": 178.7, "total_faturado": 24344.02, "ef_global": 200.5, "ef_prod": 206.8}, {"name": "Jorge", "weeks": [{"s": 1, "ht": 31.1, "hd": 34.0, "u": 91.3}, {"s": 2, "ht": 30.4, "hd": 34.0, "u": 89.5}, {"s": 3, "ht": 25.0, "hd": 27.2, "u": 91.7}, {"s": 4, "ht": 32.7, "hd": 34.0, "u": 96.3}], "ht_mes": 119.2, "hd_mes": 129.2, "utilizacao_mes": 92.2, "ht_prod": 110.2, "hd_prod": 120.2, "hf_mes": 165.2, "total_faturado": 25970.99, "ef_global": 137.5, "ef_prod": 150.0}, {"name": "Sérgio", "weeks": [{"s": 1, "ht": 34.0, "hd": 34.0, "u": 100.1}, {"s": 2, "ht": 35.3, "hd": 34.0, "u": 103.7}, {"s": 3, "ht": 23.5, "hd": 27.2, "u": 86.3}, {"s": 4, "ht": 33.5, "hd": 34.0, "u": 98.5}], "ht_mes": 126.2, "hd_mes": 129.2, "utilizacao_mes": 97.7, "ht_prod": 112.2, "hd_prod": 115.1, "hf_mes": 138.4, "total_faturado": 27620.95, "ef_global": 120.2, "ef_prod": 123.4}, {"name": "Xavier", "weeks": [{"s": 1, "ht": 13.6, "hd": 27.2, "u": 50.0}, {"s": 2, "ht": 17.1, "hd": 27.2, "u": 63.0}, {"s": 3, "ht": 17.0, "hd": 20.4, "u": 83.5}, {"s": 4, "ht": 20.6, "hd": 27.2, "u": 75.6}], "ht_mes": 68.3, "hd_mes": 102.0, "utilizacao_mes": 67.0, "ht_prod": 66.1, "hd_prod": 99.8, "hf_mes": 121.7, "total_faturado": 2857.1, "ef_global": 121.9, "ef_prod": 178.1}]}, {"unit": {"ht": {"mes": 356.55, "s1": 96.96, "s2": 88.48, "s3": 66.01, "s4": 76.53, "s5": 28.56}, "hv": {"mes": 611.89, "s1": 130.24, "s2": 124.21, "s3": 117.52, "s4": 180.68, "s5": 59.24}, "hd": {"mes": 322.15, "s1": 68.0, "s2": 95.2, "s3": 63.75, "s4": 68.0, "s5": 27.2}, "faltas": {"mes": 101.0, "s1": 0.0, "s2": 0.0, "s3": 45.0, "s4": 40.0, "s5": 16.0}, "ferias": {"mes": 8.0, "s1": 0.0, "s2": 8.0, "s3": 0.0, "s4": 0.0, "s5": 0.0}, "ef_global": {"mes": 218.14, "s1": 191.53, "s2": 130.47, "s3": 184.35, "s4": 265.71, "s5": 217.79}, "ef_prod": {"mes": 157.87, "s1": 134.32, "s2": 140.38, "s3": 178.03, "s4": 236.08, "s5": 207.42}, "utilizacao": {"mes": 132.37, "s1": 62.48, "s2": 93.32, "s3": 101.39, "s4": 75.03, "s5": 70.0}}, "tecnicos": [{"name": "Emanuel", "weeks": [{"s": 1, "ht": 33.2, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 26.8, "hd": 27.2, "u": 98.6}, {"s": 3, "ht": 6.5, "hd": 6.8, "u": 95.4}, {"s": 4, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 5, "ht": 0.0, "hd": 0.0, "u": 0.0}], "ht_mes": 66.6, "hd_mes": 34.0, "utilizacao_mes": 195.8, "ht_prod": 66.1, "hd_prod": 33.6, "hf_mes": 122.1, "total_faturado": 15935.34, "ef_global": 363.7, "ef_prod": 184.6}, {"name": "Jorge", "weeks": [{"s": 1, "ht": 32.3, "hd": 34.0, "u": 95.0}, {"s": 2, "ht": 30.9, "hd": 34.0, "u": 91.0}, {"s": 3, "ht": 35.8, "hd": 34.0, "u": 105.2}, {"s": 4, "ht": 35.6, "hd": 34.0, "u": 104.7}, {"s": 5, "ht": 14.3, "hd": 13.6, "u": 105.3}], "ht_mes": 148.9, "hd_mes": 149.6, "utilizacao_mes": 99.5, "ht_prod": 131.8, "hd_prod": 132.4, "hf_mes": 217.6, "total_faturado": 29830.72, "ef_global": 164.3, "ef_prod": 165.1}, {"name": "Sérgio", "weeks": [{"s": 1, "ht": 31.4, "hd": 34.0, "u": 92.4}, {"s": 2, "ht": 30.7, "hd": 34.0, "u": 90.3}, {"s": 3, "ht": 23.8, "hd": 22.9, "u": 103.5}, {"s": 4, "ht": 40.9, "hd": 34.0, "u": 120.4}, {"s": 5, "ht": 14.2, "hd": 13.6, "u": 104.7}], "ht_mes": 141.1, "hd_mes": 138.6, "utilizacao_mes": 101.8, "ht_prod": 121.9, "hd_prod": 119.4, "hf_mes": 151.0, "total_faturado": 20478.62, "ef_global": 126.5, "ef_prod": 123.9}, {"name": "Xavier", "weeks": [{"s": 1, "ht": 12.5, "hd": 13.6, "u": 92.0}, {"s": 2, "ht": 23.4, "hd": 27.2, "u": 86.0}, {"s": 3, "ht": 24.8, "hd": 27.2, "u": 91.3}, {"s": 4, "ht": 26.1, "hd": 27.2, "u": 95.8}, {"s": 5, "ht": 10.5, "hd": 6.8, "u": 154.5}], "ht_mes": 97.3, "hd_mes": 102.0, "utilizacao_mes": 95.4, "ht_prod": 94.8, "hd_prod": 99.5, "hf_mes": 83.8, "total_faturado": 4744.62, "ef_global": 84.3, "ef_prod": 86.2}]}, null, null, null, null, null, null, null, null, null], "mecanica_cacem": [{"unit": {"ht": {"mes": 574.31, "s1": 132.25, "s2": 123.04, "s3": 149.87, "s4": 169.15}, "hv": {"mes": 722.18, "s1": 138.01, "s2": 137.77, "s3": 220.79, "s4": 225.61}, "hd": {"mes": 610.3, "s1": 142.8, "s2": 129.2, "s3": 161.5, "s4": 176.8}, "faltas": {"mes": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0}, "ferias": {"mes": 88.0, "s1": 40.0, "s2": 40.0, "s3": 8.0, "s4": 0.0}, "ef_global": {"mes": 120.75, "s1": 96.65, "s2": 106.63, "s3": 136.71, "s4": 127.61}, "ef_prod": {"mes": 130.52, "s1": 104.36, "s2": 111.97, "s3": 147.32, "s4": 133.38}, "utilizacao": {"mes": 93.9, "s1": 92.61, "s2": 95.23, "s3": 92.8, "s4": 95.67}}, "tecnicos": [{"name": "Arnaldo", "weeks": [{"s": 1, "ht": 38.9, "hd": 34.0, "u": 114.4}, {"s": 2, "ht": 35.7, "hd": 30.6, "u": 116.8}, {"s": 3, "ht": 36.1, "hd": 34.0, "u": 106.1}, {"s": 4, "ht": 36.0, "hd": 34.0, "u": 105.7}], "ht_mes": 146.7, "hd_mes": 132.6, "utilizacao_mes": 110.6, "ht_prod": 123.8, "hd_prod": 109.7, "hf_mes": 129.7, "total_faturado": 18153.33, "ef_global": 118.3, "ef_prod": 104.8}, {"name": "Edmilson", "weeks": [{"s": 1, "ht": 28.4, "hd": 34.0, "u": 83.4}, {"s": 2, "ht": 24.7, "hd": 30.6, "u": 80.8}, {"s": 3, "ht": 33.3, "hd": 34.0, "u": 98.0}, {"s": 4, "ht": 30.7, "hd": 34.0, "u": 90.2}], "ht_mes": 117.1, "hd_mes": 132.6, "utilizacao_mes": 88.3, "ht_prod": 112.1, "hd_prod": 127.6, "hf_mes": 119.7, "total_faturado": 14642.53, "ef_global": 93.8, "ef_prod": 106.8}, {"name": "Filipe", "weeks": [{"s": 1, "ht": 34.9, "hd": 40.8, "u": 85.4}, {"s": 2, "ht": 27.9, "hd": 30.6, "u": 91.3}, {"s": 3, "ht": 28.2, "hd": 34.0, "u": 83.0}, {"s": 4, "ht": 30.1, "hd": 34.0, "u": 88.5}], "ht_mes": 121.1, "hd_mes": 139.4, "utilizacao_mes": 86.9, "ht_prod": 102.6, "hd_prod": 120.9, "hf_mes": 173.7, "total_faturado": 23070.06, "ef_global": 143.7, "ef_prod": 169.3}, {"name": "Robson", "weeks": [{"s": 1, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 3, "ht": 23.6, "hd": 25.5, "u": 92.7}, {"s": 4, "ht": 30.7, "hd": 34.0, "u": 90.3}], "ht_mes": 54.3, "hd_mes": 59.5, "utilizacao_mes": 91.3, "ht_prod": 53.7, "hd_prod": 58.9, "hf_mes": 64.3, "total_faturado": 7180.45, "ef_global": 109.1, "ef_prod": 119.6}, {"name": "Gonçalo", "weeks": [{"s": 1, "ht": 30.1, "hd": 34.0, "u": 88.6}, {"s": 2, "ht": 34.6, "hd": 37.4, "u": 92.6}, {"s": 3, "ht": 28.6, "hd": 34.0, "u": 84.2}, {"s": 4, "ht": 41.7, "hd": 40.8, "u": 102.3}], "ht_mes": 135.1, "hd_mes": 146.2, "utilizacao_mes": 92.4, "ht_prod": 116.3, "hd_prod": 127.3, "hf_mes": 176.9, "total_faturado": 28032.72, "ef_global": 138.9, "ef_prod": 152.1}, {"name": "Rafael", "weeks": [{"s": 1, "ht": 8.6, "hd": 13.6, "u": 63.1}, {"s": 2, "ht": 14.2, "hd": 23.8, "u": 59.7}, {"s": 3, "ht": 9.6, "hd": 20.4, "u": 47.3}, {"s": 4, "ht": 6.2, "hd": 20.4, "u": 30.2}], "ht_mes": 38.6, "hd_mes": 78.2, "utilizacao_mes": 49.4, "ht_prod": 32.7, "hd_prod": 72.3, "hf_mes": 29.0, "total_faturado": 3114.55, "ef_global": 40.0, "ef_prod": 88.5}]}, {"unit": {"ht": {"mes": 499.58, "s1": 151.83, "s2": 133.79, "s3": 107.74, "s4": 106.22}, "hv": {"mes": 559.37, "s1": 169.74, "s2": 117.76, "s3": 126.02, "s4": 145.85}, "hd": {"mes": 556.75, "s1": 163.2, "s2": 176.8, "s3": 115.6, "s4": 101.15}, "faltas": {"mes": 1.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 1.0}, "ferias": {"mes": 72.0, "s1": 8.0, "s2": 0.0, "s3": 40.0, "s4": 24.0}, "ef_global": {"mes": 118.36, "s1": 104.01, "s2": 66.61, "s3": 109.01, "s4": 144.19}, "ef_prod": {"mes": 130.89, "s1": 111.8, "s2": 88.02, "s3": 116.96, "s4": 137.31}, "utilizacao": {"mes": 90.79, "s1": 93.57, "s2": 75.51, "s3": 74.78, "s4": 79.68}}, "tecnicos": [{"name": "Arnaldo", "weeks": [{"s": 1, "ht": 31.2, "hd": 34.0, "u": 91.7}, {"s": 2, "ht": 32.1, "hd": 34.0, "u": 94.5}, {"s": 3, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 4, "ht": 14.0, "hd": 13.6, "u": 102.8}], "ht_mes": 77.3, "hd_mes": 81.6, "utilizacao_mes": 94.7, "ht_prod": 64.9, "hd_prod": 69.2, "hf_mes": 95.3, "total_faturado": 14203.62, "ef_global": 137.7, "ef_prod": 146.8}, {"name": "Edmilson", "weeks": [{"s": 1, "ht": 32.6, "hd": 34.0, "u": 96.0}, {"s": 2, "ht": 27.5, "hd": 34.0, "u": 80.8}, {"s": 3, "ht": 25.5, "hd": 27.2, "u": 93.7}, {"s": 4, "ht": 21.1, "hd": 20.4, "u": 103.2}], "ht_mes": 106.6, "hd_mes": 115.6, "utilizacao_mes": 92.2, "ht_prod": 101.3, "hd_prod": 110.3, "hf_mes": 123.3, "total_faturado": 13561.57, "ef_global": 111.8, "ef_prod": 121.6}, {"name": "Filipe", "weeks": [{"s": 1, "ht": 28.9, "hd": 34.0, "u": 85.1}, {"s": 2, "ht": 18.2, "hd": 34.0, "u": 53.6}, {"s": 3, "ht": 30.2, "hd": 34.0, "u": 88.9}, {"s": 4, "ht": 32.9, "hd": 34.0, "u": 96.8}], "ht_mes": 110.3, "hd_mes": 136.0, "utilizacao_mes": 81.1, "ht_prod": 89.1, "hd_prod": 114.8, "hf_mes": 121.1, "total_faturado": 21617.65, "ef_global": 105.5, "ef_prod": 135.9}, {"name": "Robson", "weeks": [{"s": 1, "ht": 30.1, "hd": 34.0, "u": 88.6}, {"s": 2, "ht": 23.4, "hd": 34.0, "u": 69.0}, {"s": 3, "ht": 24.7, "hd": 27.2, "u": 90.7}, {"s": 4, "ht": 31.7, "hd": 33.1, "u": 95.5}], "ht_mes": 109.9, "hd_mes": 128.3, "utilizacao_mes": 85.6, "ht_prod": 105.9, "hd_prod": 124.3, "hf_mes": 98.0, "total_faturado": 8585.8, "ef_global": 78.8, "ef_prod": 92.5}, {"name": "Gonçalo", "weeks": [{"s": 1, "ht": 29.0, "hd": 27.2, "u": 106.4}, {"s": 2, "ht": 32.5, "hd": 40.8, "u": 79.7}, {"s": 3, "ht": 27.4, "hd": 27.2, "u": 100.7}, {"s": 4, "ht": 6.6, "hd": 0.0, "u": 0.0}], "ht_mes": 95.4, "hd_mes": 95.2, "utilizacao_mes": 100.3, "ht_prod": 71.5, "hd_prod": 71.3, "hf_mes": 112.7, "total_faturado": 19117.88, "ef_global": 158.1, "ef_prod": 157.6}]}, {"unit": {"ht": {"mes": 575.8, "s1": 141.57, "s2": 122.14, "s3": 135.23, "s4": 121.11, "s5": 55.76}, "hv": {"mes": 757.06, "s1": 182.21, "s2": 119.07, "s3": 168.44, "s4": 115.23, "s5": 172.11}, "hd": {"mes": 589.9, "s1": 142.8, "s2": 136.0, "s3": 136.0, "s4": 122.4, "s5": 52.7}, "faltas": {"mes": 18.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 16.0, "s5": 2.0}, "ferias": {"mes": 8.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 8.0, "s5": 0.0}, "ef_global": {"mes": 137.49, "s1": 127.6, "s2": 87.55, "s3": 123.85, "s4": 94.14, "s5": 326.58}, "ef_prod": {"mes": 141.31, "s1": 128.7, "s2": 97.49, "s3": 124.56, "s4": 95.15, "s5": 308.68}, "utilizacao": {"mes": 97.84, "s1": 99.31, "s2": 90.31, "s3": 99.43, "s4": 100.72, "s5": 106.22}}, "tecnicos": [{"name": "Arnaldo", "weeks": [{"s": 1, "ht": 36.4, "hd": 34.0, "u": 107.1}, {"s": 2, "ht": 34.7, "hd": 34.0, "u": 101.9}, {"s": 3, "ht": 35.7, "hd": 34.0, "u": 105.1}, {"s": 4, "ht": 29.1, "hd": 27.2, "u": 107.1}, {"s": 5, "ht": 14.2, "hd": 13.6, "u": 104.5}], "ht_mes": 150.1, "hd_mes": 142.8, "utilizacao_mes": 105.1, "ht_prod": 141.4, "hd_prod": 134.1, "hf_mes": 195.0, "total_faturado": 23756.38, "ef_global": 145.4, "ef_prod": 137.8}, {"name": "Edmilson", "weeks": [{"s": 1, "ht": 35.3, "hd": 34.0, "u": 103.8}, {"s": 2, "ht": 23.2, "hd": 27.2, "u": 85.2}, {"s": 3, "ht": 31.3, "hd": 34.0, "u": 92.2}, {"s": 4, "ht": 23.2, "hd": 20.4, "u": 114.0}, {"s": 5, "ht": 14.2, "hd": 11.9, "u": 119.4}], "ht_mes": 127.3, "hd_mes": 127.5, "utilizacao_mes": 99.8, "ht_prod": 125.3, "hd_prod": 125.6, "hf_mes": 147.2, "total_faturado": 17416.56, "ef_global": 117.2, "ef_prod": 117.4}, {"name": "Filipe", "weeks": [{"s": 1, "ht": 30.8, "hd": 34.0, "u": 90.5}, {"s": 2, "ht": 30.7, "hd": 40.8, "u": 75.1}, {"s": 3, "ht": 33.3, "hd": 34.0, "u": 97.8}, {"s": 4, "ht": 27.3, "hd": 34.0, "u": 80.3}, {"s": 5, "ht": 12.6, "hd": 13.6, "u": 92.4}], "ht_mes": 134.6, "hd_mes": 156.4, "utilizacao_mes": 86.0, "ht_prod": 122.8, "hd_prod": 144.7, "hf_mes": 190.2, "total_faturado": 25141.87, "ef_global": 131.5, "ef_prod": 154.9}, {"name": "Gonçalo", "weeks": [{"s": 1, "ht": 39.1, "hd": 40.8, "u": 95.9}, {"s": 2, "ht": 33.6, "hd": 34.0, "u": 98.9}, {"s": 3, "ht": 34.9, "hd": 34.0, "u": 102.6}, {"s": 4, "ht": 41.4, "hd": 40.8, "u": 101.6}, {"s": 5, "ht": 14.8, "hd": 13.6, "u": 108.6}], "ht_mes": 163.8, "hd_mes": 163.2, "utilizacao_mes": 100.4, "ht_prod": 125.5, "hd_prod": 124.9, "hf_mes": 194.7, "total_faturado": 31672.47, "ef_global": 155.9, "ef_prod": 155.1}]}, null, null, null, null, null, null, null, null, null], "colisao": [{"unit": {"ht": {"mes": 1211.87, "s1": 328.84, "s2": 307.85, "s3": 322.56, "s4": 252.61}, "hv": {"mes": 716.4, "s1": 131.03, "s2": 148.21, "s3": 148.51, "s4": 288.65}, "hd": {"mes": 1202.75, "s1": 308.55, "s2": 293.25, "s3": 312.8, "s4": 288.15}, "faltas": {"mes": 11.0, "s1": 8.0, "s2": 3.0, "s3": 0.0, "s4": 0.0}, "ferias": {"mes": 32.0, "s1": 0.0, "s2": 0.0, "s3": 8.0, "s4": 24.0}, "ef_global": {"mes": 95.02, "s1": 42.47, "s2": 50.54, "s3": 47.48, "s4": 100.17}, "ef_prod": {"mes": 92.6, "s1": 39.85, "s2": 48.14, "s3": 46.04, "s4": 114.27}, "utilizacao": {"mes": 101.48, "s1": 106.58, "s2": 104.98, "s3": 103.12, "s4": 87.67}}, "tecnicos": [{"name": "Diogo Fernandes", "weeks": [{"s": 1, "ht": 44.2, "hd": 45.9, "u": 96.3}, {"s": 2, "ht": 42.3, "hd": 38.7, "u": 109.3}, {"s": 3, "ht": 47.5, "hd": 45.9, "u": 103.6}, {"s": 4, "ht": 37.9, "hd": 42.5, "u": 89.2}], "ht_mes": 172.0, "hd_mes": 173.0, "utilizacao_mes": 99.4, "ht_prod": 132.6, "hd_prod": 133.6, "hf_mes": 106.1, "total_faturado": 8926.29, "ef_global": 79.4, "ef_prod": 80.0}, {"name": "Nuno Montês", "weeks": [{"s": 1, "ht": 36.6, "hd": 34.0, "u": 107.5}, {"s": 2, "ht": 32.7, "hd": 31.9, "u": 102.7}, {"s": 3, "ht": 43.8, "hd": 47.6, "u": 92.1}, {"s": 4, "ht": 26.8, "hd": 35.7, "u": 75.1}], "ht_mes": 139.9, "hd_mes": 149.2, "utilizacao_mes": 93.8, "ht_prod": 102.1, "hd_prod": 111.4, "hf_mes": 99.7, "total_faturado": 7234.7, "ef_global": 89.5, "ef_prod": 97.6}, {"name": "Carlos Antunes", "weeks": [{"s": 1, "ht": 41.4, "hd": 38.2, "u": 108.2}, {"s": 2, "ht": 40.1, "hd": 38.7, "u": 103.8}, {"s": 3, "ht": 38.5, "hd": 38.2, "u": 100.7}, {"s": 4, "ht": 37.4, "hd": 45.9, "u": 81.4}], "ht_mes": 157.4, "hd_mes": 161.1, "utilizacao_mes": 97.7, "ht_prod": 141.7, "hd_prod": 145.4, "hf_mes": 139.7, "total_faturado": 9026.84, "ef_global": 96.1, "ef_prod": 98.6}, {"name": "Vitor Soutilha", "weeks": [{"s": 1, "ht": 42.3, "hd": 42.5, "u": 99.5}, {"s": 2, "ht": 41.8, "hd": 38.7, "u": 108.0}, {"s": 3, "ht": 40.7, "hd": 38.2, "u": 106.4}, {"s": 4, "ht": 18.8, "hd": 22.9, "u": 81.7}], "ht_mes": 143.5, "hd_mes": 142.4, "utilizacao_mes": 100.8, "ht_prod": 122.1, "hd_prod": 121.0, "hf_mes": 110.4, "total_faturado": 8884.91, "ef_global": 91.2, "ef_prod": 90.4}, {"name": "Gyanu Pujara", "weeks": [{"s": 1, "ht": 44.1, "hd": 47.6, "u": 92.6}, {"s": 2, "ht": 37.8, "hd": 44.6, "u": 84.8}, {"s": 3, "ht": 41.7, "hd": 46.8, "u": 89.3}, {"s": 4, "ht": 38.2, "hd": 45.9, "u": 83.1}], "ht_mes": 161.8, "hd_mes": 184.9, "utilizacao_mes": 87.5, "ht_prod": 140.0, "hd_prod": 163.1, "hf_mes": 137.3, "total_faturado": 11813.57, "ef_global": 84.2, "ef_prod": 98.0}, {"name": "José Fernandes", "weeks": [{"s": 1, "ht": 47.7, "hd": 38.2, "u": 124.6}, {"s": 2, "ht": 42.0, "hd": 36.1, "u": 116.2}, {"s": 3, "ht": 41.9, "hd": 34.9, "u": 120.4}, {"s": 4, "ht": 37.1, "hd": 34.0, "u": 109.1}], "ht_mes": 168.7, "hd_mes": 143.2, "utilizacao_mes": 117.8, "ht_prod": 109.9, "hd_prod": 84.4, "hf_mes": 103.9, "total_faturado": 4093.31, "ef_global": 123.0, "ef_prod": 94.5}, {"name": "João Bizarro", "weeks": [{"s": 1, "ht": 41.5, "hd": 34.9, "u": 119.0}, {"s": 2, "ht": 37.1, "hd": 31.9, "u": 116.4}, {"s": 3, "ht": 39.4, "hd": 34.0, "u": 115.9}, {"s": 4, "ht": 34.1, "hd": 34.0, "u": 100.4}], "ht_mes": 152.1, "hd_mes": 134.7, "utilizacao_mes": 112.9, "ht_prod": 124.0, "hd_prod": 106.6, "hf_mes": 93.5, "total_faturado": 3082.81, "ef_global": 87.7, "ef_prod": 75.4}, {"name": "Djeison Amado", "weeks": [{"s": 1, "ht": 31.2, "hd": 27.2, "u": 114.7}, {"s": 2, "ht": 34.0, "hd": 32.7, "u": 104.0}, {"s": 3, "ht": 28.9, "hd": 27.2, "u": 106.3}, {"s": 4, "ht": 22.3, "hd": 27.2, "u": 82.2}], "ht_mes": 116.5, "hd_mes": 114.3, "utilizacao_mes": 101.9, "ht_prod": 85.0, "hd_prod": 82.8, "hf_mes": 90.4, "total_faturado": 5561.54, "ef_global": 109.1, "ef_prod": 106.3}]}, {"unit": {"ht": {"mes": 878.97, "s1": 243.05, "s2": 222.25, "s3": 156.73, "s4": 256.94}, "hv": {"mes": 748.04, "s1": 141.48, "s2": 239.9, "s3": 86.45, "s4": 280.21}, "hd": {"mes": 1150.9, "s1": 302.6, "s2": 269.45, "s3": 249.9, "s4": 328.95}, "faltas": {"mes": 8.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 8.0}, "ferias": {"mes": 136.0, "s1": 56.0, "s2": 56.0, "s3": 16.0, "s4": 8.0}, "ef_global": {"mes": 95.45, "s1": 46.75, "s2": 89.03, "s3": 34.59, "s4": 85.18}, "ef_prod": {"mes": 116.86, "s1": 58.21, "s2": 107.94, "s3": 55.16, "s4": 109.06}, "utilizacao": {"mes": 86.01, "s1": 79.07, "s2": 81.27, "s3": 69.33, "s4": 90.11}}, "tecnicos": [{"name": "Diogo Fernandes", "weeks": [{"s": 1, "ht": 35.7, "hd": 39.9, "u": 89.3}, {"s": 2, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 3, "ht": 8.1, "hd": 27.2, "u": 29.9}, {"s": 4, "ht": 24.2, "hd": 41.6, "u": 58.1}], "ht_mes": 68.0, "hd_mes": 108.8, "utilizacao_mes": 62.5, "ht_prod": 36.8, "hd_prod": 77.6, "hf_mes": 52.0, "total_faturado": 4028.17, "ef_global": 67.0, "ef_prod": 141.2}, {"name": "Nuno Montês", "weeks": [{"s": 1, "ht": 33.3, "hd": 39.9, "u": 83.3}, {"s": 2, "ht": 28.3, "hd": 37.4, "u": 75.7}, {"s": 3, "ht": 0.8, "hd": 13.6, "u": 5.6}, {"s": 4, "ht": 37.9, "hd": 45.0, "u": 84.1}], "ht_mes": 100.3, "hd_mes": 136.0, "utilizacao_mes": 73.7, "ht_prod": 64.8, "hd_prod": 100.5, "hf_mes": 85.4, "total_faturado": 9078.15, "ef_global": 85.0, "ef_prod": 131.9}, {"name": "Carlos Antunes", "weeks": [{"s": 1, "ht": 27.7, "hd": 39.1, "u": 71.0}, {"s": 2, "ht": 15.2, "hd": 37.4, "u": 40.7}, {"s": 3, "ht": 13.3, "hd": 30.6, "u": 43.6}, {"s": 4, "ht": 25.1, "hd": 39.9, "u": 62.7}], "ht_mes": 81.4, "hd_mes": 147.0, "utilizacao_mes": 55.3, "ht_prod": 70.6, "hd_prod": 136.3, "hf_mes": 95.9, "total_faturado": 12778.19, "ef_global": 70.4, "ef_prod": 135.9}, {"name": "Vitor Soutilha", "weeks": [{"s": 1, "ht": 40.4, "hd": 40.8, "u": 98.9}, {"s": 2, "ht": 30.2, "hd": 39.9, "u": 75.7}, {"s": 3, "ht": 29.7, "hd": 30.6, "u": 96.9}, {"s": 4, "ht": 32.4, "hd": 32.3, "u": 100.5}], "ht_mes": 132.7, "hd_mes": 143.6, "utilizacao_mes": 92.4, "ht_prod": 117.9, "hd_prod": 128.9, "hf_mes": 116.7, "total_faturado": 10952.23, "ef_global": 90.6, "ef_prod": 99.0}, {"name": "Gyanu Pujara", "weeks": [{"s": 1, "ht": 32.5, "hd": 40.8, "u": 79.7}, {"s": 2, "ht": 38.3, "hd": 32.3, "u": 118.5}, {"s": 3, "ht": 29.7, "hd": 31.4, "u": 94.6}, {"s": 4, "ht": 33.1, "hd": 39.9, "u": 82.9}], "ht_mes": 133.7, "hd_mes": 144.5, "utilizacao_mes": 92.5, "ht_prod": 124.0, "hd_prod": 134.9, "hf_mes": 121.1, "total_faturado": 10730.51, "ef_global": 89.8, "ef_prod": 97.7}, {"name": "José Fernandes", "weeks": [{"s": 1, "ht": 37.2, "hd": 34.0, "u": 109.3}, {"s": 2, "ht": 37.3, "hd": 34.0, "u": 109.6}, {"s": 3, "ht": 21.4, "hd": 34.9, "u": 61.3}, {"s": 4, "ht": 42.6, "hd": 34.9, "u": 122.1}], "ht_mes": 138.4, "hd_mes": 137.7, "utilizacao_mes": 100.5, "ht_prod": 84.9, "hd_prod": 84.2, "hf_mes": 112.5, "total_faturado": 6824.43, "ef_global": 133.7, "ef_prod": 132.6}, {"name": "João Bizarro", "weeks": [{"s": 1, "ht": 36.3, "hd": 34.0, "u": 106.8}, {"s": 2, "ht": 36.2, "hd": 34.0, "u": 106.4}, {"s": 3, "ht": 29.1, "hd": 27.2, "u": 106.9}, {"s": 4, "ht": 39.1, "hd": 34.0, "u": 115.0}], "ht_mes": 140.6, "hd_mes": 129.2, "utilizacao_mes": 108.8, "ht_prod": 118.0, "hd_prod": 106.6, "hf_mes": 86.1, "total_faturado": 5114.12, "ef_global": 80.8, "ef_prod": 72.9}, {"name": "Djeison Amado", "weeks": [{"s": 1, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 2, "ht": 36.8, "hd": 27.2, "u": 135.2}, {"s": 3, "ht": 24.6, "hd": 27.2, "u": 90.6}, {"s": 4, "ht": 22.5, "hd": 27.2, "u": 82.8}], "ht_mes": 83.9, "hd_mes": 81.6, "utilizacao_mes": 102.9, "ht_prod": 62.8, "hd_prod": 60.4, "hf_mes": 88.4, "total_faturado": 4323.62, "ef_global": 146.4, "ef_prod": 140.9}, {"name": "Diamantino Silva", "weeks": [{"s": 1, "ht": 24.9, "hd": 34.0, "u": 73.3}, {"s": 2, "ht": 18.9, "hd": 27.2, "u": 69.6}, {"s": 3, "ht": 25.7, "hd": 27.2, "u": 94.6}, {"s": 4, "ht": 34.9, "hd": 34.0, "u": 102.7}], "ht_mes": 104.5, "hd_mes": 122.4, "utilizacao_mes": 85.4, "ht_prod": 88.8, "hd_prod": 106.7, "hf_mes": 88.4, "total_faturado": 3597.97, "ef_global": 82.9, "ef_prod": 99.6}]}, {"unit": {"ht": {"mes": 1126.68, "s1": 248.17, "s2": 238.18, "s3": 246.01, "s4": 296.44, "s5": 97.88}, "hv": {"mes": 769.69, "s1": 91.49, "s2": 126.22, "s3": 273.43, "s4": 154.45, "s5": 124.1}, "hd": {"mes": 1248.65, "s1": 307.7, "s2": 269.45, "s3": 267.75, "s4": 311.95, "s5": 91.8}, "faltas": {"mes": 160.0, "s1": 24.0, "s2": 56.0, "s3": 64.0, "s4": 16.0, "s5": 0.0}, "ferias": {"mes": 24.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "s4": 0.0, "s5": 24.0}, "ef_global": {"mes": 85.69, "s1": 29.73, "s2": 46.84, "s3": 102.12, "s4": 49.51, "s5": 135.19}, "ef_prod": {"mes": 95.33, "s1": 36.87, "s2": 52.99, "s3": 111.15, "s4": 52.1, "s5": 126.79}, "utilizacao": {"mes": 89.76, "s1": 80.74, "s2": 78.33, "s3": 81.93, "s4": 95.01, "s5": 83.09}}, "tecnicos": [{"name": "Diogo Fernandes", "weeks": [{"s": 1, "ht": 7.5, "hd": 39.1, "u": 19.1}, {"s": 2, "ht": 26.1, "hd": 34.0, "u": 76.9}, {"s": 3, "ht": 28.9, "hd": 34.0, "u": 85.0}, {"s": 4, "ht": 36.8, "hd": 38.2, "u": 96.2}, {"s": 5, "ht": 0.0, "hd": 0.0, "u": 0.0}], "ht_mes": 99.3, "hd_mes": 145.3, "utilizacao_mes": 68.3, "ht_prod": 77.3, "hd_prod": 123.3, "hf_mes": 76.0, "total_faturado": 6435.58, "ef_global": 61.7, "ef_prod": 98.3}, {"name": "Nuno Montês", "weeks": [{"s": 1, "ht": 26.1, "hd": 39.1, "u": 66.6}, {"s": 2, "ht": 27.2, "hd": 34.0, "u": 79.9}, {"s": 3, "ht": 26.1, "hd": 34.0, "u": 76.9}, {"s": 4, "ht": 37.3, "hd": 40.8, "u": 91.5}, {"s": 5, "ht": 11.2, "hd": 13.6, "u": 82.5}], "ht_mes": 127.9, "hd_mes": 161.5, "utilizacao_mes": 79.2, "ht_prod": 93.2, "hd_prod": 126.8, "hf_mes": 111.8, "total_faturado": 15129.08, "ef_global": 88.2, "ef_prod": 120.0}, {"name": "Carlos Antunes", "weeks": [{"s": 1, "ht": 10.8, "hd": 18.7, "u": 58.0}, {"s": 2, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 3, "ht": 0.0, "hd": 0.0, "u": 0.0}, {"s": 4, "ht": 26.7, "hd": 30.6, "u": 87.1}, {"s": 5, "ht": 12.3, "hd": 13.6, "u": 90.2}], "ht_mes": 49.8, "hd_mes": 62.9, "utilizacao_mes": 79.1, "ht_prod": 38.7, "hd_prod": 51.8, "hf_mes": 34.0, "total_faturado": 8120.82, "ef_global": 65.6, "ef_prod": 87.9}, {"name": "Vitor Soutilha", "weeks": [{"s": 1, "ht": 36.5, "hd": 38.2, "u": 95.5}, {"s": 2, "ht": 37.8, "hd": 39.9, "u": 94.6}, {"s": 3, "ht": 37.9, "hd": 39.1, "u": 96.9}, {"s": 4, "ht": 35.5, "hd": 39.1, "u": 90.7}, {"s": 5, "ht": 17.7, "hd": 16.1, "u": 109.6}], "ht_mes": 165.4, "hd_mes": 172.5, "utilizacao_mes": 95.9, "ht_prod": 154.7, "hd_prod": 161.9, "hf_mes": 134.0, "total_faturado": 15729.57, "ef_global": 82.7, "ef_prod": 86.6}, {"name": "Gyanu Pujara", "weeks": [{"s": 1, "ht": 33.3, "hd": 39.1, "u": 85.2}, {"s": 2, "ht": 9.9, "hd": 32.3, "u": 30.6}, {"s": 3, "ht": 33.3, "hd": 45.0, "u": 74.0}, {"s": 4, "ht": 25.0, "hd": 31.4, "u": 79.6}, {"s": 5, "ht": 17.0, "hd": 14.4, "u": 117.7}], "ht_mes": 118.5, "hd_mes": 162.3, "utilizacao_mes": 73.0, "ht_prod": 106.4, "hd_prod": 150.3, "hf_mes": 85.0, "total_faturado": 9657.32, "ef_global": 56.6, "ef_prod": 79.8}, {"name": "José Fernandes", "weeks": [{"s": 1, "ht": 30.8, "hd": 34.9, "u": 88.3}, {"s": 2, "ht": 39.0, "hd": 34.0, "u": 114.6}, {"s": 3, "ht": 39.3, "hd": 34.0, "u": 115.5}, {"s": 4, "ht": 39.5, "hd": 36.5, "u": 108.0}, {"s": 5, "ht": 16.2, "hd": 13.6, "u": 119.4}], "ht_mes": 164.7, "hd_mes": 153.0, "utilizacao_mes": 107.7, "ht_prod": 98.4, "hd_prod": 86.7, "hf_mes": 125.0, "total_faturado": 10810.05, "ef_global": 144.2, "ef_prod": 127.0}, {"name": "João Bizarro", "weeks": [{"s": 1, "ht": 39.0, "hd": 34.0, "u": 114.7}, {"s": 2, "ht": 38.1, "hd": 34.0, "u": 111.9}, {"s": 3, "ht": 36.7, "hd": 34.0, "u": 108.0}, {"s": 4, "ht": 37.5, "hd": 34.0, "u": 110.2}, {"s": 5, "ht": 15.8, "hd": 13.6, "u": 116.3}], "ht_mes": 151.2, "hd_mes": 136.0, "utilizacao_mes": 111.2, "ht_prod": 139.3, "hd_prod": 124.1, "hf_mes": 107.1, "total_faturado": 5395.64, "ef_global": 86.3, "ef_prod": 76.9}, {"name": "Djeison Amado", "weeks": [{"s": 1, "ht": 32.0, "hd": 30.6, "u": 104.6}, {"s": 2, "ht": 33.7, "hd": 34.0, "u": 99.3}, {"s": 3, "ht": 27.2, "hd": 27.2, "u": 100.2}, {"s": 4, "ht": 30.2, "hd": 34.0, "u": 88.9}, {"s": 5, "ht": 7.6, "hd": 6.8, "u": 112.1}], "ht_mes": 130.9, "hd_mes": 132.6, "utilizacao_mes": 98.7, "ht_prod": 118.4, "hd_prod": 120.1, "hf_mes": 120.3, "total_faturado": 6507.45, "ef_global": 100.2, "ef_prod": 101.6}, {"name": "Diamantino Silva", "weeks": [{"s": 1, "ht": 32.2, "hd": 34.0, "u": 94.6}, {"s": 2, "ht": 26.5, "hd": 27.2, "u": 97.3}, {"s": 3, "ht": 16.5, "hd": 20.4, "u": 81.0}, {"s": 4, "ht": 28.0, "hd": 27.2, "u": 102.8}, {"s": 5, "ht": 0.0, "hd": 0.0, "u": 0.0}], "ht_mes": 103.1, "hd_mes": 108.8, "utilizacao_mes": 94.8, "ht_prod": 102.0, "hd_prod": 107.7, "hf_mes": 81.4, "total_faturado": 5556.58, "ef_global": 75.5, "ef_prod": 79.8}]}, null, null, null, null, null, null, null, null, null]}};
+
+  // ══════ DADOS REAIS MARGEM MENSAL 2025 ══════
+  // [Vendas s/IVA, Vendas MO, Vendas Peças, Custos Fixos, Custos Variáveis, Margem €, Margem %]
+  var MARGEM_DATA = {
+    2025: {
+      mecanica_cacem: [
+        [79036.11, 22834.49, 49985.37, 29424.89, 40481.19, 9130.03, 11.55],
+        [78594.45, 22251.47, 54812.93, 25268.88, 42730.70, 10594.87, 13.48],
+        [77517.61, 23842.22, 51108.85, 24442.62, 45245.63, 7829.36, 10.10],
+        [61354.29, 18668.76, 40294.10, 24562.33, 28246.62, 8545.34, 13.93],
+        [89574.43, 25552.32, 57828.07, 35624.12, 45108.20, 8842.11, 9.87],
+        [62532.14, 19502.06, 41446.41, 24675.16, 24665.14, 13191.84, 21.10],
+        [105498.15, 28878.29, 67186.21, 26016.22, 46860.82, 32621.11, 30.92],
+        [78639.81, 26262.75, 47384.03, 25676.04, 30878.68, 22085.09, 28.08],
+        [75024.39, 23290.76, 50595.29, 27001.91, 44446.91, 3575.57, 4.77],
+        [101584.01, 30230.91, 64002.41, 28891.10, 33716.25, 38976.66, 38.37],
+        [83993.55, 25907.82, 51812.05, 28867.83, 35853.61, 19272.11, 22.94],
+        [67966.71, 20779.07, 44297.33, 30769.53, 32231.39, 4965.62, 7.31]
+      ],
+      colisao: [
+        [48030.75, 12964.71, 31224.94, 47519.95, 38743.70, -38232.90, -79.60],
+        [96513.16, 26114.32, 55111.33, 50496.18, 38553.67, 7463.31, 7.73],
+        [75285.99, 37350.90, 50499.99, 45067.97, 32347.96, -2129.94, -2.83],
+        [73094.68, 25902.19, 51107.34, 47543.73, 34534.90, -8983.95, -12.29],
+        [77744.23, 38973.82, 45465.52, 60488.06, 46743.78, -29487.61, -37.93],
+        [74912.80, 42349.50, 42843.55, 51062.04, 42565.30, -18714.54, -24.98],
+        [115275.86, 74925.60, 52166.49, 53840.90, 53556.45, 7878.51, 6.83],
+        [88996.38, 47877.87, 48988.89, 51933.24, 46830.54, -9767.40, -10.98],
+        [71188.92, 43226.35, 33973.38, 51793.59, 29546.18, -10150.85, -14.26],
+        [88168.56, 50057.00, 39418.70, 53685.38, 33636.16, 847.02, 0.96],
+        [83561.28, 47818.57, 43195.87, 50705.45, 41226.82, -8370.99, -10.02],
+        [58981.63, 34523.13, 22813.40, 51546.04, 26930.63, -19495.04, -33.05]
+      ],
+      mecanica_lisboa: [
+        [66088.46, 18641.19, 47887.88, 29229.06, 29261.41, 7597.99, 11.50],
+        [72142.28, 22708.94, 53174.81, 29018.76, 33492.37, 9631.15, 13.35],
+        [62080.58, 18301.31, 45603.04, 28015.88, 31803.76, 2260.94, 3.64],
+        [65614.02, 17540.86, 45663.18, 30555.07, 27993.59, 7065.36, 10.77],
+        [93795.09, 27204.14, 73091.75, 38007.97, 42708.85, 13078.27, 13.94],
+        [56230.96, 18081.87, 44055.50, 27680.00, 28197.42, 353.54, 0.63],
+        [101717.42, 29446.61, 71826.51, 26122.61, 48136.02, 27458.79, 27.00],
+        [88259.17, 28513.65, 65179.33, 24955.28, 36927.97, 26375.92, 29.88],
+        [91072.38, 29282.05, 72252.80, 28936.07, 41780.82, 20355.49, 22.35],
+        [106135.46, 32048.39, 88956.70, 31524.58, 53925.23, 20685.65, 19.49],
+        [88891.62, 30022.93, 68093.01, 31553.05, 34908.37, 22430.20, 25.23],
+        [72075.80, 21379.08, 57443.03, 30340.70, 30925.99, 13198.42, 18.31]
+      ],
+      domuscar: [
+        [196637.82, 54440.39, 129098.19, 106173.90, 108486.30, -18022.38, -9.17],
+        [264357.36, 71074.73, 163099.06, 104783.82, 114776.74, 44796.80, 16.95],
+        [219123.92, 79494.43, 147211.88, 97526.47, 109397.35, 12200.10, 5.57],
+        [202482.99, 62111.81, 137064.62, 102661.13, 90775.11, 9046.75, 4.47],
+        [263041.25, 91730.28, 176385.34, 134120.15, 134560.83, -5639.73, -2.14],
+        [196120.90, 79933.43, 128345.46, 103417.20, 95427.86, -2724.16, -1.39],
+        [324551.43, 133250.50, 191179.21, 105979.73, 148553.29, 70018.41, 21.57],
+        [258414.37, 102654.27, 161552.25, 102564.56, 114637.19, 41212.62, 15.95],
+        [240855.69, 95799.16, 156821.47, 107731.57, 115773.91, 17350.21, 7.20],
+        [299333.03, 112336.30, 192377.81, 114101.06, 121277.64, 63954.33, 21.37],
+        [259422.95, 103749.32, 163100.93, 111126.33, 111988.80, 36307.82, 14.00],
+        [201464.65, 76681.28, 124553.76, 112656.44, 87698.70, 1109.51, 0.55]
+      ]
+    },
+    2026: {
+      mecanica_cacem: [
+        [101712.88, 31294.81, 61885.40, 33217.88, 44494.83, 24000.17, 23.60],
+        [78585.39, 23995.28, 49771.91, 34944.46, 39849.50, 3791.43, 4.82],
+        [104622.42, 31605.70, 69111.02, 34932.13, 42030.28, 27660.01, 26.44],
+        [99773.62, 30725.60, 68474.40, 32184.64, 45776.21, 21812.77, 21.86],
+        null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        [85435.00, 43757.16, 29047.89, 53366.61, 39861.96, -7793.57, -9.12],
+        [75980.81, 50806.91, 30744.59, 56656.67, 36645.49, -17321.35, -22.80],
+        [110043.64, 58320.10, 52921.94, 53926.46, 39032.94, 17084.24, 15.52],
+        [87662.01, 51066.59, 33159.18, 51850.81, 37737.31, -1926.11, -2.20],
+        null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        [83283.10, 26924.70, 61791.32, 30908.06, 30767.78, 21607.26, 25.94],
+        [82710.86, 26967.77, 64051.11, 33337.17, 25618.28, 23755.41, 28.72],
+        [79169.76, 29763.34, 58296.11, 30979.85, 27683.34, 20506.57, 25.90],
+        [104212.24, 33919.92, 72645.30, 31998.03, 35423.10, 36791.11, 35.30],
+        null, null, null, null, null, null, null, null
+      ],
+      domuscar: [
+        [270430.98, 101976.67, 152724.61, 117492.55, 115124.57, 37813.86, 13.98],
+        [237277.05, 101769.96, 144567.61, 124938.30, 102113.27, 10225.48, 4.31],
+        [293835.82, 119689.14, 180329.07, 119838.44, 108746.56, 65250.82, 22.21],
+        [293970.37, 115712.11, 174278.88, 116033.48, 118936.62, 59000.27, 20.07],
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  // ══════ DADOS DETALHADOS MARGEM MENSAL 2026 ══════
+  // Estrutura completa das rubricas de vendas e custos por unidade e mês.
+  // Índices 0-11: Vendas | 12-14: Custos Fixos | 15-21: Custos Variáveis
+  var MARGEM_DETAIL_ROWS = [
+    { label: 'Rappel LeasePlan — Peças',        group: 'vendas', idx: 0,  signHint: 'neg' },
+    { label: 'Rappel LeasePlan — Horas',        group: 'vendas', idx: 1,  signHint: 'neg' },
+    { label: 'Vendas de Mão de Obra',           group: 'vendas', idx: 2 },
+    { label: 'Vendas de Peças',                 group: 'vendas', idx: 3 },
+    { label: 'Vendas de Serviços',              group: 'vendas', idx: 4 },
+    { label: 'Serviço de Mobilidade',           group: 'vendas', idx: 5 },
+    { label: 'Fatura Interna — Peças e Serviços', group: 'vendas', idx: 6 },
+    { label: 'Fatura Interna — Horas',          group: 'vendas', idx: 7 },
+    { label: 'Aguarda NE — Peças e Serviços',   group: 'vendas', idx: 8 },
+    { label: 'Aguarda NE — Horas',              group: 'vendas', idx: 9 },
+    { label: 'Outras Vendas — Peças e Serviços',group: 'vendas', idx: 10 },
+    { label: 'Outras Vendas — Horas',           group: 'vendas', idx: 11 },
+    { label: 'Custos Pessoal',                  group: 'cf',     idx: 12 },
+    { label: 'Renda e Infraestruturas',         group: 'cf',     idx: 13 },
+    { label: 'Custos Fixos Variados',           group: 'cf',     idx: 14 },
+    { label: 'Custos imputados diretamente ao veículo', group: 'cv', idx: 15 },
+    { label: 'Rappel de Fornecedores',          group: 'cv',     idx: 16, signHint: 'neg' },
+    { label: 'Custos não imputados ao veículo', group: 'cv',     idx: 17 },
+    { label: 'CFI (Fatura Custos Internos)',    group: 'cv',     idx: 18 },
+    { label: 'Prémios de Produtividade',        group: 'cv',     idx: 19 },
+    { label: 'Horas Extra de Pessoal',          group: 'cv',     idx: 20 },
+    { label: 'Outros Custos Variáveis',         group: 'cv',     idx: 21 }
+  ];
+
+  var MARGEM_DETAIL = {
+    2026: {
+      mecanica_cacem: [
+        // Janeiro
+        [-1983.08, -712.83, 31294.81, 61885.40, 9883.93, 780.49, 0, 0, 0, 0, 308.86, 255.30,
+         25521.53, 1741.14, 5955.21,
+         40153.71, 0, 2453.14, 607.37, 0, 660.00, 620.61],
+        // Fevereiro
+        [-593.89, -220.79, 23995.28, 49771.91, 3725.37, 48.78, 427.55, 342.16, 0, 0, 202.56, 886.45,
+         27071.74, 1906.06, 5966.66,
+         35847.18, -627.87, 1941.68, 109.20, 1657.65, 470.00, 451.66],
+        // Março
+        [-1471.14, -868.17, 31605.70, 69111.02, 4389.80, 650.41, 0, 0, 0, 0, 320.63, 884.17,
+         27213.13, 1891.73, 5827.27,
+         39390.24, -1030.25, 2354.09, 0, 0, 560.00, 756.20],
+        // Abril
+        [-2994.44, -1190.34, 30725.60, 68474.40, 3638.11, 955.29, 0, 0, 0, 0, 165.00, 0,
+         23705.07, 2437.67, 6041.90,
+         38189.68, -1030.25, 5601.81, 0, 1708.16, 680.00, 626.81],
+        null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        // Janeiro
+        [-4296.23, -4344.45, 43757.16, 29047.89, 1293.36, 0, 73.09, 873.04, 0, 0, 4732.41, 14298.73,
+         36355.59, 9236.54, 7774.48,
+         34862.78, 0, 2534.61, 0, 0, 2410.00, 54.57],
+        // Fevereiro
+        [-5227.23, -4790.15, 50806.91, 30744.59, 2487.13, 75.00, 232.58, 1505.28, -16.94, -5075.09, 1217.31, 4021.42,
+         38595.83, 9617.44, 8443.40,
+         31466.81, -241.53, 2149.83, 1628.66, 0, 1570.00, 71.72],
+        // Março
+        [-8690.89, -6621.84, 58320.10, 52921.94, 4578.68, 73.17, 0, 0, 1638.66, 1128.82, 1740.43, 4954.57,
+         37325.75, 8282.52, 8318.19,
+         30893.17, -286.20, 6980.45, 0, 0, 1270.00, 175.52],
+        // Abril
+        [-4959.08, -6253.01, 51066.59, 33159.18, 1717.47, 0, 0, 0, 3707.60, 3064.98, 1972.29, 4185.99,
+         34794.42, 8619.45, 8436.94,
+         28464.46, -286.20, 5581.01, 0, 0, 1000.00, 2978.04],
+        null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        // Janeiro
+        [-8192.33, -3014.68, 26924.70, 61791.32, 3438.89, 0, 0, 0, 0, 0, 1381.88, 953.32,
+         21482.44, 4366.43, 5059.19,
+         27574.75, 0, 2565.42, 338.76, 0, 0, 288.85],
+        // Fevereiro
+        [-9120.20, -3355.92, 26967.77, 64051.11, 2958.10, 0, 0, 0, 0, 0, 768.40, 441.60,
+         23581.75, 4468.13, 5287.29,
+         23087.85, -753.57, 1316.19, 0, 1885.63, 0, 82.18],
+        // Março
+        [-8886.47, -4313.41, 29763.34, 58296.11, 2430.19, 360.00, 0, 0, 0, 0, 682.40, 837.60,
+         21532.65, 4290.36, 5156.84,
+         24697.35, -1224.16, 1558.23, 0, 2348.15, 0, 303.77],
+        // Abril
+        [-8209.05, -2995.68, 33919.92, 72645.30, 7396.75, 0, 0, 0, 0, 0, 895.80, 559.20,
+         22167.13, 4419.24, 5411.66,
+         30626.49, -1224.16, 3431.91, 0, 2000.00, 0, 588.86],
+        null, null, null, null, null, null, null, null
+      ],
+      domuscar: [
+        // Janeiro (soma das 3 unidades)
+        [-14471.64, -8071.96, 101976.67, 152724.61, 14616.18, 780.49, 73.09, 873.04, 0, 0, 6423.15, 15507.35,
+         83359.56, 15344.11, 18788.88,
+         102591.24, 0, 7553.17, 946.13, 0, 3070.00, 964.03],
+        // Fevereiro (soma das 3 unidades)
+        [-14941.32, -8366.86, 101769.96, 144567.61, 9170.60, 123.78, 660.13, 1847.44, -16.94, -5075.09, 2188.27, 5349.47,
+         89249.32, 15991.63, 19697.35,
+         90401.84, -1622.97, 5407.70, 1737.86, 3543.28, 2040.00, 605.56],
+        // Março (soma das 3 unidades)
+        [-19048.50, -11803.42, 119689.14, 180329.07, 11398.67, 1083.58, 0, 0, 1638.66, 1128.82, 2743.46, 6676.34,
+         86071.53, 14464.61, 19302.30,
+         94980.76, -2540.61, 10892.77, 0, 2348.15, 1830.00, 1235.49],
+        // Abril (totais do PDF)
+        [-16162.57, -10439.03, 115712.11, 174278.88, 12752.33, 955.29, 0, 0, 3707.60, 3064.98, 3033.09, 6217.69,
+         80666.62, 15476.36, 19890.50,
+         97280.63, -2540.61, 14614.73, 0, 3708.16, 1680.00, 4193.71],
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  // ══════ DADOS TICKET MÉDIO ══════
+  // 2025: Geral anual por unidade { osv, vendas, mo, pecas, ticketTotal, ticketMO, ticketPecas }
+  // 2026: Mensal por unidade [OSV, Ticket Peças €, Ticket MO €, Ticket Total €, HorasP/OSV, H.Disponíveis, H.Vendidas, €/H.Vendida]
+  var TICKET_DATA = {
+    2025: {
+      mecanica_cacem:  { osv: 2195, vendas: 961315.65, mo: 288000.92, pecas: 620753.05, ticketTotal: 437.96, ticketMO: 131.21, ticketPecas: 282.80 },
+      mecanica_lisboa: { osv: 2446, vendas: 964103.24, mo: 293171.02, pecas: 733227.54, ticketTotal: 394.16, ticketMO: 119.86, ticketPecas: 299.77 },
+      colisao:         { osv: 1395, vendas: 951754.24, mo: 482083.96, pecas: 516809.40, ticketTotal: 682.26, ticketMO: 345.58, ticketPecas: 370.47 },
+      domuscar:        { osv: 6036, vendas: 2877173.13, mo: 1063255.90, pecas: 1870789.99, ticketTotal: 476.67, ticketMO: 176.15, ticketPecas: 309.94 }
+    },
+    2026: {
+      mecanica_cacem: [
+        [204, 304.87, 154.66, 498.59, 3.51, 610.30, 716.63, 43.03],
+        [187, 268.45, 134.89, 420.24, 2.99, 556.75, 559.91, 44.70],
+        [227, 304.45, 143.13, 460.89, 3.34, 589.90, 757.06, 41.77],
+        [200, 342.37, 153.63, 498.87, 3.47, 484.50, 693.82, 42.57],
+        null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        [132, 256.47, 446.43, 647.23, 6.85, 1202.75, 904.47, 60.35],
+        [95, 325.90, 592.99, 799.80, 11.43, 1388.05, 1085.52, 42.81],
+        [123, 443.58, 514.43, 894.66, 9.83, 1513.00, 1209.16, 47.79],
+        [113, 326.25, 488.96, 775.77, 10.27, 1198.50, 1160.87, 44.85],
+        null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        [217, 291.12, 128.47, 383.79, 2.59, 344.68, 561.58, 44.27],
+        [226, 283.41, 121.28, 365.98, 2.48, 361.42, 561.24, 42.86],
+        [231, 252.36, 132.47, 342.73, 2.65, 322.15, 611.89, 42.96],
+        [235, 309.13, 146.72, 443.46, 3.04, 370.60, 713.79, 44.11],
+        null, null, null, null, null, null, null, null
+      ],
+      domuscar: [
+        [553, 276.17, 184.41, 496.96, 3.95, 2157.73, 2182.68, 54.23],
+        [508, 284.58, 200.33, 484.96, 4.34, 2306.22, 2206.13, 51.62],
+        [581, 310.38, 206.01, 510.99, 4.44, 2425.05, 2578.11, 49.85],
+        [548, 318.03, 211.15, 536.44, 4.69, 2053.60, 2568.48, 47.47],
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+
+  var TICKET_MENSAL_COLS = ['Nº OSV', 'Ticket Peças (€)', 'Ticket MO (€)', 'Ticket Total (€)', 'Horas/OSV', 'H. Disponíveis', 'H. Vendidas', '€/H. Vendida'];
+
+  // ══════ DADOS TICKET MÉDIO POR TIPO DE CLIENTE ══════
+  // Fonte: Officegest (séries 261/262/263) reconciliado com Margem Mensal detalhada
+  // Classificação:
+  //   LP+FC: nome contém "Lease Plan" ou "Fleet Cover" (NIFs LP) — com rappel contratual 25% já deduzido em Cacém/Lisboa
+  //   Empresa: NIF 1º dígito 5-9, + rubricas "Fat Interna" e "Aguarda NE" (horas+peças+serviços)
+  //   Particular: NIF 1-4 ou 999999990, + rubrica "Outras Vendas" (horas+peças+serviços)
+  //     Particular nº docs = docs OG + nº OS de Outras Vendas (Cacém 3/2/7, Lisboa 8/4/6, Colisão 8/12/18)
+  //   Resíduos (diferença entre soma das 3 categorias e Margem total) são divididos 50/50 Empresa/Particular
+  // Cada mês: { lp:{e,n,t}, em:{e,n,t}, pa:{e,n,t} }  (t = ticket = e/n)
+  var TICKET_CLIENT_DATA = {
+    2026: {
+      mecanica_cacem: [
+        { lp:{e:7228.89,n:14,t:516.35}, em:{e:51595.05,n:118,t:437.25}, pa:{e:42888.94,n:84,t:510.58} },
+        { lp:{e:2341.82,n:7,t:334.55}, em:{e:48298.64,n:108,t:447.21}, pa:{e:27944.92,n:89,t:313.99} },
+        { lp:{e:6948.45,n:18,t:386.02}, em:{e:60861.44,n:123,t:494.81}, pa:{e:36812.54,n:86,t:428.05} },
+        { lp:{e:12396.19,n:24,t:516.51}, em:{e:54463.23,n:106,t:513.80}, pa:{e:32914.20,n:83,t:396.56} },
+        null, null, null, null, null, null, null, null
+      ],
+      mecanica_lisboa: [
+        { lp:{e:33122.96,n:109,t:303.88}, em:{e:13130.96,n:37,t:354.89}, pa:{e:37029.19,n:92,t:402.49} },
+        { lp:{e:37057.85,n:106,t:349.60}, em:{e:15122.86,n:49,t:308.63}, pa:{e:30530.15,n:80,t:381.63} },
+        { lp:{e:39207.62,n:121,t:324.03}, em:{e:16708.36,n:38,t:439.69}, pa:{e:23253.78,n:66,t:352.33} },
+        { lp:{e:33281.39,n:115,t:289.40}, em:{e:19863.84,n:48,t:413.83}, pa:{e:51067.01,n:96,t:531.95} },
+        null, null, null, null, null, null, null, null
+      ],
+      colisao: [
+        { lp:{e:30859.59,n:40,t:771.49}, em:{e:34824.86,n:76,t:458.22}, pa:{e:19750.55,n:15,t:1316.70} },
+        { lp:{e:25758.98,n:33,t:780.58}, em:{e:41900.40,n:89,t:470.79}, pa:{e:8321.44,n:20,t:416.07} },
+        { lp:{e:39375.57,n:42,t:937.51}, em:{e:62974.20,n:87,t:723.84}, pa:{e:7693.87,n:22,t:349.72} },
+        { lp:{e:28831.08,n:40,t:720.78}, em:{e:45597.21,n:61,t:747.50}, pa:{e:13233.72,n:33,t:401.02} },
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  };
+  // DomusCar (empresa) = soma das 3 unidades
+  (function() {
+    var agg = [];
+    for (var m=0; m<12; m++) {
+      var anyNull = false;
+      var acc = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
+      ['mecanica_cacem','mecanica_lisboa','colisao'].forEach(function(u) {
+        var d = TICKET_CLIENT_DATA[2026][u][m];
+        if (!d) { anyNull = true; return; }
+        acc.lp.e += d.lp.e; acc.lp.n += d.lp.n;
+        acc.em.e += d.em.e; acc.em.n += d.em.n;
+        acc.pa.e += d.pa.e; acc.pa.n += d.pa.n;
+      });
+      if (anyNull) { agg.push(null); continue; }
+      acc.lp.t = acc.lp.n ? acc.lp.e/acc.lp.n : 0;
+      acc.em.t = acc.em.n ? acc.em.e/acc.em.n : 0;
+      acc.pa.t = acc.pa.n ? acc.pa.e/acc.pa.n : 0;
+      agg.push(acc);
+    }
+    TICKET_CLIENT_DATA[2026].domuscar = agg;
+  })();
+
+  var YEARS = [2025, 2026];
+
+  var UNITS = [
+    { id: 'mecanica_lisboa', name: 'Mecânica Lisboa', iconClass: 'lisboa' },
+    { id: 'mecanica_cacem', name: 'Mecânica Cacém', iconClass: 'cacem' },
+    { id: 'colisao', name: 'Colisão', iconClass: 'colisao' },
+    { id: 'domuscar', name: 'DomusCar (Empresa)', iconClass: 'domuscar', margemOnly: true }
+  ];
+
+  var state = { category: null, year: null, unit: null, subview: null, tecMonth: null };
+  var currentChart = null;
+
+  function navigate(category, year, subviewOrUnit, unit) {
+    state.category = category || null;
+    state.year = year || null;
+    // For ticket category, 3rd param can be 'geral' or 'mensal' (subview)
+    if (category === 'ticket' && (subviewOrUnit === 'geral' || subviewOrUnit === 'mensal')) {
+      state.subview = subviewOrUnit;
+      state.unit = unit || null;
+    } else {
+      state.subview = null;
+      state.unit = subviewOrUnit || null;
+    }
+    // Reset tecMonth when changing unit/year/category — will be auto-set to last available
+    state.tecMonth = null;
+    renderBreadcrumb();
+    render();
+  }
+
+  function renderBreadcrumb() {
+    var bc = document.getElementById('breadcrumb');
+    var parts = ['<a onclick="navigate()">Indicadores</a>'];
+    if (state.category) {
+      var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+      var ext = !cat ? EXTERNAL_CARDS.find(function(e) { return e.id === state.category; }) : null;
+      var catTitle = cat ? cat.title : (ext ? ext.title : state.category);
+      parts.push('<span class="sep">›</span>');
+      parts.push('<a onclick="navigate(\'' + state.category + '\')">' + catTitle + '</a>');
+    }
+    if (state.year) {
+      parts.push('<span class="sep">›</span>');
+      parts.push('<a onclick="navigate(\'' + state.category + '\',' + state.year + ')">' + state.year + '</a>');
+    }
+    if (state.subview) {
+      parts.push('<span class="sep">›</span>');
+      var svLabel = state.subview === 'geral' ? 'Resumo Geral' : 'Detalhe Mensal';
+      if (state.unit) {
+        parts.push('<a onclick="navigate(\'' + state.category + '\',' + state.year + ',\'' + state.subview + '\')">' + svLabel + '</a>');
+      } else {
+        parts.push('<span>' + svLabel + '</span>');
+      }
+    }
+    if (state.unit) {
+      var u = UNITS.find(function(x) { return x.id === state.unit; });
+      parts.push('<span class="sep">›</span>');
+      parts.push('<span>' + (u ? u.name : state.unit) + '</span>');
+    }
+    bc.innerHTML = parts.join('');
+  }
+
+  function render() {
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+
+    if (!state.category) return renderCategories();
+    if (!state.year) return renderYears();
+
+    // Ticket Médio has special Geral/Mensal subview routing
+    if (state.category === 'ticket') {
+      if (!state.subview) {
+        // 2025: skip straight to geral (no mensal data)
+        if (state.year === 2025) { state.subview = 'geral'; return renderTicketGeral(); }
+        return renderTicketSubview();
+      }
+      if (state.subview === 'geral') return renderTicketGeral();
+      if (state.subview === 'mensal') {
+        if (!state.unit) return renderTicketUnits();
+        return renderTicketMensal();
+      }
+    }
+
+    if (!state.unit) return renderUnits();
+    return renderData();
+  }
+
+  // ══════ External module cards (loaded as iframe) ══════
+  var EXTERNAL_CARDS = [
+    { id: 'taxa_retencao', icon: '🚗', title: 'Análise Taxa Retenção Viaturas', desc: 'Crescimento e retenção de matrículas — novas, regressadas, perdidas e taxa de retenção anual.', url: 'taxa_retencao_viaturas.html' },
+    { id: 'mapa_clientes', icon: '🗺️', title: 'Mapa de Clientes', desc: 'Globo interativo com a distribuição geográfica da carteira — filtros por unidade (Cacém/Lisboa/Colisão) e ano de registo.', url: 'mapa_clientes.html' }
+  ];
+
+  // ══════ Level 1: Categories ══════
+  function renderCategories() {
+    var html = '<div class="cat-grid">';
+    CATEGORIES.forEach(function(cat) {
+      html += '<div class="cat-card" onclick="navigate(\'' + cat.id + '\')">' +
+        '<div class="cat-card-icon">' + cat.icon + '</div>' +
+        '<h3>' + cat.title + '</h3>' +
+        '<p>' + cat.desc + '</p>' +
+      '</div>';
+    });
+    EXTERNAL_CARDS.forEach(function(ext) {
+      html += '<div class="cat-card" onclick="openExternal(\'' + ext.id + '\')">' +
+        '<div class="cat-card-icon">' + ext.icon + '</div>' +
+        '<h3>' + ext.title + '</h3>' +
+        '<p>' + ext.desc + '</p>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  window.openExternal = function(id) {
+    var ext = EXTERNAL_CARDS.find(function(e) { return e.id === id; });
+    if (!ext) return;
+    state = { category: id };
+    var html = '<button class="btn-back" onclick="navigate()">← Voltar</button>' +
+      '<iframe src="' + ext.url + '?v=' + Date.now() + '" style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;margin-top:16px;"></iframe>';
+    document.getElementById('content').innerHTML = html;
+    renderBreadcrumb();
+  };
+
+  // ══════ Level 2: Years ══════
+  function renderYears() {
+    var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+    var html = '<button class="btn-back" onclick="navigate()">← Voltar</button>' +
+      '<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">' + cat.icon + ' ' + cat.title + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">' + cat.desc + '</p>' +
+      '<div class="year-grid">';
+    YEARS.forEach(function(y) {
+      html += '<div class="year-card" onclick="navigate(\'' + state.category + '\',' + y + ')">' +
+        '<div class="year-num">' + y + '</div>' +
+        '<p>Ver indicadores</p>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    // ══════ Comparativo Empresa (Margem only) ══════
+    if (cat.id === 'margem') {
+      html += renderComparativo();
+    }
+
+    document.getElementById('content').innerHTML = html;
+
+    if (cat.id === 'margem') {
+      setTimeout(function() { renderCompChart(); }, 80);
+    }
+  }
+
+  // ══════ Comparativo Domuscar YoY ══════
+  function renderComparativo() {
+    var d25 = MARGEM_DATA[2025] && MARGEM_DATA[2025].domuscar ? MARGEM_DATA[2025].domuscar : [];
+    var d26 = MARGEM_DATA[2026] && MARGEM_DATA[2026].domuscar ? MARGEM_DATA[2026].domuscar : [];
+
+    // Find common months (both have data)
+    var common = [];
+    for (var i = 0; i < 12; i++) {
+      if (d25[i] && d26[i]) common.push(i);
+    }
+    if (common.length === 0) return '';
+
+    // Sums for common period
+    var sum25 = { vendas: 0, mo: 0, pecas: 0, cf: 0, cv: 0, margem: 0 };
+    var sum26 = { vendas: 0, mo: 0, pecas: 0, cf: 0, cv: 0, margem: 0 };
+    common.forEach(function(i) {
+      sum25.vendas += d25[i][0]; sum25.mo += d25[i][1]; sum25.pecas += d25[i][2];
+      sum25.cf += d25[i][3]; sum25.cv += d25[i][4]; sum25.margem += d25[i][5];
+      sum26.vendas += d26[i][0]; sum26.mo += d26[i][1]; sum26.pecas += d26[i][2];
+      sum26.cf += d26[i][3]; sum26.cv += d26[i][4]; sum26.margem += d26[i][5];
+    });
+    var pct25 = sum25.vendas ? (sum25.margem / sum25.vendas * 100) : 0;
+    var pct26 = sum26.vendas ? (sum26.margem / sum26.vendas * 100) : 0;
+
+    var periodLabel = common.map(function(i) { return MONTHS_SHORT[i]; }).join(' – ');
+
+    function delta(v26, v25) {
+      var d = v26 - v25;
+      var cls = d >= 0 ? 'up' : 'down';
+      var sign = d >= 0 ? '+' : '';
+      return '<div class="comp-kpi-delta ' + cls + '">' + sign + formatEur(d) + '</div>';
+    }
+    function deltaPct(v26, v25) {
+      var d = v26 - v25;
+      var cls = d >= 0 ? 'up' : 'down';
+      var sign = d >= 0 ? '+' : '';
+      return '<div class="comp-kpi-delta ' + cls + '">' + sign + d.toFixed(2) + ' pp</div>';
+    }
+    function pctChange(v26, v25) {
+      if (!v25) return '';
+      var p = ((v26 - v25) / Math.abs(v25)) * 100;
+      var cls = p >= 0 ? 'up' : 'down';
+      var sign = p >= 0 ? '+' : '';
+      return '<div class="comp-kpi-sub">' + sign + p.toFixed(1) + '% vs 2025</div>';
+    }
+
+    var h = '<div class="comp-section">';
+    h += '<div class="comp-title">📊 Comparativo Empresa — 2025 vs 2026</div>';
+    h += '<div class="comp-subtitle">Período homólogo: ' + periodLabel + ' (' + common.length + ' meses com dados em ambos os anos)</div>';
+
+    // KPI summary cards
+    h += '<div class="comp-kpis">';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Vendas 2025</div><div class="comp-kpi-val">' + formatEur(sum25.vendas) + '</div></div>';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Vendas 2026</div><div class="comp-kpi-val">' + formatEur(sum26.vendas) + '</div>' + delta(sum26.vendas, sum25.vendas) + pctChange(sum26.vendas, sum25.vendas) + '</div>';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Margem 2025</div><div class="comp-kpi-val" style="color:' + (sum25.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum25.margem) + '</div><div class="comp-kpi-sub">' + pct25.toFixed(2) + '%</div></div>';
+    h += '<div class="comp-kpi"><div class="comp-kpi-label">Margem 2026</div><div class="comp-kpi-val" style="color:' + (sum26.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum26.margem) + '</div><div class="comp-kpi-sub">' + pct26.toFixed(2) + '%</div>' + deltaPct(pct26, pct25) + '</div>';
+    h += '</div>';
+
+    // Chart
+    h += '<div class="comp-chart-wrap"><canvas id="compChart"></canvas></div>';
+
+    // Detail table
+    h += '<div class="comp-table-wrap"><table class="comp-table"><thead><tr>';
+    h += '<th>Mês</th><th>Vendas 2025</th><th>Vendas 2026</th><th>Δ Vendas</th><th>Margem 2025</th><th>Margem 2026</th><th>Δ Margem</th><th>% 2025</th><th>% 2026</th>';
+    h += '</tr></thead><tbody>';
+
+    common.forEach(function(i) {
+      var dv = d26[i][0] - d25[i][0];
+      var dm = d26[i][5] - d25[i][5];
+      var dvCls = dv >= 0 ? 'var(--green)' : 'var(--red)';
+      var dmCls = dm >= 0 ? 'var(--green)' : 'var(--red)';
+      h += '<tr><td>' + MONTHS[i] + '</td>';
+      h += '<td>' + formatEur(d25[i][0]) + '</td>';
+      h += '<td>' + formatEur(d26[i][0]) + '</td>';
+      h += '<td style="font-weight:700;color:' + dvCls + ';">' + (dv >= 0 ? '+' : '') + formatEur(dv) + '</td>';
+      h += '<td style="color:' + (d25[i][5] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(d25[i][5]) + '</td>';
+      h += '<td style="color:' + (d26[i][5] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(d26[i][5]) + '</td>';
+      h += '<td style="font-weight:700;color:' + dmCls + ';">' + (dm >= 0 ? '+' : '') + formatEur(dm) + '</td>';
+      h += '<td style="font-weight:600;color:' + (d25[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + d25[i][6].toFixed(2) + '%</td>';
+      h += '<td style="font-weight:600;color:' + (d26[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + d26[i][6].toFixed(2) + '%</td>';
+      h += '</tr>';
+    });
+
+    // Total row
+    var dvT = sum26.vendas - sum25.vendas;
+    var dmT = sum26.margem - sum25.margem;
+    h += '<tr style="background:var(--gray-100);font-weight:700;"><td>Total</td>';
+    h += '<td>' + formatEur(sum25.vendas) + '</td><td>' + formatEur(sum26.vendas) + '</td>';
+    h += '<td style="color:' + (dvT >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + (dvT >= 0 ? '+' : '') + formatEur(dvT) + '</td>';
+    h += '<td style="color:' + (sum25.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum25.margem) + '</td>';
+    h += '<td style="color:' + (sum26.margem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(sum26.margem) + '</td>';
+    h += '<td style="color:' + (dmT >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + (dmT >= 0 ? '+' : '') + formatEur(dmT) + '</td>';
+    h += '<td style="color:' + (pct25 >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + pct25.toFixed(2) + '%</td>';
+    h += '<td style="color:' + (pct26 >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + pct26.toFixed(2) + '%</td>';
+    h += '</tr>';
+
+    h += '</tbody></table></div></div>';
+    return h;
+  }
+
+  function renderCompChart() {
+    var canvas = document.getElementById('compChart');
+    if (!canvas) return;
+
+    var d25 = MARGEM_DATA[2025].domuscar;
+    var d26 = MARGEM_DATA[2026].domuscar;
+    var common = [];
+    for (var i = 0; i < 12; i++) { if (d25[i] && d26[i]) common.push(i); }
+
+    var labels = common.map(function(i) { return MONTHS_SHORT[i]; });
+    var vendas25 = common.map(function(i) { return d25[i][0]; });
+    var vendas26 = common.map(function(i) { return d26[i][0]; });
+    var margem25 = common.map(function(i) { return d25[i][6]; });
+    var margem26 = common.map(function(i) { return d26[i][6]; });
+
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    currentChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Vendas 2025',
+            data: vendas25,
+            backgroundColor: 'rgba(0,59,115,.25)',
+            borderColor: 'rgba(0,59,115,.6)',
+            borderWidth: 1,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            label: 'Vendas 2026',
+            data: vendas26,
+            backgroundColor: 'rgba(0,123,192,.35)',
+            borderColor: 'rgba(0,123,192,.7)',
+            borderWidth: 1,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            label: 'Margem % 2025',
+            data: margem25,
+            type: 'line',
+            borderColor: 'rgba(0,59,115,.7)',
+            backgroundColor: 'rgba(0,59,115,.05)',
+            borderWidth: 2.5,
+            borderDash: [6, 3],
+            pointRadius: 5,
+            pointBackgroundColor: 'rgba(0,59,115,.9)',
+            fill: false,
+            yAxisID: 'y1',
+            order: 1
+          },
+          {
+            label: 'Margem % 2026',
+            data: margem26,
+            type: 'line',
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5,150,105,.05)',
+            borderWidth: 2.5,
+            pointRadius: 5,
+            pointBackgroundColor: '#059669',
+            fill: false,
+            yAxisID: 'y1',
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.5,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, padding: 16, font: { size: 11, family: 'Inter' } } },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                if (ctx.dataset.yAxisID === 'y1') return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%';
+                return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('pt-PT', { minimumFractionDigits: 0 }) + ' €';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            position: 'left',
+            title: { display: true, text: 'Vendas (€)', font: { size: 11, family: 'Inter' } },
+            ticks: { callback: function(v) { return (v / 1000).toFixed(0) + 'k €'; }, font: { size: 10 } },
+            grid: { color: 'rgba(0,0,0,.05)' }
+          },
+          y1: {
+            position: 'right',
+            title: { display: true, text: 'Margem (%)', font: { size: 11, family: 'Inter' } },
+            ticks: { callback: function(v) { return v.toFixed(0) + '%'; }, font: { size: 10 } },
+            grid: { drawOnChartArea: false }
+          },
+          x: { ticks: { font: { size: 11, family: 'Inter', weight: 600 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ══════ Ticket Médio: Subview selection (Geral / Mensal) ══════
+  function renderTicketSubview() {
+    var cat = CATEGORIES.find(function(c) { return c.id === 'ticket'; });
+    var html = '<button class="btn-back" onclick="navigate(\'ticket\')">← Voltar</button>' +
+      '<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">' + cat.icon + ' ' + cat.title + ' — ' + state.year + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">Seleciona o tipo de visualização.</p>' +
+      '<div class="subview-grid">' +
+        '<div class="subview-card" onclick="navigate(\'ticket\',' + state.year + ',\'geral\')">' +
+          '<div class="sv-icon">📊</div><h4>Resumo Geral</h4><p>Ticket médio anual por unidade</p>' +
+        '</div>' +
+        '<div class="subview-card" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\')">' +
+          '<div class="sv-icon">📅</div><h4>Detalhe Mensal</h4><p>OSV, ticket, horas e produtividade mês a mês</p>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Ticket Médio: Geral dashboard ══════
+  function renderTicketGeral() {
+    var backTarget = state.year === 2025
+      ? "navigate('ticket')"
+      : "navigate('ticket'," + state.year + ")";
+    var html = '<button class="btn-back" onclick="' + backTarget + '">← Voltar</button>' +
+      '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">🎫 Ticket Médio — Resumo Geral ' + state.year + '</h2>';
+
+    var unitList = [
+      { id: 'mecanica_cacem', name: 'Mecânica Cacém', cls: 'cacem', icon: '⚙️' },
+      { id: 'mecanica_lisboa', name: 'Mecânica Lisboa', cls: 'lisboa', icon: '🔧' },
+      { id: 'colisao', name: 'Colisão', cls: 'colisao', icon: '🚗' },
+      { id: 'domuscar', name: 'DomusCar (Empresa)', cls: 'domuscar', icon: '🏢' }
+    ];
+
+    if (state.year === 2025) {
+      // Direct from TICKET_DATA geral objects
+      var tData = TICKET_DATA[2025];
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Valores anuais calculados a partir do total faturado e nº de OSV finalizadas.</p>';
+      html += '<div class="tg-grid">';
+      unitList.forEach(function(u) {
+        var d = tData[u.id];
+        if (!d) return;
+        html += '<div class="tg-card ' + u.cls + '">' +
+          '<div class="tg-card-title">' + u.icon + ' ' + u.name + '</div>' +
+          '<div class="tg-big">' + formatEur(d.ticketTotal) + '</div>' +
+          '<div style="font-size:.75rem;color:var(--gray-600);margin-top:4px;">' + d.osv.toLocaleString('pt-PT') + ' OSV finalizadas</div>' +
+          '<div class="tg-row">' +
+            '<div class="tg-metric"><div class="tg-metric-label">Peças</div><div class="tg-metric-val">' + formatEur(d.ticketPecas) + '</div></div>' +
+            '<div class="tg-metric"><div class="tg-metric-label">Mão-de-Obra</div><div class="tg-metric-val">' + formatEur(d.ticketMO) + '</div></div>' +
+          '</div>' +
+          '<div class="tg-row">' +
+            '<div class="tg-metric"><div class="tg-metric-label">Total Faturado</div><div class="tg-metric-val">' + formatEur(d.vendas) + '</div></div>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    } else {
+      // 2026+: Ticket médio por tipo de cliente (NIF)
+      var cData = TICKET_CLIENT_DATA[state.year];
+      if (!cData) { html += '<div class="info-banner">ℹ️ Sem dados de ticket médio para ' + state.year + '.</div>'; document.getElementById('content').innerHTML = html; return; }
+
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin-bottom:20px;">Reconciliação entre <b>Officegest</b> (séries 261/262/263) e <b>Margem Mensal</b> detalhada. <b>LP+FC</b>: com rappel contratual 25% deduzido em Cacém/Lisboa (rappel via NC mensal na Colisão). <b>Empresa</b>: NIF 5-9 + Fat. Interna + Aguarda NE. <b>Particular</b>: NIF 1-4 + Outras Vendas (nº OS somado ao nº de docs). Resíduos entre soma e Margem divididos 50/50 Empresa/Particular. Valores acumulados dos meses disponíveis.</p>';
+
+      // ══════ Ticket Médio por Tipo de Cliente (breakdown por NIF) ══════
+      {
+        html += '<div class="tc-section" style="margin-top:0;">' +
+          '<div class="tc-grid">';
+        unitList.forEach(function(u) {
+          var arr = cData[u.id];
+          if (!arr) return;
+          var agg = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
+          var mCnt2 = 0;
+          for (var k = 0; k < 12; k++) {
+            var d = arr[k];
+            if (!d) continue;
+            agg.lp.e += d.lp.e; agg.lp.n += d.lp.n;
+            agg.em.e += d.em.e; agg.em.n += d.em.n;
+            agg.pa.e += d.pa.e; agg.pa.n += d.pa.n;
+            mCnt2++;
+          }
+          if (mCnt2 === 0) return;
+          var totalN = agg.lp.n + agg.em.n + agg.pa.n;
+          var totalE = agg.lp.e + agg.em.e + agg.pa.e;
+          var tLP = agg.lp.n ? agg.lp.e/agg.lp.n : 0;
+          var tEM = agg.em.n ? agg.em.e/agg.em.n : 0;
+          var tPA = agg.pa.n ? agg.pa.e/agg.pa.n : 0;
+          var tGlobal = totalN ? totalE/totalN : 0;
+          html += '<div class="tc-card ' + u.cls + '">' +
+            '<div class="tc-card-title"><span>' + u.icon + ' ' + u.name + '</span><span class="tc-total">' + formatEur(tGlobal) + ' global</span></div>' +
+            '<div class="tc-row">' +
+              '<div><span class="tc-label lp">LeasePlan + FleetCover</span><span class="tc-label-sub">' + agg.lp.n + ' docs · ' + formatEur(agg.lp.e) + '</span></div>' +
+              '<div class="tc-val">' + formatEur(tLP) + '</div>' +
+            '</div>' +
+            '<div class="tc-row">' +
+              '<div><span class="tc-label em">Empresa (excl. LP)</span><span class="tc-label-sub">' + agg.em.n + ' docs · ' + formatEur(agg.em.e) + '</span></div>' +
+              '<div class="tc-val">' + formatEur(tEM) + '</div>' +
+            '</div>' +
+            '<div class="tc-row">' +
+              '<div><span class="tc-label pa">Particular</span><span class="tc-label-sub">' + agg.pa.n + ' docs · ' + formatEur(agg.pa.e) + '</span></div>' +
+              '<div class="tc-val">' + formatEur(tPA) + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div></div>';
+      }
+    }
+
+    // Chart: ticket por unidade
+    html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function() { renderTicketGeralChart(); }, 80);
+  }
+
+  function renderTicketGeralChart() {
+    var canvas = document.getElementById('indicadorChart');
+    if (!canvas) return;
+
+    var unitNames = ['Mec. Cacém', 'Mec. Lisboa', 'Colisão', 'DomusCar'];
+    var unitIds = ['mecanica_cacem', 'mecanica_lisboa', 'colisao', 'domuscar'];
+
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+
+    if (state.year === 2025) {
+      var td = TICKET_DATA[2025];
+      var pecasVals = [], moVals = [];
+      unitIds.forEach(function(id) {
+        pecasVals.push(td[id] ? td[id].ticketPecas : 0);
+        moVals.push(td[id] ? td[id].ticketMO : 0);
+      });
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: unitNames,
+          datasets: [
+            { label: 'Ticket Peças (€)', data: pecasVals, backgroundColor: 'rgba(0,123,192,.6)', borderColor: 'rgba(0,123,192,1)', borderWidth: 1, borderRadius: 6 },
+            { label: 'Ticket MO (€)', data: moVals, backgroundColor: 'rgba(5,150,105,.5)', borderColor: 'rgba(5,150,105,1)', borderWidth: 1, borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+            tooltip: { backgroundColor: '#002B55', callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; } } }
+          },
+          scales: {
+            y: { beginAtZero: true, stacked: true, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' } },
+            x: { stacked: true, ticks: { font: { family: 'Inter', size: 11, weight: '600' } }, grid: { display: false } }
+          }
+        }
+      });
+      return;
+    }
+
+    // 2026+: Ticket médio por tipo de cliente (LP+FC, Empresa, Particular) por unidade
+    var cData = TICKET_CLIENT_DATA[state.year];
+    if (!cData) return;
+    var lpVals = [], emVals = [], paVals = [];
+    unitIds.forEach(function(id) {
+      var arr = cData[id];
+      if (!arr) { lpVals.push(0); emVals.push(0); paVals.push(0); return; }
+      var a = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
+      for (var i=0;i<12;i++) { var d=arr[i]; if(!d) continue;
+        a.lp.e+=d.lp.e; a.lp.n+=d.lp.n;
+        a.em.e+=d.em.e; a.em.n+=d.em.n;
+        a.pa.e+=d.pa.e; a.pa.n+=d.pa.n; }
+      lpVals.push(a.lp.n ? a.lp.e/a.lp.n : 0);
+      emVals.push(a.em.n ? a.em.e/a.em.n : 0);
+      paVals.push(a.pa.n ? a.pa.e/a.pa.n : 0);
+    });
+    currentChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: unitNames,
+        datasets: [
+          { label: 'LeasePlan + FleetCover', data: lpVals, backgroundColor: 'rgba(217,119,6,.70)', borderColor: 'rgba(217,119,6,1)', borderWidth: 1, borderRadius: 6 },
+          { label: 'Empresa (excl. LP)',    data: emVals, backgroundColor: 'rgba(5,150,105,.70)',  borderColor: 'rgba(5,150,105,1)',  borderWidth: 1, borderRadius: 6 },
+          { label: 'Particular',             data: paVals, backgroundColor: 'rgba(124,58,237,.70)', borderColor: 'rgba(124,58,237,1)', borderWidth: 1, borderRadius: 6 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+          tooltip: { backgroundColor: '#002B55', callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; } } }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' }, title: { display: true, text: 'Ticket médio (€)', font: { size: 11 } } },
+          x: { ticks: { font: { family: 'Inter', size: 11, weight: '600' } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ══════ Ticket Médio: Unit selection for Mensal ══════
+  function renderTicketUnits() {
+    var unitIcons = { mecanica_lisboa: '🔧', mecanica_cacem: '⚙️', colisao: '🚗', domuscar: '🏢' };
+    var html = '<button class="btn-back" onclick="navigate(\'ticket\',' + state.year + ')">← Voltar</button>' +
+      '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">🎫 Ticket Médio — Detalhe Mensal ' + state.year + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">Seleciona a unidade para ver os dados mensais detalhados.</p>' +
+      '<div class="unit-grid">';
+    UNITS.forEach(function(u) {
+      html += '<div class="unit-card" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\',\'' + u.id + '\')">' +
+        '<div class="unit-icon ' + u.iconClass + '">' + (unitIcons[u.id] || '📊') + '</div>' +
+        '<div><h4>' + u.name + '</h4><p>Dados ' + state.year + '</p></div>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Ticket Médio: Mensal detail per unit ══════
+  function renderTicketMensal() {
+    var unit = UNITS.find(function(u) { return u.id === state.unit; });
+    var cArr = TICKET_CLIENT_DATA[state.year] && TICKET_CLIENT_DATA[state.year][state.unit];
+    var hasClientData = cArr && cArr.some(function(m) { return m !== null; });
+    var tData = TICKET_DATA[state.year];
+    var monthly = tData && tData[state.unit];
+    var hasOsvData = monthly && Array.isArray(monthly) && monthly.some(function(m) { return m !== null; });
+
+    var html = '<button class="btn-back" onclick="navigate(\'ticket\',' + state.year + ',\'mensal\')">← Voltar</button>';
+    html += '<div class="data-header" style="margin-top:20px;">' +
+      '<h2>🎫 Ticket Médio — ' + (unit ? unit.name : '') + ' ' + state.year + '</h2>';
+    if (hasClientData || hasOsvData) {
+      html += '<span class="data-badge" style="background:rgba(5,150,105,.1);color:#059669;">Dados Reais</span>';
+    } else {
+      html += '<span class="data-badge placeholder">Em Breve</span>';
+    }
+    html += '</div>';
+
+    if (!hasClientData && !hasOsvData) {
+      html += '<div class="info-banner">ℹ️ Os dados mensais de ticket médio para esta unidade ainda não foram carregados.</div>';
+      document.getElementById('content').innerHTML = html;
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Ramo 2026+: tabela e gráfico APENAS por tipo de cliente (NIF)
+    // ─────────────────────────────────────────────────────────────
+    if (hasClientData) {
+      html += '<p style="font-size:.85rem;color:var(--text-body);margin:8px 0 16px;">Faturação reconciliada com a <b>Margem Mensal</b> detalhada. <b>LP+FC</b> com rappel contratual 25% deduzido (Cacém/Lisboa). <b>Empresa</b> inclui Fat. Interna e Aguarda NE. <b>Particular</b> inclui Outras Vendas (nº OS somado ao nº de docs). Resíduos divididos 50/50 Empresa/Particular.</p>';
+
+      // Chart
+      html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+      // Tabela mensal por tipo de cliente
+      html += '<div class="tc-mensal-wrap" style="margin-top:24px;">' +
+        '<table class="tc-mensal-table"><thead><tr>' +
+          '<th rowspan="2">Mês</th>' +
+          '<th colspan="3" class="cat-lp">LeasePlan + FleetCover</th>' +
+          '<th colspan="3" class="cat-em">Empresa (excl. LP)</th>' +
+          '<th colspan="3" class="cat-pa">Particular</th>' +
+        '</tr><tr>' +
+          '<th class="cat-lp">€</th><th class="cat-lp">Nº</th><th class="cat-lp">Ticket</th>' +
+          '<th class="cat-em">€</th><th class="cat-em">Nº</th><th class="cat-em">Ticket</th>' +
+          '<th class="cat-pa">€</th><th class="cat-pa">Nº</th><th class="cat-pa">Ticket</th>' +
+        '</tr></thead><tbody>';
+      var tot = { lp:{e:0,n:0}, em:{e:0,n:0}, pa:{e:0,n:0} };
+      MONTHS.forEach(function(m, i) {
+        var d = cArr[i];
+        html += '<tr><td>' + m + '</td>';
+        if (d) {
+          html += '<td>' + formatEur(d.lp.e) + '</td><td>' + d.lp.n + '</td><td>' + formatEur(d.lp.t) + '</td>';
+          html += '<td>' + formatEur(d.em.e) + '</td><td>' + d.em.n + '</td><td>' + formatEur(d.em.t) + '</td>';
+          html += '<td>' + formatEur(d.pa.e) + '</td><td>' + d.pa.n + '</td><td>' + formatEur(d.pa.t) + '</td>';
+          tot.lp.e += d.lp.e; tot.lp.n += d.lp.n;
+          tot.em.e += d.em.e; tot.em.n += d.em.n;
+          tot.pa.e += d.pa.e; tot.pa.n += d.pa.n;
+        } else {
+          for (var c = 0; c < 9; c++) html += '<td class="placeholder-val">—</td>';
+        }
+        html += '</tr>';
+      });
+      if (tot.lp.n + tot.em.n + tot.pa.n > 0) {
+        html += '<tr class="total-row"><td>Acumulado</td>';
+        html += '<td>' + formatEur(tot.lp.e) + '</td><td>' + tot.lp.n + '</td><td>' + formatEur(tot.lp.n ? tot.lp.e/tot.lp.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.em.e) + '</td><td>' + tot.em.n + '</td><td>' + formatEur(tot.em.n ? tot.em.e/tot.em.n : 0) + '</td>';
+        html += '<td>' + formatEur(tot.pa.e) + '</td><td>' + tot.pa.n + '</td><td>' + formatEur(tot.pa.n ? tot.pa.e/tot.pa.n : 0) + '</td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
+
+      document.getElementById('content').innerHTML = html;
+      setTimeout(function() { renderTicketMensalChart(cArr); }, 80);
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Ramo 2025 (legacy): tabela OSV/Peças/MO/Horas
+    // ─────────────────────────────────────────────────────────────
+    // Chart
+    html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+
+    // Table
+    html += '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Mês</th>';
+    TICKET_MENSAL_COLS.forEach(function(col) { html += '<th>' + col + '</th>'; });
+    html += '</tr></thead><tbody>';
+
+    MONTHS.forEach(function(m, i) {
+      html += '<tr><td style="font-weight:600;color:var(--navy);">' + m + '</td>';
+      if (monthly[i]) {
+        html += '<td style="font-weight:700;color:var(--navy);">' + monthly[i][0] + '</td>';
+        html += '<td>' + formatEur(monthly[i][1]) + '</td>';
+        html += '<td>' + formatEur(monthly[i][2]) + '</td>';
+        html += '<td style="font-weight:700;color:var(--accent);">' + formatEur(monthly[i][3]) + '</td>';
+        html += '<td>' + formatNum(monthly[i][4]) + '</td>';
+        html += '<td>' + formatNum(monthly[i][5]) + '</td>';
+        html += '<td>' + formatNum(monthly[i][6]) + '</td>';
+        html += '<td>' + formatEur(monthly[i][7]) + '</td>';
+      } else {
+        TICKET_MENSAL_COLS.forEach(function() { html += '<td class="placeholder-val">—</td>'; });
+      }
+      html += '</tr>';
+    });
+
+    // Totals/Averages row
+    var totalOSV = 0, cnt = 0, sTP = 0, sTM = 0, sTT = 0, sHP = 0, sHD = 0, sHV = 0;
+    for (var i = 0; i < 12; i++) {
+      if (monthly[i]) {
+        totalOSV += monthly[i][0]; cnt++;
+        sTP += monthly[i][0] * monthly[i][1];
+        sTM += monthly[i][0] * monthly[i][2];
+        sTT += monthly[i][0] * monthly[i][3];
+        sHP += monthly[i][0] * monthly[i][4];
+        sHD += monthly[i][5];
+        sHV += monthly[i][6];
+      }
+    }
+    if (totalOSV > 0) {
+      html += '<tr style="background:var(--gray-100);font-weight:700;"><td>Acumulado</td>';
+      html += '<td>' + totalOSV + '</td>';
+      html += '<td>' + formatEur(sTP / totalOSV) + '</td>';
+      html += '<td>' + formatEur(sTM / totalOSV) + '</td>';
+      html += '<td style="color:var(--accent);">' + formatEur(sTT / totalOSV) + '</td>';
+      html += '<td>' + formatNum(sHP / totalOSV) + '</td>';
+      html += '<td>' + formatNum(sHD) + '</td>';
+      html += '<td>' + formatNum(sHV) + '</td>';
+      var mDataLeg = MARGEM_DATA[state.year] && MARGEM_DATA[state.year][state.unit];
+      var tVendas = 0;
+      if (mDataLeg) { for (var j = 0; j < 12; j++) { if (mDataLeg[j] && monthly[j]) tVendas += mDataLeg[j][1]; } }
+      html += '<td>' + formatEur(tVendas && sHV ? tVendas / sHV : 0) + '</td>';
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function() { renderTicketMensalChart(monthly); }, 80);
+  }
+
+  function renderTicketMensalChart(data) {
+    var canvas = document.getElementById('indicadorChart');
+    if (!canvas) return;
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+
+    // Detecta formato: arr de objetos {lp,em,pa,...} → ramo 2026 · arr de arrays [osv,peças,...] → legacy
+    var isClient = data && data.some(function(m) { return m && m.lp; });
+
+    if (isClient) {
+      var labels = [], lpVals = [], emVals = [], paVals = [], totVals = [];
+      for (var i = 0; i < 12; i++) {
+        var d = data[i];
+        if (!d) continue;
+        labels.push(MONTHS_SHORT[i]);
+        lpVals.push(d.lp.t);
+        emVals.push(d.em.t);
+        paVals.push(d.pa.t);
+        totVals.push(d.lp.e + d.em.e + d.pa.e);
+      }
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Total Faturado (€)', data: totVals, type: 'bar',
+              backgroundColor: 'rgba(0,59,115,.10)', borderColor: 'rgba(0,59,115,.35)', borderWidth: 1, borderRadius: 6,
+              yAxisID: 'y' },
+            { label: 'LP + FC', data: lpVals, type: 'line',
+              borderColor: 'rgba(217,119,6,1)', backgroundColor: 'rgba(217,119,6,.12)',
+              borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: 'rgba(217,119,6,1)', tension: 0.3, fill: false, yAxisID: 'y1' },
+            { label: 'Empresa', data: emVals, type: 'line',
+              borderColor: 'rgba(5,150,105,1)', backgroundColor: 'rgba(5,150,105,.12)',
+              borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: 'rgba(5,150,105,1)', tension: 0.3, fill: false, yAxisID: 'y1' },
+            { label: 'Particular', data: paVals, type: 'line',
+              borderColor: 'rgba(124,58,237,1)', backgroundColor: 'rgba(124,58,237,.12)',
+              borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: 'rgba(124,58,237,1)', tension: 0.3, fill: false, yAxisID: 'y1' }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+            tooltip: {
+              backgroundColor: '#002B55',
+              callbacks: {
+                label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €'; }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Total Faturado (€)', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { callback: function(v) { return (v/1000).toFixed(0) + 'k'; }, font: { size: 10 } } },
+            y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Ticket médio (€)', font: { size: 11 } }, grid: { drawOnChartArea: false }, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '600' } } }
+          }
+        }
+      });
+      return;
+    }
+
+    // Legacy (2025): OSV + Ticket Total
+    var labels = [], ticketVals = [], osvVals = [];
+    for (var i = 0; i < 12; i++) {
+      if (data[i]) {
+        labels.push(MONTHS_SHORT[i]);
+        ticketVals.push(data[i][3]);
+        osvVals.push(data[i][0]);
+      }
+    }
+    currentChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Nº OSV', data: osvVals,
+            backgroundColor: 'rgba(0,59,115,.25)', borderColor: 'rgba(0,59,115,.6)',
+            borderWidth: 1, borderRadius: 6, yAxisID: 'y' },
+          { label: 'Ticket Médio Total (€)', data: ticketVals, type: 'line',
+            borderColor: 'rgba(0,123,192,1)', backgroundColor: 'rgba(0,123,192,.08)',
+            borderWidth: 2.5, pointRadius: 6, pointBackgroundColor: 'rgba(0,123,192,1)',
+            fill: true, tension: 0.3, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+          tooltip: {
+            backgroundColor: '#002B55',
+            callbacks: {
+              label: function(ctx) {
+                if (ctx.dataset.yAxisID === 'y1') return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' €';
+                return ctx.dataset.label + ': ' + ctx.parsed.y;
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Nº OSV', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { size: 10 } } },
+          y1: { position: 'right', title: { display: true, text: 'Ticket (€)', font: { size: 11 } }, grid: { drawOnChartArea: false }, ticks: { callback: function(v) { return v + ' €'; }, font: { size: 10 } } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '600' } } }
+        }
+      }
+    });
+  }
+
+  // ══════ Level 3: Units ══════
+  function renderUnits() {
+    var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+    var unitIcons = { mecanica_lisboa: '🔧', mecanica_cacem: '⚙️', colisao: '🚗', domuscar: '🏢' };
+    var filteredUnits = UNITS.filter(function(u) {
+      if (u.margemOnly && state.category !== 'margem') return false;
+      return true;
+    });
+    var html = '<button class="btn-back" onclick="navigate(\'' + state.category + '\')">← Voltar</button>' +
+      '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">' + cat.icon + ' ' + cat.title + ' — ' + state.year + '</h2>' +
+      '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:24px;">Seleciona a unidade para ver os dados detalhados.</p>' +
+      '<div class="unit-grid">';
+    filteredUnits.forEach(function(u) {
+      html += '<div class="unit-card" onclick="navigate(\'' + state.category + '\',' + state.year + ',\'' + u.id + '\')">' +
+        '<div class="unit-icon ' + u.iconClass + '">' + (unitIcons[u.id] || '📊') + '</div>' +
+        '<div><h4>' + u.name + '</h4><p>Dados ' + state.year + '</p></div>' +
+      '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+  }
+
+  // ══════ Level 4: Data (chart + table) ══════
+  function renderData() {
+    var cat = CATEGORIES.find(function(c) { return c.id === state.category; });
+    var unit = UNITS.find(function(u) { return u.id === state.unit; });
+
+    // Check if we have real data
+    var hasRealData = false;
+    var realData = null;
+    if (cat.id === 'kpis' && KPI_DATA[state.year] && KPI_DATA[state.year][state.unit]) {
+      hasRealData = true;
+      realData = KPI_DATA[state.year][state.unit];
+    } else if (cat.id === 'margem' && MARGEM_DATA[state.year] && MARGEM_DATA[state.year][state.unit]) {
+      hasRealData = true;
+      realData = MARGEM_DATA[state.year][state.unit];
+    }
+
+    var html = '<button class="btn-back" onclick="navigate(\'' + state.category + '\',' + state.year + ')">← Voltar</button>';
+
+    html += '<div class="data-header" style="margin-top:20px;">' +
+      '<h2>' + cat.icon + ' ' + cat.title + ' — ' + unit.name + ' ' + state.year + '</h2>';
+    if (hasRealData) {
+      html += '<span class="data-badge" style="background:rgba(5,150,105,.1);color:#059669;">Dados Reais</span>';
+    } else {
+      html += '<span class="data-badge placeholder">Em Breve</span>';
+    }
+    html += '</div>';
+
+    if (!hasRealData) {
+      html += '<div class="info-banner">ℹ️ Os dados para esta categoria/ano ainda não foram carregados.</div>';
+    }
+
+    // Quando existir detalhe completo de margem (MARGEM_DETAIL), salta-se a tabela-resumo
+    // (que só traz MO+Peças e gerava confusão porque essas 2 rubricas não somam o Total Vendas s/IVA).
+    // O detalhe mostra TODAS as 22 rubricas com subtotais fechados.
+    var hasMargemDetail = (cat.id === 'margem' && MARGEM_DETAIL[state.year] && MARGEM_DETAIL[state.year][state.unit]);
+
+    // Quando usamos o detalhe da margem, em vez do gráfico (que duplicava informação do detalhe)
+    // mostramos 2 cards de resumo: Margem do último mês + Acumulado do ano da unidade.
+    if (hasMargemDetail) {
+      html += renderMargemSummary(MARGEM_DETAIL[state.year][state.unit]);
+    } else {
+      // Chart
+      html += '<div class="chart-container"><canvas id="indicadorChart"></canvas></div>';
+    }
+
+    var tableData = hasRealData ? realData : generatePlaceholder(cat.id);
+
+    if (!hasMargemDetail) {
+      // Table
+      html += '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>Mês</th>';
+      cat.columns.forEach(function(col) {
+        html += '<th>' + col + '</th>';
+      });
+      html += '</tr></thead><tbody>';
+
+      MONTHS.forEach(function(m, i) {
+        html += '<tr><td style="font-weight:600;color:var(--navy);">' + m + '</td>';
+        if (hasRealData && tableData[i] !== null) {
+          if (cat.id === 'kpis') {
+            html += '<td>' + formatNum(tableData[i][0]) + '</td>';
+            html += '<td>' + formatNum(tableData[i][1]) + '</td>';
+            html += '<td>' + formatNum(tableData[i][2]) + '</td>';
+            html += '<td style="font-weight:700;color:' + efColor(tableData[i][3]) + ';">' + tableData[i][3].toFixed(1) + '%</td>';
+            html += '<td style="font-weight:700;color:' + utColor(tableData[i][4]) + ';">' + tableData[i][4].toFixed(1) + '%</td>';
+          } else if (cat.id === 'margem') {
+            html += '<td>' + formatEur(tableData[i][0]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][1]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][2]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][3]) + '</td>';
+            html += '<td>' + formatEur(tableData[i][4]) + '</td>';
+            var mVal = tableData[i][5];
+            html += '<td style="font-weight:700;color:' + (mVal >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(mVal) + '</td>';
+            html += '<td style="font-weight:700;color:' + (tableData[i][6] >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + tableData[i][6].toFixed(2) + '%</td>';
+          } else {
+            tableData[i].forEach(function(v) { html += '<td>' + (v !== null ? v : '—') + '</td>'; });
+          }
+        } else {
+          cat.columns.forEach(function() {
+            html += '<td class="placeholder-val">—</td>';
+          });
+        }
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+    }
+
+    // ══════ Detalhe Mensal (apenas Margem + quando existir MARGEM_DETAIL) ══════
+    if (hasMargemDetail) {
+      html += renderMargemDetail(MARGEM_DETAIL[state.year][state.unit]);
+    }
+
+    // ══════ Vista por Técnico (apenas KPIs 2026+) ══════
+    var hasTecData = (cat.id === 'kpis' && KPI_TECNICOS_DATA[state.year] && KPI_TECNICOS_DATA[state.year][state.unit]);
+    if (hasTecData) {
+      html += '<div id="tec-section-wrap">' + renderTecnicosSection(state.year, state.unit) + '</div>';
+    }
+
+    document.getElementById('content').innerHTML = html;
+
+    // Render chart (só quando existir o canvas — no modo detalhe foi substituído pelos cards resumo)
+    if (!hasMargemDetail) {
+      setTimeout(function() { renderChart(cat, tableData, hasRealData); }, 50);
+    }
+  }
+
+  // ══════ Renderizador da Vista por Técnico (KPIs 2026) ══════
+  function renderTecnicosSection(year, unitId) {
+    var months = KPI_TECNICOS_DATA[year] && KPI_TECNICOS_DATA[year][unitId];
+    if (!months) return '';
+
+    // Determine available months and default selected
+    var available = [];
+    for (var i = 0; i < 12; i++) { if (months[i]) available.push(i); }
+    if (available.length === 0) return '';
+
+    // Initialize/sanitize selected month
+    if (state.tecMonth === null || !months[state.tecMonth]) {
+      state.tecMonth = available[available.length - 1];
+    }
+    var m = state.tecMonth;
+    var data = months[m];
+
+    var unitClassMap = { 'mecanica_lisboa': 'lisboa', 'mecanica_cacem': 'cacem', 'colisao': 'colisao' };
+    var cardCls = unitClassMap[unitId] || '';
+
+    var html = '<div class="tec-section">';
+    html += '<h3 class="tec-section-title">👷 Análise por Técnico — ' + MONTHS[m] + ' ' + year + '</h3>';
+
+    // Month tabs
+    html += '<div class="tec-month-tabs">';
+    for (var i = 0; i < 12; i++) {
+      var label = MONTHS_SHORT[i] + ' ' + year;
+      if (months[i]) {
+        var cls = (i === m) ? 'tec-month-tab active' : 'tec-month-tab';
+        html += '<div class="' + cls + '" onclick="selectTecMonth(' + i + ')">' + label + '</div>';
+      }
+    }
+    html += '</div>';
+
+    // --- Unit-level KPI table ---
+    var semanas = (data.unit.ht && data.unit.ht.s5 !== undefined) ? 5 : 4;
+    html += '<div class="tec-subsection">';
+    html += '<div class="tec-subsection-header">KPIs Gerais — ' + (UNITS.find(function(u){return u.id===unitId;}) || {}).name + '</div>';
+    html += '<div style="overflow-x:auto"><table class="tec-kpi-table"><thead><tr><th>KPI</th>';
+    for (var s = 1; s <= semanas; s++) { html += '<th>S' + s + '</th>'; }
+    html += '<th>Mês</th></tr></thead><tbody>';
+
+    var kpiRows = [
+      { key: 'ht',         label: 'Horas Trabalhadas',     unit: 'h', colorized: false },
+      { key: 'hv',         label: 'Horas Vendidas',        unit: 'h', colorized: false },
+      { key: 'hd',         label: 'Horas Disponíveis',     unit: 'h', colorized: false },
+      { key: 'faltas',     label: 'Horas Faltas',          unit: 'h', colorized: false },
+      { key: 'ferias',     label: 'Horas Férias',          unit: 'h', colorized: false },
+      { key: 'ef_prod',    label: 'Eficiência Produtiva',  unit: '%', colorized: true, kind: 'ef' },
+      { key: 'ef_global',  label: 'Eficiência Global',     unit: '%', colorized: true, kind: 'ef' },
+      { key: 'utilizacao', label: 'Taxa de Utilização',    unit: '%', colorized: true, kind: 'ut' }
+    ];
+    kpiRows.forEach(function(row) {
+      var u = data.unit[row.key] || {};
+      html += '<tr><td style="font-weight:600;">' + row.label + '</td>';
+      for (var s = 1; s <= semanas; s++) {
+        var v = u['s' + s];
+        html += '<td>' + fmtTecVal(v, row.unit, row.colorized, row.kind) + '</td>';
+      }
+      html += '<td class="mes">' + fmtTecVal(u.mes, row.unit, row.colorized, row.kind) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    // --- Rankings (HF + Total Faturado) ---
+    var tecnicos = data.tecnicos || [];
+    var rHF = tecnicos.slice().sort(function(a,b){ return (b.hf_mes||0)-(a.hf_mes||0); });
+    var rEUR = tecnicos.slice().sort(function(a,b){ return (b.total_faturado||0)-(a.total_faturado||0); });
+    var medals = ['🥇','🥈','🥉'];
+
+    html += '<div class="tec-kpi-rankings">';
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Ranking Horas Faturadas</div>';
+    html += '<table class="tec-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th style="text-align:right">HF</th></tr></thead><tbody>';
+    rHF.forEach(function(t, idx) {
+      var tag = idx < 3 ? medals[idx] : (idx + 1);
+      html += '<tr><td>' + tag + '</td><td style="font-weight:600;">' + t.name + '</td><td style="text-align:right">' + (t.hf_mes !== null ? t.hf_mes.toFixed(1) + ' h' : '—') + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Ranking Total Faturado (€)</div>';
+    html += '<table class="tec-ranking-table"><thead><tr><th>#</th><th>Técnico</th><th style="text-align:right">€</th></tr></thead><tbody>';
+    var totalEur = 0;
+    rEUR.forEach(function(t, idx) {
+      var tag = idx < 3 ? medals[idx] : (idx + 1);
+      totalEur += (t.total_faturado || 0);
+      html += '<tr><td>' + tag + '</td><td style="font-weight:600;">' + t.name + '</td><td style="text-align:right">' + formatEur(t.total_faturado) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div style="text-align:right; margin-top:8px; font-weight:700; color:var(--accent);">TOTAL: ' + formatEur(totalEur) + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // --- Per-technician cards ---
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Técnicos Individuais</div>';
+    html += '<div class="tec-grid">';
+    tecnicos.forEach(function(t) {
+      html += '<div class="tec-card ' + cardCls + '">';
+      html += '<div class="tec-card-name">' + t.name + '</div>';
+
+      // Weeks table
+      html += '<table class="tec-card-weeks"><thead><tr><th>Sem</th><th>HT</th><th>HD</th><th>Util</th></tr></thead><tbody>';
+      t.weeks.forEach(function(w) {
+        var uCls = w.u !== null ? tecUtilColorClass(w.u) : '';
+        html += '<tr>';
+        html += '<td>S' + w.s + '</td>';
+        html += '<td>' + (w.ht !== null ? w.ht.toFixed(1) + 'h' : '—') + '</td>';
+        html += '<td>' + (w.hd !== null ? w.hd.toFixed(1) + 'h' : '—') + '</td>';
+        html += '<td' + (uCls ? ' class="' + uCls + '"' : '') + '>' + (w.u !== null ? w.u.toFixed(1) + '%' : '—') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      // Financials bar (HF + Total €)
+      html += '<div class="tec-card-financials">';
+      html += '<div class="tec-card-fin-item"><span class="tec-card-fin-label">H. Faturadas</span><span class="tec-card-fin-value">' + (t.hf_mes !== null ? t.hf_mes.toFixed(1) + 'h' : '—') + '</span></div>';
+      html += '<div class="tec-card-fin-item" style="text-align:right;"><span class="tec-card-fin-label">Total Faturado</span><span class="tec-card-fin-value">' + formatEur(t.total_faturado) + '</span></div>';
+      html += '</div>';
+
+      // Summary: EF PROD / EF GLOBAL / Utilização (3 slots, 2x2 grid)
+      html += '<div class="tec-card-summary" style="grid-template-columns:1fr 1fr 1fr;">';
+      html += '<div class="tec-card-summary-item"><span class="tec-card-summary-label">Ef. Prod</span><span class="tec-card-summary-value" style="color:' + (t.ef_prod !== null ? efColor(t.ef_prod) : 'var(--gray-600)') + ';">' + (t.ef_prod !== null ? t.ef_prod.toFixed(1) + '%' : '—') + '</span></div>';
+      html += '<div class="tec-card-summary-item"><span class="tec-card-summary-label">Ef. Global</span><span class="tec-card-summary-value" style="color:' + (t.ef_global !== null ? efColor(t.ef_global) : 'var(--gray-600)') + ';">' + (t.ef_global !== null ? t.ef_global.toFixed(1) + '%' : '—') + '</span></div>';
+      html += '<div class="tec-card-summary-item"><span class="tec-card-summary-label">Utilização</span><span class="tec-card-summary-value" style="color:' + (t.utilizacao_mes !== null ? utColor(t.utilizacao_mes) : 'var(--gray-600)') + ';">' + (t.utilizacao_mes !== null ? t.utilizacao_mes.toFixed(1) + '%' : '—') + '</span></div>';
+      html += '</div>';
+
+      html += '</div>';
+    });
+    html += '</div></div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  // Formatter for tec-kpi-table cells
+  function fmtTecVal(v, unit, colorized, kind) {
+    if (v === null || v === undefined) return '—';
+    var suffix = unit === '%' ? '%' : 'h';
+    var str = v.toFixed(unit === '%' ? 1 : 1) + suffix;
+    if (!colorized) return str;
+    var color;
+    if (kind === 'ef') color = efColor(v);
+    else if (kind === 'ut') color = utColor(v);
+    return '<span style="color:' + color + ';font-weight:700;">' + str + '</span>';
+  }
+
+  // Utilização color class for week cells
+  function tecUtilColorClass(v) {
+    if (v === null || v === undefined) return '';
+    if (v < 70)  return 'tec-util-bad';
+    if (v < 85)  return 'tec-util-warn';
+    if (v <= 115) return 'tec-util-ok';
+    return 'tec-util-high';
+  }
+
+  // Month tab click handler
+  function selectTecMonth(m) {
+    state.tecMonth = m;
+    var wrap = document.getElementById('tec-section-wrap');
+    if (wrap) {
+      wrap.innerHTML = renderTecnicosSection(state.year, state.unit);
+    }
+  }
+
+  // ══════ Renderizador do Resumo da Margem (cards) ══════
+  // 2 cards lado-a-lado: Margem do último mês com dados + Acumulado anual da unidade.
+  function renderMargemSummary(monthly) {
+    var idxs = [];
+    for (var i = 0; i < 12; i++) { if (monthly[i]) idxs.push(i); }
+    if (idxs.length === 0) return '';
+
+    function sumGroupMonth(group, m) {
+      return MARGEM_DETAIL_ROWS
+        .filter(function(r) { return r.group === group; })
+        .reduce(function(a, r) { return a + monthly[m][r.idx]; }, 0);
+    }
+
+    // Último mês com dados
+    var lastIdx = idxs[idxs.length - 1];
+    var lVendas = sumGroupMonth('vendas', lastIdx);
+    var lCF     = sumGroupMonth('cf',     lastIdx);
+    var lCV     = sumGroupMonth('cv',     lastIdx);
+    var lCustos = lCF + lCV;
+    var lMargem = lVendas - lCustos;
+    var lMargemPct = lVendas !== 0 ? (lMargem / lVendas * 100) : 0;
+
+    // Acumulado do ano
+    var aVendas = 0, aCF = 0, aCV = 0;
+    idxs.forEach(function(m) {
+      aVendas += sumGroupMonth('vendas', m);
+      aCF     += sumGroupMonth('cf',     m);
+      aCV     += sumGroupMonth('cv',     m);
+    });
+    var aCustos = aCF + aCV;
+    var aMargem = aVendas - aCustos;
+    var aMargemPct = aVendas !== 0 ? (aMargem / aVendas * 100) : 0;
+
+    var mColor = lMargem >= 0 ? 'var(--green)' : 'var(--red)';
+    var aColor = aMargem >= 0 ? 'var(--green)' : 'var(--red)';
+    var nMeses = idxs.length;
+    var labelMeses = nMeses === 1 ? '1 mês' : nMeses + ' meses';
+
+    function metricCell(label, value, color) {
+      return '<div>' +
+        '<div style="font-size:.68rem;color:var(--text-body);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">' + label + '</div>' +
+        '<div style="font-size:1.05rem;font-weight:800;color:' + (color || 'var(--navy)') + ';">' + value + '</div>' +
+      '</div>';
+    }
+
+    var h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin:18px 0 4px;">';
+
+    // Card 1 — Último mês
+    h += '<div style="background:linear-gradient(135deg,#f0f7fc 0%,#fff 100%);border:1px solid #dce8f2;border-left:4px solid var(--navy);border-radius:12px;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04);">';
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
+    h += '<span style="font-size:1.1rem;">📅</span>';
+    h += '<span style="font-size:.75rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--navy);font-weight:800;">Margem do Mês — ' + MONTHS[lastIdx] + '</span>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;">';
+    h += metricCell('Vendas s/ IVA', formatEur(lVendas));
+    h += metricCell('Custos Totais', formatEur(lCustos), 'var(--text-primary)');
+    h += metricCell('Margem €', formatEur(lMargem), mColor);
+    h += metricCell('Margem %', lMargemPct.toFixed(2) + ' %', mColor);
+    h += '</div></div>';
+
+    // Card 2 — Acumulado anual
+    h += '<div style="background:linear-gradient(135deg,#fbf6ea 0%,#fff 100%);border:1px solid #e8d79e;border-left:4px solid #c9a227;border-radius:12px;padding:18px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04);">';
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
+    h += '<span style="font-size:1.1rem;">📊</span>';
+    h += '<span style="font-size:.75rem;text-transform:uppercase;letter-spacing:1.2px;color:#8a6d0f;font-weight:800;">Acumulado ' + state.year + ' <span style="opacity:.7;font-weight:600;">(YTD — ' + labelMeses + ')</span></span>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;">';
+    h += metricCell('Vendas s/ IVA', formatEur(aVendas));
+    h += metricCell('Custos Totais', formatEur(aCustos), 'var(--text-primary)');
+    h += metricCell('Margem €', formatEur(aMargem), aColor);
+    h += metricCell('Margem %', aMargemPct.toFixed(2) + ' %', aColor);
+    h += '</div></div>';
+
+    h += '</div>';
+    return h;
+  }
+
+  // ══════ Renderizador do Detalhe Mensal da Margem ══════
+  // Mostra todas as rubricas de vendas e custos que compõem a margem, com coluna por mês
+  // que tenha dados + coluna Acumulado. Agrupa por: Vendas → Custos Fixos → Custos Variáveis → Margem.
+  function renderMargemDetail(monthly) {
+    // Meses com dados
+    var idxs = [];
+    for (var i = 0; i < 12; i++) { if (monthly[i]) idxs.push(i); }
+    if (idxs.length === 0) return '';
+
+    function sumIdx(rowIdx) {
+      var s = 0;
+      idxs.forEach(function(m) { s += monthly[m][rowIdx]; });
+      return s;
+    }
+    function sumGroup(group) {
+      var rows = MARGEM_DETAIL_ROWS.filter(function(r) { return r.group === group; });
+      return idxs.map(function(m) {
+        return rows.reduce(function(a, r) { return a + monthly[m][r.idx]; }, 0);
+      });
+    }
+
+    // Totais por grupo e por mês (ordem: igual a idxs)
+    var totVendas = sumGroup('vendas');
+    var totCF     = sumGroup('cf');
+    var totCV     = sumGroup('cv');
+    var margem    = idxs.map(function(_, k) { return totVendas[k] - totCF[k] - totCV[k]; });
+    var margemPct = idxs.map(function(_, k) { return totVendas[k] !== 0 ? (margem[k] / totVendas[k] * 100) : 0; });
+
+    // Acumulados
+    var accVendas = totVendas.reduce(function(a, b) { return a + b; }, 0);
+    var accCF     = totCF.reduce(function(a, b) { return a + b; }, 0);
+    var accCV     = totCV.reduce(function(a, b) { return a + b; }, 0);
+    var accMargem = margem.reduce(function(a, b) { return a + b; }, 0);
+    var accMargemPct = accVendas !== 0 ? (accMargem / accVendas * 100) : 0;
+
+    var h = '<h3 style="font-size:1.05rem;font-weight:800;color:var(--navy);margin:36px 0 4px;">📑 Detalhe Mensal — Vendas e Custos</h3>';
+    h += '<p style="font-size:.82rem;color:var(--text-body);margin-bottom:14px;">Desagregação completa de todas as rubricas que compõem a margem, conforme os relatórios mensais.</p>';
+    h += '<div class="data-table-wrap"><table class="data-table"><thead><tr>';
+    h += '<th style="text-align:left;">Rubrica</th>';
+    idxs.forEach(function(m) { h += '<th>' + MONTHS[m] + '</th>'; });
+    if (idxs.length > 1) h += '<th style="background:var(--navy-light);color:#fff;">Acumulado</th>';
+    h += '</tr></thead><tbody>';
+
+    function groupHeaderRow(label, totals, accVal, cls) {
+      var r = '<tr style="background:var(--gray-100);font-weight:700;">';
+      r += '<td style="text-align:left;color:var(--navy);">' + label + '</td>';
+      totals.forEach(function(v) {
+        r += '<td style="font-weight:700;' + (cls || '') + '">' + formatEur(v) + '</td>';
+      });
+      if (idxs.length > 1) r += '<td style="font-weight:700;background:var(--gray-100);' + (cls || '') + '">' + formatEur(accVal) + '</td>';
+      r += '</tr>';
+      return r;
+    }
+    function detailRow(rowDef) {
+      var r = '<tr><td style="text-align:left;padding-left:22px;color:var(--text-body);">' + rowDef.label + '</td>';
+      var acc = 0;
+      idxs.forEach(function(m) {
+        var v = monthly[m][rowDef.idx];
+        acc += v;
+        var style = '';
+        if (v < 0) style = 'color:var(--red);';
+        else if (v === 0) style = 'color:var(--gray-600);';
+        r += '<td style="' + style + '">' + (v === 0 ? '—' : formatEur(v)) + '</td>';
+      });
+      if (idxs.length > 1) {
+        var styleAcc = acc < 0 ? 'color:var(--red);' : (acc === 0 ? 'color:var(--gray-600);' : '');
+        r += '<td style="background:var(--gray-100);' + styleAcc + '">' + (acc === 0 ? '—' : formatEur(acc)) + '</td>';
+      }
+      r += '</tr>';
+      return r;
+    }
+    // Soma várias rubricas (índices) numa única linha — usado p/ vendas consolidadas (Peças, MO)
+    function detailCombinedRow(label, indicesArr) {
+      var r = '<tr><td style="text-align:left;padding-left:22px;color:var(--text-body);">' + label + '</td>';
+      var acc = 0;
+      idxs.forEach(function(m) {
+        var v = indicesArr.reduce(function(a, i) { return a + monthly[m][i]; }, 0);
+        acc += v;
+        var style = '';
+        if (v < 0) style = 'color:var(--red);';
+        else if (v === 0) style = 'color:var(--gray-600);';
+        r += '<td style="' + style + '">' + (v === 0 ? '—' : formatEur(v)) + '</td>';
+      });
+      if (idxs.length > 1) {
+        var styleAcc = acc < 0 ? 'color:var(--red);' : (acc === 0 ? 'color:var(--gray-600);' : '');
+        r += '<td style="background:var(--gray-100);' + styleAcc + '">' + (acc === 0 ? '—' : formatEur(acc)) + '</td>';
+      }
+      r += '</tr>';
+      return r;
+    }
+
+    // Vendas — vista consolidada: 3 linhas (Peças totais, MO totais, Mobilidade)
+    h += groupHeaderRow('TOTAL VENDAS S/ IVA', totVendas, accVendas, '');
+    // Peças = idx 0 (Rappel LP Peças), 3 (Vendas Peças), 4 (Vendas Serviços), 6 (Fat. Int. P/S), 8 (Aguarda NE P/S), 10 (Outras P/S)
+    h += detailCombinedRow('Vendas Peças Totais — S/ Rappel', [0, 3, 4, 6, 8, 10]);
+    // Mão de Obra = idx 1 (Rappel LP Horas), 2 (Vendas MO), 7 (Fat. Int. Horas), 9 (Aguarda NE Horas), 11 (Outras Horas)
+    h += detailCombinedRow('Vendas Mão de Obra Totais — S/ Rappel', [1, 2, 7, 9, 11]);
+    // Serviço de Mobilidade = idx 5 (mantém-se isolado)
+    h += detailRow({ label: 'Serviço de Mobilidade', idx: 5 });
+
+    // Custos Fixos — só o total (sem breakdown)
+    h += groupHeaderRow('TOTAL CUSTOS FIXOS', totCF, accCF, '');
+
+    // Custos Variáveis — só o total (sem breakdown)
+    h += groupHeaderRow('TOTAL CUSTOS VARIÁVEIS', totCV, accCV, '');
+
+    // Margem
+    h += '<tr style="background:rgba(0,59,115,.08);font-weight:800;">';
+    h += '<td style="text-align:left;color:var(--navy);">MARGEM €</td>';
+    margem.forEach(function(v) {
+      h += '<td style="font-weight:800;color:' + (v >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(v) + '</td>';
+    });
+    if (idxs.length > 1) {
+      h += '<td style="background:rgba(0,59,115,.08);font-weight:800;color:' + (accMargem >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + formatEur(accMargem) + '</td>';
+    }
+    h += '</tr>';
+
+    h += '<tr style="background:rgba(0,59,115,.08);font-weight:800;">';
+    h += '<td style="text-align:left;color:var(--navy);">MARGEM %</td>';
+    margemPct.forEach(function(v) {
+      h += '<td style="font-weight:800;color:' + (v >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + v.toFixed(2) + '%</td>';
+    });
+    if (idxs.length > 1) {
+      h += '<td style="background:rgba(0,59,115,.08);font-weight:800;color:' + (accMargemPct >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + accMargemPct.toFixed(2) + '%</td>';
+    }
+    h += '</tr>';
+
+    h += '</tbody></table></div>';
+    return h;
+  }
+
+  function formatNum(v) {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatEur(v) {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+
+  // Eficiência Produtiva color: <100 red, 100-104 yellow, 105+ green
+  function efColor(v) {
+    if (v < 100) return 'var(--red)';
+    if (v < 105) return 'var(--yellow)';
+    return 'var(--green)';
+  }
+
+  // Utilização color: <80 red, 80-84 yellow, 85+ green
+  function utColor(v) {
+    if (v < 80) return 'var(--red)';
+    if (v < 85) return 'var(--yellow)';
+    return 'var(--green)';
+  }
+
+  function isMonthPast(year, monthIndex) {
+    var now = new Date();
+    if (year < now.getFullYear()) return true;
+    if (year === now.getFullYear() && monthIndex < now.getMonth()) return true;
+    return false;
+  }
+
+  function generatePlaceholder(catId) {
+    var data = [];
+    for (var i = 0; i < 12; i++) {
+      if (catId === 'kpis') {
+        data.push([
+          (75 + Math.random() * 20).toFixed(1),
+          (70 + Math.random() * 25).toFixed(1),
+          (1 + Math.random() * 5).toFixed(1),
+          Math.floor(120 + Math.random() * 80),
+          Math.floor(160 + Math.random() * 40)
+        ]);
+      } else if (catId === 'ticket') {
+        var pecas = Math.floor(150 + Math.random() * 200);
+        var mao = Math.floor(80 + Math.random() * 120);
+        data.push([
+          pecas + mao,
+          pecas,
+          mao,
+          Math.floor(80 + Math.random() * 60)
+        ]);
+      } else {
+        var fat = Math.floor(30000 + Math.random() * 20000);
+        var cust = Math.floor(fat * (0.55 + Math.random() * 0.2));
+        var marg = fat - cust;
+        data.push([
+          fat,
+          cust,
+          marg,
+          ((marg / fat) * 100).toFixed(1)
+        ]);
+      }
+    }
+    return data;
+  }
+
+  function renderChart(cat, data, hasRealData) {
+    var canvas = document.getElementById('indicadorChart');
+    if (!canvas) return;
+
+    if (hasRealData && cat.id === 'margem') {
+      // Bar chart: Vendas vs Custos Totais, line for Margem %
+      var vendasVals = data.map(function(r) { return r !== null ? r[0] : null; });
+      var custosVals = data.map(function(r) { return r !== null ? (r[3] + r[4]) : null; });
+      var margemPctVals = data.map(function(r) { return r !== null ? r[6] : null; });
+
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: MONTHS_SHORT,
+          datasets: [
+            {
+              label: 'Vendas s/ IVA (€)',
+              data: vendasVals,
+              backgroundColor: 'rgba(0,123,192,.6)',
+              borderColor: 'rgba(0,123,192,1)',
+              borderWidth: 1, borderRadius: 6, barPercentage: 0.4,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Custos Totais (€)',
+              data: custosVals,
+              backgroundColor: 'rgba(220,38,38,.5)',
+              borderColor: 'rgba(220,38,38,1)',
+              borderWidth: 1, borderRadius: 6, barPercentage: 0.4,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Margem (%)',
+              data: margemPctVals,
+              type: 'line',
+              borderColor: 'rgba(5,150,105,1)',
+              backgroundColor: 'rgba(5,150,105,.1)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointBackgroundColor: function(ctx) {
+                var v = ctx.parsed ? ctx.parsed.y : 0;
+                return v >= 0 ? 'rgba(5,150,105,1)' : 'rgba(220,38,38,1)';
+              },
+              fill: false, tension: 0.3,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true, padding: 16 } },
+            tooltip: { backgroundColor: '#002B55', titleFont: { family: 'Inter', weight: '600' }, bodyFont: { family: 'Inter' }, cornerRadius: 8, padding: 12 }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              position: 'left',
+              grid: { color: 'rgba(0,0,0,.04)' },
+              ticks: { font: { family: 'Inter', size: 10 }, callback: function(v) { return (v/1000).toFixed(0) + 'k €'; } }
+            },
+            y1: {
+              position: 'right',
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 10 }, callback: function(v) { return v + '%'; } }
+            },
+            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11, weight: '500' } } }
+          }
+        }
+      });
+    } else if (hasRealData && cat.id === 'kpis') {
+      // Two-line chart: Eficiência Produtiva + Utilização
+      var efValues = data.map(function(r) { return r !== null ? r[3] : null; });
+      var utValues = data.map(function(r) { return r !== null ? r[4] : null; });
+
+      currentChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: MONTHS_SHORT,
+          datasets: [
+            {
+              label: 'Eficiência Produtiva (%)',
+              data: efValues,
+              borderColor: 'rgba(0,123,192,1)',
+              backgroundColor: 'rgba(0,123,192,.1)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointBackgroundColor: 'rgba(0,123,192,1)',
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: 'Utilização (%)',
+              data: utValues,
+              borderColor: 'rgba(5,150,105,1)',
+              backgroundColor: 'rgba(5,150,105,.1)',
+              borderWidth: 2.5,
+              pointRadius: 5,
+              pointBackgroundColor: 'rgba(5,150,105,1)',
+              fill: false,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, padding: 20 } },
+            tooltip: {
+              backgroundColor: '#002B55',
+              titleFont: { family: 'Inter', weight: '600' },
+              bodyFont: { family: 'Inter' },
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'; } }
+            },
+            annotation: undefined
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              suggestedMin: 50,
+              suggestedMax: 220,
+              grid: { color: 'rgba(0,0,0,.04)' },
+              ticks: { font: { family: 'Inter', size: 11 }, callback: function(v) { return v + '%'; } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 11, weight: '500' } }
+            }
+          }
+        }
+      });
+    } else {
+      // Placeholder: empty chart with message
+      currentChart = new Chart(canvas, {
+        type: 'bar',
+        data: { labels: MONTHS_SHORT, datasets: [{ label: '—', data: [], backgroundColor: 'rgba(0,123,192,.15)' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' } }, x: { grid: { display: false } } }
+        }
+      });
+    }
+  }
+
+  // Expose navigate globally
+  window.navigate = navigate;
+  window.selectTecMonth = selectTecMonth;
+  window.openExternal = openExternal;
+
+  function getHashParam(name){var h=window.location.hash||'';var m=h.match(new RegExp('[#&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
+  function highlightInPage(query){if(!query)return;var q=query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();if(q.length<2)return;function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}var sels=['.cat-card','h2','h3','h4','.card','.unit-card','p','li','td'];var target=null;for(var s=0;s<sels.length&&!target;s++){var nodes=document.querySelectorAll(sels[s]);for(var i=0;i<nodes.length;i++){if(nodes[i].offsetParent===null)continue;var t=norm(nodes[i].textContent||'');if(t.indexOf(q)!==-1){target=nodes[i];break;}}}if(!target)return;var block=target.closest('.cat-card, .card, .unit-card, section, article')||target;setTimeout(function(){block.scrollIntoView({behavior:'smooth',block:'center'});block.classList.add('dc-search-highlight');setTimeout(function(){block.classList.remove('dc-search-highlight');},2500);},250);}
+  (function(){if(document.getElementById('dc-search-highlight-style'))return;var st=document.createElement('style');st.id='dc-search-highlight-style';st.textContent='@keyframes dcSearchFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,200,0,0);background-color:transparent}30%{box-shadow:0 0 0 6px rgba(255,200,0,.55);background-color:#fff8a3}}.dc-search-highlight{animation:dcSearchFlash 2.4s ease-out;border-radius:12px}';document.head.appendChild(st);})();
+  function applyDeepLinkFromHash(){var sub=getHashParam('sub');var q=getHashParam('q');var didNav=false;if(sub){var isExternal=EXTERNAL_CARDS.some(function(e){return e.id===sub;});var isCategory=CATEGORIES.some(function(c){return c.id===sub;});if(isExternal){openExternal(sub);didNav=true;}else if(isCategory){navigate(sub);didNav=true;}}if(q)highlightInPage(q);return didNav;}
+  if(!applyDeepLinkFromHash())navigate();
+  window.addEventListener('hashchange',function(){applyDeepLinkFromHash();});
+
+})();
+</script>
+</body>
+</html>

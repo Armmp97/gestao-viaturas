@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Recursos Humanos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA; --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF;
+  --gray-600: #6B7280; --text-dark: #1A2A3A; --text-body: #475569;
+  --green: #059669; --green-light: #D1FAE5; --yellow: #D97706; --yellow-light: #FEF3C7;
+  --radius: 16px; --radius-sm: 12px; --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--off-white); color:var(--text-body); line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Hero */
+.hero {
+  position:relative;
+  background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 50%,var(--navy-light) 100%);
+  color:var(--white); overflow:hidden; min-height:280px; display:flex; align-items:center;
+}
+.hero::before {
+  content:''; position:absolute; top:-40%; right:-10%;
+  width:700px; height:700px;
+  background:radial-gradient(circle,rgba(0,123,192,.12) 0%,transparent 70%);
+  border-radius:50%; pointer-events:none;
+}
+.hero-inner { position:relative; z-index:2; padding:50px 0 40px; }
+.hero h1 {
+  font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900;
+  line-height:1.15; margin-bottom:12px;
+}
+.hero h1 em { font-style:normal; color:var(--accent-light); }
+.hero-desc { font-size:1.05rem; line-height:1.8; max-width:640px; opacity:.85; }
+.hero-bar {
+  position:absolute; bottom:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 40%,var(--navy-light) 40%);
+}
+
+/* Container & Sections */
+.container { max-width:1140px; margin:0 auto; padding:0 24px; }
+.section { padding:60px 0; }
+.section:nth-child(even) { background:var(--white); }
+.section-label {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:.75rem; font-weight:700; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--accent); margin-bottom:10px;
+}
+.section-label::before {
+  content:''; width:28px; height:3px; background:var(--accent); border-radius:2px;
+}
+.section-title {
+  font-size:clamp(1.4rem,3vw,1.9rem); font-weight:800;
+  color:var(--navy); line-height:1.25; margin-bottom:8px;
+}
+.section-subtitle { font-size:.95rem; color:var(--text-body); max-width:600px; line-height:1.7; margin-bottom:32px; }
+
+/* Contact card hero */
+.rh-contact {
+  display:flex; align-items:center; gap:18px;
+  background:rgba(255,255,255,.08); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  padding:16px 24px; border-radius:var(--radius-sm);
+  margin-top:28px; max-width:480px;
+}
+.rh-contact-avatar {
+  width:50px; height:50px; border-radius:50%;
+  background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem; font-weight:700; flex-shrink:0;
+}
+.rh-contact-info { flex:1; }
+.rh-contact-name { font-weight:700; font-size:.95rem; }
+.rh-contact-role { font-size:.8rem; opacity:.7; }
+.rh-contact-email { font-size:.8rem; opacity:.85; margin-top:2px; }
+.rh-contact-email a { color:var(--accent-light); text-decoration:none; }
+.rh-contact-email a:hover { text-decoration:underline; }
+
+/* Grid */
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
+.grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+
+/* Info cards */
+.info-card {
+  background:var(--white); border-radius:var(--radius); padding:28px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  transition:var(--transition); position:relative; overflow:hidden;
+}
+.info-card:hover { box-shadow:0 6px 24px rgba(0,59,115,.1); transform:translateY(-2px); }
+.info-card-icon {
+  width:48px; height:48px; border-radius:var(--radius-sm);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem; margin-bottom:16px;
+}
+.info-card-icon.blue { background:rgba(0,123,192,.08); }
+.info-card-icon.green { background:rgba(5,150,105,.08); }
+.info-card-icon.yellow { background:rgba(217,119,6,.08); }
+.info-card-icon.navy { background:rgba(0,59,115,.06); }
+.info-card h3 { font-size:1.05rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
+.info-card p { font-size:.9rem; line-height:1.7; color:var(--text-body); }
+
+/* Link button inside card */
+.card-link {
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:14px; padding:8px 16px; border-radius:8px;
+  background:var(--navy); color:var(--white); text-decoration:none;
+  font-size:.82rem; font-weight:600; transition:var(--transition);
+}
+.card-link:hover { background:var(--navy-deep); }
+.card-link.outline {
+  background:transparent; border:1.5px solid var(--navy);
+  color:var(--navy);
+}
+.card-link.outline:hover { background:var(--navy); color:var(--white); }
+
+/* Templates grid */
+.template-card {
+  background:var(--white); border-radius:var(--radius-sm); padding:20px 22px;
+  box-shadow:0 1px 6px rgba(0,59,115,.05); border:1px solid var(--gray-200);
+  display:flex; align-items:center; gap:16px; transition:var(--transition);
+  cursor:default;
+}
+.template-card:hover { box-shadow:0 4px 16px rgba(0,59,115,.08); }
+.template-icon {
+  width:44px; height:44px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.3rem;
+  background:rgba(0,59,115,.06);
+}
+.template-info { flex:1; }
+.template-info h4 { font-size:.9rem; font-weight:700; color:var(--navy); margin-bottom:2px; }
+.template-info p { font-size:.78rem; color:var(--gray-600); }
+.template-badge {
+  font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+  padding:4px 10px; border-radius:6px; background:var(--gray-100); color:var(--gray-600);
+  white-space:nowrap;
+}
+.template-badge.available { background:rgba(5,150,105,.08); color:var(--green); }
+
+/* Forms */
+.form-section {
+  background:var(--white); border-radius:var(--radius); padding:32px;
+  box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200);
+  margin-bottom:24px;
+}
+.form-section h3 {
+  font-size:1.1rem; font-weight:700; color:var(--navy); margin-bottom:6px;
+}
+.form-section .form-desc { font-size:.88rem; color:var(--gray-600); margin-bottom:24px; }
+.form-row { margin-bottom:18px; }
+.form-row label {
+  display:block; font-size:.82rem; font-weight:600;
+  color:var(--text-dark); margin-bottom:6px;
+}
+.form-row label .req { color:var(--accent); }
+.form-input {
+  width:100%; padding:11px 14px; border:1.5px solid var(--gray-200);
+  border-radius:8px; font-family:inherit; font-size:.9rem;
+  color:var(--text-dark); background:var(--off-white);
+  transition:border-color .2s;
+}
+.form-input:focus { outline:none; border-color:var(--accent); background:var(--white); }
+textarea.form-input { resize:vertical; min-height:100px; }
+select.form-input { cursor:pointer; }
+.form-row-inline { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+/* File upload */
+.file-upload-area {
+  border:2px dashed var(--gray-200); border-radius:10px; padding:18px;
+  text-align:center; cursor:pointer; transition:var(--transition);
+  font-size:.85rem; color:var(--gray-600);
+}
+.file-upload-area:hover { border-color:var(--accent); background:rgba(0,123,192,.02); }
+.file-upload-area input { display:none; }
+.file-upload-area .icon { font-size:1.5rem; margin-bottom:6px; }
+.attached-file {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:var(--gray-100); border-radius:8px; margin-bottom:6px;
+  font-size:.82rem; color:var(--text-dark);
+}
+.attached-file .af-icon { font-size:1rem; flex-shrink:0; }
+.attached-file .af-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.attached-file .af-size { color:var(--gray-400); font-size:.75rem; white-space:nowrap; }
+.attached-file .af-remove {
+  background:none; border:none; cursor:pointer; font-size:.9rem;
+  color:var(--gray-400); padding:2px 4px; border-radius:4px;
+}
+.attached-file .af-remove:hover { color:#DC2626; background:rgba(220,38,38,.08); }
+.attached-file img.af-thumb {
+  width:36px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;
+}
+
+/* Submit button */
+.btn-submit {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 28px; border:none; border-radius:8px;
+  background:var(--navy); color:var(--white);
+  font-family:inherit; font-size:.9rem; font-weight:700;
+  cursor:pointer; transition:var(--transition);
+}
+.btn-submit:hover { background:var(--navy-deep); }
+.btn-submit:disabled { opacity:.5; cursor:not-allowed; }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:2000;
+  padding:14px 22px; border-radius:10px; font-size:.9rem; font-weight:600;
+  color:var(--white); box-shadow:0 8px 30px rgba(0,0,0,.15);
+  transform:translateY(100px); opacity:0; transition:all .4s ease;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.success { background:var(--green); }
+.toast.error { background:#DC2626; }
+
+/* Feriados table */
+.feriados-table {
+  width:100%; border-collapse:collapse; font-size:.88rem;
+}
+.feriados-table th {
+  text-align:left; padding:10px 14px; background:var(--navy);
+  color:var(--white); font-weight:600; font-size:.8rem;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.feriados-table th:first-child { border-radius:8px 0 0 0; }
+.feriados-table th:last-child { border-radius:0 8px 0 0; }
+.feriados-table td {
+  padding:10px 14px; border-bottom:1px solid var(--gray-100);
+}
+.feriados-table tr:hover td { background:rgba(0,123,192,.03); }
+.feriados-table .passed { opacity:.45; }
+
+/* Tabs */
+.tab-bar {
+  display:flex; gap:4px; background:var(--white); border-radius:var(--radius-sm);
+  padding:4px; box-shadow:0 1px 4px rgba(0,0,0,.06); margin-bottom:28px;
+}
+.tab-btn {
+  flex:1; padding:12px 16px; border:none; background:transparent; cursor:pointer;
+  font-family:inherit; font-size:.88rem; font-weight:600; color:var(--gray-600);
+  border-radius:10px; transition:var(--transition); text-align:center;
+}
+.tab-btn:hover { background:var(--gray-100); }
+.tab-btn.active { background:var(--navy); color:var(--white); }
+
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Validações Divergências Tab */
+.val-stats-bar { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px; }
+.val-stat { flex:1; min-width:140px; background:var(--white); border-radius:var(--radius-sm); padding:18px; text-align:center; box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200); }
+.val-stat-num { font-size:1.8rem; font-weight:800; color:var(--navy); }
+.val-stat-label { font-size:.72rem; color:var(--gray-600); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.val-filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+.val-filter-bar select, .val-filter-bar input { padding:10px 14px; border:1px solid var(--gray-200); border-radius:var(--radius-sm); font-family:inherit; font-size:.88rem; background:var(--white); }
+.val-filter-bar select:focus, .val-filter-bar input:focus { outline:none; border-color:var(--accent); }
+.val-tabs { display:flex; gap:4px; margin-bottom:20px; }
+.val-tab-btn { padding:8px 18px; border:2px solid var(--gray-200); background:var(--white); border-radius:8px; font-family:inherit; font-size:.82rem; font-weight:600; color:var(--gray-600); cursor:pointer; transition:var(--transition); }
+.val-tab-btn:hover { border-color:var(--accent); color:var(--accent); }
+.val-tab-btn.active { border-color:var(--navy); background:var(--navy); color:var(--white); }
+.val-card { background:var(--white); border-radius:var(--radius-sm); padding:16px 20px; margin-bottom:10px; box-shadow:0 2px 12px rgba(0,59,115,.06); border:1px solid var(--gray-200); border-left:4px solid var(--green); transition:var(--transition); }
+.val-card:hover { box-shadow:0 4px 20px rgba(0,59,115,.1); transform:translateY(-1px); }
+.val-card.pendente { border-left-color:var(--yellow); }
+.val-card-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.val-card-title { font-weight:700; font-size:.92rem; color:var(--text-dark); }
+.val-card-meta { font-size:.78rem; color:var(--gray-400); margin-top:2px; }
+.val-card-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.val-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+.val-badge-colisao { background:#fce8e6; color:#d93025; }
+.val-badge-cacem { background:#e8f0fe; color:#1a73e8; }
+.val-badge-lisboa { background:#fef7e0; color:#e37400; }
+.val-badge-ref { display:inline-block; background:rgba(5,150,105,.08); color:var(--green); font-weight:700; font-size:.73rem; padding:3px 8px; border-radius:4px; }
+.val-badge-status { display:inline-block; padding:3px 10px; border-radius:20px; font-size:.7rem; font-weight:700; letter-spacing:.5px; }
+.val-badge-validado { background:rgba(5,150,105,.08); color:var(--green); }
+.val-badge-pendente { background:var(--yellow-light); color:var(--yellow); }
+.val-btn { padding:7px 14px; border:none; border-radius:8px; font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; transition:var(--transition); }
+.val-btn-view { background:var(--accent); color:var(--white); }
+.val-btn-view:hover { background:var(--navy); }
+.val-btn-validate { background:var(--green); color:var(--white); }
+.val-btn-validate:hover { background:#047857; }
+.val-btn-outline { background:transparent; border:1.5px solid var(--gray-200); color:var(--gray-600); }
+.val-btn-outline:hover { border-color:var(--navy); color:var(--navy); }
+.val-empty { text-align:center; padding:50px 20px; color:var(--gray-400); }
+.val-empty .icon { font-size:40px; margin-bottom:10px; }
+.val-view-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:1000; justify-content:center; align-items:center; }
+.val-view-panel.active { display:flex; }
+.val-view-inner { background:var(--white); width:95%; max-width:1000px; height:90vh; border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+.val-view-header { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:var(--navy); color:var(--white); }
+.val-view-header h3 { font-size:.95rem; font-weight:700; }
+.val-view-close { background:none; border:none; color:var(--white); font-size:1.3rem; cursor:pointer; padding:4px 8px; }
+.val-view-body { flex:1; overflow:hidden; }
+.val-view-body iframe { width:100%; height:100%; border:none; }
+
+/* Responsive */
+@media(max-width:700px) {
+  .hero { min-height:auto; }
+  .hero-inner { padding:36px 0 28px; }
+  .section { padding:40px 0; }
+  .form-row-inline { grid-template-columns:1fr; }
+  .grid-2, .grid-3 { grid-template-columns:1fr; }
+  .rh-contact { flex-direction:column; text-align:center; }
+  .val-stats-bar { gap:8px; }
+  .val-stat { min-width:100px; padding:12px; }
+  .val-stat-num { font-size:1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ HERO ══════ -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <h1>Recursos <em>Humanos</em></h1>
+      <p class="hero-desc">Informações sobre férias, faltas, formação, documentos e contactos de RH. Tudo o que precisas num só lugar.</p>
+      <div class="rh-contact">
+        <div class="rh-contact-avatar">CP</div>
+        <div class="rh-contact-info">
+          <div class="rh-contact-name">Cláudia Pedro</div>
+          <div class="rh-contact-role">Responsável de Recursos Humanos</div>
+          <div class="rh-contact-email"><a href="mailto:recursoshumanos@domuscar.com">recursoshumanos@domuscar.com</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bar"></div>
+</div>
+
+<!-- ══════ TABS NAVIGATION ══════ -->
+<div class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('ferias')">Férias e Faltas</button>
+      <button class="tab-btn" onclick="switchTab('formacao')" id="tabFormacao">Formação</button>
+      <button class="tab-btn" onclick="switchTab('documentos')">Documentos</button>
+      <button class="tab-btn" onclick="switchTab('info')">Informações Úteis</button>
+      <button class="tab-btn" onclick="switchTab('validacoes')" id="tabValidacoes" style="display:none;">Validações Divergências</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB: FÉRIAS E FALTAS ══════ -->
+<div class="tab-panel active" id="panelFerias">
+  <div class="section">
+    <div class="container">
+      <div class="section-label">Férias e Faltas</div>
+      <div class="section-title">Gestão de Ausências</div>
+      <p class="section-subtitle">Informações sobre marcação de férias e procedimento para justificação de faltas.</p>
+
+      <div class="grid-2">
+        <!-- Férias -->
+        <div class="info-card">
+          <div class="info-card-icon blue">🏖️</div>
+          <h3>Marcação de Férias</h3>
+          <p>Os pedidos de férias devem ser efetuados exclusivamente através da aplicação <strong>2Smart</strong>. Acede à plataforma, submete o teu pedido e acompanha a aprovação diretamente na app.</p>
+          <a href="https://walkingarage.2smart.pt/" target="_blank" class="card-link">Aceder ao 2Smart →</a>
+        </div>
+
+        <!-- Faltas -->
+        <div class="info-card">
+          <div class="info-card-icon yellow">📝</div>
+          <h3>Justificação de Faltas</h3>
+          <p>Em caso de ausência, preenche o formulário de justificação abaixo com o motivo e comprovativo (se aplicável). A administração e RH serão notificados automaticamente.</p>
+          <a href="#formFalta" class="card-link outline" onclick="switchTab('ferias'); document.getElementById('formFalta').scrollIntoView({behavior:'smooth'});">Preencher Formulário ↓</a>
+        </div>
+      </div>
+
+      <!-- Formulário Justificação de Falta -->
+      <div class="form-section" id="formFalta" style="margin-top:32px;">
+        <h3>Formulário de Justificação de Falta</h3>
+        <p class="form-desc">Preenche os dados abaixo. O formulário será guardado no SharePoint e a administração + RH serão notificados.</p>
+
+        <div class="form-row-inline">
+          <div class="form-row">
+            <label>Nome do Colaborador <span class="req">*</span></label>
+            <input type="text" class="form-input" id="faltaNome" placeholder="Nome completo">
+          </div>
+          <div class="form-row">
+            <label>Data(s) da Falta <span class="req">*</span></label>
+            <input type="text" class="form-input" id="faltaData" placeholder="Ex: 14/04/2026 ou 14-16/04/2026">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Motivo da Falta <span class="req">*</span></label>
+          <select class="form-input" id="faltaMotivo">
+            <option value="">Selecionar motivo...</option>
+            <option value="Doença">Doença</option>
+            <option value="Consulta Médica">Consulta Médica</option>
+            <option value="Assistência a Familiar">Assistência a Familiar</option>
+            <option value="Falecimento de Familiar">Falecimento de Familiar</option>
+            <option value="Casamento">Casamento</option>
+            <option value="Nascimento de Filho">Nascimento de Filho</option>
+            <option value="Motivo Pessoal">Motivo Pessoal</option>
+            <option value="Acidente de Trabalho">Acidente de Trabalho</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>Observações</label>
+          <textarea class="form-input" id="faltaObs" placeholder="Detalhes adicionais (opcional)"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Anexos (opcional)</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="file-upload-area" onclick="document.getElementById('faltaFile').click()">
+              <div class="icon">📎</div>
+              <p>Anexar ficheiro</p>
+              <p style="font-size:.75rem;color:var(--gray-400);margin-top:2px;">PDF, imagem, Word</p>
+              <input type="file" id="faltaFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple onchange="addFaltaFiles(this.files, 'file')">
+            </div>
+            <div class="file-upload-area" onclick="document.getElementById('faltaCamera').click()">
+              <div class="icon">📷</div>
+              <p>Tirar fotografia</p>
+              <p style="font-size:.75rem;color:var(--gray-400);margin-top:2px;">Abre a câmara do dispositivo</p>
+              <input type="file" id="faltaCamera" accept="image/*" capture="environment" onchange="addFaltaFiles(this.files, 'camera')">
+            </div>
+          </div>
+          <div id="faltaFileList" style="margin-top:10px;"></div>
+        </div>
+
+        <button class="btn-submit" onclick="submitFalta()" id="btnFalta">Submeter Justificação</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB: FORMAÇÃO ══════ -->
+<div class="tab-panel" id="panelFormacao">
+  <div class="section">
+    <div class="container">
+      <div class="section-label">Formação</div>
+      <div class="section-title">Pedido de Formação</div>
+      <p class="section-subtitle">Solicita formação na tua área de interesse. O pedido será analisado pela administração.</p>
+
+      <div class="form-section">
+        <h3>Formulário de Pedido de Formação</h3>
+        <p class="form-desc">Descreve a formação que pretendes e o motivo. A administração será notificada e dará seguimento ao pedido.</p>
+
+        <div class="form-row-inline">
+          <div class="form-row">
+            <label>Nome do Colaborador <span class="req">*</span></label>
+            <input type="text" class="form-input" id="formacaoNome" placeholder="Nome completo">
+          </div>
+          <div class="form-row">
+            <label>Área / Departamento</label>
+            <select class="form-input" id="formacaoArea">
+              <option value="">Selecionar...</option>
+              <option value="Mecânica">Mecânica</option>
+              <option value="Colisão">Colisão</option>
+              <option value="Administração">Administração</option>
+              <option value="Qualidade">Qualidade</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Tipo de Formação <span class="req">*</span></label>
+          <select class="form-input" id="formacaoTipo">
+            <option value="">Selecionar tipo...</option>
+            <option value="Técnica (mecânica/diagnóstico)">Técnica (mecânica/diagnóstico)</option>
+            <option value="Segurança e Saúde no Trabalho">Segurança e Saúde no Trabalho</option>
+            <option value="Software / Sistemas">Software / Sistemas</option>
+            <option value="Atendimento ao Cliente">Atendimento ao Cliente</option>
+            <option value="Gestão / Liderança">Gestão / Liderança</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>Descrição da Formação Pretendida <span class="req">*</span></label>
+          <textarea class="form-input" id="formacaoDesc" placeholder="Descreve a formação que pretendes, o fornecedor (se conhecido), e o motivo pelo qual seria benéfica."></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Urgência</label>
+          <select class="form-input" id="formacaoUrgencia">
+            <option value="Normal">Normal</option>
+            <option value="Prioritário">Prioritário — Necessidade imediata</option>
+          </select>
+        </div>
+
+        <button class="btn-submit" onclick="submitFormacao()" id="btnFormacao">Submeter Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB: DOCUMENTOS E TEMPLATES ══════ -->
+<div class="tab-panel" id="panelDocumentos">
+  <div class="section">
+    <div class="container">
+      <div class="section-label">Documentos</div>
+      <div class="section-title">Modelos e Templates</div>
+      <p class="section-subtitle">Documentos úteis disponíveis para consulta. Para solicitar uma declaração assinada, contacta os Recursos Humanos.</p>
+
+      <div class="grid-3">
+        <div class="template-card">
+          <div class="template-icon">📄</div>
+          <div class="template-info">
+            <h4>Declaração de Vínculo Laboral</h4>
+            <p>Modelo para apresentar a entidades bancárias, finanças, etc.</p>
+          </div>
+          <span class="template-badge">Em breve</span>
+        </div>
+
+        <div class="template-card">
+          <div class="template-icon">🧾</div>
+          <div class="template-info">
+            <h4>Declaração para IRS</h4>
+            <p>Pedido de declaração de rendimentos para efeitos fiscais.</p>
+          </div>
+          <span class="template-badge">Em breve</span>
+        </div>
+
+        <div class="template-card">
+          <div class="template-icon">📝</div>
+          <div class="template-info">
+            <h4>Modelo Justificação de Falta</h4>
+            <p>Versão imprimível do formulário de justificação de ausência.</p>
+          </div>
+          <span class="template-badge">Em breve</span>
+        </div>
+
+        <div class="template-card">
+          <div class="template-icon">🔄</div>
+          <div class="template-info">
+            <h4>Alteração de Dados Pessoais</h4>
+            <p>Formulário para atualizar morada, IBAN, contacto, estado civil.</p>
+          </div>
+          <span class="template-badge">Em breve</span>
+        </div>
+
+        <div class="template-card">
+          <div class="template-icon">📅</div>
+          <div class="template-info">
+            <h4>Mapa de Feriados 2026</h4>
+            <p>Feriados nacionais e pontes aplicáveis.</p>
+          </div>
+          <span class="template-badge available">Disponível</span>
+        </div>
+      </div>
+
+      <!-- Feriados 2026 -->
+      <div style="margin-top:36px;">
+        <h3 style="font-size:1.05rem; font-weight:700; color:var(--navy); margin-bottom:16px;">Feriados Nacionais 2026</h3>
+        <div style="overflow-x:auto; border-radius:var(--radius-sm); border:1px solid var(--gray-200);">
+          <table class="feriados-table" id="feriadosTable">
+            <thead>
+              <tr><th>Data</th><th>Dia da Semana</th><th>Feriado</th></tr>
+            </thead>
+            <tbody>
+              <tr class="passed"><td>1 janeiro</td><td>Quinta-feira</td><td>Ano Novo</td></tr>
+              <tr class="passed"><td>17 fevereiro</td><td>Terça-feira</td><td>Carnaval (tolerância)</td></tr>
+              <tr class="passed"><td>3 abril</td><td>Sexta-feira</td><td>Sexta-feira Santa</td></tr>
+              <tr class="passed"><td>5 abril</td><td>Domingo</td><td>Páscoa</td></tr>
+              <tr><td>25 abril</td><td>Sábado</td><td>Dia da Liberdade</td></tr>
+              <tr><td>1 maio</td><td>Sexta-feira</td><td>Dia do Trabalhador</td></tr>
+              <tr><td>4 junho</td><td>Quinta-feira</td><td>Corpo de Deus</td></tr>
+              <tr><td>10 junho</td><td>Quarta-feira</td><td>Dia de Portugal</td></tr>
+              <tr><td>15 agosto</td><td>Sábado</td><td>Assunção de Nossa Senhora</td></tr>
+              <tr><td>5 outubro</td><td>Segunda-feira</td><td>Implantação da República</td></tr>
+              <tr><td>1 novembro</td><td>Domingo</td><td>Dia de Todos os Santos</td></tr>
+              <tr><td>1 dezembro</td><td>Terça-feira</td><td>Restauração da Independência</td></tr>
+              <tr><td>8 dezembro</td><td>Terça-feira</td><td>Imaculada Conceição</td></tr>
+              <tr><td>25 dezembro</td><td>Sexta-feira</td><td>Natal</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB: INFORMAÇÕES ÚTEIS ══════ -->
+<div class="tab-panel" id="panelInfo">
+  <div class="section">
+    <div class="container">
+      <div class="section-label">Informações</div>
+      <div class="section-title">Informações Úteis</div>
+      <p class="section-subtitle">Dados importantes sobre seguros, medicina no trabalho e benefícios.</p>
+
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-icon green">🏥</div>
+          <h3>Seguro de Acidentes de Trabalho</h3>
+          <p>Todos os colaboradores estão cobertos pelo seguro de acidentes de trabalho. Em caso de acidente, comunica imediatamente ao teu coordenador e aos Recursos Humanos.</p>
+          <p style="margin-top:10px; font-size:.82rem; color:var(--gray-600);">Para mais informações, contacta: <strong>recursoshumanos@domuscar.com</strong></p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon blue">🩺</div>
+          <h3>Medicina no Trabalho</h3>
+          <p>Os exames de medicina no trabalho são obrigatórios e periódicos. Serás convocado com antecedência. As fichas de aptidão são arquivadas pelos RH.</p>
+          <p style="margin-top:10px; font-size:.82rem; color:var(--gray-600);">Dúvidas sobre marcação de consultas: contacta RH.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon yellow">💰</div>
+          <h3>Subsídios e Benefícios</h3>
+          <p>Informações sobre subsídio de alimentação, subsídio de férias e de Natal, e outros benefícios aplicáveis conforme a legislação em vigor e o contrato coletivo.</p>
+          <p style="margin-top:10px; font-size:.82rem; color:var(--gray-600);">Consultas sobre recibos e vencimento: contacta RH.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon navy">📋</div>
+          <h3>Regulamento Interno</h3>
+          <p>O regulamento interno da empresa está disponível na secção <strong>Normas e Regras Internas</strong> da Intranet. Consulta regularmente para te manteres atualizado.</p>
+          <p style="margin-top:10px; font-size:.82rem; color:var(--gray-600);">Dúvidas sobre o regulamento: contacta a administração.</p>
+        </div>
+
+        <div class="info-card" style="grid-column:1 / -1;">
+          <div class="info-card-icon yellow">🚑</div>
+          <h3>Procedimento em Caso de Acidente de Trabalho</h3>
+          <p><strong>O que fazer em caso de acidente de trabalho?</strong> O sinistrado deverá dirigir-se ao Hospital Público para receber a 1.ª assistência. Legalmente, é uma obrigação da entidade patronal efetuar a participação no próprio dia.</p>
+          <p style="margin-top:10px;">Aceder ao <strong>Portal Tranquilidade</strong> (Acidentes de Trabalho) → <em>Participação online de Acidente de Trabalho</em> → <em>Registar nova participação</em>.</p>
+
+          <p style="margin-top:14px;"><strong>Sinistrado está acamado, sem possibilidade de se deslocar a um Hospital. Como proceder?</strong></p>
+          <p>A seguradora não presta serviço ao domicílio nem disponibiliza ambulâncias específicas. Deverá ser chamado o <strong>INEM</strong> ou os <strong>Bombeiros</strong>, se for caso disso.</p>
+
+          <p style="margin-top:14px;"><strong>Qual a documentação a apresentar no Hospital?</strong></p>
+          <p>Documento de identificação do sinistrado e a participação registada ou o número de apólice de Acidentes de Trabalho.</p>
+
+          <p style="margin-top:14px;"><strong>Existe algum limite de tempo para ir ao Hospital após o acidente?</strong></p>
+          <p>O sinistrado deverá dirigir-se ao Hospital no <strong>próprio dia do sinistro</strong>, acompanhado do documento de identificação e do n.º de apólice de Acidentes de Trabalho.</p>
+
+          <p style="margin-top:14px;"><strong>Zona de Lisboa — Hospitais de referência:</strong></p>
+          <p style="margin-top:6px;">• <strong>Hospital da Luz Torres de Lisboa</strong> (ex-British Hospital) — Rua Tomás da Fonseca, Torre E, Piso 2 — entre as 09:00 e as 18:00.</p>
+          <p style="margin-top:6px;">• <strong>Hospital da Luz</strong> — Avenida Lusíada, 100 — após as 18:00 (serviço de urgência).</p>
+          <p style="margin-top:6px;">• <strong>Hospitais Públicos</strong> — abertos 24 horas.</p>
+
+          <p style="margin-top:14px; font-size:.82rem; color:var(--gray-600);">Em caso de dúvida, contacta de imediato o teu coordenador e os Recursos Humanos: <strong>recursoshumanos@domuscar.com</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB: VALIDAÇÕES DIVERGÊNCIAS ══════ -->
+<div class="tab-panel" id="panelValidacoes">
+  <div class="section">
+    <div class="container">
+      <div class="section-label">Validações</div>
+      <div class="section-title">Relatórios de Divergências Validados</div>
+      <p class="section-subtitle">Relatórios validados pelos coordenadores. Revise e marque como tratados.</p>
+
+      <!-- Stats -->
+      <div class="val-stats-bar">
+        <div class="val-stat"><div class="val-stat-num" id="valStatTotal">—</div><div class="val-stat-label">Total</div></div>
+        <div class="val-stat"><div class="val-stat-num" id="valStatPendente">—</div><div class="val-stat-label">Por Tratar</div></div>
+        <div class="val-stat"><div class="val-stat-num" id="valStatTratado">—</div><div class="val-stat-label">Tratados</div></div>
+      </div>
+
+      <!-- Sub-tabs: Por Tratar / Tratados -->
+      <div class="val-tabs">
+        <button class="val-tab-btn active" onclick="valSwitchView('pendente')" id="valTabPendente">Por Tratar</button>
+        <button class="val-tab-btn" onclick="valSwitchView('tratado')" id="valTabTratado">Tratados</button>
+        <button class="val-tab-btn" onclick="valSwitchView('todos')" id="valTabTodos">Todos</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="val-filter-bar">
+        <select id="valFilterUnit" onchange="valApplyFilters()">
+          <option value="all">Todas as Unidades</option>
+          <option value="colisao_belavista">Colisão Bela Vista</option>
+          <option value="colisao_taguspark">Colisão Tagus Park</option>
+          <option value="colisao">Colisão (legacy)</option>
+          <option value="mecanica_cacem">Mecânica Cacém</option>
+          <option value="mecanica_lisboa">Mecânica Lisboa</option>
+        </select>
+        <input type="text" id="valFilterSearch" placeholder="Pesquisar..." oninput="valApplyFilters()">
+      </div>
+
+      <!-- File List -->
+      <div id="valFileList"><div class="val-empty"><div class="icon">⏳</div><p>A carregar relatórios...</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- View Panel (Validações) -->
+<div class="val-view-panel" id="valViewPanel">
+  <div class="val-view-inner">
+    <div class="val-view-header">
+      <h3 id="valViewTitle">Relatório</h3>
+      <button class="val-view-close" onclick="valCloseView()">✕</button>
+    </div>
+    <div class="val-view-body">
+      <iframe id="valViewFrame" sandbox="allow-same-origin"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ======== TAB SWITCHING ========
+  var tabs = {
+    ferias: 'panelFerias',
+    formacao: 'panelFormacao',
+    documentos: 'panelDocumentos',
+    info: 'panelInfo',
+    validacoes: 'panelValidacoes'
+  };
+
+  window.switchTab = function(key) {
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      var btnKey = btn.getAttribute('onclick');
+      if (btnKey) {
+        var m = btnKey.match(/switchTab\('(\w+)'\)/);
+        if (m) btn.classList.toggle('active', m[1] === key);
+      }
+    });
+    // Update panels
+    for (var k in tabs) {
+      var panel = document.getElementById(tabs[k]);
+      if (panel) {
+        panel.classList.toggle('active', k === key);
+        panel.style.display = k === key ? 'block' : 'none';
+      }
+    }
+    // Load validations data when tab is opened
+    if (key === 'validacoes' && !valDataLoaded) {
+      valLoadAll();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── Deep-link via URL hash (#sub=info etc.) — usado pela pesquisa global da intranet
+  function getHashParam(name){var h=window.location.hash||'';var m=h.match(new RegExp('[#&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
+  function highlightInPage(query){if(!query)return;var q=query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();if(q.length<2)return;function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}var sels=['h2','h3','h4','.info-card','.card-title','.card','p','li','td'];var target=null;for(var s=0;s<sels.length&&!target;s++){var nodes=document.querySelectorAll(sels[s]);for(var i=0;i<nodes.length;i++){if(nodes[i].offsetParent===null)continue;var t=norm(nodes[i].textContent||'');if(t.indexOf(q)!==-1){target=nodes[i];break;}}}if(!target)return;var block=target.closest('.info-card, .card, section, article')||target;setTimeout(function(){block.scrollIntoView({behavior:'smooth',block:'center'});block.classList.add('dc-search-highlight');setTimeout(function(){block.classList.remove('dc-search-highlight');},2500);},250);}
+  (function(){if(document.getElementById('dc-search-highlight-style'))return;var st=document.createElement('style');st.id='dc-search-highlight-style';st.textContent='@keyframes dcSearchFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,200,0,0);background-color:transparent}30%{box-shadow:0 0 0 6px rgba(255,200,0,.55);background-color:#fff8a3}}.dc-search-highlight{animation:dcSearchFlash 2.4s ease-out;border-radius:12px}';document.head.appendChild(st);})();
+  function applyDeepLinkFromHash(){var sub=getHashParam('sub');var q=getHashParam('q');var did=false;if(sub&&tabs[sub]){window.switchTab(sub);did=true;}if(q){highlightInPage(q);did=true;}return did;}
+  applyDeepLinkFromHash();
+  window.addEventListener('hashchange',applyDeepLinkFromHash);
+
+  // ======== FILE LABEL UPDATE ========
+  window.updateFileLabel = function(inputId, labelId) {
+    var input = document.getElementById(inputId);
+    var label = document.getElementById(labelId);
+    if (input.files.length > 0) {
+      label.textContent = '📎 ' + input.files[0].name + ' (' + formatSize(input.files[0].size) + ')';
+    }
+  };
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  // ======== DATE HELPERS ========
+  function getTimestamp() {
+    var d = new Date();
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var yyyy = d.getFullYear();
+    var hh = String(d.getHours()).padStart(2, '0');
+    var min = String(d.getMinutes()).padStart(2, '0');
+    return dd + '-' + mm + '-' + yyyy + '_' + hh + 'h' + min;
+  }
+
+  function esc(str) {
+    return (str || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  }
+
+  // ======== TOAST ========
+  function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + (type || 'success');
+    setTimeout(function() { t.classList.add('show'); }, 10);
+    setTimeout(function() { t.classList.remove('show'); }, 4000);
+  }
+
+  // ======== FALTA: FILE MANAGEMENT ========
+  var faltaAttachments = []; // Array of { file: File, source: 'file'|'camera', dataUrl: string }
+
+  window.addFaltaFiles = function(files, source) {
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      (function(file, src) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          faltaAttachments.push({ file: file, source: src, dataUrl: e.target.result });
+          renderFaltaFileList();
+        };
+        reader.readAsDataURL(file);
+      })(f, source);
+    }
+    // Reset inputs so the same file can be re-added
+    document.getElementById('faltaFile').value = '';
+    document.getElementById('faltaCamera').value = '';
+  };
+
+  window.removeFaltaFile = function(index) {
+    faltaAttachments.splice(index, 1);
+    renderFaltaFileList();
+  };
+
+  function renderFaltaFileList() {
+    var container = document.getElementById('faltaFileList');
+    if (faltaAttachments.length === 0) { container.innerHTML = ''; return; }
+    var html = '';
+    faltaAttachments.forEach(function(att, i) {
+      var isImage = att.file.type.startsWith('image/');
+      var icon = att.source === 'camera' ? '📷' : '📎';
+      html += '<div class="attached-file">';
+      if (isImage) {
+        html += '<img class="af-thumb" src="' + att.dataUrl + '" alt="">';
+      } else {
+        html += '<span class="af-icon">' + icon + '</span>';
+      }
+      html += '<span class="af-name">' + esc(att.file.name) + '</span>';
+      html += '<span class="af-size">' + formatSize(att.file.size) + '</span>';
+      html += '<button class="af-remove" onclick="removeFaltaFile(' + i + ')" title="Remover">✕</button>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  // ======== SUBMIT: JUSTIFICAÇÃO DE FALTA ========
+  window.submitFalta = function() {
+    var nome = document.getElementById('faltaNome').value.trim();
+    var data = document.getElementById('faltaData').value.trim();
+    var motivo = document.getElementById('faltaMotivo').value;
+    var obs = document.getElementById('faltaObs').value.trim();
+
+    if (!nome || !data || !motivo) {
+      showToast('Preenche os campos obrigatórios (Nome, Data, Motivo).', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('btnFalta');
+    btn.disabled = true;
+    btn.textContent = 'A submeter...';
+
+    var ts = getTimestamp();
+    var baseRef = 'JustifFalta_' + ts + '_' + nome.split(' ')[0];
+    var fileName = baseRef + '.html';
+
+    // Build list of attachment names for reference in the main HTML
+    var attachNames = [];
+    faltaAttachments.forEach(function(att, i) {
+      var ext = att.file.name.split('.').pop();
+      var attName = baseRef + '_Anexo' + (i + 1) + '.' + ext;
+      attachNames.push(attName);
+    });
+
+    var htmlContent = '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8">' +
+      '<title>Justificação de Falta — ' + esc(nome) + '</title>' +
+      '<style>body{font-family:Inter,Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#333;line-height:1.7;}' +
+      'h1{color:#003B73;font-size:1.4em;border-bottom:3px solid #007BC0;padding-bottom:10px;}' +
+      '.field{margin:12px 0;}.label{font-weight:700;color:#003B73;font-size:.9em;}.value{margin-top:2px;}' +
+      '.anexos{margin-top:20px;padding:16px;background:#F5F7FA;border-radius:10px;border:1px solid #DEE2E8;}' +
+      '.anexos h3{font-size:.95em;color:#003B73;margin-bottom:8px;}.anexo-item{padding:4px 0;font-size:.88em;}</style></head><body>' +
+      '<h1>Justificação de Falta</h1>' +
+      '<div class="field"><div class="label">Colaborador:</div><div class="value">' + esc(nome) + '</div></div>' +
+      '<div class="field"><div class="label">Data(s) da Falta:</div><div class="value">' + esc(data) + '</div></div>' +
+      '<div class="field"><div class="label">Motivo:</div><div class="value">' + esc(motivo) + '</div></div>' +
+      (obs ? '<div class="field"><div class="label">Observações:</div><div class="value">' + esc(obs) + '</div></div>' : '') +
+      '<div class="field"><div class="label">Submetido em:</div><div class="value">' + new Date().toLocaleString('pt-PT') + '</div></div>';
+
+    if (attachNames.length > 0) {
+      htmlContent += '<div class="anexos"><h3>📎 Anexos (' + attachNames.length + ')</h3>';
+      attachNames.forEach(function(name, i) {
+        htmlContent += '<div class="anexo-item">' + (i + 1) + '. ' + esc(name) + '</div>';
+      });
+      htmlContent += '<p style="margin-top:8px;font-size:.78em;color:#6B7280;">Os anexos encontram-se na pasta <strong>Justificações Faltas — Anexos</strong> nas Definições > Gestão de Ficheiros.</p>';
+      htmlContent += '</div>';
+    }
+
+    htmlContent += '</body></html>';
+
+    // Save main form to SharePoint
+    if (window.parent && window.parent.uploadToSharePoint) {
+      window.parent.uploadToSharePoint('rh_justificacoes_faltas', fileName, htmlContent, 'text/html');
+    }
+
+    // Upload attachments to separate annexes folder
+    faltaAttachments.forEach(function(att, i) {
+      var attName = attachNames[i];
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({
+          type: 'saveToSharePoint',
+          folderKey: 'rh_justificacoes_anexos',
+          fileName: attName,
+          fileContent: att.dataUrl,
+          contentType: att.file.type
+        }, '*');
+      }
+    });
+
+    // Notify admins + RH
+    if (window.parent && window.parent.sendNotification) {
+      var anexosTxt = faltaAttachments.length > 0 ? '<p><strong>Anexos:</strong> ' + faltaAttachments.length + ' ficheiro(s)</p>' : '';
+      window.parent.sendNotification('rh_justificacoes',
+        '📝 Justificação de Falta — ' + nome,
+        '<p><strong>Colaborador:</strong> ' + esc(nome) + '</p>' +
+        '<p><strong>Data(s):</strong> ' + esc(data) + '</p>' +
+        '<p><strong>Motivo:</strong> ' + esc(motivo) + '</p>' +
+        (obs ? '<p><strong>Obs:</strong> ' + esc(obs).substring(0, 200) + '</p>' : '') +
+        anexosTxt +
+        '<p style="color:#888;font-size:12px;">Consultar na Intranet > Definições > Gestão de Ficheiros > Justificações de Faltas</p>'
+      );
+    }
+
+    showToast('Justificação submetida com sucesso!', 'success');
+
+    // Reset
+    setTimeout(function() {
+      document.getElementById('faltaNome').value = '';
+      document.getElementById('faltaData').value = '';
+      document.getElementById('faltaMotivo').value = '';
+      document.getElementById('faltaObs').value = '';
+      document.getElementById('faltaFile').value = '';
+      document.getElementById('faltaCamera').value = '';
+      faltaAttachments = [];
+      renderFaltaFileList();
+      btn.disabled = false;
+      btn.textContent = 'Submeter Justificação';
+    }, 1500);
+  };
+
+  // ======== SUBMIT: PEDIDO DE FORMAÇÃO ========
+  window.submitFormacao = function() {
+    var nome = document.getElementById('formacaoNome').value.trim();
+    var area = document.getElementById('formacaoArea').value;
+    var tipo = document.getElementById('formacaoTipo').value;
+    var desc = document.getElementById('formacaoDesc').value.trim();
+    var urgencia = document.getElementById('formacaoUrgencia').value;
+
+    if (!nome || !tipo || !desc) {
+      showToast('Preenche os campos obrigatórios (Nome, Tipo, Descrição).', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('btnFormacao');
+    btn.disabled = true;
+    btn.textContent = 'A submeter...';
+
+    var ts = getTimestamp();
+    var fileName = 'PedidoFormacao_' + ts + '_' + nome.split(' ')[0] + '.html';
+
+    var htmlContent = '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8">' +
+      '<title>Pedido de Formação — ' + esc(nome) + '</title>' +
+      '<style>body{font-family:Inter,Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#333;line-height:1.7;}' +
+      'h1{color:#003B73;font-size:1.4em;border-bottom:3px solid #007BC0;padding-bottom:10px;}' +
+      '.field{margin:12px 0;}.label{font-weight:700;color:#003B73;font-size:.9em;}.value{margin-top:2px;}' +
+      '.urgente{color:#D97706;font-weight:700;}</style></head><body>' +
+      '<h1>Pedido de Formação</h1>' +
+      '<div class="field"><div class="label">Colaborador:</div><div class="value">' + esc(nome) + '</div></div>' +
+      (area ? '<div class="field"><div class="label">Área / Departamento:</div><div class="value">' + esc(area) + '</div></div>' : '') +
+      '<div class="field"><div class="label">Tipo de Formação:</div><div class="value">' + esc(tipo) + '</div></div>' +
+      '<div class="field"><div class="label">Descrição:</div><div class="value">' + esc(desc) + '</div></div>' +
+      '<div class="field"><div class="label">Urgência:</div><div class="value' + (urgencia === 'Prioritário' ? ' urgente' : '') + '">' + esc(urgencia) + '</div></div>' +
+      '<div class="field"><div class="label">Submetido em:</div><div class="value">' + new Date().toLocaleString('pt-PT') + '</div></div>' +
+      '</body></html>';
+
+    // Save to SharePoint
+    if (window.parent && window.parent.uploadToSharePoint) {
+      window.parent.uploadToSharePoint('rh_pedidos_formacao', fileName, htmlContent, 'text/html');
+    }
+
+    // Notify admins
+    if (window.parent && window.parent.sendNotification) {
+      window.parent.sendNotification('rh_pedidos_formacao',
+        '🎓 Pedido de Formação — ' + nome,
+        '<p><strong>Colaborador:</strong> ' + esc(nome) + '</p>' +
+        '<p><strong>Tipo:</strong> ' + esc(tipo) + '</p>' +
+        (area ? '<p><strong>Área:</strong> ' + esc(area) + '</p>' : '') +
+        '<p><strong>Descrição:</strong> ' + esc(desc).substring(0, 200) + (desc.length > 200 ? '...' : '') + '</p>' +
+        (urgencia === 'Prioritário' ? '<p style="color:#D97706;font-weight:700;">⚠️ PRIORITÁRIO</p>' : '') +
+        '<p style="color:#888;font-size:12px;">Consultar na Intranet > Definições > Gestão de Ficheiros > Pedidos de Formação</p>'
+      );
+    }
+
+    showToast('Pedido de formação submetido com sucesso!', 'success');
+
+    // Reset
+    setTimeout(function() {
+      document.getElementById('formacaoNome').value = '';
+      document.getElementById('formacaoArea').value = '';
+      document.getElementById('formacaoTipo').value = '';
+      document.getElementById('formacaoDesc').value = '';
+      document.getElementById('formacaoUrgencia').value = 'Normal';
+      btn.disabled = false;
+      btn.textContent = 'Submeter Pedido';
+    }, 1500);
+  };
+
+  // ======== MARK PASSED HOLIDAYS ========
+  function markPassedHolidays() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var feriados2026 = [
+      new Date(2026, 0, 1), new Date(2026, 1, 17), new Date(2026, 3, 3),
+      new Date(2026, 3, 5), new Date(2026, 3, 25), new Date(2026, 4, 1),
+      new Date(2026, 5, 4), new Date(2026, 5, 10), new Date(2026, 7, 15),
+      new Date(2026, 9, 5), new Date(2026, 10, 1), new Date(2026, 11, 1),
+      new Date(2026, 11, 8), new Date(2026, 11, 25)
+    ];
+    var rows = document.querySelectorAll('#feriadosTable tbody tr');
+    rows.forEach(function(row, i) {
+      if (feriados2026[i] && feriados2026[i] < today) {
+        row.classList.add('passed');
+      } else {
+        row.classList.remove('passed');
+      }
+    });
+  }
+  markPassedHolidays();
+
+  // ======== RESTRICT FORMAÇÃO TAB ========
+  // Only visible to admins and coordenadores
+  setTimeout(function() {
+    try {
+      var perms = window.parent.getCurrentUserPermissions();
+      if (perms && perms.role !== 'admin' && perms.role !== 'coordenador') {
+        var tabBtn = document.getElementById('tabFormacao');
+        if (tabBtn) tabBtn.style.display = 'none';
+      }
+    } catch(e) {}
+  }, 300);
+
+  // ======== RESTRICT VALIDAÇÕES TAB ========
+  // Only visible to admin + rh (claudia.pedro)
+  var valAllowedEmails = ['andre.pereira@domuscar.com','vanessa.borges@domuscar.com','claudia.pedro@domuscar.com'];
+  var valUserRole = null;
+  var valUserEmail = null;
+  setTimeout(function() {
+    try {
+      var perms = window.parent.getCurrentUserPermissions();
+      var email = (window.parent.getCurrentUserEmail && window.parent.getCurrentUserEmail()) || '';
+      valUserEmail = email.toLowerCase();
+      valUserRole = perms ? perms.role : null;
+      if (perms && (perms.role === 'admin' || perms.role === 'rh' || valAllowedEmails.indexOf(valUserEmail) >= 0)) {
+        var tabBtn = document.getElementById('tabValidacoes');
+        if (tabBtn) tabBtn.style.display = '';
+      }
+    } catch(e) {}
+  }, 300);
+
+  // ======== VALIDAÇÕES DIVERGÊNCIAS ========
+  var valAllFiles = [];
+  var valTreatedIds = {}; // { fileId: true }
+  var valDataLoaded = false;
+  var valCurrentView = 'pendente'; // 'pendente', 'tratado', 'todos'
+  var VAL_TRACKER_FILE = 'rh_validacoes_tracker.json';
+  var VAL_TRACKER_FOLDER = 'div_colisao_respondido'; // store tracker alongside reports
+
+  var VAL_UNIT_MAP = {
+    'colisao_belavista': { label: 'Colisão Bela Vista', coord: 'Mário Perez',    badgeClass: 'val-badge-colisao', folderKey: 'div_colisao_belavista_respondido' },
+    'colisao_taguspark': { label: 'Colisão Tagus Park', coord: 'Nuno Montes',    badgeClass: 'val-badge-colisao', folderKey: 'div_colisao_taguspark_respondido' },
+    'colisao':           { label: 'Colisão (legacy)',   coord: 'Mário Perez',    badgeClass: 'val-badge-colisao', folderKey: 'div_colisao_respondido' },
+    'mecanica_lisboa':   { label: 'Mecânica Lisboa',    coord: 'Fábio Ramalho',  badgeClass: 'val-badge-lisboa',  folderKey: 'div_lisboa_respondido' },
+    'mecanica_cacem':    { label: 'Mecânica Cacém',     coord: 'José Rodriguez', badgeClass: 'val-badge-cacem',   folderKey: 'div_cacem_respondido' }
+  };
+
+  function valExtractRefDate(name) {
+    var m = name.match(/Ref_(\d{2})(\d{2})(\d{4})/);
+    if (m) return m[1] + '/' + m[2] + '/' + m[3];
+    return null;
+  }
+
+  function valFormatDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    return String(d.getDate()).padStart(2,'0') + '/' +
+           String(d.getMonth()+1).padStart(2,'0') + '/' +
+           d.getFullYear() + ' ' +
+           String(d.getHours()).padStart(2,'0') + ':' +
+           String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function valLoadTracker() {
+    // Try to load the tracker JSON from SharePoint
+    return window.parent.listDivCoordFiles(VAL_TRACKER_FOLDER)
+      .then(function(data) {
+        var files = data.value || [];
+        var trackerFile = null;
+        for (var i = 0; i < files.length; i++) {
+          if (files[i].name === VAL_TRACKER_FILE) {
+            trackerFile = files[i];
+            break;
+          }
+        }
+        if (!trackerFile) return {};
+        return window.parent.downloadDivCoordFile(trackerFile.id)
+          .then(function(content) {
+            try { return JSON.parse(content); }
+            catch(e) { return {}; }
+          });
+      })
+      .catch(function() { return {}; });
+  }
+
+  function valSaveTracker() {
+    // Save tracker JSON to SharePoint
+    var json = JSON.stringify(valTreatedIds);
+    if (window.parent && window.parent.uploadToSharePoint) {
+      window.parent.uploadToSharePoint(VAL_TRACKER_FOLDER, VAL_TRACKER_FILE, json, 'application/json');
+    }
+  }
+
+  function valLoadAll() {
+    var units = Object.keys(VAL_UNIT_MAP);
+    var promises = [];
+    units.forEach(function(unit) {
+      var info = VAL_UNIT_MAP[unit];
+      promises.push(
+        window.parent.listDivCoordFiles(info.folderKey)
+          .then(function(data) {
+            return (data.value || []).filter(function(f) {
+              return f.name !== VAL_TRACKER_FILE;
+            }).map(function(f) {
+              f._unit = unit;
+              f._unitLabel = info.label;
+              f._coord = info.coord;
+              f._badgeClass = info.badgeClass;
+              f._refDate = valExtractRefDate(f.name);
+              return f;
+            });
+          })
+          .catch(function() { return []; })
+      );
+    });
+
+    // Also load tracker
+    var trackerPromise = valLoadTracker();
+
+    Promise.all([Promise.all(promises), trackerPromise]).then(function(results) {
+      var fileResults = results[0];
+      valTreatedIds = results[1] || {};
+      valAllFiles = [];
+      fileResults.forEach(function(arr) { valAllFiles = valAllFiles.concat(arr); });
+      valAllFiles.sort(function(a, b) { return new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime); });
+      valDataLoaded = true;
+      valUpdateStats();
+      valApplyFilters();
+    });
+  }
+
+  function valUpdateStats() {
+    var total = valAllFiles.length;
+    var tratado = 0;
+    valAllFiles.forEach(function(f) { if (valTreatedIds[f.id]) tratado++; });
+    document.getElementById('valStatTotal').textContent = total;
+    document.getElementById('valStatPendente').textContent = total - tratado;
+    document.getElementById('valStatTratado').textContent = tratado;
+  }
+
+  window.valSwitchView = function(view) {
+    valCurrentView = view;
+    document.getElementById('valTabPendente').classList.toggle('active', view === 'pendente');
+    document.getElementById('valTabTratado').classList.toggle('active', view === 'tratado');
+    document.getElementById('valTabTodos').classList.toggle('active', view === 'todos');
+    valApplyFilters();
+  };
+
+  window.valApplyFilters = function() {
+    var unit = document.getElementById('valFilterUnit').value;
+    var search = document.getElementById('valFilterSearch').value.toLowerCase();
+    var filtered = valAllFiles.filter(function(f) {
+      if (unit !== 'all' && f._unit !== unit) return false;
+      if (search && f.name.toLowerCase().indexOf(search) < 0 && (f._unitLabel || '').toLowerCase().indexOf(search) < 0) return false;
+      if (valCurrentView === 'pendente' && valTreatedIds[f.id]) return false;
+      if (valCurrentView === 'tratado' && !valTreatedIds[f.id]) return false;
+      return true;
+    });
+    valRenderFiles(filtered);
+  };
+
+  function valRenderFiles(files) {
+    var container = document.getElementById('valFileList');
+    if (files.length === 0) {
+      var msg = valCurrentView === 'pendente' ? 'Todos os relatórios foram tratados.' : (valCurrentView === 'tratado' ? 'Nenhum relatório tratado ainda.' : 'Nenhum relatório encontrado.');
+      container.innerHTML = '<div class="val-empty"><div class="icon">📂</div><p>' + msg + '</p></div>';
+      return;
+    }
+
+    var canValidate = valUserRole === 'admin' || valUserRole === 'rh' || (valUserEmail && valAllowedEmails.indexOf(valUserEmail) >= 0);
+    var html = '';
+    files.forEach(function(f) {
+      var date = valFormatDate(f.lastModifiedDateTime);
+      var info = VAL_UNIT_MAP[f._unit] || {};
+      var refBadge = f._refDate ? ' <span class="val-badge-ref">📅 ' + f._refDate + '</span>' : '';
+      var unitBadge = '<span class="val-badge ' + (info.badgeClass || '') + '">' + (info.label || '—') + '</span>';
+      var isTreated = !!valTreatedIds[f.id];
+      var statusBadge = isTreated ?
+        '<span class="val-badge-status val-badge-validado">✅ Tratado</span>' :
+        '<span class="val-badge-status val-badge-pendente">⏳ Por Tratar</span>';
+      var cardClass = 'val-card' + (isTreated ? '' : ' pendente');
+
+      var validateBtn = '';
+      if (canValidate) {
+        if (isTreated) {
+          validateBtn = '<button class="val-btn val-btn-outline" onclick="event.stopPropagation(); valMarkAs(\'' + f.id + '\', false)">↩ Desmarcar</button>';
+        } else {
+          validateBtn = '<button class="val-btn val-btn-validate" onclick="event.stopPropagation(); valMarkAs(\'' + f.id + '\', true)">✅ Marcar como Tratado</button>';
+        }
+      }
+
+      var safeId = f.id.replace(/'/g, "\\'");
+      var safeName = f.name.replace(/'/g, "\\'");
+      html += '<div class="' + cardClass + '">' +
+        '<div class="val-card-header">' +
+          '<div>' +
+            '<div class="val-card-title">' + f.name + '</div>' +
+            '<div class="val-card-meta">' + date + ' · ' + (info.coord || '') + refBadge + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' + statusBadge + ' ' + unitBadge + '</div>' +
+        '</div>' +
+        '<div class="val-card-actions">' +
+          '<button class="val-btn val-btn-view" onclick="event.stopPropagation(); valOpenFile(\'' + safeId + '\', \'' + safeName + '\')">👁️ Visualizar</button>' +
+          validateBtn +
+        '</div>' +
+      '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  window.valMarkAs = function(fileId, treated) {
+    if (treated) {
+      valTreatedIds[fileId] = true;
+    } else {
+      delete valTreatedIds[fileId];
+    }
+    valSaveTracker();
+    valUpdateStats();
+    valApplyFilters();
+    showToast(treated ? 'Relatório marcado como tratado.' : 'Relatório desmarcado.', 'success');
+  };
+
+  window.valOpenFile = function(fileId, fileName) {
+    var panel = document.getElementById('valViewPanel');
+    var frame = document.getElementById('valViewFrame');
+    document.getElementById('valViewTitle').textContent = fileName;
+    frame.srcdoc = '';
+    panel.classList.add('active');
+
+    try {
+      window.parent.downloadDivCoordFile(fileId).then(function(htmlContent) {
+        // Inject read-only styles to block any editing
+        // Force all <details> open via regex (handles any attribute combo)
+        var processed = htmlContent.replace(/<details([^>]*)>/gi, function(match, attrs) {
+          if (/\bopen\b/i.test(attrs)) return match;
+          return '<details' + attrs + ' open>';
+        });
+        // Hide submit/validation sections
+        processed = processed.replace(/<div[^>]*class="[^"]*submit-section[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/gi, '');
+        // Wrap with read-only CSS
+        var readOnlyCSS = '<style>' +
+          '*, *::before, *::after { user-select: text !important; }' +
+          'input, textarea, select, [contenteditable] { pointer-events: none !important; opacity: 0.6 !important; }' +
+          'button, input[type="submit"], input[type="button"] { display: none !important; }' +
+          'a[onclick] { pointer-events: none !important; }' +
+          'form { pointer-events: none !important; }' +
+          'summary { pointer-events: none !important; cursor: default !important; }' +
+          '.cbody { display: block !important; }' +
+          '.ch { pointer-events: none !important; cursor: default !important; }' +
+          'details { pointer-events: none !important; }' +
+          'details[open] summary { pointer-events: none !important; }' +
+          '.submit-section, [class*="submit-section"] { display: none !important; }' +
+          '</style>';
+        // Insert CSS into existing <head> or prepend to content
+        if (/<head[^>]*>/i.test(processed)) {
+          processed = processed.replace(/<head([^>]*)>/i, '<head$1>' + readOnlyCSS);
+        } else {
+          processed = readOnlyCSS + processed;
+        }
+        frame.srcdoc = processed;
+      }).catch(function(err) {
+        frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro ao carregar</h2><p>' + (err.message || err) + '</p></body></html>';
+      });
+    } catch(e) {
+      frame.srcdoc = '<html><body style="padding:40px;font-family:sans-serif;"><h2>Erro</h2><p>' + e.message + '</p></body></html>';
+    }
+  };
+
+  window.valCloseView = function() {
+    document.getElementById('valViewPanel').classList.remove('active');
+    document.getElementById('valViewFrame').srcdoc = '';
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') valCloseView();
+  });
+
+})();
+</script>
+</body>
+</html>
