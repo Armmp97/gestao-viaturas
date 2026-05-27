@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intranet DomusCar</title>
+    <!-- BUILD: v2026052701-1779902135879 -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -3182,7 +3183,7 @@
         renderKpiContent('colisao');
     }
 
-    function openModule(id, subId) {
+    function openModule(id, subId, query) {
         const modules = {
             visao_missao: { title: 'Visão, Missão & Valores', url: 'intranet_visao_missao.html' },
             estrutura_org: { title: 'Estrutura Organizacional', url: 'estrutura_organizacional.html' },
@@ -3238,6 +3239,7 @@
         frame.removeAttribute('srcdoc');
         // Se subId for passado (deep-link da pesquisa), anexa ao hash; iframe lê no load
         var hash = subId ? ('#sub=' + encodeURIComponent(subId)) : '';
+        if (query) hash += (hash ? '&' : '#') + 'q=' + encodeURIComponent(query);
         frame.src = mod.url + '?v=' + Date.now() + hash;
         frame.classList.add('active');
 
@@ -3901,7 +3903,7 @@
 <!-- ======== MOTOR DE BUSCA INTRANET ======== -->
 <script src="search-index.js?v=2026052701"></script>
 <script>
-/* === search-widget.js EMBUTIDO INLINE (sem ficheiro externo, imune ao OneDrive) === */
+/* === search-widget.js EMBUTIDO INLINE === */
 /* ============================================================
    DomusCar Intranet · Search Widget
    - Lê window.SEARCH_INDEX (carregado por search-index.js)
@@ -4123,7 +4125,8 @@
       if(!hit) return;
       if(typeof window.openModule === 'function'){
         // Se a entrada tem subId, passa-o para o openModule fazer deep-link
-        window.openModule(hit.item.id, hit.item.subId || null);
+        var query = input.value.trim();
+        window.openModule(hit.item.id, hit.item.subId || null, query);
       }
       input.value = '';
       close();

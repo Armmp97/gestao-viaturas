@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- BUILD: v2026052701-1779902135879 -->
 <title>DomusCar — Indicadores e Objetivos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -2334,22 +2335,12 @@ body {
   window.selectTecMonth = selectTecMonth;
   window.openExternal = openExternal;
 
-  // ── Deep-link via URL hash (#sub=mapa_clientes etc.) — usado pela pesquisa global da intranet
-  function applyDeepLinkFromHash() {
-    var m = (window.location.hash || '').match(/sub=([\w-]+)/);
-    if (!m) return false;
-    var sub = decodeURIComponent(m[1]);
-    var isExternal = EXTERNAL_CARDS.some(function(e){ return e.id === sub; });
-    var isCategory = CATEGORIES.some(function(c){ return c.id === sub; });
-    if (isExternal) { openExternal(sub); return true; }
-    if (isCategory) { navigate(sub); return true; }
-    return false;
-  }
-
-  // Init
-  if (!applyDeepLinkFromHash()) navigate();
-  // Reagir a mudanças de hash (caso o utilizador pesquise outra vez sem recarregar)
-  window.addEventListener('hashchange', function(){ applyDeepLinkFromHash(); });
+  function getHashParam(name){var h=window.location.hash||'';var m=h.match(new RegExp('[#&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
+  function highlightInPage(query){if(!query)return;var q=query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();if(q.length<2)return;function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}var sels=['.cat-card','h2','h3','h4','.card','.unit-card','p','li','td'];var target=null;for(var s=0;s<sels.length&&!target;s++){var nodes=document.querySelectorAll(sels[s]);for(var i=0;i<nodes.length;i++){if(nodes[i].offsetParent===null)continue;var t=norm(nodes[i].textContent||'');if(t.indexOf(q)!==-1){target=nodes[i];break;}}}if(!target)return;var block=target.closest('.cat-card, .card, .unit-card, section, article')||target;setTimeout(function(){block.scrollIntoView({behavior:'smooth',block:'center'});block.classList.add('dc-search-highlight');setTimeout(function(){block.classList.remove('dc-search-highlight');},2500);},250);}
+  (function(){if(document.getElementById('dc-search-highlight-style'))return;var st=document.createElement('style');st.id='dc-search-highlight-style';st.textContent='@keyframes dcSearchFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,200,0,0);background-color:transparent}30%{box-shadow:0 0 0 6px rgba(255,200,0,.55);background-color:#fff8a3}}.dc-search-highlight{animation:dcSearchFlash 2.4s ease-out;border-radius:12px}';document.head.appendChild(st);})();
+  function applyDeepLinkFromHash(){var sub=getHashParam('sub');var q=getHashParam('q');var didNav=false;if(sub){var isExternal=EXTERNAL_CARDS.some(function(e){return e.id===sub;});var isCategory=CATEGORIES.some(function(c){return c.id===sub;});if(isExternal){openExternal(sub);didNav=true;}else if(isCategory){navigate(sub);didNav=true;}}if(q)setTimeout(function(){highlightInPage(q);},500);return didNav;}
+  if(!applyDeepLinkFromHash())navigate();
+  window.addEventListener('hashchange',function(){applyDeepLinkFromHash();});
 
 })();
 </script>

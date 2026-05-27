@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- BUILD: v2026052701-1779902135879 -->
 <title>DomusCar — Recursos Humanos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -741,16 +742,12 @@ select.form-input { cursor:pointer; }
   };
 
   // ── Deep-link via URL hash (#sub=info etc.) — usado pela pesquisa global da intranet
-  function applyDeepLinkFromHash() {
-    var m = (window.location.hash || '').match(/sub=([\w-]+)/);
-    if (!m) return false;
-    var sub = decodeURIComponent(m[1]);
-    if (tabs[sub]) { window.switchTab(sub); return true; }
-    return false;
-  }
-  // Aplicar deep-link no carregamento inicial e em mudanças posteriores de hash
+  function getHashParam(name){var h=window.location.hash||'';var m=h.match(new RegExp('[#&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
+  function highlightInPage(query){if(!query)return;var q=query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();if(q.length<2)return;function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}var sels=['h2','h3','h4','.info-card','.card-title','.card','p','li','td'];var target=null;for(var s=0;s<sels.length&&!target;s++){var nodes=document.querySelectorAll(sels[s]);for(var i=0;i<nodes.length;i++){if(nodes[i].offsetParent===null)continue;var t=norm(nodes[i].textContent||'');if(t.indexOf(q)!==-1){target=nodes[i];break;}}}if(!target)return;var block=target.closest('.info-card, .card, section, article')||target;setTimeout(function(){block.scrollIntoView({behavior:'smooth',block:'center'});block.classList.add('dc-search-highlight');setTimeout(function(){block.classList.remove('dc-search-highlight');},2500);},250);}
+  (function(){if(document.getElementById('dc-search-highlight-style'))return;var st=document.createElement('style');st.id='dc-search-highlight-style';st.textContent='@keyframes dcSearchFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,200,0,0);background-color:transparent}30%{box-shadow:0 0 0 6px rgba(255,200,0,.55);background-color:#fff8a3}}.dc-search-highlight{animation:dcSearchFlash 2.4s ease-out;border-radius:12px}';document.head.appendChild(st);})();
+  function applyDeepLinkFromHash(){var sub=getHashParam('sub');var q=getHashParam('q');var did=false;if(sub&&tabs[sub]){window.switchTab(sub);did=true;}if(q){setTimeout(function(){highlightInPage(q);},500);did=true;}return did;}
   applyDeepLinkFromHash();
-  window.addEventListener('hashchange', applyDeepLinkFromHash);
+  window.addEventListener('hashchange',applyDeepLinkFromHash);
 
   // ======== FILE LABEL UPDATE ========
   window.updateFileLabel = function(inputId, labelId) {
