@@ -2528,7 +2528,9 @@
 
     function acquireTokenInteractive(scopes) {
         var request = { scopes: scopes, account: currentMsalUser };
-        if (isMobile()) {
+        // Safari/Mac WebKit bloqueia popups MSAL silenciosamente (ITP) — usar redirect.
+        if (shouldUseRedirect()) {
+            console.log('[MSAL] Using redirect flow (mobile or Safari/Mac WebKit)');
             msalInstance.acquireTokenRedirect(request);
             return new Promise(function() {}); // redirect will reload the page
         }
