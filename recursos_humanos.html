@@ -740,6 +740,18 @@ select.form-input { cursor:pointer; }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // ── Deep-link via URL hash (#sub=info etc.) — usado pela pesquisa global da intranet
+  function applyDeepLinkFromHash() {
+    var m = (window.location.hash || '').match(/sub=([\w-]+)/);
+    if (!m) return false;
+    var sub = decodeURIComponent(m[1]);
+    if (tabs[sub]) { window.switchTab(sub); return true; }
+    return false;
+  }
+  // Aplicar deep-link no carregamento inicial e em mudanças posteriores de hash
+  applyDeepLinkFromHash();
+  window.addEventListener('hashchange', applyDeepLinkFromHash);
+
   // ======== FILE LABEL UPDATE ========
   window.updateFileLabel = function(inputId, labelId) {
     var input = document.getElementById(inputId);

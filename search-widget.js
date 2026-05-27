@@ -218,7 +218,8 @@
       var hit = lastHits[idx];
       if(!hit) return;
       if(typeof window.openModule === 'function'){
-        window.openModule(hit.item.id);
+        // Se a entrada tem subId, passa-o para o openModule fazer deep-link
+        window.openModule(hit.item.id, hit.item.subId || null);
       }
       input.value = '';
       close();
@@ -324,4 +325,14 @@
     init();
   }
 })();
-     
+        clearInterval(iv);
+      }
+    }, 250);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

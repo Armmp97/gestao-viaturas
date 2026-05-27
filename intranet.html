@@ -3182,7 +3182,7 @@
         renderKpiContent('colisao');
     }
 
-    function openModule(id) {
+    function openModule(id, subId) {
         const modules = {
             visao_missao: { title: 'Visão, Missão & Valores', url: 'intranet_visao_missao.html' },
             estrutura_org: { title: 'Estrutura Organizacional', url: 'estrutura_organizacional.html' },
@@ -3236,7 +3236,9 @@
 
         var frame = document.getElementById('moduleFrame');
         frame.removeAttribute('srcdoc');
-        frame.src = mod.url + '?v=' + Date.now();
+        // Se subId for passado (deep-link da pesquisa), anexa ao hash; iframe lê no load
+        var hash = subId ? ('#sub=' + encodeURIComponent(subId)) : '';
+        frame.src = mod.url + '?v=' + Date.now() + hash;
         frame.classList.add('active');
 
         clearActiveNav();

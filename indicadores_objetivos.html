@@ -2332,9 +2332,24 @@ body {
   // Expose navigate globally
   window.navigate = navigate;
   window.selectTecMonth = selectTecMonth;
+  window.openExternal = openExternal;
+
+  // ── Deep-link via URL hash (#sub=mapa_clientes etc.) — usado pela pesquisa global da intranet
+  function applyDeepLinkFromHash() {
+    var m = (window.location.hash || '').match(/sub=([\w-]+)/);
+    if (!m) return false;
+    var sub = decodeURIComponent(m[1]);
+    var isExternal = EXTERNAL_CARDS.some(function(e){ return e.id === sub; });
+    var isCategory = CATEGORIES.some(function(c){ return c.id === sub; });
+    if (isExternal) { openExternal(sub); return true; }
+    if (isCategory) { navigate(sub); return true; }
+    return false;
+  }
 
   // Init
-  navigate();
+  if (!applyDeepLinkFromHash()) navigate();
+  // Reagir a mudanças de hash (caso o utilizador pesquise outra vez sem recarregar)
+  window.addEventListener('hashchange', function(){ applyDeepLinkFromHash(); });
 
 })();
 </script>
