@@ -1342,6 +1342,19 @@
     // se o seu período de referência for POSTERIOR a este mês.
     var MARGEM_REAL_ULTIMO_MES = "Maio 2026";
 
+    // ======== MARGEM MENSAL REAL — dados (dinâmico via módulo Margem → tab "Margem Real") ========
+    // Fallback usado quando ainda não há dados publicados. Atualizado automaticamente ao publicar um PDF.
+    var MARGEM_REAL_FALLBACK_DATA = {
+        periodo: "Maio 2026",
+        unidades: [
+            { key:'cacem',   label:'Mecânica Cacém',     empresa:false, pct:28.79, resultado:'31.117 €', vendas:'108.098 €' },
+            { key:'lisboa',  label:'Mecânica Lisboa',    empresa:false, pct:12.91, resultado:'10.743 €', vendas:'83.204 €' },
+            { key:'colisao', label:'Colisão',            empresa:false, pct:0.03,  resultado:'36 €',     vendas:'103.423 €' },
+            { key:'empresa', label:'DomusCar (Empresa)', empresa:true,  pct:15.60, resultado:'46.728 €', vendas:'299.557 €' }
+        ]
+    };
+    var MARGEM_REAL_DATA = MARGEM_REAL_FALLBACK_DATA;
+
     // ======== MARGEM DATA (FALLBACK) ========
     // Hardcoded fallback — used when SP is unavailable (403, no permissions, etc.)
     // Updated automatically when admin generates a new report via margem-provisoria module
@@ -2364,6 +2377,7 @@
         var firstTab = reorderKpiTabs();
         renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
+        loadMargemReal();
         renderMargemMensalReal();
         updateGreeting();
         // Hide breadcrumb on home
@@ -2879,6 +2893,12 @@
         saveMargemDashboard(event.data.payload);
     });
 
+    // Listen for margem real data from iframe (tab "Margem Real")
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'margemRealUpdate') return;
+        saveMargemReal(event.data.payload);
+    });
+
     // Listen for KPI dashboard data from gerador-kpis iframe
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
@@ -3179,6 +3199,7 @@
         var firstTab = reorderKpiTabs();
         renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
+        loadMargemReal();
         renderMargemMensalReal();
     }
 
@@ -3465,7 +3486,9 @@
         var content = document.getElementById('margemMensalContent');
         if (!badge || !content) return;
 
-        badge.textContent = MARGEM_REAL_ULTIMO_MES;
+        var realData = MARGEM_REAL_DATA || MARGEM_REAL_FALLBACK_DATA;
+        var realPeriodo = (realData && realData.periodo) ? realData.periodo : MARGEM_REAL_ULTIMO_MES;
+        badge.textContent = realPeriodo;
 
         // Verificar se a Margem Provisória tem dados de um mês posterior ao último mês real
         // Se sim, significa que já há previsão do mês seguinte → a real aguarda validação
@@ -3475,7 +3498,7 @@
 
         if (margemProvData && margemProvData.periodo) {
             var provNum = parsePeriodoToNum(margemProvData.periodo);
-            var realNum = parsePeriodoToNum(MARGEM_REAL_ULTIMO_MES);
+            var realNum = parsePeriodoToNum(realPeriodo);
             if (provNum > 0 && realNum > 0 && provNum > realNum) {
                 content.innerHTML = '<div style="text-align:center;padding:32px 24px;color:var(--text-secondary);font-size:14px;">' +
                     '<div style="font-size:28px;margin-bottom:10px;">🏦</div>' +
@@ -3508,12 +3531,49 @@
                     '<div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">' + vendas + '</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>' +
                 '</div></div>';
         }
-        content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">' +
-            buildCard('Mecânica Cacém', 28.79, '31.117 €', '108.098 €', false) +
-            buildCard('Mecânica Lisboa', 12.91, '10.743 €', '83.204 €', false) +
-            buildCard('Colisão', 0.03, '36 €', '103.423 €', false) +
-            buildCard('DomusCar (Empresa)', 15.60, '46.728 €', '299.557 €', true) +
-            '</div>';
+        var cardsHtml = (realData.unidades || []).map(function(u) {
+            var pctNum = (typeof u.pct === 'number') ? u.pct : parseFloat(String(u.pct).replace(',', '.'));
+            return buildCard(u.label, isNaN(pctNum) ? 0 : pctNum, u.resultado || '—', u.vendas || '—', !!u.empresa);
+        }).join('');
+        content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">' + cardsHtml + '</div>';
+    }
+
+    // ======== SAVE / LOAD MARGEM REAL (dinâmico) ========
+    function saveMargemReal(data) {
+        if (!data || !data.unidades) return;
+        try { localStorage.setItem('intranet_margemReal', JSON.stringify(data)); } catch(e) { console.error('[MargemReal] save:', e); }
+        MARGEM_REAL_DATA = data;
+        if (data.periodo) MARGEM_REAL_ULTIMO_MES = data.periodo;
+        renderMargemMensalReal();
+        // re-avaliar estado da provisória vs novo mês real (usa a cache mais recente)
+        var pv = null;
+        try { var ps = localStorage.getItem('intranet_margemDashboard'); if (ps) pv = JSON.parse(ps); } catch(e) {}
+        renderMargemDashboard(pv || MARGEM_FALLBACK_DATA);
+        saveDashboardToSP('margem_real.json', data); // persistir no SharePoint
+        console.log('[MargemReal] publicado:', data.periodo);
+    }
+
+    function loadMargemReal() {
+        // 1) cache local (rápido)
+        try {
+            var s = localStorage.getItem('intranet_margemReal');
+            if (s) {
+                var cached = JSON.parse(s);
+                if (cached && cached.unidades) {
+                    MARGEM_REAL_DATA = cached;
+                    if (cached.periodo) MARGEM_REAL_ULTIMO_MES = cached.periodo;
+                }
+            }
+        } catch(e) { console.warn('[MargemReal] cache load:', e); }
+        // 2) SharePoint (fonte partilhada)
+        loadDashboardFromSP('margem_real.json').then(function(data) {
+            if (data && data.unidades) {
+                MARGEM_REAL_DATA = data;
+                if (data.periodo) MARGEM_REAL_ULTIMO_MES = data.periodo;
+                try { localStorage.setItem('intranet_margemReal', JSON.stringify(data)); } catch(e) {}
+                renderMargemMensalReal();
+            }
+        }).catch(function(e) { console.warn('[MargemReal] SP load:', e && e.message); });
     }
 
     // Converte "Março 2026" → 202603 para comparação numérica

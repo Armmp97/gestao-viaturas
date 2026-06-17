@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gerador de Relatórios de Margem</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
@@ -33,13 +34,27 @@
   .dl-btn{padding:8px 16px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;color:#334155;cursor:pointer;transition:all 0.15s;text-decoration:none;font-family:inherit}
   .dl-btn:hover{background:#e2e8f0}
   .debug-box{margin-top:16px;padding:12px;background:#1e293b;border-radius:8px;text-align:left;font-family:monospace;font-size:11px;color:#94a3b8;max-height:200px;overflow:auto;display:none}
+  .tabbar{display:flex;gap:8px;margin-bottom:24px;background:rgba(255,255,255,0.08);padding:6px;border-radius:12px;max-width:520px;width:100%}
+  .tabbtn{flex:1;padding:11px 18px;background:transparent;color:#cbd5e1;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+  .tabbtn.active{background:white;color:#1d4ed8;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+  .rev-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  .rev-table th,.rev-table td{padding:7px 8px;border:1px solid #e2e8f0;text-align:center}
+  .rev-table th{background:#f1f5f9;color:#334155;font-weight:700;font-size:12px}
+  .rev-table td:first-child{text-align:left;font-weight:600;color:#0f172a}
+  .rev-input{width:88px;padding:5px 6px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;text-align:center}
 </style>
 </head>
 <body>
 
 <h1>Gerador de Relatórios de Margem</h1>
-<p class="sub">Carrega o Excel e gera um HTML individual por oficina</p>
+<p class="sub" id="subText">Carrega o Excel e gera um HTML individual por oficina</p>
 
+<div class="tabbar" id="margemTabs">
+  <button class="tabbtn active" id="tabBtnProv" onclick="switchMargemTab('prov')">Margem Provisória</button>
+  <button class="tabbtn" id="tabBtnReal" onclick="switchMargemTab('real')">Margem Real</button>
+</div>
+
+<div id="tabProvisoria" style="width:100%;display:flex;flex-direction:column;align-items:center;">
 <div class="card">
   <div class="icon-box">📊</div>
   <h2>Carregar Ficheiro Excel</h2>
@@ -81,6 +96,40 @@
 
 <div class="results" id="results"></div>
 <div class="debug-box" id="debug"></div>
+</div><!-- /tabProvisoria -->
+
+<div id="tabReal" style="display:none;width:100%;flex-direction:column;align-items:center;">
+  <div class="card">
+    <div class="icon-box" style="background:linear-gradient(135deg,#0d904f,#0a6e2e);">🏦</div>
+    <h2>Carregar PDF de Margem Real</h2>
+    <p>Seleciona o PDF "Análise para Coordenadores" do mês</p>
+    <div class="file-wrap">
+      <button class="upload-btn" style="background:linear-gradient(135deg,#0d904f,#0a6e2e);box-shadow:0 4px 14px rgba(13,144,79,0.4);">📁 Escolher PDF</button>
+      <input type="file" id="fileInputReal" accept=".pdf,application/pdf">
+    </div>
+    <div id="statusReal"></div>
+    <div class="hint">
+      <h4>Como funciona</h4>
+      <p>O PDF é lido automaticamente e os valores (Margem %, Resultado e Vendas s/IVA por centro) aparecem para revisão. Podes corrigir qualquer valor antes de publicar no dashboard.</p>
+    </div>
+  </div>
+
+  <div class="results" id="resultsReal" style="display:none;">
+    <div class="card" style="max-width:560px;text-align:left;">
+      <h2 style="text-align:center;">Revisão — Margem Real</h2>
+      <div style="text-align:center;margin:10px 0 16px;">
+        <label style="font-size:12px;color:#64748b;font-weight:600;margin-right:6px;">Período:</label>
+        <input type="text" id="realPeriodo" class="rev-input" style="width:130px;" placeholder="Maio 2026">
+      </div>
+      <table class="rev-table" id="realTable">
+        <thead><tr><th>Centro</th><th>Margem %</th><th>Resultado</th><th>Vendas s/IVA</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="realStatusPub" style="font-size:12px;text-align:center;margin-top:10px;min-height:16px;"></div>
+      <button id="realPublishBtn" style="width:100%;margin-top:14px;padding:12px;background:#0d904f;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Publicar no Dashboard e Guardar no SharePoint</button>
+    </div>
+  </div>
+</div><!-- /tabReal -->
 
 <script>
 const DEPT_CFG = [
@@ -783,6 +832,179 @@ window.addEventListener('message', function(event) {
             }
         }
     }
+});
+
+// ============================================================
+// MARGEM REAL — leitura de PDF + revisão + publicação
+// ============================================================
+function switchMargemTab(which){
+  var prov=document.getElementById('tabProvisoria'), real=document.getElementById('tabReal');
+  var bp=document.getElementById('tabBtnProv'), br=document.getElementById('tabBtnReal');
+  var sub=document.getElementById('subText');
+  if(which==='real'){
+    prov.style.display='none'; real.style.display='flex';
+    bp.classList.remove('active'); br.classList.add('active');
+    sub.textContent='Carrega o PDF "Análise para Coordenadores" e publica a margem real';
+  } else {
+    real.style.display='none'; prov.style.display='flex';
+    br.classList.remove('active'); bp.classList.add('active');
+    sub.textContent='Carrega o Excel e gera um HTML individual por oficina';
+  }
+}
+
+var REAL_UNITS=[
+  {key:'cacem',   label:'Mecânica Cacém',     empresa:false},
+  {key:'lisboa',  label:'Mecânica Lisboa',    empresa:false},
+  {key:'colisao', label:'Colisão',            empresa:false},
+  {key:'empresa', label:'DomusCar (Empresa)', empresa:true}
+];
+
+if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }
+
+document.getElementById('fileInputReal').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file) return;
+  var st=document.getElementById('statusReal');
+  st.className=''; st.style.color=''; st.textContent='A ler o PDF...';
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try {
+      var bytes=new Uint8Array(ev.target.result);
+      pdfjsLib.getDocument({data:bytes}).promise.then(function(pdf){
+        var tasks=[];
+        for(var p=1;p<=pdf.numPages;p++){ tasks.push(pdf.getPage(p).then(function(pg){return pg.getTextContent();})); }
+        return Promise.all(tasks);
+      }).then(function(contents){
+        var lines=extractLines(contents);
+        var parsed=parseMargemRealLines(lines);
+        var nFound=parsed.unidades.filter(function(u){return u.pct!=null;}).length;
+        st.className='ok'; st.textContent='✓ PDF lido ('+nFound+'/4 centros). Revê os valores abaixo.';
+        renderRealReview(parsed);
+      }).catch(function(err){
+        st.className='err'; st.textContent='Erro ao ler PDF: '+(err.message||err); console.error(err);
+      });
+    } catch(err){ st.className='err'; st.textContent='Erro: '+(err.message||err); }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+// Reconstrói linhas de texto a partir dos items posicionados do pdf.js
+function extractLines(contents){
+  var lines=[];
+  contents.forEach(function(tc){
+    var rows=[];
+    tc.items.forEach(function(it){
+      if(!it.str) return;
+      var y=Math.round(it.transform[5]);
+      var row=null;
+      for(var i=0;i<rows.length;i++){ if(Math.abs(rows[i].y-y)<=2){row=rows[i];break;} }
+      if(!row){ row={y:y, items:[]}; rows.push(row); }
+      row.items.push({x:it.transform[4], s:it.str});
+    });
+    rows.sort(function(a,b){return b.y-a.y;});
+    rows.forEach(function(r){
+      var parts=r.items.sort(function(a,b){return a.x-b.x;}).map(function(o){return o.s;});
+      lines.push(parts.join(' ').replace(/\s+/g,' ').trim());
+    });
+  });
+  return lines;
+}
+
+function realToNum(tok){
+  if(tok==null) return null;
+  var neg=/\(/.test(tok) || /^\s*-/.test(tok);
+  var c=tok.replace(/[()%€]/g,'').replace(/[\s ]/g,'');
+  c=c.replace(/\.(?=\d{3}(\D|$))/g,''); // remove ponto separador de milhar
+  c=c.replace(',', '.');
+  c=c.replace(/[^0-9.\-]/g,'');
+  if(c===''||c==='-'||c==='.') return null;
+  var v=parseFloat(c); if(isNaN(v)) return null;
+  return neg ? -Math.abs(v) : v;
+}
+
+function realFmtEur(v){
+  if(v==null||isNaN(v)) return '';
+  var n=Math.round(Math.abs(v));
+  var s=String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  return (v<0?'-':'')+s+' €';
+}
+
+function valuesFromLine(line){
+  if(!line) return [];
+  var re=/\(?-?\d[\d.\s ]*(?:,\d+)?\s*[€%]\)?/g;
+  var m=line.match(re)||[];
+  return m.map(realToNum);
+}
+
+function findLine(lines, label){
+  var lab=label.toLowerCase();
+  for(var i=0;i<lines.length;i++){ if(lines[i].toLowerCase().indexOf(lab)===0) return lines[i]; }
+  for(var j=0;j<lines.length;j++){ if(lines[j].toLowerCase().indexOf(lab)>-1) return lines[j]; }
+  return '';
+}
+
+function parseMargemRealLines(lines){
+  var periodo='';
+  for(var i=0;i<lines.length;i++){
+    var mm=lines[i].match(/(Janeiro|Fevereiro|Mar[çc]o|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)\s+de\s+(\d{4})/i);
+    if(mm){ var mes=mm[1].replace(/Marco/i,'Março'); mes=mes.charAt(0).toUpperCase()+mes.slice(1).toLowerCase(); periodo=mes+' '+mm[2]; break; }
+  }
+  var vend=valuesFromLine(findLine(lines,'Total Vendas'));
+  var meur=valuesFromLine(findLine(lines,'Margem €'));
+  var mpct=valuesFromLine(findLine(lines,'Margem %'));
+  // ordem das colunas no PDF: [Cacém, Colisão, Lisboa, Total]
+  var idx={cacem:0, colisao:1, lisboa:2, empresa:3};
+  var out={periodo:periodo, unidades:[]};
+  REAL_UNITS.forEach(function(u){
+    var i=idx[u.key];
+    out.unidades.push({
+      key:u.key, label:u.label, empresa:u.empresa,
+      pct:(mpct[i]!=null?mpct[i]:null),
+      resultado:(meur[i]!=null?realFmtEur(meur[i]):''),
+      vendas:(vend[i]!=null?realFmtEur(vend[i]):'')
+    });
+  });
+  return out;
+}
+
+function renderRealReview(parsed){
+  document.getElementById('resultsReal').style.display='block';
+  document.getElementById('realPeriodo').value=parsed.periodo||'';
+  var tb=document.querySelector('#realTable tbody'); tb.innerHTML='';
+  parsed.unidades.forEach(function(u,i){
+    var pctStr=(u.pct!=null)?String(u.pct).replace('.',','):'';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+u.label+'</td>'+
+      '<td><input class="rev-input" id="rp_'+i+'" value="'+pctStr+'"> %</td>'+
+      '<td><input class="rev-input" id="rr_'+i+'" value="'+(u.resultado||'')+'"></td>'+
+      '<td><input class="rev-input" id="rv_'+i+'" value="'+(u.vendas||'')+'"></td>';
+    tb.appendChild(tr);
+  });
+}
+
+document.getElementById('realPublishBtn').addEventListener('click', function(){
+  var sp=document.getElementById('realStatusPub');
+  var periodo=document.getElementById('realPeriodo').value.trim();
+  if(!periodo){ sp.innerHTML='<span style="color:#dc2626;">Indica o período (ex: Maio 2026).</span>'; return; }
+  var unidades=[], bad=false;
+  for(var i=0;i<REAL_UNITS.length;i++){
+    var pctRaw=(document.getElementById('rp_'+i).value||'').replace(',','.').replace(/[^0-9.\-]/g,'');
+    var pctVal=parseFloat(pctRaw);
+    if(isNaN(pctVal)) bad=true;
+    unidades.push({
+      key:REAL_UNITS[i].key, label:REAL_UNITS[i].label, empresa:REAL_UNITS[i].empresa,
+      pct:pctVal,
+      resultado:(document.getElementById('rr_'+i).value||'').trim(),
+      vendas:(document.getElementById('rv_'+i).value||'').trim()
+    });
+  }
+  if(bad){ sp.innerHTML='<span style="color:#dc2626;">Há Margem % por preencher ou inválida.</span>'; return; }
+  var payload={ timestamp:new Date().toLocaleString('pt-PT'), periodo:periodo, unidades:unidades };
+  var btn=this; btn.disabled=true; btn.textContent='A publicar...'; btn.style.background='#666';
+  if(window.parent && window.parent!==window){
+    window.parent.postMessage({type:'margemRealUpdate', payload:payload}, '*');
+  }
+  sp.innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado no dashboard e guardado no SharePoint.</span>';
+  setTimeout(function(){ btn.disabled=false; btn.textContent='Publicar no Dashboard e Guardar no SharePoint'; btn.style.background='#0d904f'; }, 1800);
 });
 </script>
 </body>
