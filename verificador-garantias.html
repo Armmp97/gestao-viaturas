@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificador de Faturas de Garantia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+  h1{color:white;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center}
+  .sub{color:#94a3b8;font-size:14px;margin-bottom:30px;text-align:center}
+  .card{background:white;border-radius:16px;padding:36px 44px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%}
+  .icon-box{width:68px;height:68px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px}
+  .card h2{font-size:18px;font-weight:700;margin-bottom:6px;color:#0f172a}
+  .card p{color:#64748b;font-size:13px;margin-bottom:20px}
+  .file-wrap{position:relative;display:inline-block}
+  .file-wrap input[type="file"]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0}
+  .upload-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 30px;background:linear-gradient(135deg,#d97706,#b45309);color:white;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(217,119,6,0.4);transition:all 0.2s}
+  .upload-btn:hover{transform:translateY(-1px)}
+  #status{margin-top:16px;font-size:13px;font-weight:600;min-height:18px}
+  .ok{color:#059669}.err{color:#dc2626;background:#fef2f2;padding:8px 14px;border-radius:8px;display:inline-block}
+  .results{margin-top:24px;width:100%;max-width:760px;display:none}
+  .summary{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+  .sumbox{flex:1;min-width:150px;background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  .sumbox .n{font-size:28px;font-weight:800}
+  .sumbox .l{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .sec-title{color:white;font-size:16px;font-weight:700;margin:22px 0 12px;display:flex;align-items:center;gap:8px}
+  .colab-card{background:white;border-radius:12px;padding:14px 18px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,0.12);border-left:4px solid #dc2626}
+  .colab-name{font-size:14px;font-weight:700;color:#0f172a;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .colab-count{font-size:11px;font-weight:700;color:#dc2626;background:#fef2f2;padding:2px 8px;border-radius:10px}
+  .err-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12.5px;border-top:1px solid #f1f5f9}
+  .err-row:first-of-type{border-top:none}
+  .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap}
+  .tag-mo{background:#fef3c7;color:#92400e}
+  .tag-cc{background:#dbeafe;color:#1e40af}
+  .err-doc{font-weight:600;color:#334155;min-width:80px}
+  .err-det{color:#64748b}
+  .ok-banner{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:16px;text-align:center;font-weight:600;font-size:14px;margin-bottom:18px}
+  table.cc{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  table.cc th,table.cc td{padding:10px 14px;text-align:right;font-size:13px;border-bottom:1px solid #f1f5f9}
+  table.cc th{background:#f8fafc;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  table.cc td:first-child,table.cc th:first-child{text-align:left;font-weight:600;color:#0f172a}
+  table.cc tr.total td{font-weight:800;background:#f8fafc;border-top:2px solid #e2e8f0}
+  .warn-note{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:10px}
+  .hint{margin-top:24px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;text-align:left}
+  .hint h4{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .hint p{font-size:12px;color:#94a3b8;line-height:1.6}
+  .cc-card{background:white;border-radius:12px;padding:14px 16px;margin-bottom:12px;box-shadow:0 4px 12px rgba(0,0,0,0.12);border-left:4px solid #0d904f}
+  .cc-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;color:#0f172a;margin-bottom:10px}
+  .cc-fat{font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:10px}
+  .cc-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+  .catbox{background:#f8fafc;border-radius:8px;padding:8px 10px;text-align:center;border-top:3px solid var(--cc,#94a3b8)}
+  .catbox .cv{font-size:15px;font-weight:800;color:#0f172a}
+  .catbox .cl{font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .catbox.tot{background:#eef6ff;border-top-color:#1e40af}
+</style>
+</head>
+<body>
+
+<h1>🛡️ Verificador de Faturas de Garantia</h1>
+<p class="sub">Carrega o ficheiro "Artigos por documento" e verifica erros antes da análise por centro de custo</p>
+
+<div class="card">
+  <div class="icon-box">📋</div>
+  <h2>Carregar Ficheiro Excel</h2>
+  <p>Seleciona o .xlsx das faturas de garantia (séries GAR 261 / 262 / 263)</p>
+  <div class="file-wrap">
+    <button class="upload-btn">📁 Escolher Ficheiro</button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+  </div>
+  <div id="status"></div>
+  <div class="hint">
+    <h4>O que é verificado</h4>
+    <p>1) Mão-de-obra (MOMEC, MOCH, MOP) tem de estar a <b>28&nbsp;€/unidade</b>.<br>
+       2) O campo <b>Centro de Custo</b> tem de estar preenchido.<br>
+       Só depois desta verificação se analisam as garantias por centro de custo.</p>
+  </div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+var MO28 = { 'MOMEC':1, 'MOCH':1, 'MOP':1 };
+var SERIE = { '261':'Cacém', '262':'Colisão', '263':'Lisboa' };
+var PRECO_MO = 28;
+
+function eur(v){
+  if(v==null||isNaN(v)) return '—';
+  var neg=v<0, n=Math.round(Math.abs(v)*100)/100;
+  var p=n.toFixed(2).split('.');
+  p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  return (neg?'-':'')+p[0]+','+p[1]+' €';
+}
+function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
+
+// Classifica cada linha: Peças / Mão de Obra / Serviços
+function categoria(cod, fam, desc){
+  cod=String(cod==null?'':cod).toUpperCase();
+  fam=String(fam==null?'':fam).toLowerCase();
+  desc=String(desc==null?'':desc).toLowerCase();
+  if(cod.indexOf('MO')===0 || desc.indexOf('mão-de-obra')>-1 || desc.indexOf('mao-de-obra')>-1) return 'mo';
+  if(fam.indexOf('serviço externo')>-1 || fam.indexOf('servico externo')>-1 || fam.indexOf('despesa')>-1 || fam.indexOf('serviço interno')>-1 || fam.indexOf('servico interno')>-1) return 'serv';
+  return 'peca';
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file) return;
+  var st=document.getElementById('status');
+  st.className=''; st.textContent='A processar...';
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try {
+      var wb=XLSX.read(new Uint8Array(ev.target.result), {type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+      var res=verificar(rows);
+      render(res);
+      st.className='ok'; st.textContent='✓ Verificação concluída.';
+    } catch(err){ st.className='err'; st.textContent='Erro: '+(err.message||err); console.error(err); }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function findHeader(rows){
+  for(var i=0;i<Math.min(rows.length,10);i++){
+    var r=rows[i]||[]; var joined=r.map(norm).join('|').toLowerCase();
+    if(joined.indexOf('num doc')>-1 && joined.indexOf('colaborador')>-1) return i;
+  }
+  return 1;
+}
+function colMap(header){
+  var m={};
+  header.forEach(function(h,i){ m[norm(h).toLowerCase()]=i; });
+  function find(){ for(var a=0;a<arguments.length;a++){ if(arguments[a] in m) return m[arguments[a]]; } return -1; }
+  return {
+    numdoc:find('num doc'), data:find('data doc.','data doc'), colab:find('colaborador'),
+    cod:find('cód. artigo','cod. artigo','cód artigo'), artigo:find('artigo'),
+    qtd:find('qtd'), preco:find('preço uni.','preco uni.','preço uni'),
+    tot:find('total s/ iva','total s/iva'), matr:find('matrícula','matricula'),
+    centro:find('centro custo'), desig:find('desig. centro','desig centro'),
+    familia:find('família','familia')
+  };
+}
+
+function verificar(rows){
+  var hi=findHeader(rows); var cm=colMap(rows[hi]||[]);
+  var errosByColab={}; var ccMissDoc={}; // dedupe centro-custo por doc
+  var cc={}; var semcc={};
+  var catTot={peca:0,mo:0,serv:0};
+  var ofiAgg={};                 // por oficina (Cacém/Colisão/Lisboa) via série — todas as linhas
+  var mesCount={}, anoCount={};  // deteção do período predominante
+  var totalDocs={}, totalLinhas=0;
+  for(var i=hi+1;i<rows.length;i++){
+    var r=rows[i]; if(!r) continue;
+    var nd=norm(r[cm.numdoc]); if(!nd) continue;
+    totalLinhas++;
+    totalDocs[nd]=1;
+    var colab=norm(r[cm.colab])||'(sem colaborador)';
+    var cod=norm(r[cm.cod]);
+    var preco=r[cm.preco];
+    var tot=Number(r[cm.tot])||0;
+    var matr=norm(r[cm.matr]);
+    var centro=r[cm.centro];
+    var desig=norm(r[cm.desig]);
+    var cat=categoria(cod, r[cm.familia], norm(r[cm.artigo]));
+    catTot[cat]+=tot;
+    var mm=nd.match(/(\d{3})\s*\//); var ofi=mm?(SERIE[mm[1]]||mm[1]):'?';
+    var oa=ofiAgg[ofi]=ofiAgg[ofi]||{peca:0,mo:0,serv:0,tot:0}; oa[cat]+=tot; oa.tot+=tot;
+    var dm=String(r[cm.data]==null?'':r[cm.data]).match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+    if(dm){ var pmes=parseInt(dm[2],10), pano=parseInt(dm[3],10); if(pano<100)pano+=2000; if(pmes>=1&&pmes<=12){ mesCount[pmes]=(mesCount[pmes]||0)+1; anoCount[pano]=(anoCount[pano]||0)+1; } }
+    function addErr(tipo,det){ (errosByColab[colab]=errosByColab[colab]||[]).push({tipo:tipo,doc:nd,ofi:ofi,matr:matr,det:det}); }
+    // Check 1 — mão de obra a 28
+    if(cod && MO28[cod.toUpperCase()] && Number(preco)!==PRECO_MO){
+      addErr('mo', cod+' a '+eur(Number(preco))+' (deve ser '+eur(PRECO_MO)+')');
+    }
+    // Check 2 — centro de custo
+    var vazio = (centro==null || norm(centro)==='');
+    if(vazio){
+      var k=colab+'||'+nd;
+      if(!ccMissDoc[k]){ ccMissDoc[k]=1; addErr('cc','Centro de Custo em falta (devia ser '+ofi+')'); }
+      var s=semcc[ofi]=semcc[ofi]||{docs:{},lin:0,tot:0,peca:0,mo:0,serv:0}; s.docs[nd]=1; s.lin++; s.tot+=tot; s[cat]+=tot;
+    } else {
+      var key=norm(centro)+(desig?(' '+desig):'');
+      var c=cc[key]=cc[key]||{docs:{},lin:0,tot:0,peca:0,mo:0,serv:0}; c.docs[nd]=1; c.lin++; c.tot+=tot; c[cat]+=tot;
+    }
+  }
+  var nErr=0, nMo=0, nCc=0;
+  Object.keys(errosByColab).forEach(function(k){ errosByColab[k].forEach(function(e){ nErr++; if(e.tipo==='mo')nMo++; else nCc++; }); });
+  function topKey(o){ var best=null,bc=-1; Object.keys(o).forEach(function(k){ if(o[k]>bc){bc=o[k];best=k;} }); return best?parseInt(best,10):null; }
+  var empresa={peca:catTot.peca, mo:catTot.mo, serv:catTot.serv, tot:catTot.peca+catTot.mo+catTot.serv};
+  return { errosByColab:errosByColab, cc:cc, semcc:semcc, catTot:catTot, ofiAgg:ofiAgg, empresa:empresa,
+           mesDetectado:topKey(mesCount), anoDetectado:topKey(anoCount),
+           nErr:nErr, nMo:nMo, nCc:nCc,
+           nDocs:Object.keys(totalDocs).length, nLin:totalLinhas, nColabErr:Object.keys(errosByColab).length };
+}
+
+function render(res){
+  var R=document.getElementById('results'); R.style.display='block'; R.innerHTML='';
+  // Summary
+  var sum=document.createElement('div'); sum.className='summary';
+  sum.innerHTML=
+    '<div class="sumbox"><div class="n" style="color:#0f172a;">'+res.nDocs+'</div><div class="l">Faturas</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:'+(res.nErr?'#dc2626':'#059669')+';">'+res.nErr+'</div><div class="l">Erros</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#92400e;">'+res.nMo+'</div><div class="l">Preço MO ≠ 28€</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#1e40af;">'+res.nCc+'</div><div class="l">Centro Custo em falta</div></div>';
+  R.appendChild(sum);
+
+  // Erros por colaborador
+  var t1=document.createElement('div'); t1.className='sec-title'; t1.textContent='① Erros por Colaborador'; R.appendChild(t1);
+  if(res.nErr===0){
+    var okb=document.createElement('div'); okb.className='ok-banner'; okb.textContent='✓ Sem erros detetados. Verificação passada — análise por centro de custo fiável.'; R.appendChild(okb);
+  } else {
+    Object.keys(res.errosByColab).sort(function(a,b){return res.errosByColab[b].length-res.errosByColab[a].length;}).forEach(function(colab){
+      var lst=res.errosByColab[colab];
+      var card=document.createElement('div'); card.className='colab-card';
+      var html='<div class="colab-name"><span>'+colab+'</span><span class="colab-count">'+lst.length+' erro'+(lst.length>1?'s':'')+'</span></div>';
+      lst.forEach(function(e){
+        var tag=e.tipo==='mo'?'<span class="tag tag-mo">PREÇO MO</span>':'<span class="tag tag-cc">CENTRO CUSTO</span>';
+        html+='<div class="err-row">'+tag+'<span class="err-doc">'+e.doc+'</span><span style="color:#94a3b8;font-size:11px;">'+e.ofi+(e.matr?' · '+e.matr:'')+'</span><span class="err-det">'+e.det+'</span></div>';
+      });
+      card.innerHTML=html; R.appendChild(card);
+    });
+  }
+
+  // Garantias por centro de custo
+  var t2=document.createElement('div'); t2.className='sec-title'; t2.textContent='② Garantias por Centro de Custo'; R.appendChild(t2);
+  var semKeys=Object.keys(res.semcc);
+  if(semKeys.length){
+    var sd=0,sl=0,stt=0; semKeys.forEach(function(k){ sd+=Object.keys(res.semcc[k].docs).length; sl+=res.semcc[k].lin; stt+=res.semcc[k].tot; });
+    var w=document.createElement('div'); w.className='warn-note';
+    w.innerHTML='⚠️ <b>'+sd+' fatura(s)</b> ('+eur(stt)+') ainda <b>sem centro de custo</b> — corrige os erros da secção ① para serem atribuídas ao centro correto (aparecem como "Sem centro" abaixo).';
+    R.appendChild(w);
+  }
+  // Um cartão por centro de custo, com a repartição Peças / Mão de Obra / Serviços
+  function ccCard(nome, c, isSem){
+    var nd=Object.keys(c.docs).length;
+    return '<div class="cc-card" style="border-left-color:'+(isSem?'#f59e0b':'#0d904f')+';">'+
+      '<div class="cc-head"><span>'+(isSem?'⚠ Sem centro · ':'')+nome+'</span><span class="cc-fat">'+nd+' fatura'+(nd>1?'s':'')+'</span></div>'+
+      '<div class="cc-cats">'+
+        '<div class="catbox" style="--cc:#0369a1;"><div class="cv">'+eur(c.peca)+'</div><div class="cl">Peças</div></div>'+
+        '<div class="catbox" style="--cc:#7c3aed;"><div class="cv">'+eur(c.mo)+'</div><div class="cl">Mão de Obra</div></div>'+
+        '<div class="catbox" style="--cc:#0d9488;"><div class="cv">'+eur(c.serv)+'</div><div class="cl">Serviços</div></div>'+
+        '<div class="catbox tot"><div class="cv">'+eur(c.tot)+'</div><div class="cl">Total s/IVA</div></div>'+
+      '</div></div>';
+  }
+  var wrap=document.createElement('div'); var html='';
+  Object.keys(res.cc).sort().forEach(function(k){ html+=ccCard(k, res.cc[k], false); });
+  semKeys.sort().forEach(function(k){ html+=ccCard(k, res.semcc[k], true); });
+  wrap.innerHTML=html; R.appendChild(wrap);
+
+  // ③ Publicar para Indicadores e Objetivos → Garantias
+  var MES_NOMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var t3=document.createElement('div'); t3.className='sec-title'; t3.textContent='③ Publicar para Indicadores e Objetivos'; R.appendChild(t3);
+  var pub=document.createElement('div'); pub.className='card'; pub.style.cssText='max-width:560px;text-align:left;';
+  var mesSel=res.mesDetectado||(new Date().getMonth()+1);
+  var anoSel=res.anoDetectado||(new Date().getFullYear());
+  var mesOpts=''; for(var mi=1;mi<=12;mi++){ mesOpts+='<option value="'+mi+'"'+(mi===mesSel?' selected':'')+'>'+MES_NOMES[mi-1]+'</option>'; }
+  var anoOpts=''; for(var ai=2025;ai<=2028;ai++){ anoOpts+='<option value="'+ai+'"'+(ai===anoSel?' selected':'')+'>'+ai+'</option>'; }
+  pub.innerHTML=
+    '<p style="font-size:13px;color:#475569;margin-bottom:14px;">Carrega esta análise para o quadro <b>Garantias</b> em Indicadores e Objetivos (por centro de custo e empresa). '+(res.nErr?'<span style="color:#b45309;font-weight:600;">Há '+res.nErr+' erro(s) — podes publicar na mesma; as garantias são atribuídas por oficina (série do documento).</span>':'')+'</p>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">'+
+      '<label style="font-size:12px;color:#64748b;font-weight:600;">Período:</label>'+
+      '<select id="garMes" class="rev-input" style="width:auto;">'+mesOpts+'</select>'+
+      '<select id="garAno" class="rev-input" style="width:auto;">'+anoOpts+'</select>'+
+    '</div>'+
+    '<div id="garPubStatus" style="font-size:12px;min-height:16px;margin-bottom:8px;"></div>'+
+    '<button id="garPubBtn" style="width:100%;padding:12px;background:#1d4ed8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Carregar para Garantias e abrir Indicadores →</button>';
+  R.appendChild(pub);
+  document.getElementById('garPubBtn').addEventListener('click', function(){
+    var ano=parseInt(document.getElementById('garAno').value,10);
+    var mes=parseInt(document.getElementById('garMes').value,10);
+    var payload={ ano:ano, mes:mes, centros:res.ofiAgg, empresa:res.empresa, comErros:res.nErr>0, timestamp:new Date().toLocaleString('pt-PT') };
+    if(window.parent && window.parent!==window){
+      window.parent.postMessage({type:'garantiasUpdate', payload:payload}, '*');
+      document.getElementById('garPubStatus').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Garantias...</span>';
+    } else {
+      document.getElementById('garPubStatus').innerHTML='<span style="color:#dc2626;">Abre esta página dentro da intranet para publicar.</span>';
+    }
+  });
+}
+</script>
+</body>
+</html>

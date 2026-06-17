@@ -1041,6 +1041,7 @@
                     <li id="navMargemLi"><a onclick="openModule('margem')" id="navMargem"><span class="nav-icon">💰</span> Margem</a></li>
                     <li id="navDivergenciasLi"><a onclick="openModule('divergencias')" id="navDivergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
                     <li id="navKpisCoordLi"><a onclick="openModule('kpis_coord')" id="navKpis_coord"><span class="nav-icon">📈</span> KPIs Coordenação</a></li>
+                    <li id="navVerificadorGarantiasLi"><a onclick="openModule('verificador_garantias')" id="navVerificador_garantias"><span class="nav-icon">🛡️</span> Verificador Garantias</a></li>
                 </ul>
             </li>
         </ul>
@@ -2075,11 +2076,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
@@ -2378,6 +2379,7 @@
         renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
         loadMargemReal();
+        loadGarantias();
         renderMargemMensalReal();
         updateGreeting();
         // Hide breadcrumb on home
@@ -2899,6 +2901,12 @@
         saveMargemReal(event.data.payload);
     });
 
+    // Listen for garantias data from iframe (Verificador de Faturas de Garantia)
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'garantiasUpdate') return;
+        saveGarantias(event.data.payload);
+    });
+
     // Listen for KPI dashboard data from gerador-kpis iframe
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
@@ -3200,6 +3208,7 @@
         renderKpiContent(firstTab || 'colisao');
         loadMargemDashboard();
         loadMargemReal();
+        loadGarantias();
         renderMargemMensalReal();
     }
 
@@ -3225,6 +3234,7 @@
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
+            verificador_garantias: { title: 'Verificador de Faturas de Garantia', url: 'verificador-garantias.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
@@ -3574,6 +3584,28 @@
                 renderMargemMensalReal();
             }
         }).catch(function(e) { console.warn('[MargemReal] SP load:', e && e.message); });
+    }
+
+    // ======== GARANTIAS (Verificador → Indicadores) ========
+    function saveGarantias(payload) {
+        if (!payload || !payload.ano || !payload.mes) return;
+        var store = {};
+        try { var s = localStorage.getItem('intranet_garantias'); if (s) store = JSON.parse(s) || {}; } catch(e) {}
+        if (!store[payload.ano]) store[payload.ano] = {};
+        store[payload.ano][payload.mes] = { centros: payload.centros, empresa: payload.empresa, timestamp: payload.timestamp, comErros: !!payload.comErros };
+        try { localStorage.setItem('intranet_garantias', JSON.stringify(store)); } catch(e) { console.error('[Garantias] save:', e); }
+        saveDashboardToSP('garantias.json', store); // persistir no SharePoint
+        console.log('[Garantias] publicado:', payload.ano, payload.mes);
+        // saltar para Indicadores e Objetivos → Garantias
+        openModule('indicadores_obj', 'garantias');
+    }
+
+    function loadGarantias() {
+        loadDashboardFromSP('garantias.json').then(function(data) {
+            if (data && typeof data === 'object') {
+                try { localStorage.setItem('intranet_garantias', JSON.stringify(data)); } catch(e) {}
+            }
+        }).catch(function(e) { console.warn('[Garantias] SP load:', e && e.message); });
     }
 
     // Converte "Março 2026" → 202603 para comparação numérica

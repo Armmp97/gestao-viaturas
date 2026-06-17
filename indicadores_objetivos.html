@@ -430,8 +430,18 @@ body {
       columns: ['Vendas s/ IVA (€)', 'Vendas MO (€)', 'Vendas Peças (€)', 'Custos Fixos (€)', 'Custos Var. (€)', 'Margem (€)', 'Margem (%)'],
       chartLabel: 'Margem (%)',
       chartIndex: 6
+    },
+    {
+      id: 'garantias',
+      icon: '🛡️',
+      title: 'Garantias',
+      desc: 'Faturas de garantia por centro de custo e empresa — Peças, Mão de Obra e Serviços, por mês e agregado.'
     }
   ];
+
+  // Dados de Garantias — publicados pelo Verificador de Faturas de Garantia (parent → localStorage, sync SharePoint)
+  var GARANTIAS_DATA = {};
+  try { var _gd = localStorage.getItem('intranet_garantias'); if (_gd) GARANTIAS_DATA = JSON.parse(_gd) || {}; } catch(e) {}
 
   // ══════ DADOS REAIS KPIs 2025 ══════
   var KPI_DATA = {
@@ -878,6 +888,7 @@ body {
     if (currentChart) { currentChart.destroy(); currentChart = null; }
 
     if (!state.category) return renderCategories();
+    if (state.category === 'garantias') return renderGarantias();
     if (!state.year) return renderYears();
 
     // Ticket Médio has special Geral/Mensal subview routing
@@ -2122,6 +2133,100 @@ body {
   function formatNum(v) {
     if (v === null || v === undefined) return '—';
     return v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // ══════ Garantias (publicado pelo Verificador de Faturas de Garantia) ══════
+  function garBtn(label, active, onclick){
+    var base='padding:8px 16px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin:0;';
+    var st = active ? base+'background:#003B73;color:#fff;border-color:#003B73;' : base+'background:#fff;color:#334155;';
+    return '<button onclick="'+onclick+'" style="'+st+'">'+label+'</button>';
+  }
+  function garEntities(yObj){
+    var set={}; Object.keys(yObj).forEach(function(m){ var c=yObj[m].centros||{}; Object.keys(c).forEach(function(k){set[k]=1;}); });
+    return ['empresa'].concat(Object.keys(set).sort());
+  }
+  function garEntData(yObj, entity, m){
+    if(entity==='empresa') return (yObj[m] && yObj[m].empresa) ? yObj[m].empresa : null;
+    return (yObj[m] && yObj[m].centros && yObj[m].centros[entity]) ? yObj[m].centros[entity] : null;
+  }
+  window.gSetYear=function(y){ state.gYear=String(y); renderGarantias(); };
+  window.gSetEntity=function(e){ state.gEntity=e; renderGarantias(); };
+
+  function renderGarantias(){
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    var data = GARANTIAS_DATA || {};
+    var years = Object.keys(data).sort();
+    var html = '<button class="btn-back" onclick="navigate()">← Voltar</button>';
+    html += '<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">🛡️ Garantias</h2>';
+    html += '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:20px;">Destrincha das faturas de garantia por centro de custo e empresa — Peças, Mão de Obra e Serviços, por mês e agregado.</p>';
+    if (years.length === 0) {
+      html += '<div class="comp-section" style="text-align:center;padding:40px 20px;color:var(--text-body);"><div style="font-size:32px;margin-bottom:10px;">🛡️</div><div style="font-weight:700;color:var(--navy);margin-bottom:6px;">Sem dados de garantias</div><div style="font-size:13px;">Publica a partir de <i>Gerar Relatórios → Verificador de Faturas de Garantia</i>.</div></div>';
+      document.getElementById('content').innerHTML = html;
+      renderBreadcrumb();
+      return;
+    }
+    if (!state.gYear || !data[state.gYear]) state.gYear = years[years.length-1];
+    var yObj = data[state.gYear];
+    var entities = garEntities(yObj);
+    if (entities.indexOf(state.gEntity) < 0) state.gEntity = 'empresa';
+    var entityLabel = function(e){ return e==='empresa' ? 'Empresa (agregado)' : e; };
+
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
+    years.forEach(function(y){ html += garBtn(y, String(y)===String(state.gYear), 'gSetYear(\''+y+'\')'); });
+    html += '</div>';
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">';
+    entities.forEach(function(e){ html += garBtn(entityLabel(e), e===state.gEntity, 'gSetEntity(\''+e+'\')'); });
+    html += '</div>';
+
+    var months = Object.keys(yObj).map(Number).sort(function(a,b){return a-b;});
+    var sums = {peca:0,mo:0,serv:0,tot:0};
+    months.forEach(function(m){ var d=garEntData(yObj,state.gEntity,m); if(d){ sums.peca+=d.peca||0; sums.mo+=d.mo||0; sums.serv+=d.serv||0; sums.tot+=d.tot||0; } });
+
+    html += '<div class="comp-section">';
+    html += '<div class="comp-title">🛡️ ' + entityLabel(state.gEntity) + ' — ' + state.gYear + '</div>';
+    html += '<div class="comp-subtitle">Total de garantias e repartição por categoria (Peças / Mão de Obra / Serviços)</div>';
+    html += '<div class="comp-kpis">';
+    html += '<div class="comp-kpi"><div class="comp-kpi-label">Total Garantias</div><div class="comp-kpi-val">' + formatEur(sums.tot) + '</div></div>';
+    html += '<div class="comp-kpi"><div class="comp-kpi-label">Peças</div><div class="comp-kpi-val" style="color:#0369a1;">' + formatEur(sums.peca) + '</div></div>';
+    html += '<div class="comp-kpi"><div class="comp-kpi-label">Mão de Obra</div><div class="comp-kpi-val" style="color:#7c3aed;">' + formatEur(sums.mo) + '</div></div>';
+    html += '<div class="comp-kpi"><div class="comp-kpi-label">Serviços</div><div class="comp-kpi-val" style="color:#0d9488;">' + formatEur(sums.serv) + '</div></div>';
+    html += '</div>';
+    html += '<div class="comp-chart-wrap"><canvas id="garChart"></canvas></div>';
+    html += '<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th>Mês</th><th>Peças</th><th>Mão de Obra</th><th>Serviços</th><th>Total</th></tr></thead><tbody>';
+    months.forEach(function(m){
+      var d=garEntData(yObj,state.gEntity,m)||{peca:0,mo:0,serv:0,tot:0};
+      html += '<tr><td>'+MONTHS[m-1]+'</td><td>'+formatEur(d.peca||0)+'</td><td>'+formatEur(d.mo||0)+'</td><td>'+formatEur(d.serv||0)+'</td><td style="font-weight:700;">'+formatEur(d.tot||0)+'</td></tr>';
+    });
+    html += '<tr style="background:var(--gray-100);font-weight:700;"><td>Total</td><td>'+formatEur(sums.peca)+'</td><td>'+formatEur(sums.mo)+'</td><td>'+formatEur(sums.serv)+'</td><td>'+formatEur(sums.tot)+'</td></tr>';
+    html += '</tbody></table></div></div>';
+
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function(){ renderGarantiasChart(yObj, months); }, 80);
+    renderBreadcrumb();
+  }
+
+  function renderGarantiasChart(yObj, months){
+    var canvas = document.getElementById('garChart');
+    if (!canvas) return;
+    var labels = months.map(function(m){ return MONTHS_SHORT[m-1]; });
+    var ent = state.gEntity;
+    function val(m,k){ var d = garEntData(yObj, ent, m); return d ? (d[k]||0) : 0; }
+    var peca = months.map(function(m){ return val(m,'peca'); });
+    var mo = months.map(function(m){ return val(m,'mo'); });
+    var serv = months.map(function(m){ return val(m,'serv'); });
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    currentChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: { labels: labels, datasets: [
+        { label:'Peças', data:peca, backgroundColor:'rgba(3,105,161,.8)', stack:'g' },
+        { label:'Mão de Obra', data:mo, backgroundColor:'rgba(124,58,237,.8)', stack:'g' },
+        { label:'Serviços', data:serv, backgroundColor:'rgba(13,148,136,.8)', stack:'g' }
+      ]},
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'top' }, tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+formatEur(ctx.parsed.y); } } } },
+        scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ callback:function(v){ return formatEur(v); } } } }
+      }
+    });
   }
 
   function formatEur(v) {
