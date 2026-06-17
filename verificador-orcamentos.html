@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificação de Orçamentos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+  h1{color:white;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center}
+  .sub{color:#94a3b8;font-size:14px;margin-bottom:28px;text-align:center;max-width:680px}
+  .card{background:white;border-radius:16px;padding:28px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:640px;width:100%}
+  .uprow{display:flex;gap:14px;flex-wrap:wrap}
+  .upbox{flex:1;min-width:240px;border:2px dashed #cbd5e1;border-radius:12px;padding:18px;text-align:center;position:relative}
+  .upbox h3{font-size:13px;color:#0f172a;font-weight:700;margin-bottom:4px}
+  .upbox p{font-size:11px;color:#94a3b8;margin-bottom:12px;line-height:1.5}
+  .upbox.done{border-color:#0d904f;background:#f0fdf4}
+  .file-wrap{position:relative;display:inline-block}
+  .file-wrap input[type="file"]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0}
+  .upload-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer}
+  .ustat{font-size:11px;font-weight:600;margin-top:8px;min-height:14px}
+  .ok{color:#059669}.err{color:#dc2626}
+  .run-btn{width:100%;margin-top:18px;padding:13px;background:#0d904f;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .run-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+  .results{margin-top:24px;width:100%;max-width:1080px;display:none}
+  .summary{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+  .sumbox{flex:1;min-width:150px;background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  .sumbox .n{font-size:26px;font-weight:800}
+  .sumbox .l{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .sec{background:white;border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+  .sec-h{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .sec-d{font-size:12px;color:#64748b;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:7px 9px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap}
+  th{background:#f8fafc;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+  td:first-child,th:first-child,td.l,th.l{text-align:left}
+  .tbl-wrap{overflow-x:auto;max-height:460px;overflow-y:auto}
+  .pos{color:#0d904f;font-weight:700}.neg{color:#d93025;font-weight:700}
+  .badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px}
+  .b-apr{background:#dbeafe;color:#1e40af}.b-neg{background:#fef3c7;color:#92400e}.b-ne{background:#f3e8ff;color:#6b21a8}
+  .hint{margin-top:6px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;color:#64748b;line-height:1.6}
+</style>
+</head>
+<body>
+
+<h1>🧾 Verificação de Orçamentos</h1>
+<p class="sub">Cruza os orçamentos com as vendas (por matrícula) para detetar quais já foram faturados e quais ficaram por faturar.</p>
+
+<div class="card">
+  <div class="uprow">
+    <div class="upbox" id="box1">
+      <h3>1 · Orçamentos (ORC)</h3>
+      <p>Excel com os orçamentos e respetivos estados do mês.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileOrc" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="statOrc"></div>
+    </div>
+    <div class="upbox" id="box2">
+      <h3>2 · Vendas (com matrícula)</h3>
+      <p>Export "Artigos por documento" das vendas desde a data do 1º orçamento.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileVen" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="statVen"></div>
+    </div>
+  </div>
+  <button class="run-btn" id="runBtn" disabled>Analisar</button>
+  <div class="hint">A ligação é feita por <b>matrícula</b> (fatura com data igual ou posterior à do orçamento; o valor escolhe o melhor match). Estados analisados: <b>Aprovado</b>, <b>Em Negociação</b> e <b>Aguarda NE</b>. Notas de Crédito são ignoradas.</div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+var ORC=null, VEN=null;
+var REL_STATES={'aprovado':1,'em negociacao':1,'aguarda ne':1};
+
+function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
+function deaccent(s){ return norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function nmat(m){ return String(m==null?'':m).toUpperCase().replace(/[\s\-]/g,'').trim(); }
+function eur(v){ if(v==null||isNaN(v)) return '—'; var neg=v<0,n=Math.round(Math.abs(v)*100)/100; var p=n.toFixed(2).split('.'); p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.'); return (neg?'-':'')+p[0]+','+p[1]+' €'; }
+function pdate(v){
+  if(v instanceof Date) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  if(typeof v==='number'){ var o=new Date(Math.round((v-25569)*86400*1000)); return new Date(o.getUTCFullYear(),o.getUTCMonth(),o.getUTCDate()); }
+  var s=norm(v); var m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){ var a=+m[1],b=+m[2],y=+m[3]; if(y<100)y+=2000; return new Date(y,b-1,a); }
+  m=s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  return null;
+}
+function findHeader(rows, keys){
+  for(var i=0;i<Math.min(rows.length,12);i++){
+    var j=(rows[i]||[]).map(deaccent).join('|');
+    if(keys.every(function(k){return j.indexOf(k)>-1;})) return i;
+  }
+  return 1;
+}
+function colMap(header){
+  var m={}; header.forEach(function(h,i){ m[deaccent(h)]=i; });
+  return function(){ for(var a=0;a<arguments.length;a++){ if(arguments[a] in m) return m[arguments[a]]; } return -1; };
+}
+
+function readFile(file, cb){
+  var rd=new FileReader();
+  rd.onload=function(e){
+    var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+    var ws=wb.Sheets[wb.SheetNames[0]];
+    cb(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}));
+  };
+  rd.readAsArrayBuffer(file);
+}
+
+document.getElementById('fileOrc').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  readFile(f,function(rows){ ORC=rows; document.getElementById('statOrc').className='ustat ok'; document.getElementById('statOrc').textContent='✓ '+f.name; document.getElementById('box1').classList.add('done'); checkReady(); });
+});
+document.getElementById('fileVen').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  readFile(f,function(rows){ VEN=rows; document.getElementById('statVen').className='ustat ok'; document.getElementById('statVen').textContent='✓ '+f.name; document.getElementById('box2').classList.add('done'); checkReady(); });
+});
+function checkReady(){ document.getElementById('runBtn').disabled = !(ORC && VEN); }
+document.getElementById('runBtn').addEventListener('click', analisar);
+
+function parseOrc(rows){
+  var hi=findHeader(rows,['num','estado']); var c=colMap(rows[hi]||[]);
+  var ci={num:c('num.','num'),data:c('data doc.','data doc','data'),cli:c('cliente'),nif:c('no contribuinte','n contribuinte','nif'),
+          mat:c('viatura','matricula'),emp:c('empregado','colaborador'),estado:c('estado'),
+          tot:c('total s/ iva','total s/iva'),totc:c('total')};
+  var out=[];
+  for(var i=hi+1;i<rows.length;i++){ var r=rows[i]; if(!r) continue; var num=norm(r[ci.num]); if(!num) continue;
+    out.push({num:num,date:pdate(r[ci.data]),cli:norm(r[ci.cli]),mat:nmat(r[ci.mat]),matraw:norm(r[ci.mat]),
+      emp:norm(r[ci.emp])||'(sem rececionista)',estado:norm(r[ci.estado]),
+      tot:Number(r[ci.tot]!=null?r[ci.tot]:r[ci.totc])||0});
+  }
+  return out;
+}
+function parseVen(rows){
+  var hi=findHeader(rows,['num doc','matricula']); var c=colMap(rows[hi]||[]);
+  var ci={doc:c('documento'),num:c('num doc'),data:c('data doc.','data doc','data'),nif:c('no contribuinte','n contribuinte','nif'),
+          mat:c('matricula','viatura'),tot:c('total s/ iva','total s/iva')};
+  var docs={};
+  for(var i=hi+1;i<rows.length;i++){ var r=rows[i]; if(!r) continue; var num=norm(r[ci.num]); if(!num) continue;
+    if(!docs[num]) docs[num]={num:num,tipo:norm(r[ci.doc]),date:pdate(r[ci.data]),mat:nmat(r[ci.mat]),tot:0};
+    docs[num].tot += Number(r[ci.tot])||0;
+  }
+  return docs;
+}
+
+function analisar(){
+  var quotes=parseOrc(ORC);
+  var docs=parseVen(VEN);
+  // index faturas (excl NC) por matrícula
+  var byMat={};
+  Object.keys(docs).forEach(function(k){ var d=docs[k]; if(d.tipo && d.tipo.toLowerCase().indexOf('crédito')>-1) return; if(d.tipo && d.tipo.toLowerCase().indexOf('credito')>-1) return; if(!d.mat) return; (byMat[d.mat]=byMat[d.mat]||[]).push(d); });
+
+  function match(q){
+    var cand=(byMat[q.mat]||[]).filter(function(d){ return d.date && q.date && d.date.getTime()>=q.date.getTime(); });
+    if(!cand.length) return null;
+    cand.sort(function(a,b){ return Math.abs(a.tot-q.tot)-Math.abs(b.tot-q.tot); });
+    return cand[0];
+  }
+
+  var rel=quotes.filter(function(q){ return REL_STATES[deaccent(q.estado)]; });
+  var forte=[], confirmar=[], sem=[];
+  rel.forEach(function(q){
+    var m=match(q);
+    if(!m){ sem.push(q); return; }
+    var diff=m.tot-q.tot; var pct=q.tot?Math.abs(diff)/q.tot*100:0;
+    var rec={q:q,m:m,diff:diff,pct:pct};
+    if(pct<=5 || Math.abs(diff)<=2) forte.push(rec); else confirmar.push(rec);
+  });
+  forte.sort(function(a,b){return b.q.tot-a.q.tot;});
+  confirmar.sort(function(a,b){return Math.abs(b.diff)-Math.abs(a.diff);});
+  sem.sort(function(a,b){return b.tot-a.tot;});
+  render(rel.length, forte, confirmar, sem);
+}
+
+function badge(estado){
+  var e=deaccent(estado);
+  if(e==='aprovado') return '<span class="badge b-apr">Aprovado</span>';
+  if(e==='em negociacao') return '<span class="badge b-ne">Em Negociação</span>';
+  if(e==='aguarda ne') return '<span class="badge b-neg">Aguarda NE</span>';
+  return '<span class="badge">'+norm(estado)+'</span>';
+}
+function diffCell(diff){ var cls=diff>=0?'pos':'neg'; return '<td class="'+cls+'">'+(diff>=0?'+':'')+eur(diff)+'</td>'; }
+
+function render(nrel, forte, confirmar, sem){
+  var R=document.getElementById('results'); R.style.display='block'; R.innerHTML='';
+  var sum=document.createElement('div'); sum.className='summary';
+  sum.innerHTML=
+    '<div class="sumbox"><div class="n" style="color:#0f172a;">'+nrel+'</div><div class="l">Orç. analisados</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#0d904f;">'+forte.length+'</div><div class="l">Provavelmente faturados</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#b45309;">'+confirmar.length+'</div><div class="l">A confirmar</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#d93025;">'+sem.length+'</div><div class="l">Sem faturação</div></div>';
+  R.appendChild(sum);
+
+  // Lista A
+  var a=document.createElement('div'); a.className='sec';
+  var ah='<div class="sec-h">✅ Provavelmente já faturados <span style="font-size:12px;color:#64748b;font-weight:600;">('+forte.length+')</span></div>';
+  ah+='<div class="sec-d">Matrícula e valor batem certo — faz sentido alterar o estado para <b>Faturado</b>.</div>';
+  ah+='<div class="tbl-wrap"><table><thead><tr><th class="l">Orçamento</th><th class="l">Data</th><th class="l">Matrícula</th><th class="l">Cliente</th><th class="l">Rececionista</th><th class="l">Estado</th><th>Valor Orç.</th><th class="l">Fatura</th><th>Valor Fat.</th><th>Diferença</th></tr></thead><tbody>';
+  forte.forEach(function(x){ ah+=rowMatch(x); });
+  ah+='</tbody></table></div>';
+  a.innerHTML=ah; R.appendChild(a);
+
+  // Lista B
+  var b=document.createElement('div'); b.className='sec';
+  var bh='<div class="sec-h">🟠 A confirmar (matrícula bate, valor difere) <span style="font-size:12px;color:#64748b;font-weight:600;">('+confirmar.length+')</span></div>';
+  bh+='<div class="sec-d">Existe fatura para a matrícula após o orçamento, mas o valor é muito diferente — pode ser outro trabalho na mesma viatura. Confirmar manualmente.</div>';
+  bh+='<div class="tbl-wrap"><table><thead><tr><th class="l">Orçamento</th><th class="l">Data</th><th class="l">Matrícula</th><th class="l">Cliente</th><th class="l">Rececionista</th><th class="l">Estado</th><th>Valor Orç.</th><th class="l">Fatura</th><th>Valor Fat.</th><th>Diferença</th></tr></thead><tbody>';
+  confirmar.forEach(function(x){ bh+=rowMatch(x); });
+  bh+='</tbody></table></div>';
+  b.innerHTML=bh; R.appendChild(b);
+
+  // Lista C
+  var c=document.createElement('div'); c.className='sec';
+  var ch='<div class="sec-h">❌ Sem faturação encontrada <span style="font-size:12px;color:#64748b;font-weight:600;">('+sem.length+')</span></div>';
+  ch+='<div class="sec-d">Não há fatura para esta matrícula depois do orçamento. Rever o estado ou falar com o rececionista.</div>';
+  ch+='<div class="tbl-wrap"><table><thead><tr><th class="l">Orçamento</th><th class="l">Data</th><th class="l">Matrícula</th><th class="l">Cliente</th><th class="l">Rececionista</th><th class="l">Estado</th><th>Valor Orç.</th></tr></thead><tbody>';
+  sem.forEach(function(q){
+    ch+='<tr><td class="l">'+q.num+'</td><td class="l">'+fdate(q.date)+'</td><td class="l">'+(q.matraw||'—')+'</td><td class="l">'+cut(q.cli,28)+'</td><td class="l">'+cut(q.emp,24)+'</td><td class="l">'+badge(q.estado)+'</td><td>'+eur(q.tot)+'</td></tr>';
+  });
+  ch+='</tbody></table></div>';
+  c.innerHTML=ch; R.appendChild(c);
+}
+function rowMatch(x){
+  var q=x.q,m=x.m;
+  return '<tr><td class="l">'+q.num+'</td><td class="l">'+fdate(q.date)+'</td><td class="l">'+(q.matraw||'—')+'</td><td class="l">'+cut(q.cli,26)+'</td><td class="l">'+cut(q.emp,22)+'</td><td class="l">'+badge(q.estado)+'</td><td>'+eur(q.tot)+'</td><td class="l">'+m.num+'</td><td>'+eur(m.tot)+'</td>'+diffCell(x.diff)+'</tr>';
+}
+function cut(s,n){ s=norm(s); return s.length>n?s.slice(0,n-1)+'…':s; }
+function fdate(d){ if(!d) return '—'; var p=function(x){return (x<10?'0':'')+x;}; return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear(); }
+</script>
+</body>
+</html>
