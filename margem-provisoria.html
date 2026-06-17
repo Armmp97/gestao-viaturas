@@ -858,6 +858,7 @@ var REAL_UNITS=[
   {key:'colisao', label:'Colisão',            empresa:false},
   {key:'empresa', label:'DomusCar (Empresa)', empresa:true}
 ];
+var LAST_REAL_PARSED=null;
 
 if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }
 
@@ -949,6 +950,10 @@ function parseMargemRealLines(lines){
     if(mm){ var mes=mm[1].replace(/Marco/i,'Março'); mes=mes.charAt(0).toUpperCase()+mes.slice(1).toLowerCase(); periodo=mes+' '+mm[2]; break; }
   }
   var vend=valuesFromLine(findLine(lines,'Total Vendas'));
+  var vmo=valuesFromLine(findLine(lines,'Vendas de Mão de Obra'));
+  var vpe=valuesFromLine(findLine(lines,'Vendas de Peças'));
+  var vcf=valuesFromLine(findLine(lines,'Total Custos Fixos'));
+  var vcv=valuesFromLine(findLine(lines,'Total de Custos Variáveis'));
   var meur=valuesFromLine(findLine(lines,'Margem €'));
   var mpct=valuesFromLine(findLine(lines,'Margem %'));
   // ordem das colunas no PDF: [Cacém, Colisão, Lisboa, Total]
@@ -960,13 +965,17 @@ function parseMargemRealLines(lines){
       key:u.key, label:u.label, empresa:u.empresa,
       pct:(mpct[i]!=null?mpct[i]:null),
       resultado:(meur[i]!=null?realFmtEur(meur[i]):''),
-      vendas:(vend[i]!=null?realFmtEur(vend[i]):'')
+      vendas:(vend[i]!=null?realFmtEur(vend[i]):''),
+      // rubricas numéricas para os Indicadores e Objetivos (Margem Mensal)
+      v_vendas:(vend[i]!=null?vend[i]:null), v_mo:(vmo[i]!=null?vmo[i]:null), v_pecas:(vpe[i]!=null?vpe[i]:null),
+      v_cf:(vcf[i]!=null?vcf[i]:null), v_cv:(vcv[i]!=null?vcv[i]:null), v_margem:(meur[i]!=null?meur[i]:null)
     });
   });
   return out;
 }
 
 function renderRealReview(parsed){
+  LAST_REAL_PARSED=parsed;
   document.getElementById('resultsReal').style.display='block';
   document.getElementById('realPeriodo').value=parsed.periodo||'';
   var tb=document.querySelector('#realTable tbody'); tb.innerHTML='';
@@ -990,11 +999,15 @@ document.getElementById('realPublishBtn').addEventListener('click', function(){
     var pctRaw=(document.getElementById('rp_'+i).value||'').replace(',','.').replace(/[^0-9.\-]/g,'');
     var pctVal=parseFloat(pctRaw);
     if(isNaN(pctVal)) bad=true;
+    var resStr=(document.getElementById('rr_'+i).value||'').trim();
+    var venStr=(document.getElementById('rv_'+i).value||'').trim();
+    var bd=(LAST_REAL_PARSED && LAST_REAL_PARSED.unidades[i]) ? LAST_REAL_PARSED.unidades[i] : {};
     unidades.push({
       key:REAL_UNITS[i].key, label:REAL_UNITS[i].label, empresa:REAL_UNITS[i].empresa,
-      pct:pctVal,
-      resultado:(document.getElementById('rr_'+i).value||'').trim(),
-      vendas:(document.getElementById('rv_'+i).value||'').trim()
+      pct:pctVal, resultado:resStr, vendas:venStr,
+      // rubricas numéricas para os Indicadores (valor das vendas/margem segue o que foi revisto)
+      v_vendas:realToNum(venStr), v_margem:realToNum(resStr),
+      v_mo:bd.v_mo, v_pecas:bd.v_pecas, v_cf:bd.v_cf, v_cv:bd.v_cv
     });
   }
   if(bad){ sp.innerHTML='<span style="color:#dc2626;">Há Margem % por preencher ou inválida.</span>'; return; }
