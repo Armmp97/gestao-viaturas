@@ -943,6 +943,29 @@ function findLine(lines, label){
   return '';
 }
 
+// Rubricas detalhadas (mapeiam para MARGEM_DETAIL_ROWS dos Indicadores) — ordem PDF: Cacém, Colisão, Lisboa, Total
+var REAL_DETAIL_LABELS=[['Rappel LeasePlan - Peças',0],['Rappel LeasePlan - Horas',1],['Vendas de Mão de Obra',2],['Vendas de Peças',3],['Vendas de Serviços',4],['Serviço de Mobilidade',5],['Fatura Interna - Peças e Serviços',6],['Fatura Interna - Horas',7],['Aguarda NE - Peças e Serviços',8],['Aguarda NE - Horas',9],['Outras Vendas - Peças e Serviços',10],['Outras Vendas - Horas',11],['Custos Pessoal',12],['Renda e Infraestruturas',13],['Custos Fixos Variados',14],['Custos imputados diretamente ao veículo',15],['Rappel de Fornecedores',16],['Custos não imputados ao veículo',17],['CFI ( Fatura Custos Internos)',18],['Prémios de Produtividade',19],['Horas Extra de Pessoal',20],['Outros Custos Variáveis',21]];
+// tokeniza 4 células (lida com "-" = 0 e valores entre parênteses = negativo)
+function realCells(valpart){
+  if(!valpart) return [];
+  var re=/\([\d\s .,]+\s*€\s*\)|[\d\s .,]+\s*[€%]|(?<!\S)-(?!\S)/g;
+  return (valpart.match(re)||[]).map(function(t){ t=t.trim(); if(t==='-'||t==='') return 0; return realToNum(t)||0; });
+}
+function extractDetail(lines){
+  var U={cacem:new Array(22).fill(0),colisao:new Array(22).fill(0),lisboa:new Array(22).fill(0),domuscar:new Array(22).fill(0)};
+  var order=['cacem','colisao','lisboa','domuscar']; var found=0;
+  REAL_DETAIL_LABELS.forEach(function(p){
+    var lab=p[0], idx=p[1], line=null;
+    for(var i=0;i<lines.length;i++){ if(lines[i].indexOf(lab)===0){ line=lines[i]; break; } }
+    if(line===null) return;
+    found++;
+    var cs=realCells(line.slice(lab.length));
+    order.forEach(function(u,ci){ U[u][idx]=(cs[ci]!=null?cs[ci]:0); });
+  });
+  U._found=found;
+  return U;
+}
+
 function parseMargemRealLines(lines){
   var periodo='';
   for(var i=0;i<lines.length;i++){
@@ -958,7 +981,9 @@ function parseMargemRealLines(lines){
   var mpct=valuesFromLine(findLine(lines,'Margem %'));
   // ordem das colunas no PDF: [Cacém, Colisão, Lisboa, Total]
   var idx={cacem:0, colisao:1, lisboa:2, empresa:3};
-  var out={periodo:periodo, unidades:[]};
+  var det=extractDetail(lines);
+  var detMap={cacem:det.cacem, lisboa:det.lisboa, colisao:det.colisao, empresa:det.domuscar};
+  var out={periodo:periodo, unidades:[], _detFound:det._found};
   REAL_UNITS.forEach(function(u){
     var i=idx[u.key];
     out.unidades.push({
@@ -968,7 +993,9 @@ function parseMargemRealLines(lines){
       vendas:(vend[i]!=null?realFmtEur(vend[i]):''),
       // rubricas numéricas para os Indicadores e Objetivos (Margem Mensal)
       v_vendas:(vend[i]!=null?vend[i]:null), v_mo:(vmo[i]!=null?vmo[i]:null), v_pecas:(vpe[i]!=null?vpe[i]:null),
-      v_cf:(vcf[i]!=null?vcf[i]:null), v_cv:(vcv[i]!=null?vcv[i]:null), v_margem:(meur[i]!=null?meur[i]:null)
+      v_cf:(vcf[i]!=null?vcf[i]:null), v_cv:(vcv[i]!=null?vcv[i]:null), v_margem:(meur[i]!=null?meur[i]:null),
+      // detalhe das 22 rubricas (só quando o PDF foi bem lido) para a Margem Mensal detalhada
+      detalhe:(det._found>=18 ? detMap[u.key] : null)
     });
   });
   return out;
@@ -1007,7 +1034,8 @@ document.getElementById('realPublishBtn').addEventListener('click', function(){
       pct:pctVal, resultado:resStr, vendas:venStr,
       // rubricas numéricas para os Indicadores (valor das vendas/margem segue o que foi revisto)
       v_vendas:realToNum(venStr), v_margem:realToNum(resStr),
-      v_mo:bd.v_mo, v_pecas:bd.v_pecas, v_cf:bd.v_cf, v_cv:bd.v_cv
+      v_mo:bd.v_mo, v_pecas:bd.v_pecas, v_cf:bd.v_cf, v_cv:bd.v_cv,
+      detalhe:(bd.detalhe||null)
     });
   }
   if(bad){ sp.innerHTML='<span style="color:#dc2626;">Há Margem % por preencher ou inválida.</span>'; return; }

@@ -616,28 +616,6 @@ body {
     }
   };
 
-  // ══════ MERGE da Margem Real publicada (Gerador de Margem Real → dashboard → Indicadores) ══════
-  // Funde o mês publicado (intranet_margemReal) na MARGEM_DATA: mês de referência + domuscar (gerais).
-  // Só funde se o payload trouxer as rubricas numéricas; caso contrário mantém os valores existentes.
-  (function mergeMargemReal(){
-    var data=null;
-    try { var s=localStorage.getItem('intranet_margemReal'); if(s) data=JSON.parse(s); } catch(e){ return; }
-    if(!data || !data.periodo || !data.unidades) return;
-    var meses={'janeiro':0,'fevereiro':1,'março':2,'marco':2,'abril':3,'maio':4,'junho':5,'julho':6,'agosto':7,'setembro':8,'outubro':9,'novembro':10,'dezembro':11};
-    var parts=String(data.periodo).trim().toLowerCase().split(/\s+/);
-    if(parts.length<2) return;
-    var mi=meses[parts[0]]; var yr=parseInt(parts[1],10);
-    if(mi==null || !yr || !MARGEM_DATA[yr]) return;
-    var keymap={cacem:'mecanica_cacem', lisboa:'mecanica_lisboa', colisao:'colisao', empresa:'domuscar'};
-    data.unidades.forEach(function(u){
-      var k=keymap[u.key]; if(!k || !MARGEM_DATA[yr][k]) return;
-      if(u.v_vendas==null || u.v_mo==null || u.v_pecas==null || u.v_cf==null || u.v_cv==null) return; // sem breakdown → não mexe
-      var margem=(u.v_margem!=null)?u.v_margem:(u.v_vendas-u.v_cf-u.v_cv);
-      var pct=(typeof u.pct==='number')?u.pct:(u.v_vendas?margem/u.v_vendas*100:0);
-      MARGEM_DATA[yr][k][mi]=[u.v_vendas, u.v_mo, u.v_pecas, u.v_cf, u.v_cv, margem, pct];
-    });
-  })();
-
   // ══════ DADOS DETALHADOS MARGEM MENSAL 2026 ══════
   // Estrutura completa das rubricas de vendas e custos por unidade e mês.
   // Índices 0-11: Vendas | 12-14: Custos Fixos | 15-21: Custos Variáveis
@@ -685,7 +663,11 @@ body {
         [-2994.44, -1190.34, 30725.60, 68474.40, 3638.11, 955.29, 0, 0, 0, 0, 165.00, 0,
          23705.07, 2437.67, 6041.90,
          38189.68, -1030.25, 5601.81, 0, 1708.16, 680.00, 626.81],
-        null, null, null, null, null, null, null, null
+        // Maio
+        [-691, -1468, 38766, 64078, 6395, 659, 0, 0, 0, 0, 291, 69,
+         24115, 2219, 6567,
+         36914, -1030, 4178, 0, 3084, 580, 353],
+        null, null, null, null, null, null, null
       ],
       colisao: [
         // Janeiro
@@ -704,7 +686,11 @@ body {
         [-4959.08, -6253.01, 51066.59, 33159.18, 1717.47, 0, 0, 0, 3707.60, 3064.98, 1972.29, 4185.99,
          34794.42, 8619.45, 8436.94,
          28464.46, -286.20, 5581.01, 0, 0, 1000.00, 2978.04],
-        null, null, null, null, null, null, null, null
+        // Maio
+        [-5056, -6355, 63231, 46916, 2770, 463, 0, 0, -3324, -1680, 1813, 4643,
+         36310, 8550, 8838,
+         34336, -286, 6231, 0, 0, 1310, 8098],
+        null, null, null, null, null, null, null
       ],
       mecanica_lisboa: [
         // Janeiro
@@ -723,7 +709,11 @@ body {
         [-8209.05, -2995.68, 33919.92, 72645.30, 7396.75, 0, 0, 0, 0, 0, 895.80, 559.20,
          22167.13, 4419.24, 5411.66,
          30626.49, -1224.16, 3431.91, 0, 2000.00, 0, 588.86],
-        null, null, null, null, null, null, null, null
+        // Maio
+        [-2720, -8139, 24442, 64735, 2373, 295, 0, 0, 0, 0, 1354, 864,
+         22235, 4394, 6201,
+         33660, -1224, 3119, 0, 3752, 0, 324],
+        null, null, null, null, null, null, null
       ],
       domuscar: [
         // Janeiro (soma das 3 unidades)
@@ -742,10 +732,42 @@ body {
         [-16162.57, -10439.03, 115712.11, 174278.88, 12752.33, 955.29, 0, 0, 3707.60, 3064.98, 3033.09, 6217.69,
          80666.62, 15476.36, 19890.50,
          97280.63, -2540.61, 14614.73, 0, 3708.16, 1680.00, 4193.71],
-        null, null, null, null, null, null, null, null
+        // Maio (totais do PDF)
+        [-8467, -15962, 126439, 175729, 11539, 1417, 0, 0, -3324, -1680, 3458, 9161,
+         82661, 15164, 21606,
+         104911, -2541, 13528, 0, 6836, 1890, 8774],
+        null, null, null, null, null, null, null
       ]
     }
   };
+
+  // ══════ MERGE da Margem Real publicada (Gerador de Margem Real → dashboard → Indicadores) ══════
+  // Funde o mês publicado (intranet_margemReal): MARGEM_DATA (headline/comparativo) + MARGEM_DETAIL (detalhe mensal).
+  // Só funde o que vier completo no payload; caso contrário mantém os valores existentes.
+  (function mergeMargemReal(){
+    var data=null;
+    try { var s=localStorage.getItem('intranet_margemReal'); if(s) data=JSON.parse(s); } catch(e){ return; }
+    if(!data || !data.periodo || !data.unidades) return;
+    var meses={'janeiro':0,'fevereiro':1,'março':2,'marco':2,'abril':3,'maio':4,'junho':5,'julho':6,'agosto':7,'setembro':8,'outubro':9,'novembro':10,'dezembro':11};
+    var parts=String(data.periodo).trim().toLowerCase().split(/\s+/);
+    if(parts.length<2) return;
+    var mi=meses[parts[0]]; var yr=parseInt(parts[1],10);
+    if(mi==null || !yr) return;
+    var keymap={cacem:'mecanica_cacem', lisboa:'mecanica_lisboa', colisao:'colisao', empresa:'domuscar'};
+    data.unidades.forEach(function(u){
+      var k=keymap[u.key]; if(!k) return;
+      // headline (comparativo / gerais)
+      if(MARGEM_DATA[yr] && MARGEM_DATA[yr][k] && u.v_vendas!=null && u.v_mo!=null && u.v_pecas!=null && u.v_cf!=null && u.v_cv!=null){
+        var margem=(u.v_margem!=null)?u.v_margem:(u.v_vendas-u.v_cf-u.v_cv);
+        var pct=(typeof u.pct==='number')?u.pct:(u.v_vendas?margem/u.v_vendas*100:0);
+        MARGEM_DATA[yr][k][mi]=[u.v_vendas, u.v_mo, u.v_pecas, u.v_cf, u.v_cv, margem, pct];
+      }
+      // detalhe mensal completo (22 rubricas)
+      if(u.detalhe && u.detalhe.length===22 && MARGEM_DETAIL[yr] && MARGEM_DETAIL[yr][k]){
+        MARGEM_DETAIL[yr][k][mi]=u.detalhe.slice();
+      }
+    });
+  })();
 
   // ══════ DADOS TICKET MÉDIO ══════
   // 2025: Geral anual por unidade { osv, vendas, mo, pecas, ticketTotal, ticketMO, ticketPecas }
