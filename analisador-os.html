@@ -74,7 +74,7 @@
     </div>
     <div class="upbox" id="boxOrc">
       <h3>Orçamentos <span class="opt">opcional</span></h3>
-      <p>Excel separador "Orçamentos", mês de referência — para o funil orçamento→OS.</p>
+      <p>Extrair ficheiro excel separador orçamentos, desde 2 meses antes até ao final do mês de referência — para o funil orçamento→OS.</p>
       <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fOrc" accept=".xlsx,.xls"></div>
       <div class="ustat" id="sOrc"></div>
     </div>
@@ -289,6 +289,7 @@ function render(R){
     box(R.falhas.length,'Falhas regra nomes',R.falhas.length?'#dc2626':'#059669')+
     box(R.soDiag.length,'Só diagnóstico','#b45309')+
     box(R.abertas.length,'Por finalizar','#0369a1')+
+    box(R.semDataEntrega.length,'Sem data entrega',R.semDataEntrega.length?'#dc2626':'#059669')+
     box(R.risco.length,'OS em risco','#dc2626');
   el.appendChild(sum);
 
