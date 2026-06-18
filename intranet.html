@@ -2382,6 +2382,7 @@
         loadMargemDashboard();
         loadMargemReal();
         loadGarantias();
+        loadAssessoria();
         renderMargemMensalReal();
         updateGreeting();
         // Hide breadcrumb on home
@@ -2909,6 +2910,12 @@
         saveGarantias(event.data.payload);
     });
 
+    // Listen for assessoria de vendas data (Verificação Orçamentos + Analisador OS)
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'assessoriaUpdate') return;
+        saveAssessoria(event.data.payload);
+    });
+
     // Listen for KPI dashboard data from gerador-kpis iframe
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
@@ -3211,6 +3218,7 @@
         loadMargemDashboard();
         loadMargemReal();
         loadGarantias();
+        loadAssessoria();
         renderMargemMensalReal();
     }
 
@@ -3610,6 +3618,32 @@
                 try { localStorage.setItem('intranet_garantias', JSON.stringify(data)); } catch(e) {}
             }
         }).catch(function(e) { console.warn('[Garantias] SP load:', e && e.message); });
+    }
+
+    // ======== ASSESSORIA DE VENDAS (Verificação Orçamentos + Analisador OS → Indicadores) ========
+    function saveAssessoria(payload) {
+        if (!payload || !payload.ano || !payload.mes || !payload.rececionistas) return;
+        var store = {};
+        try { var s = localStorage.getItem('intranet_assessoria'); if (s) store = JSON.parse(s) || {}; } catch(e) {}
+        var y = String(payload.ano), m = String(payload.mes);
+        if (!store[y]) store[y] = {};
+        if (!store[y][m]) store[y][m] = {};
+        Object.keys(payload.rececionistas).forEach(function(rec) {
+            var cur = store[y][m][rec] = store[y][m][rec] || {};
+            var src = payload.rececionistas[rec];
+            Object.keys(src).forEach(function(k) { if (src[k] != null) cur[k] = src[k]; });
+        });
+        try { localStorage.setItem('intranet_assessoria', JSON.stringify(store)); } catch(e) { console.error('[Assessoria] save:', e); }
+        saveDashboardToSP('assessoria_vendas.json', store);
+        console.log('[Assessoria] publicado:', payload.fonte, y, m);
+        openModule('indicadores_obj', 'assessoria');
+    }
+    function loadAssessoria() {
+        loadDashboardFromSP('assessoria_vendas.json').then(function(data) {
+            if (data && typeof data === 'object') {
+                try { localStorage.setItem('intranet_assessoria', JSON.stringify(data)); } catch(e) {}
+            }
+        }).catch(function(e) { console.warn('[Assessoria] SP load:', e && e.message); });
     }
 
     // Converte "Março 2026" → 202603 para comparação numérica

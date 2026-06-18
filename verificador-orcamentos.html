@@ -77,6 +77,7 @@
 
 <script>
 var ORC=null, VEN=null, EMAIL=null;
+var LAST_ASSESS_ORC=null;
 var REL_STATES={'aprovado':1,'em negociacao':1,'aguarda ne':1};
 
 function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
@@ -199,8 +200,21 @@ function analisar(){
     em.list.forEach(function(e){ byAutor[e.autor]=(byAutor[e.autor]||0)+1; });
     quotes.forEach(function(q){ if(em.byNum[nmat(q.num)]) enviados++; });
     var aprovNaoEnv=quotes.filter(function(q){ return deaccent(q.estado)==='aprovado' && !em.byNum[nmat(q.num)]; });
-    emailInfo={total:em.list.length, enviados:enviados, totalQuotes:quotes.length, byAutor:byAutor, aprovNaoEnv:aprovNaoEnv};
+    var porRec={};
+    quotes.forEach(function(q){ var rc=q.emp||'(sem rececionista)'; var p=porRec[rc]=porRec[rc]||{total:0,enviados:0}; p.total++; if(em.byNum[nmat(q.num)])p.enviados++; });
+    emailInfo={total:em.list.length, enviados:enviados, totalQuotes:quotes.length, byAutor:byAutor, aprovNaoEnv:aprovNaoEnv, porRec:porRec};
   }
+  // dados para Assessoria de Vendas (por rececionista)
+  var em2 = EMAIL ? parseEmailsOrc(EMAIL) : null;
+  var assess={};
+  quotes.forEach(function(q){ var rc=norm(q.emp).replace(/^\[\d+\]\s*/,'')||'(sem rececionista)';
+    var a=assess[rc]=assess[rc]||{orcTotal:0,orcEmail:(em2?0:null),orcAprov:0};
+    a.orcTotal++; var es=deaccent(q.estado); if(es==='aprovado'||es==='faturado')a.orcAprov++;
+    if(em2&&em2.byNum[nmat(q.num)])a.orcEmail++;
+  });
+  var mc={},ac={}; quotes.forEach(function(q){ if(q.date){mc[q.date.getMonth()+1]=(mc[q.date.getMonth()+1]||0)+1;ac[q.date.getFullYear()]=(ac[q.date.getFullYear()]||0)+1;} });
+  function topK(o){var b=null,c=-1;Object.keys(o).forEach(function(k){if(o[k]>c){c=o[k];b=k;}});return b?+b:null;}
+  LAST_ASSESS_ORC={assess:assess, mes:topK(mc)||(new Date().getMonth()+1), ano:topK(ac)||(new Date().getFullYear())};
   render(rel.length, forte, confirmar, sem, emailInfo);
 }
 
@@ -258,8 +272,8 @@ function render(nrel, forte, confirmar, sem, emailInfo){
     var cov=emailInfo.totalQuotes?(emailInfo.enviados/emailInfo.totalQuotes*100):0;
     var eh='<div class="sec-h">📧 Orçamentos enviados por email <span style="font-size:12px;color:#64748b;font-weight:600;">('+emailInfo.enviados+')</span></div>';
     eh+='<div class="sec-d">'+emailInfo.enviados+' de '+emailInfo.totalQuotes+' orçamentos foram enviados por email ('+cov.toFixed(0)+'%). Aprovados sem email são um sinal de alerta (cliente pode nunca ter recebido a proposta).</div>';
-    eh+='<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">Quem enviou (por autor)</div><div class="tbl-wrap" style="max-height:200px;"><table><thead><tr><th class="l">Autor</th><th>Orçamentos enviados</th></tr></thead><tbody>';
-    Object.keys(emailInfo.byAutor).sort(function(a,b){return emailInfo.byAutor[b]-emailInfo.byAutor[a];}).forEach(function(k){ eh+='<tr><td class="l">'+cut(k,30)+'</td><td>'+emailInfo.byAutor[k]+'</td></tr>'; });
+    eh+='<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">Não enviados por rececionista</div><div class="tbl-wrap"><table><thead><tr><th class="l">Rececionista</th><th>Não enviados</th><th>Total orçamentos</th><th>% não enviados</th></tr></thead><tbody>';
+    Object.keys(emailInfo.porRec).sort(function(a,b){return (emailInfo.porRec[b].total-emailInfo.porRec[b].enviados)-(emailInfo.porRec[a].total-emailInfo.porRec[a].enviados);}).forEach(function(k){ var p=emailInfo.porRec[k]; var ne=p.total-p.enviados; eh+='<tr'+(ne?' class="bad"':'')+'><td class="l">'+cut(k,28)+'</td><td>'+ne+'</td><td>'+p.total+'</td><td>'+(p.total?Math.round(ne/p.total*100):0)+'%</td></tr>'; });
     eh+='</tbody></table></div>';
     if(emailInfo.aprovNaoEnv.length){
       eh+='<div style="font-size:12px;font-weight:700;color:#b91c1c;margin:14px 0 6px;">Aprovados NÃO enviados por email ('+emailInfo.aprovNaoEnv.length+'):</div>';
@@ -268,6 +282,25 @@ function render(nrel, forte, confirmar, sem, emailInfo){
       eh+='</tbody></table></div>';
     }
     e.innerHTML=eh; R.appendChild(e);
+  }
+  if(LAST_ASSESS_ORC){
+    var pa=document.createElement('div'); pa.className='sec';
+    var MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    var mo=''; for(var mi=1;mi<=12;mi++)mo+='<option value="'+mi+'"'+(mi===LAST_ASSESS_ORC.mes?' selected':'')+'>'+MES[mi-1]+'</option>';
+    var ao=''; for(var ai=2025;ai<=2028;ai++)ao+='<option value="'+ai+'"'+(ai===LAST_ASSESS_ORC.ano?' selected':'')+'>'+ai+'</option>';
+    var ss='padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-family:inherit;';
+    pa.innerHTML='<div class="sec-h">📤 Publicar para Indicadores → Assessoria de Vendas</div><div class="sec-d">Envia, por rececionista, o nº de orçamentos, % enviados por email e taxa de aprovação para o scorecard mensal.</div>'+
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;"><label style="font-size:12px;color:#64748b;font-weight:600;">Período:</label><select id="paMes" style="'+ss+'">'+mo+'</select><select id="paAno" style="'+ss+'">'+ao+'</select></div>'+
+      '<div id="paStatus" style="font-size:12px;min-height:15px;margin-bottom:8px;"></div>'+
+      '<button id="paBtn" style="width:100%;padding:12px;background:#1d4ed8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Publicar para Assessoria de Vendas</button>';
+    R.appendChild(pa);
+    document.getElementById('paBtn').addEventListener('click',function(){
+      var ano=+document.getElementById('paAno').value, mes=+document.getElementById('paMes').value;
+      if(window.parent&&window.parent!==window){
+        window.parent.postMessage({type:'assessoriaUpdate',payload:{ano:ano,mes:mes,fonte:'orcamentos',rececionistas:LAST_ASSESS_ORC.assess}},'*');
+        document.getElementById('paStatus').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Assessoria de Vendas...</span>';
+      } else document.getElementById('paStatus').innerHTML='<span style="color:#dc2626;">Abre dentro da intranet para publicar.</span>';
+    });
   }
 }
 function rowMatch(x){

@@ -271,6 +271,11 @@ function analisar(){
     if(flags.length>=2)R.risco.push({o:o,flags:flags});
   });
   R.risco.sort(function(a,b){return b.flags.length-a.flags.length;});
+  // dados para Assessoria de Vendas (por rececionista)
+  R.assessMes=(function(){var mc={};OS.forEach(function(o){if(o.date)mc[o.date.getMonth()+1]=(mc[o.date.getMonth()+1]||0)+1;});var b=null,c=-1;Object.keys(mc).forEach(function(k){if(mc[k]>c){c=mc[k];b=k;}});return b?+b:(new Date().getMonth()+1);})();
+  R.assessAno=(function(){var ac={};OS.forEach(function(o){if(o.date)ac[o.date.getFullYear()]=(ac[o.date.getFullYear()]||0)+1;});var b=null,c=-1;Object.keys(ac).forEach(function(k){if(ac[k]>c){c=ac[k];b=k;}});return b?+b:(new Date().getFullYear());})();
+  R.assess={};
+  Object.keys(R.oper).forEach(function(op){var d=R.oper[op];var rc=stripcode(op)||'(sem rececionista)';R.assess[rc]={osTotal:d.total,osPart:d.part,osFalha:d.falha,osDiag:d.diag,osDiagConv:d.diagConv};});
   return R;
 }
 function tipoServ(p){var d=deaccent(p);if(d.indexOf('pintura')>-1)return 'pintura';if(d.indexOf('chapa')>-1)return 'chapa';if(d.indexOf('diagn')>-1)return 'diagnostico';if(d.indexOf('mecanic')>-1||d.indexOf('revis')>-1||d.indexOf('travo')>-1||d.indexOf('embraiag')>-1||d.indexOf('bateria')>-1||d.indexOf('oleo')>-1||d.indexOf('alinha')>-1)return 'mecanica';return 'outro';}
@@ -406,6 +411,24 @@ function render(R){
       he+='</tbody></table></div>';}
     el.appendChild(sec(he));
   }
+  // Publicar para Assessoria de Vendas
+  var pa=document.createElement('div'); pa.className='sec';
+  var MESN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var moo=''; for(var mi=1;mi<=12;mi++)moo+='<option value="'+mi+'"'+(mi===R.assessMes?' selected':'')+'>'+MESN[mi-1]+'</option>';
+  var aoo=''; for(var ai=2025;ai<=2028;ai++)aoo+='<option value="'+ai+'"'+(ai===R.assessAno?' selected':'')+'>'+ai+'</option>';
+  var ssel='padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-family:inherit;';
+  pa.innerHTML='<div class="sec-h">📤 Publicar para Indicadores → Assessoria de Vendas</div><div class="sec-d">Envia, por rececionista, o nº de OS, cumprimento da regra dos nomes e conversão de diagnóstico para o scorecard mensal.</div>'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;"><label style="font-size:12px;color:#64748b;font-weight:600;">Período:</label><select id="paMes" style="'+ssel+'">'+moo+'</select><select id="paAno" style="'+ssel+'">'+aoo+'</select></div>'+
+    '<div id="paStatus" style="font-size:12px;min-height:15px;margin-bottom:8px;"></div>'+
+    '<button id="paBtn" style="width:100%;padding:12px;background:#1d4ed8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Publicar para Assessoria de Vendas</button>';
+  el.appendChild(pa);
+  document.getElementById('paBtn').addEventListener('click',function(){
+    var ano=+document.getElementById('paAno').value, mes=+document.getElementById('paMes').value;
+    if(window.parent&&window.parent!==window){
+      window.parent.postMessage({type:'assessoriaUpdate',payload:{ano:ano,mes:mes,fonte:'os',rececionistas:R.assess}},'*');
+      document.getElementById('paStatus').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Assessoria de Vendas...</span>';
+    } else document.getElementById('paStatus').innerHTML='<span style="color:#dc2626;">Abre dentro da intranet para publicar.</span>';
+  });
 }
 </script>
 </body>
