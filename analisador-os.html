@@ -8,218 +8,400 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
-  h1{color:white;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center}
-  .sub{color:#94a3b8;font-size:14px;margin-bottom:28px;text-align:center;max-width:680px}
-  .card{background:white;border-radius:16px;padding:30px 36px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%}
-  .icon-box{width:68px;height:68px;background:linear-gradient(135deg,#6366f1,#4338ca);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px}
-  .card h2{font-size:18px;font-weight:700;margin-bottom:6px;color:#0f172a}
-  .card p{color:#64748b;font-size:13px;margin-bottom:20px}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:36px 18px}
+  h1{color:white;font-size:27px;font-weight:800;margin-bottom:6px;text-align:center}
+  .sub{color:#94a3b8;font-size:14px;margin-bottom:24px;text-align:center;max-width:720px}
+  .card{background:white;border-radius:16px;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:760px;width:100%}
+  .uprow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .upbox{border:2px dashed #cbd5e1;border-radius:12px;padding:14px;text-align:center}
+  .upbox h3{font-size:12.5px;color:#0f172a;font-weight:700;margin-bottom:3px}
+  .upbox .req{color:#dc2626} .upbox .opt{color:#94a3b8;font-weight:600;font-size:10px}
+  .upbox p{font-size:10.5px;color:#94a3b8;margin:4px 0 10px;line-height:1.45}
+  .upbox.done{border-color:#0d904f;background:#f0fdf4}
   .file-wrap{position:relative;display:inline-block}
   .file-wrap input[type="file"]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0}
-  .upload-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 30px;background:linear-gradient(135deg,#4f46e5,#4338ca);color:white;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer}
-  #status{margin-top:16px;font-size:13px;font-weight:600;min-height:18px}
+  .upload-btn{display:inline-flex;gap:6px;padding:9px 16px;background:linear-gradient(135deg,#4f46e5,#4338ca);color:white;border:none;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .ustat{font-size:10.5px;font-weight:600;margin-top:7px;min-height:13px}
   .ok{color:#059669}.err{color:#dc2626}
-  .results{margin-top:24px;width:100%;max-width:1000px;display:none}
-  .summary{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-  .sumbox{flex:1;min-width:140px;background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
-  .sumbox .n{font-size:26px;font-weight:800}
-  .sumbox .l{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
-  .sec{background:white;border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
-  .sec-h{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;color:#0f172a}
+  .run-btn{width:100%;margin-top:16px;padding:13px;background:#0d904f;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .run-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+  .results{margin-top:24px;width:100%;max-width:1040px;display:none}
+  .summary{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .sumbox{flex:1;min-width:120px;background:white;border-radius:12px;padding:14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  .sumbox .n{font-size:24px;font-weight:800}
+  .sumbox .l{font-size:10.5px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+  .sec{background:white;border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+  .sec-h{font-size:15px;font-weight:800;margin-bottom:3px;color:#0f172a}
   .sec-d{font-size:12px;color:#64748b;margin-bottom:12px}
-  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
   table{width:100%;border-collapse:collapse;font-size:12.5px}
-  th,td{padding:7px 9px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap}
-  th{background:#f8fafc;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  th,td{padding:6px 9px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap}
+  th{background:#f8fafc;color:#475569;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px}
   td:first-child,th:first-child,td.l,th.l{text-align:left}
   .tbl-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
   tr.bad td{background:#fef2f2}
-  .pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:#eef2ff;color:#3730a3}
   .minirow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
   .minirow b{color:#0f172a}
-  .hint{margin-top:6px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;color:#64748b;line-height:1.6}
+  .bar{height:7px;border-radius:4px;background:#e2e8f0;overflow:hidden;margin-top:3px}
+  .bar>span{display:block;height:100%;background:#6366f1}
+  .hint{margin-top:6px;padding:11px 13px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:11.5px;color:#64748b;line-height:1.5}
+  .tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;background:#fee2e2;color:#b91c1c;margin-left:4px}
 </style>
 </head>
 <body>
-
 <h1>🛠️ Analisador de Ordens de Serviço</h1>
-<p class="sub">Carrega o Excel de Ordens de Serviço (OSV) e obtém a verificação da regra dos nomes e vários indicadores operacionais.</p>
+<p class="sub">Carrega a folha de OS (obrigatória) e, se quiseres cruzar dados, junta as Faturas, Garantias e/ou Orçamentos. A ligação entre ficheiros é feita por matrícula.</p>
 
 <div class="card">
-  <div class="icon-box">📋</div>
-  <h2>Carregar Ficheiro de OS</h2>
-  <p>Excel "Ordens de serviço" do período.</p>
-  <div class="file-wrap"><button class="upload-btn">📁 Escolher Ficheiro</button><input type="file" id="fileOS" accept=".xlsx,.xls"></div>
-  <div id="status"></div>
-  <div class="hint">Extrair ficheiro excel separador ordens de serviço, filtrado pelo mês de referência e estado "Todos".</div>
+  <div class="uprow">
+    <div class="upbox" id="boxOS">
+      <h3>Ordens de Serviço <span class="req">obrigatório</span></h3>
+      <p>Excel separador "Ordens de serviço", mês de referência, estado "Todos".</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fOS" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="sOS"></div>
+    </div>
+    <div class="upbox" id="boxFat">
+      <h3>Faturas <span class="opt">opcional</span></h3>
+      <p>"Artigos por documento" das vendas, mês de referência (para ticket por OS e OS faturadas).</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fFat" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="sFat"></div>
+    </div>
+    <div class="upbox" id="boxGar">
+      <h3>Garantias <span class="opt">opcional</span></h3>
+      <p>"Artigos por documento" das garantias (séries GAR) — para deteção de re-trabalho.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fGar" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="sGar"></div>
+    </div>
+    <div class="upbox" id="boxOrc">
+      <h3>Orçamentos <span class="opt">opcional</span></h3>
+      <p>Excel separador "Orçamentos", mês de referência — para o funil orçamento→OS.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fOrc" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="sOrc"></div>
+    </div>
+    <div class="upbox" id="boxEmail">
+      <h3>Emails enviados <span class="opt">opcional</span></h3>
+      <p>"Emails enviados" do Officegest — para ver quem enviou a OS digital ao cliente.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fEmail" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="sEmail"></div>
+    </div>
+  </div>
+  <button class="run-btn" id="runBtn" disabled>Analisar</button>
+  <div class="hint">Regra dos nomes: clientes <b>particulares</b> devem ter <b>≥3 nomes</b> (correção no campo Proprietário). Empresas são identificadas pelo nome e excluídas. Os cruzamentos só aparecem se carregares os ficheiros correspondentes.</div>
 </div>
 
 <div class="results" id="results"></div>
 
 <script>
+var DATA={os:null,fat:null,gar:null,orc:null,email:null};
 var MIN_NOMES=3;
 var SERIE={261:'Cacém',262:'Colisão',263:'Lisboa'};
-var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologia|seguros|rent|leaseplan|lease plan|fleet|crl|sgps|servic|consult|invest|imobiliar|transportes|construc|grupo|group|automoveis|hospital|farma|clinica|restaura|imports?|trading)\b/i;
+var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologia|seguros|rent|leaseplan|lease plan|fleet|crl|sgps|servic|consult|invest|imobiliar|transportes|construc|grupo|group|automoveis|hospital|farma|clinica|restaura|imports?|trading|inspecao|agencia|camara|junta|ministerio)\b/i;
 
-function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
-function deaccent(s){ return norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
-function stripcode(s){ return norm(s).replace(/^\[\d+\]\s*/,'').trim(); }
-function isCompany(nome){ return COMPANY.test(deaccent(nome)); }
-function ntokens(nome){ return stripcode(nome).split(/\s+/).filter(Boolean).length; }
-function pct(a,b){ return b? (a/b*100):0; }
-function pdate(v){
-  if(v instanceof Date) return v;
-  var s=norm(v); var m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);
-  if(m){ var y=+m[3]; if(y<100)y+=2000; return new Date(y,+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0)); }
-  return null;
+function norm(s){return String(s==null?'':s).replace(/\s+/g,' ').trim();}
+function deaccent(s){return norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function stripcode(s){return norm(s).replace(/^\[\d+\]\s*/,'').trim();}
+function codeOf(s){var m=String(s||'').match(/^\[(\d+)\]/);return m?m[1]:null;}
+function isCompany(n){return COMPANY.test(deaccent(n));}
+function ntokens(n){return stripcode(n).split(/\s+/).filter(Boolean).length;}
+function nmat(m){return String(m==null?'':m).toUpperCase().replace(/[\s\-]/g,'');}
+function eur(v){if(v==null||isNaN(v))return '—';var neg=v<0,n=Math.round(Math.abs(v));var s=String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');return (neg?'-':'')+s+' €';}
+function pct(a,b){return b?(a/b*100):0;}
+function pdate(v){if(v instanceof Date)return new Date(v.getFullYear(),v.getMonth(),v.getDate());var s=norm(v);var m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);if(m){var y=+m[3];if(y<100)y+=2000;return new Date(y,+m[2]-1,+m[1]);}m=s.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);return null;}
+function fdate(d){if(!(d instanceof Date))return '—';var p=function(x){return(x<10?'0':'')+x;};return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear();}
+function days(a,b){return Math.round((a-b)/86400000);}
+function cut(s,n){s=norm(s);return s.length>n?s.slice(0,n-1)+'…':s;}
+function interv(s){return String(s||'').split(/\s{2,}/).map(function(x){return x.trim();}).filter(Boolean);}
+function colMap(h){var m={};(h||[]).forEach(function(x,i){m[deaccent(x)]=i;});return function(){for(var a=0;a<arguments.length;a++){if(arguments[a] in m)return m[arguments[a]];}return -1;};}
+function findHeader(rows,keys){for(var i=0;i<Math.min(rows.length,10);i++){var j=(rows[i]||[]).map(deaccent).join('|');if(keys.every(function(k){return j.indexOf(k)>-1;}))return i;}return 1;}
+
+function readFile(file,cb){var rd=new FileReader();rd.onload=function(e){var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:null}));};rd.readAsArrayBuffer(file);}
+function bind(inp,key,box,stat,label){document.getElementById(inp).addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;readFile(f,function(rows){DATA[key]=rows;var s=document.getElementById(stat);s.className='ustat ok';s.textContent='✓ '+cut(f.name,22);document.getElementById(box).classList.add('done');document.getElementById('runBtn').disabled=!DATA.os;});});}
+bind('fOS','os','boxOS','sOS'); bind('fFat','fat','boxFat','sFat'); bind('fGar','gar','boxGar','sGar'); bind('fOrc','orc','boxOrc','sOrc'); bind('fEmail','email','boxEmail','sEmail');
+document.getElementById('runBtn').addEventListener('click',function(){try{render(analisar());}catch(err){alert('Erro: '+(err.message||err));console.error(err);}});
+
+// ---- parse vendas/garantias "Artigos por documento" -> docs por matrícula ----
+function parseArtigos(rows){
+  if(!rows) return null;
+  var hi=findHeader(rows,['num doc','total s/ iva']); var c=colMap(rows[hi]||[]);
+  var ci={doc:c('documento'),num:c('num doc'),data:c('data doc.','data doc','data'),mat:c('matricula','viatura'),tot:c('total s/ iva','total s/iva')};
+  var docs={};
+  for(var i=hi+1;i<rows.length;i++){var r=rows[i];if(!r)continue;var num=norm(r[ci.num]);if(!num)continue;
+    if(!docs[num])docs[num]={num:num,tipo:norm(r[ci.doc]),date:pdate(r[ci.data]),mat:nmat(r[ci.mat]),tot:0};
+    docs[num].tot+=Number(r[ci.tot])||0;}
+  var byMat={};
+  Object.keys(docs).forEach(function(k){var d=docs[k];if(!d.mat)return;(byMat[d.mat]=byMat[d.mat]||[]).push(d);});
+  return {docs:docs,byMat:byMat};
 }
-function fdate(d){ if(!(d instanceof Date)) return '—'; var p=function(x){return(x<10?'0':'')+x;}; return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear(); }
-function cut(s,n){ s=norm(s); return s.length>n?s.slice(0,n-1)+'…':s; }
-
-document.getElementById('fileOS').addEventListener('change', function(e){
-  var f=e.target.files[0]; if(!f) return;
-  var st=document.getElementById('status'); st.className=''; st.textContent='A processar...';
-  var rd=new FileReader();
-  rd.onload=function(ev){
-    try{
-      var wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array',cellDates:true});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
-      render(analisar(rows));
-      st.className='ok'; st.textContent='✓ Análise concluída.';
-    }catch(err){ st.className='err'; st.textContent='Erro: '+(err.message||err); console.error(err); }
-  };
-  rd.readAsArrayBuffer(f);
-});
-
-function findHeader(rows){
-  for(var i=0;i<Math.min(rows.length,10);i++){ var j=(rows[i]||[]).map(deaccent).join('|'); if(j.indexOf('num')>-1 && j.indexOf('proprietario')>-1 && j.indexOf('estado')>-1) return i; }
-  return 1;
+function parseOrc(rows){
+  if(!rows) return null;
+  var hi=findHeader(rows,['num','estado']); var c=colMap(rows[hi]||[]);
+  var ci={num:c('num.','num'),data:c('data doc.','data doc','data'),viat:c('viatura','matricula'),estado:c('estado'),tot:c('total s/ iva','total s/iva')};
+  var byMat={};var list=[];
+  for(var i=hi+1;i<rows.length;i++){var r=rows[i];if(!r)continue;var num=norm(r[ci.num]);if(!num)continue;
+    var o={num:num,date:pdate(r[ci.data]),mat:nmat(r[ci.viat]),estado:norm(r[ci.estado]),tot:Number(r[ci.tot])||0};
+    list.push(o); if(o.mat)(byMat[o.mat]=byMat[o.mat]||[]).push(o);}
+  return {list:list,byMat:byMat};
 }
-function colMap(h){ var m={}; h.forEach(function(x,i){ m[deaccent(x)]=i; }); return function(){ for(var a=0;a<arguments.length;a++){ if(arguments[a] in m) return m[arguments[a]]; } return -1; }; }
-
-function analisar(rows){
-  var hi=findHeader(rows); var c=colMap(rows[hi]||[]);
-  var ci={num:c('num.','num'),data:c('data'),cli:c('cliente'),prop:c('proprietario'),viat:c('viatura','matricula'),
-          marca:c('marca'),interv:c('intervencoes'),estado:c('estado'),drec:c('data de rececao','data rececao'),
-          dent:c('data entrega prev.','data entrega prev'),oper:c('oper reg.','oper reg'),serie:c('serie'),aut:c('a_aguardar_autorizacao')};
-  var R={total:0, particulares:0, empresas:0, correcoes:0, aguarda:0,
-         estado:{}, serie:{}, oper:{}, marca:{}, falhas:[], corrigidas:[], leadtimes:[], longas:[], matr:{}, repViat:[]};
-  for(var i=hi+1;i<rows.length;i++){
-    var r=rows[i]; if(!r) continue; var num=norm(r[ci.num]); if(!num) continue;
-    R.total++;
-    var cli=r[ci.cli], prop=r[ci.prop], op=norm(r[ci.oper])||'(sem operador)', est=norm(r[ci.estado]);
-    var serie=r[ci.serie], marca=norm(r[ci.marca]), viat=norm(r[ci.viat]);
-    R.estado[est]=(R.estado[est]||0)+1;
-    var un=SERIE[serie]||String(serie||'—'); R.serie[un]=(R.serie[un]||0)+1;
-    if(marca) R.marca[marca]=(R.marca[marca]||0)+1;
-    if(viat){ R.matr[viat]=(R.matr[viat]||0)+1; }
-    if(Number(r[ci.aut])===1) R.aguarda++;
-    if(stripcode(cli)!==stripcode(prop)){ R.correcoes++; R.corrigidas.push({num:num,cli:stripcode(cli),prop:stripcode(prop),op:op}); }
-    // lead time
-    var rec=pdate(r[ci.drec]), ent=pdate(r[ci.dent]);
-    if(rec&&ent){ var d=Math.round((ent-rec)/86400000); R.leadtimes.push(d); if(d>14) R.longas.push({num:num,dias:d,viat:viat,est:est,op:op}); }
-    // particular vs empresa + regra 3 nomes
-    var nomeRef = stripcode(prop) || stripcode(cli);
-    if(isCompany(nomeRef)){ R.empresas++; }
-    else {
-      R.particulares++;
-      var oo=R.oper[op]=R.oper[op]||{total:0,part:0,falha:0}; oo.total++; oo.part++;
-      var n=ntokens(nomeRef);
-      if(n<MIN_NOMES){ R.falhas.push({num:num,nome:nomeRef,n:n,op:op,est:est,un:un}); oo.falha++; }
-    }
-    if(isCompany(nomeRef)){ var oe=R.oper[op]=R.oper[op]||{total:0,part:0,falha:0}; oe.total++; }
+function parseEmails(rows){
+  if(!rows) return null;
+  var hi=findHeader(rows,['assunto','autor']); var c=colMap(rows[hi]||[]);
+  var ci={assunto:c('assunto'),ent:c('entidade'),autor:c('autor'),enviado:c('enviado')};
+  var pat=/OSV\s*[A-Z]{0,3}\d{3}\/\d+/i;
+  var byNum={},list=[];
+  for(var i=hi+1;i<rows.length;i++){var r=rows[i];if(!r)continue;var s=norm(r[ci.assunto]);if(!s)continue;
+    if(deaccent(s).indexOf('ordem de servi')===-1)continue;
+    var m=s.match(pat); if(!m)continue;
+    var e={num:nmat(m[0]),autor:norm(r[ci.autor])||'(sem autor)',ent:norm(r[ci.ent]),enviado:norm(r[ci.enviado])};
+    list.push(e); byNum[e.num]=e;
   }
+  return {list:list,byNum:byNum};
+}
+
+function analisar(){
+  var rows=DATA.os; var hi=findHeader(rows,['num','proprietario','estado']); var c=colMap(rows[hi]||[]);
+  var ci={num:c('num.','num'),data:c('data'),cli:c('cliente'),prop:c('proprietario'),viat:c('viatura','matricula'),marca:c('marca'),interv:c('intervencoes'),estado:c('estado'),drec:c('data de rececao','data rececao'),dent:c('data entrega prev.','data entrega prev'),oper:c('oper reg.','oper reg'),serie:c('serie'),modelo:c('modelo'),obs:c('observacoes')};
+  var FAT=parseArtigos(DATA.fat), GAR=parseArtigos(DATA.gar), ORC=parseOrc(DATA.orc), EMAIL=parseEmails(DATA.email);
+  var ABERTO={'em espera':1,'em execucao':1,'aguarda ne':1};
+  var OS=[]; var maxd=null;
+  for(var i=hi+1;i<rows.length;i++){var r=rows[i];if(!r)continue;var num=norm(r[ci.num]);if(!num)continue;
+    var d=pdate(r[ci.data]); if(d&&(!maxd||d>maxd))maxd=d;
+    var prop=r[ci.prop],cli=r[ci.cli];
+    var ints=interv(r[ci.interv]);
+    OS.push({num:num,date:d,cli:cli,prop:prop,mat:nmat(r[ci.viat]),viat:norm(r[ci.viat]),marca:norm(r[ci.marca]),
+      modelo:norm(r[ci.modelo]),ints:ints,estado:norm(r[ci.estado]),obs:norm(r[ci.obs]),
+      drec:pdate(r[ci.drec]),dent:pdate(r[ci.dent]),oper:norm(r[ci.oper])||'(sem operador)',
+      un:SERIE[r[ci.serie]]||String(r[ci.serie]||'—'),
+      isComp:isCompany(stripcode(prop)||stripcode(cli)),
+      ncli:codeOf(cli)});
+  }
+  var R={maxd:maxd,nOS:OS.length,OS:OS,FAT:FAT,GAR:GAR,ORC:ORC,
+    particulares:0,empresas:0,correcoes:[],falhas:[],oper:{},estado:{},serie:{},marca:{},modelo:{},
+    interv:{},nint:[],soDiag:[],diagTotal:0,diagConv:0,complexas:0,vazias:0,
+    leadtimes:[],abertas:[],atraso:[],caps:0,consumidor:0,repViat:[],obsBuckets:{},obsTotal:0,
+    cliCount:{},marcaChapa:{}};
+  var matr={};
+  OS.forEach(function(o){
+    R.estado[o.estado]=(R.estado[o.estado]||0)+1;
+    R.serie[o.un]=(R.serie[o.un]||0)+1;
+    if(o.marca)R.marca[o.marca]=(R.marca[o.marca]||0)+1;
+    if(o.modelo)R.modelo[o.modelo]=(R.modelo[o.modelo]||0)+1;
+    if(o.mat)matr[o.mat]=(matr[o.mat]||0)+1;
+    if(o.ncli)R.cliCount[o.ncli]=(R.cliCount[o.ncli]||0)+1;
+    var oo=R.oper[o.oper]=R.oper[o.oper]||{total:0,part:0,falha:0,diag:0,diagConv:0,lead:[],correc:0,rework:0};
+    oo.total++;
+    // correções
+    if(stripcode(o.cli)!==stripcode(o.prop)){R.correcoes.push(o);oo.correc++;}
+    // regra nomes
+    if(o.isComp){R.empresas++;} else {
+      R.particulares++; oo.part++;
+      if(ntokens(stripcode(o.prop)||stripcode(o.cli))<MIN_NOMES){R.falhas.push(o);oo.falha++;}
+    }
+    // intervenções
+    R.nint.push(o.ints.length);
+    if(o.ints.length===0)R.vazias++;
+    if(o.ints.length>=6)R.complexas++;
+    o.ints.forEach(function(p){R.interv[p]=(R.interv[p]||0)+1;});
+    var hasDiag=o.ints.some(function(p){return deaccent(p).indexOf('diagn')>-1;});
+    var hasWork=o.ints.some(function(p){return deaccent(p).indexOf('diagn')===-1;});
+    if(hasDiag){R.diagTotal++;oo.diag++;if(hasWork){R.diagConv++;oo.diagConv++;}else R.soDiag.push(o);}
+    // composição por unidade
+    o.ints.forEach(function(p){var t=tipoServ(p);R.marca_un=R.marca_un;});
+    // prazos
+    if(o.drec&&o.dent){var dd=days(o.dent,o.drec);R.leadtimes.push(dd);oo.lead.push(dd);}
+    if(ABERTO[deaccent(o.estado)]){var rec=o.drec||o.date;var ab=rec&&maxd?days(maxd,rec):0;R.abertas.push({o:o,dias:ab});
+      if(o.dent&&maxd&&o.dent<maxd)R.atraso.push(o);}
+    // qualidade dados
+    var pp=stripcode(o.prop);
+    if(pp && pp===pp.toUpperCase() && /[A-Z]{3}/.test(pp))R.caps++;
+    if(deaccent(stripcode(o.cli)).indexOf('consumidor final')>-1)R.consumidor++;
+    // observações
+    if(o.obs){R.obsTotal++;var ol=deaccent(o.obs);
+      [['aguarda peça',['aguarda pec','espera pec','falta pec']],['autorização',['autoriz','aprova']],['aditamento',['aditament']],['localização',['tagus','park','bela vista','cacem','lisboa','oficina']],['contacto',['tel','contact','@','telef']]].forEach(function(kv){if(kv[1].some(function(w){return ol.indexOf(w)>-1;}))R.obsBuckets[kv[0]]=(R.obsBuckets[kv[0]]||0)+1;});}
+    // marca x chapa/pintura
+    if(o.ints.some(function(p){var d=deaccent(p);return d.indexOf('chapa')>-1||d.indexOf('pintura')>-1;}) && o.marca)R.marcaChapa[o.marca]=(R.marcaChapa[o.marca]||0)+1;
+  });
+  // composição por unidade (mecânica/pintura/chapa/diagnóstico)
+  R.mix={};
+  OS.forEach(function(o){var m=R.mix[o.un]=R.mix[o.un]||{mecanica:0,pintura:0,chapa:0,diagnostico:0,outro:0};o.ints.forEach(function(p){m[tipoServ(p)]++;});});
   // viaturas repetidas
-  Object.keys(R.matr).forEach(function(m){ if(R.matr[m]>1) R.repViat.push({viat:m,n:R.matr[m]}); });
+  Object.keys(matr).forEach(function(m){if(matr[m]>1)R.repViat.push({mat:m,n:matr[m]});});
   R.repViat.sort(function(a,b){return b.n-a.n;});
-  R.falhas.sort(function(a,b){return a.op<b.op?-1:1;});
-  R.longas.sort(function(a,b){return b.dias-a.dias;});
+  R.abertas.sort(function(a,b){return b.dias-a.dias;});
+
+  // ---- CRUZAMENTOS ----
+  if(FAT){
+    R.cross_fat={comFatura:0,semFaturaFaturado:[],ticket:[]};
+    OS.forEach(function(o){
+      var cand=(FAT.byMat[o.mat]||[]).filter(function(d){return d.date&&o.date&&d.date>=o.date&&deaccent(d.tipo).indexOf('credito')===-1;});
+      if(cand.length){R.cross_fat.comFatura++;var best=cand.reduce(function(a,b){return Math.abs(days(b.date,o.date))<Math.abs(days(a.date,o.date))?b:a;});R.cross_fat.ticket.push(best.tot);}
+      if(deaccent(o.estado)==='faturado' && !cand.length)R.cross_fat.semFaturaFaturado.push(o);
+    });
+  }
+  if(GAR){
+    R.cross_gar={rework:[]};
+    OS.forEach(function(o){
+      var g=(GAR.byMat[o.mat]||[]).filter(function(d){return d.date&&o.date&&d.date>=o.date;});
+      if(g.length){R.cross_gar.rework.push(o);var oo=R.oper[o.oper];if(oo)oo.rework++;}
+    });
+  }
+  if(ORC){
+    R.cross_orc={comOrc:0,semOrc:0,orcSemOS:[]};
+    var osMats={};OS.forEach(function(o){if(o.mat)osMats[o.mat]=1;});
+    OS.forEach(function(o){ if((ORC.byMat[o.mat]||[]).some(function(q){return q.date&&o.date&&q.date<=o.date;}))R.cross_orc.comOrc++; else R.cross_orc.semOrc++; });
+    ORC.list.forEach(function(q){if(deaccent(q.estado)==='aprovado' && q.mat && !osMats[q.mat])R.cross_orc.orcSemOS.push(q);});
+  }
+
+  if(EMAIL){
+    R.cross_email={total:EMAIL.list.length,byAutor:{},naOS:[]};
+    EMAIL.list.forEach(function(e){R.cross_email.byAutor[e.autor]=(R.cross_email.byAutor[e.autor]||0)+1;});
+    OS.forEach(function(o){var e=EMAIL.byNum[nmat(o.num)];if(e)R.cross_email.naOS.push({o:o,autor:e.autor});});
+  }
+  // ---- SCORE DE RISCO por OS ----
+  R.risco=[];
+  OS.forEach(function(o){
+    var flags=[];
+    if(!o.isComp && ntokens(stripcode(o.prop)||stripcode(o.cli))<MIN_NOMES)flags.push('nome <3');
+    if(o.ints.length===0)flags.push('sem intervenção');
+    if(R.soDiag.indexOf(o)>-1)flags.push('só diagnóstico');
+    if(o.drec&&o.dent&&days(o.dent,o.drec)>14)flags.push('prazo >14d');
+    if(R.cross_fat && deaccent(o.estado)==='faturado' && R.cross_fat.semFaturaFaturado.indexOf(o)>-1)flags.push('faturado s/ fatura');
+    if(R.cross_gar && R.cross_gar.rework.indexOf(o)>-1)flags.push('garantia depois');
+    if(flags.length>=2)R.risco.push({o:o,flags:flags});
+  });
+  R.risco.sort(function(a,b){return b.flags.length-a.flags.length;});
   return R;
 }
+function tipoServ(p){var d=deaccent(p);if(d.indexOf('pintura')>-1)return 'pintura';if(d.indexOf('chapa')>-1)return 'chapa';if(d.indexOf('diagn')>-1)return 'diagnostico';if(d.indexOf('mecanic')>-1||d.indexOf('revis')>-1||d.indexOf('travo')>-1||d.indexOf('embraiag')>-1||d.indexOf('bateria')>-1||d.indexOf('oleo')>-1||d.indexOf('alinha')>-1)return 'mecanica';return 'outro';}
+
+function box(n,l,col){return '<div class="sumbox"><div class="n" style="color:'+(col||'#0f172a')+';">'+n+'</div><div class="l">'+l+'</div></div>';}
+function miniTable(title,obj,fmt){var keys=Object.keys(obj).sort(function(a,b){return obj[b]-obj[a];});var x='<div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">'+title+'</div>';keys.forEach(function(k){x+='<div class="minirow"><span>'+k+'</span><b>'+(fmt?fmt(obj[k]):obj[k])+'</b></div>';});return x+'</div>';}
+function sec(html){var d=document.createElement('div');d.className='sec';d.innerHTML=html;return d;}
 
 function render(R){
-  var el=document.getElementById('results'); el.style.display='block'; el.innerHTML='';
-  var lt = R.leadtimes.length ? (R.leadtimes.reduce(function(a,b){return a+b;},0)/R.leadtimes.length) : 0;
-  var ltMax = R.leadtimes.length ? Math.max.apply(null,R.leadtimes) : 0;
+  var el=document.getElementById('results');el.style.display='block';el.innerHTML='';
+  var lt=R.leadtimes.length?R.leadtimes.reduce(function(a,b){return a+b;},0)/R.leadtimes.length:0;
+  var avgInt=R.nint.length?R.nint.reduce(function(a,b){return a+b;},0)/R.nint.length:0;
 
-  var sum=document.createElement('div'); sum.className='summary';
-  sum.innerHTML=
-    '<div class="sumbox"><div class="n" style="color:#0f172a;">'+R.total+'</div><div class="l">Ordens de Serviço</div></div>'+
-    '<div class="sumbox"><div class="n" style="color:#4338ca;">'+R.particulares+'</div><div class="l">Particulares</div></div>'+
-    '<div class="sumbox"><div class="n" style="color:'+(R.falhas.length?'#dc2626':'#059669')+';">'+R.falhas.length+'</div><div class="l">Falhas regra 3 nomes</div></div>'+
-    '<div class="sumbox"><div class="n" style="color:#0369a1;">'+R.correcoes+'</div><div class="l">Correções nome</div></div>'+
-    '<div class="sumbox"><div class="n" style="color:#b45309;">'+R.repViat.length+'</div><div class="l">Viaturas c/ >1 OS</div></div>';
+  var sum=document.createElement('div');sum.className='summary';
+  sum.innerHTML=box(R.nOS,'Ordens de Serviço')+box(R.particulares,'Particulares','#4338ca')+
+    box(R.falhas.length,'Falhas regra nomes',R.falhas.length?'#dc2626':'#059669')+
+    box(R.soDiag.length,'Só diagnóstico','#b45309')+
+    box(R.abertas.length,'Por finalizar','#0369a1')+
+    box(R.risco.length,'OS em risco','#dc2626');
   el.appendChild(sum);
 
-  // ① Regra 3 nomes
-  var s1=document.createElement('div'); s1.className='sec';
+  // 1. Regra nomes
   var ops=Object.keys(R.oper).filter(function(o){return R.oper[o].part>0;}).sort(function(a,b){return R.oper[b].falha-R.oper[a].falha;});
-  var h='<div class="sec-h">📛 Regra dos 3 nomes (particulares)</div><div class="sec-d">Particulares com menos de 3 nomes no Proprietário (não corrigidos). Empresas excluídas.</div>';
-  h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Operador</th><th>Particulares</th><th>Falhas</th><th>% Cumprimento</th></tr></thead><tbody>';
-  ops.forEach(function(o){ var d=R.oper[o]; var cum=100-pct(d.falha,d.part); h+='<tr'+(d.falha?' class="bad"':'')+'><td class="l">'+cut(o,30)+'</td><td>'+d.part+'</td><td>'+d.falha+'</td><td>'+cum.toFixed(0)+'%</td></tr>'; });
+  var h='<div class="sec-h">📛 Regra dos 3 nomes (particulares)</div><div class="sec-d">Particulares com <3 nomes no Proprietário (não corrigidos). Empresas excluídas.</div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Operador</th><th>Particulares</th><th>Falhas</th><th>% Cumpr.</th></tr></thead><tbody>';
+  ops.forEach(function(o){var d=R.oper[o];h+='<tr'+(d.falha?' class="bad"':'')+'><td class="l">'+cut(o,28)+'</td><td>'+d.part+'</td><td>'+d.falha+'</td><td>'+(100-pct(d.falha,d.part)).toFixed(0)+'%</td></tr>';});
   h+='</tbody></table></div>';
-  if(R.falhas.length){
-    h+='<div style="font-size:12px;font-weight:700;color:#b91c1c;margin:14px 0 6px;">OS a corrigir ('+R.falhas.length+'):</div>';
-    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th class="l">Proprietário</th><th>Nº nomes</th><th class="l">Unidade</th><th class="l">Estado</th><th class="l">Operador</th></tr></thead><tbody>';
-    R.falhas.forEach(function(f){ h+='<tr class="bad"><td class="l">'+f.num+'</td><td class="l">'+cut(f.nome,28)+'</td><td>'+f.n+'</td><td class="l">'+f.un+'</td><td class="l">'+f.est+'</td><td class="l">'+cut(f.op,22)+'</td></tr>'; });
-    h+='</tbody></table></div>';
-  } else { h+='<div style="color:#059669;font-weight:600;font-size:13px;margin-top:8px;">✓ Todos os particulares cumprem a regra.</div>'; }
-  s1.innerHTML=h; el.appendChild(s1);
+  if(R.falhas.length){h+='<div class="tbl-wrap" style="margin-top:10px;"><table><thead><tr><th class="l">OS</th><th class="l">Proprietário</th><th>Nº</th><th class="l">Unidade</th><th class="l">Operador</th></tr></thead><tbody>';
+    R.falhas.forEach(function(o){h+='<tr class="bad"><td class="l">'+o.num+'</td><td class="l">'+cut(stripcode(o.prop)||stripcode(o.cli),26)+'</td><td>'+ntokens(stripcode(o.prop)||stripcode(o.cli))+'</td><td class="l">'+o.un+'</td><td class="l">'+cut(o.oper,22)+'</td></tr>';});
+    h+='</tbody></table></div>';}
+  el.appendChild(sec(h));
 
-  // ② Distribuições
-  var s2=document.createElement('div'); s2.className='sec';
-  function miniTable(title, obj, order){
-    var keys=Object.keys(obj); keys.sort(function(a,b){return obj[b]-obj[a];});
-    var x='<div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">'+title+'</div>';
-    keys.forEach(function(k){ x+='<div class="minirow"><span>'+k+'</span><b>'+obj[k]+'</b></div>'; });
-    return x+'</div>';
+  // 2. Serviços / Intervenções
+  var topi=Object.keys(R.interv).sort(function(a,b){return R.interv[b]-R.interv[a];}).slice(0,12);
+  var h2='<div class="sec-h">🔧 Serviços / Intervenções</div><div class="sec-d">Média '+avgInt.toFixed(1)+' intervenções/OS · '+R.complexas+' OS complexas (≥6) · '+R.vazias+' OS sem intervenções.</div><div class="grid2"><div>';
+  topi.forEach(function(k,i){if(i===6)h2+='</div><div>';h2+='<div class="minirow"><span>'+cut(k,30)+'</span><b>'+R.interv[k]+'</b></div>';});
+  h2+='</div></div>';
+  h2+='<div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:#0f172a;">Composição por unidade</div><div class="tbl-wrap"><table><thead><tr><th class="l">Unidade</th><th>Mecânica</th><th>Pintura</th><th>Chapa</th><th>Diagnóstico</th><th>Outro</th></tr></thead><tbody>';
+  Object.keys(R.mix).forEach(function(u){var m=R.mix[u];h2+='<tr><td class="l">'+u+'</td><td>'+m.mecanica+'</td><td>'+m.pintura+'</td><td>'+m.chapa+'</td><td>'+m.diagnostico+'</td><td>'+m.outro+'</td></tr>';});
+  h2+='</tbody></table></div>';
+  el.appendChild(sec(h2));
+
+  // 3. Conversão diagnóstico
+  var h3='<div class="sec-h">🎯 Conversão de diagnósticos</div><div class="sec-d">'+R.diagTotal+' OS com diagnóstico · '+R.diagConv+' converteram em trabalho ('+pct(R.diagConv,R.diagTotal).toFixed(0)+'%) · '+R.soDiag.length+' ficaram só no diagnóstico.</div>';
+  h3+='<div class="tbl-wrap"><table><thead><tr><th class="l">Operador</th><th>C/ diagnóstico</th><th>Converteu</th><th>Só diagnóstico</th><th>% Conversão</th></tr></thead><tbody>';
+  Object.keys(R.oper).filter(function(o){return R.oper[o].diag>0;}).sort(function(a,b){return (R.oper[b].diag-R.oper[b].diagConv)-(R.oper[a].diag-R.oper[a].diagConv);}).forEach(function(o){var d=R.oper[o];h3+='<tr><td class="l">'+cut(o,26)+'</td><td>'+d.diag+'</td><td>'+d.diagConv+'</td><td>'+(d.diag-d.diagConv)+'</td><td>'+pct(d.diagConv,d.diag).toFixed(0)+'%</td></tr>';});
+  h3+='</tbody></table></div>';
+  el.appendChild(sec(h3));
+
+  // 4. Distribuições
+  el.appendChild(sec('<div class="sec-h">📊 Distribuições</div><div class="grid2">'+miniTable('Por estado',R.estado)+miniTable('Por unidade',R.serie)+miniTable('Carga por operador',(function(){var o={};Object.keys(R.oper).forEach(function(k){o[k]=R.oper[k].total;});return o;})())+'</div>'));
+
+  // 5. Prazos & WIP
+  var h5='<div class="sec-h">⏱️ Prazos &amp; Por finalizar</div>';
+  h5+='<div class="grid2"><div><div class="minirow"><span>Lead time médio (receção→entrega prev.)</span><b>'+lt.toFixed(1)+' dias</b></div>'+
+    '<div class="minirow"><span>OS por finalizar</span><b>'+R.abertas.length+'</b></div>'+
+    '<div class="minirow"><span>OS em atraso (entrega ultrapassada)</span><b>'+R.atraso.length+'</b></div>'+
+    '<div class="minirow"><span>Viaturas com >1 OS</span><b>'+R.repViat.length+'</b></div></div>';
+  var tv='<div><div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#0f172a;">OS por finalizar mais antigas</div>';
+  R.abertas.slice(0,8).forEach(function(a){tv+='<div class="minirow"><span>'+a.o.num+' ['+a.o.estado+']</span><b>'+a.dias+' dias</b></div>';});
+  if(!R.abertas.length)tv+='<div style="font-size:12px;color:#94a3b8;">Nenhuma.</div>';
+  h5+=tv+'</div></div>';
+  el.appendChild(sec(h5));
+
+  // 6. Qualidade de dados
+  el.appendChild(sec('<div class="sec-h">🧹 Qualidade de dados</div><div class="grid2">'+
+    '<div><div class="minirow"><span>Proprietário em MAIÚSCULAS</span><b>'+R.caps+'</b></div>'+
+    '<div class="minirow"><span>OS sem intervenções</span><b>'+R.vazias+'</b></div>'+
+    '<div class="minirow"><span>Cliente "Consumidor Final"</span><b>'+R.consumidor+'</b></div>'+
+    '<div class="minirow"><span>Correções de nome (Cli→Prop)</span><b>'+R.correcoes.length+'</b></div></div>'+
+    miniTable('Observações por tipo ('+R.obsTotal+' c/ notas)',R.obsBuckets)+'</div>'));
+
+  // 7. Concentração / Pareto + Marca
+  var topc=Object.keys(R.cliCount).sort(function(a,b){return R.cliCount[b]-R.cliCount[a];}).slice(0,8);
+  var nomeCli={};R.OS.forEach(function(o){if(o.ncli&&!nomeCli[o.ncli])nomeCli[o.ncli]=stripcode(o.cli);});
+  var top10=Object.keys(R.cliCount).sort(function(a,b){return R.cliCount[b]-R.cliCount[a];}).slice(0,10).reduce(function(a,k){return a+R.cliCount[k];},0);
+  var h7='<div class="sec-h">👥 Concentração de clientes &amp; Marcas</div><div class="sec-d">Top 10 clientes = '+top10+' OS ('+pct(top10,R.nOS).toFixed(0)+'%) · '+Object.keys(R.cliCount).length+' clientes distintos.</div><div class="grid2">';
+  var tc='<div><div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#0f172a;">Clientes com mais OS</div>';
+  topc.forEach(function(k){tc+='<div class="minirow"><span>'+cut(nomeCli[k]||k,26)+'</span><b>'+R.cliCount[k]+'</b></div>';});
+  h7+=tc+'</div>'+miniTable('Marcas (top)',R.marca)+'</div>';
+  h7+='<div class="grid2" style="margin-top:8px;">'+miniTable('Marcas c/ mais chapa/pintura',R.marcaChapa)+miniTable('Modelos (top)',(function(){var o={};Object.keys(R.modelo).sort(function(a,b){return R.modelo[b]-R.modelo[a];}).slice(0,8).forEach(function(k){o[k]=R.modelo[k];});return o;})())+'</div>';
+  el.appendChild(sec(h7));
+
+  // 8. Scorecard operador
+  var h8='<div class="sec-h">🏅 Scorecard por rececionista</div><div class="sec-d">Visão composta por operador.</div><div class="tbl-wrap"><table><thead><tr><th class="l">Operador</th><th>OS</th><th>% Regra nomes</th><th>% Conv. diag.</th><th>Prazo médio</th><th>Correções</th>'+(R.cross_gar?'<th>Re-trabalho</th>':'')+'</tr></thead><tbody>';
+  Object.keys(R.oper).sort(function(a,b){return R.oper[b].total-R.oper[a].total;}).forEach(function(o){var d=R.oper[o];var lead=d.lead.length?d.lead.reduce(function(a,b){return a+b;},0)/d.lead.length:0;
+    h8+='<tr><td class="l">'+cut(o,26)+'</td><td>'+d.total+'</td><td>'+(d.part?(100-pct(d.falha,d.part)).toFixed(0)+'%':'—')+'</td><td>'+(d.diag?pct(d.diagConv,d.diag).toFixed(0)+'%':'—')+'</td><td>'+lead.toFixed(1)+'d</td><td>'+d.correc+'</td>'+(R.cross_gar?'<td>'+(d.rework||0)+'</td>':'')+'</tr>';});
+  h8+='</tbody></table></div>';
+  el.appendChild(sec(h8));
+
+  // 9. Score de risco
+  if(R.risco.length){
+    var h9='<div class="sec-h">🚩 OS em risco (≥2 alertas) <span style="font-size:12px;color:#64748b;font-weight:600;">('+R.risco.length+')</span></div><div class="sec-d">Lista priorizada para revisão.</div><div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th class="l">Cliente/Viatura</th><th class="l">Operador</th><th class="l">Alertas</th></tr></thead><tbody>';
+    R.risco.slice(0,30).forEach(function(x){h9+='<tr class="bad"><td class="l">'+x.o.num+'</td><td class="l">'+cut(stripcode(x.o.cli),18)+' · '+(x.o.viat||'—')+'</td><td class="l">'+cut(x.o.oper,20)+'</td><td class="l">'+x.flags.map(function(f){return '<span class="tag">'+f+'</span>';}).join(' ')+'</td></tr>';});
+    h9+='</tbody></table></div>';
+    el.appendChild(sec(h9));
   }
-  s2.innerHTML='<div class="sec-h">📊 Distribuições</div><div class="grid2">'+
-    miniTable('Por estado', R.estado)+
-    miniTable('Por unidade', R.serie)+
-    miniTable('Carga por operador (total OS)', (function(){var o={};Object.keys(R.oper).forEach(function(k){o[k]=R.oper[k].total;});return o;})())+
-    '</div>';
-  el.appendChild(s2);
 
-  // ③ Prazos & reincidência
-  var s3=document.createElement('div'); s3.className='sec';
-  var h3='<div class="sec-h">⏱️ Prazos &amp; Reincidência</div>';
-  h3+='<div class="grid2"><div><div class="minirow"><span>Lead time médio (receção→entrega prev.)</span><b>'+lt.toFixed(1)+' dias</b></div>'+
-      '<div class="minirow"><span>Prazo máximo</span><b>'+ltMax+' dias</b></div>'+
-      '<div class="minirow"><span>OS com prazo &gt; 14 dias</span><b>'+R.longas.length+'</b></div>'+
-      '<div class="minirow"><span>Viaturas com &gt;1 OS no período</span><b>'+R.repViat.length+'</b></div>'+
-      '<div class="minirow"><span>OS a aguardar autorização</span><b>'+R.aguarda+'</b></div></div>';
-  // top viaturas repetidas
-  var tv='<div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">Viaturas com mais OS</div>';
-  R.repViat.slice(0,8).forEach(function(v){ tv+='<div class="minirow"><span>'+v.viat+'</span><b>'+v.n+' OS</b></div>'; });
-  if(!R.repViat.length) tv+='<div style="font-size:12px;color:#94a3b8;">Nenhuma.</div>';
-  h3+=tv+'</div></div>';
-  if(R.longas.length){
-    h3+='<div style="font-size:12px;font-weight:700;color:#0f172a;margin:14px 0 6px;">OS com prazo &gt; 14 dias:</div>';
-    h3+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th>Dias</th><th class="l">Viatura</th><th class="l">Estado</th><th class="l">Operador</th></tr></thead><tbody>';
-    R.longas.slice(0,15).forEach(function(x){ h3+='<tr><td class="l">'+x.num+'</td><td>'+x.dias+'</td><td class="l">'+(x.viat||'—')+'</td><td class="l">'+x.est+'</td><td class="l">'+cut(x.op,22)+'</td></tr>'; });
-    h3+='</tbody></table></div>';
+  // 10. Cruzamentos
+  if(R.cross_fat){
+    var h='<div class="sec-h">💶 Cruzamento OS ↔ Faturas</div><div class="sec-d">Ligação por matrícula (fatura com data ≥ OS).</div>';
+    var tk=R.cross_fat.ticket; var tkm=tk.length?tk.reduce(function(a,b){return a+b;},0)/tk.length:0;
+    h+='<div class="grid2"><div><div class="minirow"><span>OS com fatura encontrada</span><b>'+R.cross_fat.comFatura+' / '+R.nOS+'</b></div>'+
+      '<div class="minirow"><span>Ticket médio por OS faturada</span><b>'+eur(tkm)+'</b></div>'+
+      '<div class="minirow"><span>OS "Faturado" SEM fatura encontrada</span><b style="color:#dc2626;">'+R.cross_fat.semFaturaFaturado.length+'</b></div></div></div>';
+    if(R.cross_fat.semFaturaFaturado.length){h+='<div class="tbl-wrap" style="margin-top:8px;"><table><thead><tr><th class="l">OS</th><th class="l">Cliente</th><th class="l">Viatura</th><th class="l">Operador</th></tr></thead><tbody>';
+      R.cross_fat.semFaturaFaturado.forEach(function(o){h+='<tr class="bad"><td class="l">'+o.num+'</td><td class="l">'+cut(stripcode(o.cli),22)+'</td><td class="l">'+(o.viat||'—')+'</td><td class="l">'+cut(o.oper,20)+'</td></tr>';});
+      h+='</tbody></table></div>';}
+    el.appendChild(sec(h));
   }
-  s3.innerHTML=h3; el.appendChild(s3);
-
-  // ④ Marcas
-  var s4=document.createElement('div'); s4.className='sec';
-  var mk=Object.keys(R.marca).sort(function(a,b){return R.marca[b]-R.marca[a];}).slice(0,12);
-  var h4='<div class="sec-h">🚗 Marcas (top 12)</div><div class="grid2"><div>';
-  mk.forEach(function(m,i){ if(i===6) h4+='</div><div>'; h4+='<div class="minirow"><span>'+m+'</span><b>'+R.marca[m]+'</b></div>'; });
-  h4+='</div></div>';
-  s4.innerHTML=h4; el.appendChild(s4);
-
-  // ⑤ Correções
-  var s5=document.createElement('div'); s5.className='sec';
-  var h5='<div class="sec-h">✏️ Correções de nome (Cliente → Proprietário) <span style="font-size:12px;color:#64748b;font-weight:600;">('+R.corrigidas.length+')</span></div>';
-  h5+='<div class="sec-d">OS onde o nome do proprietário foi alterado face ao cliente.</div>';
-  h5+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th class="l">Cliente</th><th class="l">Proprietário (corrigido)</th><th class="l">Operador</th></tr></thead><tbody>';
-  R.corrigidas.slice(0,40).forEach(function(x){ h5+='<tr><td class="l">'+x.num+'</td><td class="l">'+cut(x.cli,24)+'</td><td class="l">'+cut(x.prop,28)+'</td><td class="l">'+cut(x.op,22)+'</td></tr>'; });
-  h5+='</tbody></table></div>';
-  s5.innerHTML=h5; el.appendChild(s5);
+  if(R.cross_gar){
+    var hg='<div class="sec-h">🔁 Cruzamento OS ↔ Garantias (re-trabalho)</div><div class="sec-d">OS seguidas de uma garantia na mesma matrícula — '+R.cross_gar.rework.length+' caso(s).</div>';
+    if(R.cross_gar.rework.length){hg+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th class="l">Viatura</th><th class="l">Operador</th><th class="l">Unidade</th></tr></thead><tbody>';
+      R.cross_gar.rework.forEach(function(o){hg+='<tr><td class="l">'+o.num+'</td><td class="l">'+(o.viat||'—')+'</td><td class="l">'+cut(o.oper,22)+'</td><td class="l">'+o.un+'</td></tr>';});
+      hg+='</tbody></table></div>';} else hg+='<div style="color:#059669;font-weight:600;font-size:13px;">Sem re-trabalho detetado.</div>';
+    el.appendChild(sec(hg));
+  }
+  if(R.cross_orc){
+    var ho='<div class="sec-h">🧾 Cruzamento OS ↔ Orçamentos</div><div class="sec-d">Ligação por matrícula.</div>';
+    ho+='<div class="grid2"><div><div class="minirow"><span>OS com orçamento prévio</span><b>'+R.cross_orc.comOrc+' / '+R.nOS+'</b></div>'+
+      '<div class="minirow"><span>OS sem orçamento</span><b>'+R.cross_orc.semOrc+'</b></div>'+
+      '<div class="minirow"><span>Orçamentos aprovados SEM OS</span><b style="color:#b45309;">'+R.cross_orc.orcSemOS.length+'</b></div></div></div>';
+    el.appendChild(sec(ho));
+  }
+  if(R.cross_email){
+    var he='<div class="sec-h">📧 Cruzamento OS ↔ Emails (OS digital enviada)</div><div class="sec-d">Emails "Envio de Ordem de Serviço" do Officegest, ligados pelo nº de OS.</div>';
+    he+='<div class="grid2"><div><div class="minirow"><span>OS digitais enviadas ao cliente</span><b>'+R.cross_email.naOS.length+' / '+R.nOS+' ('+pct(R.cross_email.naOS.length,R.nOS).toFixed(0)+'%)</b></div>'+
+      '<div class="minirow"><span>Total de envios de OS digital</span><b>'+R.cross_email.total+'</b></div></div>'+miniTable('Quem enviou (por autor)',R.cross_email.byAutor)+'</div>';
+    if(R.cross_email.naOS.length){he+='<div class="tbl-wrap" style="margin-top:8px;"><table><thead><tr><th class="l">OS</th><th class="l">Cliente</th><th class="l">Enviada por</th></tr></thead><tbody>';
+      R.cross_email.naOS.forEach(function(x){he+='<tr><td class="l">'+x.o.num+'</td><td class="l">'+cut(stripcode(x.o.cli),24)+'</td><td class="l">'+cut(x.autor,24)+'</td></tr>';});
+      he+='</tbody></table></div>';}
+    el.appendChild(sec(he));
+  }
 }
 </script>
 </body>
