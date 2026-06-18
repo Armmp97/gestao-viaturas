@@ -1043,6 +1043,7 @@
                     <li id="navKpisCoordLi"><a onclick="openModule('kpis_coord')" id="navKpis_coord"><span class="nav-icon">📈</span> KPIs Coordenação</a></li>
                     <li id="navVerificadorGarantiasLi"><a onclick="openModule('verificador_garantias')" id="navVerificador_garantias"><span class="nav-icon">🛡️</span> Verificador Garantias</a></li>
                     <li id="navVerificadorOrcamentosLi"><a onclick="openModule('verificador_orcamentos')" id="navVerificador_orcamentos"><span class="nav-icon">🧾</span> Verificação Orçamentos</a></li>
+                    <li id="navAnalisadorOsLi"><a onclick="openModule('analisador_os')" id="navAnalisador_os"><span class="nav-icon">🛠️</span> Analisador de OS</a></li>
                 </ul>
             </li>
         </ul>
@@ -2077,11 +2078,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
@@ -3237,6 +3238,7 @@
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
             verificador_garantias: { title: 'Verificador de Faturas de Garantia', url: 'verificador-garantias.html' },
             verificador_orcamentos: { title: 'Verificação de Orçamentos', url: 'verificador-orcamentos.html' },
+            analisador_os: { title: 'Analisador de Ordens de Serviço', url: 'analisador-os.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },

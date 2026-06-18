@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisador de Ordens de Serviço</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+  h1{color:white;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center}
+  .sub{color:#94a3b8;font-size:14px;margin-bottom:28px;text-align:center;max-width:680px}
+  .card{background:white;border-radius:16px;padding:30px 36px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:560px;width:100%}
+  .icon-box{width:68px;height:68px;background:linear-gradient(135deg,#6366f1,#4338ca);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px}
+  .card h2{font-size:18px;font-weight:700;margin-bottom:6px;color:#0f172a}
+  .card p{color:#64748b;font-size:13px;margin-bottom:20px}
+  .file-wrap{position:relative;display:inline-block}
+  .file-wrap input[type="file"]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0}
+  .upload-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 30px;background:linear-gradient(135deg,#4f46e5,#4338ca);color:white;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer}
+  #status{margin-top:16px;font-size:13px;font-weight:600;min-height:18px}
+  .ok{color:#059669}.err{color:#dc2626}
+  .results{margin-top:24px;width:100%;max-width:1000px;display:none}
+  .summary{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+  .sumbox{flex:1;min-width:140px;background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  .sumbox .n{font-size:26px;font-weight:800}
+  .sumbox .l{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .sec{background:white;border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+  .sec-h{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;color:#0f172a}
+  .sec-d{font-size:12px;color:#64748b;margin-bottom:12px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:7px 9px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap}
+  th{background:#f8fafc;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  td:first-child,th:first-child,td.l,th.l{text-align:left}
+  .tbl-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
+  tr.bad td{background:#fef2f2}
+  .pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:#eef2ff;color:#3730a3}
+  .minirow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+  .minirow b{color:#0f172a}
+  .hint{margin-top:6px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;color:#64748b;line-height:1.6}
+</style>
+</head>
+<body>
+
+<h1>🛠️ Analisador de Ordens de Serviço</h1>
+<p class="sub">Carrega o Excel de Ordens de Serviço (OSV) e obtém a verificação da regra dos nomes e vários indicadores operacionais.</p>
+
+<div class="card">
+  <div class="icon-box">📋</div>
+  <h2>Carregar Ficheiro de OS</h2>
+  <p>Excel "Ordens de serviço" do período.</p>
+  <div class="file-wrap"><button class="upload-btn">📁 Escolher Ficheiro</button><input type="file" id="fileOS" accept=".xlsx,.xls"></div>
+  <div id="status"></div>
+  <div class="hint">Regra verificada: clientes <b>particulares</b> devem ter <b>≥3 nomes</b>, com a correção no campo <b>Proprietário</b>. Empresas são identificadas pelo nome (Lda, S.A., etc.) e excluídas da regra.</div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+var MIN_NOMES=3;
+var SERIE={261:'Cacém',262:'Colisão',263:'Lisboa'};
+var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologia|seguros|rent|leaseplan|lease plan|fleet|crl|sgps|servic|consult|invest|imobiliar|transportes|construc|grupo|group|automoveis|hospital|farma|clinica|restaura|imports?|trading)\b/i;
+
+function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
+function deaccent(s){ return norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function stripcode(s){ return norm(s).replace(/^\[\d+\]\s*/,'').trim(); }
+function isCompany(nome){ return COMPANY.test(deaccent(nome)); }
+function ntokens(nome){ return stripcode(nome).split(/\s+/).filter(Boolean).length; }
+function pct(a,b){ return b? (a/b*100):0; }
+function pdate(v){
+  if(v instanceof Date) return v;
+  var s=norm(v); var m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);
+  if(m){ var y=+m[3]; if(y<100)y+=2000; return new Date(y,+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0)); }
+  return null;
+}
+function fdate(d){ if(!(d instanceof Date)) return '—'; var p=function(x){return(x<10?'0':'')+x;}; return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear(); }
+function cut(s,n){ s=norm(s); return s.length>n?s.slice(0,n-1)+'…':s; }
+
+document.getElementById('fileOS').addEventListener('change', function(e){
+  var f=e.target.files[0]; if(!f) return;
+  var st=document.getElementById('status'); st.className=''; st.textContent='A processar...';
+  var rd=new FileReader();
+  rd.onload=function(ev){
+    try{
+      var wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array',cellDates:true});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+      render(analisar(rows));
+      st.className='ok'; st.textContent='✓ Análise concluída.';
+    }catch(err){ st.className='err'; st.textContent='Erro: '+(err.message||err); console.error(err); }
+  };
+  rd.readAsArrayBuffer(f);
+});
+
+function findHeader(rows){
+  for(var i=0;i<Math.min(rows.length,10);i++){ var j=(rows[i]||[]).map(deaccent).join('|'); if(j.indexOf('num')>-1 && j.indexOf('proprietario')>-1 && j.indexOf('estado')>-1) return i; }
+  return 1;
+}
+function colMap(h){ var m={}; h.forEach(function(x,i){ m[deaccent(x)]=i; }); return function(){ for(var a=0;a<arguments.length;a++){ if(arguments[a] in m) return m[arguments[a]]; } return -1; }; }
+
+function analisar(rows){
+  var hi=findHeader(rows); var c=colMap(rows[hi]||[]);
+  var ci={num:c('num.','num'),data:c('data'),cli:c('cliente'),prop:c('proprietario'),viat:c('viatura','matricula'),
+          marca:c('marca'),interv:c('intervencoes'),estado:c('estado'),drec:c('data de rececao','data rececao'),
+          dent:c('data entrega prev.','data entrega prev'),oper:c('oper reg.','oper reg'),serie:c('serie'),aut:c('a_aguardar_autorizacao')};
+  var R={total:0, particulares:0, empresas:0, correcoes:0, aguarda:0,
+         estado:{}, serie:{}, oper:{}, marca:{}, falhas:[], corrigidas:[], leadtimes:[], longas:[], matr:{}, repViat:[]};
+  for(var i=hi+1;i<rows.length;i++){
+    var r=rows[i]; if(!r) continue; var num=norm(r[ci.num]); if(!num) continue;
+    R.total++;
+    var cli=r[ci.cli], prop=r[ci.prop], op=norm(r[ci.oper])||'(sem operador)', est=norm(r[ci.estado]);
+    var serie=r[ci.serie], marca=norm(r[ci.marca]), viat=norm(r[ci.viat]);
+    R.estado[est]=(R.estado[est]||0)+1;
+    var un=SERIE[serie]||String(serie||'—'); R.serie[un]=(R.serie[un]||0)+1;
+    if(marca) R.marca[marca]=(R.marca[marca]||0)+1;
+    if(viat){ R.matr[viat]=(R.matr[viat]||0)+1; }
+    if(Number(r[ci.aut])===1) R.aguarda++;
+    if(stripcode(cli)!==stripcode(prop)){ R.correcoes++; R.corrigidas.push({num:num,cli:stripcode(cli),prop:stripcode(prop),op:op}); }
+    // lead time
+    var rec=pdate(r[ci.drec]), ent=pdate(r[ci.dent]);
+    if(rec&&ent){ var d=Math.round((ent-rec)/86400000); R.leadtimes.push(d); if(d>14) R.longas.push({num:num,dias:d,viat:viat,est:est,op:op}); }
+    // particular vs empresa + regra 3 nomes
+    var nomeRef = stripcode(prop) || stripcode(cli);
+    if(isCompany(nomeRef)){ R.empresas++; }
+    else {
+      R.particulares++;
+      var oo=R.oper[op]=R.oper[op]||{total:0,part:0,falha:0}; oo.total++; oo.part++;
+      var n=ntokens(nomeRef);
+      if(n<MIN_NOMES){ R.falhas.push({num:num,nome:nomeRef,n:n,op:op,est:est,un:un}); oo.falha++; }
+    }
+    if(isCompany(nomeRef)){ var oe=R.oper[op]=R.oper[op]||{total:0,part:0,falha:0}; oe.total++; }
+  }
+  // viaturas repetidas
+  Object.keys(R.matr).forEach(function(m){ if(R.matr[m]>1) R.repViat.push({viat:m,n:R.matr[m]}); });
+  R.repViat.sort(function(a,b){return b.n-a.n;});
+  R.falhas.sort(function(a,b){return a.op<b.op?-1:1;});
+  R.longas.sort(function(a,b){return b.dias-a.dias;});
+  return R;
+}
+
+function render(R){
+  var el=document.getElementById('results'); el.style.display='block'; el.innerHTML='';
+  var lt = R.leadtimes.length ? (R.leadtimes.reduce(function(a,b){return a+b;},0)/R.leadtimes.length) : 0;
+  var ltMax = R.leadtimes.length ? Math.max.apply(null,R.leadtimes) : 0;
+
+  var sum=document.createElement('div'); sum.className='summary';
+  sum.innerHTML=
+    '<div class="sumbox"><div class="n" style="color:#0f172a;">'+R.total+'</div><div class="l">Ordens de Serviço</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#4338ca;">'+R.particulares+'</div><div class="l">Particulares</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:'+(R.falhas.length?'#dc2626':'#059669')+';">'+R.falhas.length+'</div><div class="l">Falhas regra 3 nomes</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#0369a1;">'+R.correcoes+'</div><div class="l">Correções nome</div></div>'+
+    '<div class="sumbox"><div class="n" style="color:#b45309;">'+R.repViat.length+'</div><div class="l">Viaturas c/ >1 OS</div></div>';
+  el.appendChild(sum);
+
+  // ① Regra 3 nomes
+  var s1=document.createElement('div'); s1.className='sec';
+  var ops=Object.keys(R.oper).filter(function(o){return R.oper[o].part>0;}).sort(function(a,b){return R.oper[b].falha-R.oper[a].falha;});
+  var h='<div class="sec-h">📛 Regra dos 3 nomes (particulares)</div><div class="sec-d">Particulares com menos de 3 nomes no Proprietário (não corrigidos). Empresas excluídas.</div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Operador</th><th>Particulares</th><th>Falhas</th><th>% Cumprimento</th></tr></thead><tbody>';
+  ops.forEach(function(o){ var d=R.oper[o]; var cum=100-pct(d.falha,d.part); h+='<tr'+(d.falha?' class="bad"':'')+'><td class="l">'+cut(o,30)+'</td><td>'+d.part+'</td><td>'+d.falha+'</td><td>'+cum.toFixed(0)+'%</td></tr>'; });
+  h+='</tbody></table></div>';
+  if(R.falhas.length){
+    h+='<div style="font-size:12px;font-weight:700;color:#b91c1c;margin:14px 0 6px;">OS a corrigir ('+R.falhas.length+'):</div>';
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th class="l">Proprietário</th><th>Nº nomes</th><th class="l">Unidade</th><th class="l">Estado</th><th class="l">Operador</th></tr></thead><tbody>';
+    R.falhas.forEach(function(f){ h+='<tr class="bad"><td class="l">'+f.num+'</td><td class="l">'+cut(f.nome,28)+'</td><td>'+f.n+'</td><td class="l">'+f.un+'</td><td class="l">'+f.est+'</td><td class="l">'+cut(f.op,22)+'</td></tr>'; });
+    h+='</tbody></table></div>';
+  } else { h+='<div style="color:#059669;font-weight:600;font-size:13px;margin-top:8px;">✓ Todos os particulares cumprem a regra.</div>'; }
+  s1.innerHTML=h; el.appendChild(s1);
+
+  // ② Distribuições
+  var s2=document.createElement('div'); s2.className='sec';
+  function miniTable(title, obj, order){
+    var keys=Object.keys(obj); keys.sort(function(a,b){return obj[b]-obj[a];});
+    var x='<div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">'+title+'</div>';
+    keys.forEach(function(k){ x+='<div class="minirow"><span>'+k+'</span><b>'+obj[k]+'</b></div>'; });
+    return x+'</div>';
+  }
+  s2.innerHTML='<div class="sec-h">📊 Distribuições</div><div class="grid2">'+
+    miniTable('Por estado', R.estado)+
+    miniTable('Por unidade', R.serie)+
+    miniTable('Carga por operador (total OS)', (function(){var o={};Object.keys(R.oper).forEach(function(k){o[k]=R.oper[k].total;});return o;})())+
+    '</div>';
+  el.appendChild(s2);
+
+  // ③ Prazos & reincidência
+  var s3=document.createElement('div'); s3.className='sec';
+  var h3='<div class="sec-h">⏱️ Prazos &amp; Reincidência</div>';
+  h3+='<div class="grid2"><div><div class="minirow"><span>Lead time médio (receção→entrega prev.)</span><b>'+lt.toFixed(1)+' dias</b></div>'+
+      '<div class="minirow"><span>Prazo máximo</span><b>'+ltMax+' dias</b></div>'+
+      '<div class="minirow"><span>OS com prazo &gt; 14 dias</span><b>'+R.longas.length+'</b></div>'+
+      '<div class="minirow"><span>Viaturas com &gt;1 OS no período</span><b>'+R.repViat.length+'</b></div>'+
+      '<div class="minirow"><span>OS a aguardar autorização</span><b>'+R.aguarda+'</b></div></div>';
+  // top viaturas repetidas
+  var tv='<div><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">Viaturas com mais OS</div>';
+  R.repViat.slice(0,8).forEach(function(v){ tv+='<div class="minirow"><span>'+v.viat+'</span><b>'+v.n+' OS</b></div>'; });
+  if(!R.repViat.length) tv+='<div style="font-size:12px;color:#94a3b8;">Nenhuma.</div>';
+  h3+=tv+'</div></div>';
+  if(R.longas.length){
+    h3+='<div style="font-size:12px;font-weight:700;color:#0f172a;margin:14px 0 6px;">OS com prazo &gt; 14 dias:</div>';
+    h3+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th>Dias</th><th class="l">Viatura</th><th class="l">Estado</th><th class="l">Operador</th></tr></thead><tbody>';
+    R.longas.slice(0,15).forEach(function(x){ h3+='<tr><td class="l">'+x.num+'</td><td>'+x.dias+'</td><td class="l">'+(x.viat||'—')+'</td><td class="l">'+x.est+'</td><td class="l">'+cut(x.op,22)+'</td></tr>'; });
+    h3+='</tbody></table></div>';
+  }
+  s3.innerHTML=h3; el.appendChild(s3);
+
+  // ④ Marcas
+  var s4=document.createElement('div'); s4.className='sec';
+  var mk=Object.keys(R.marca).sort(function(a,b){return R.marca[b]-R.marca[a];}).slice(0,12);
+  var h4='<div class="sec-h">🚗 Marcas (top 12)</div><div class="grid2"><div>';
+  mk.forEach(function(m,i){ if(i===6) h4+='</div><div>'; h4+='<div class="minirow"><span>'+m+'</span><b>'+R.marca[m]+'</b></div>'; });
+  h4+='</div></div>';
+  s4.innerHTML=h4; el.appendChild(s4);
+
+  // ⑤ Correções
+  var s5=document.createElement('div'); s5.className='sec';
+  var h5='<div class="sec-h">✏️ Correções de nome (Cliente → Proprietário) <span style="font-size:12px;color:#64748b;font-weight:600;">('+R.corrigidas.length+')</span></div>';
+  h5+='<div class="sec-d">OS onde o nome do proprietário foi alterado face ao cliente.</div>';
+  h5+='<div class="tbl-wrap"><table><thead><tr><th class="l">OS</th><th class="l">Cliente</th><th class="l">Proprietário (corrigido)</th><th class="l">Operador</th></tr></thead><tbody>';
+  R.corrigidas.slice(0,40).forEach(function(x){ h5+='<tr><td class="l">'+x.num+'</td><td class="l">'+cut(x.cli,24)+'</td><td class="l">'+cut(x.prop,28)+'</td><td class="l">'+cut(x.op,22)+'</td></tr>'; });
+  h5+='</tbody></table></div>';
+  s5.innerHTML=h5; el.appendChild(s5);
+}
+</script>
+</body>
+</html>
