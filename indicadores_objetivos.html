@@ -2290,6 +2290,13 @@ body {
   // ══════ Assessoria de Vendas (publicado por Verificação Orçamentos + Analisador OS) ══════
   window.avSetYear=function(y){ state.avYear=String(y); state.avMes='ano'; renderAssessoria(); };
   window.avSetScope=function(m){ state.avMes=m; renderAssessoria(); };
+  // Rececionistas a excluir do scorecard (admins/coordenadores, não são assessores de vendas)
+  function avExcluido(nome){ var n=String(nome||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if(n.indexOf('vanessa')>-1) return true;
+    if(n.indexOf('andre rafael')>-1 || (n.indexOf('andre')>-1 && n.indexOf('mota pereira')>-1)) return true;
+    if(n.indexOf('fabio')>-1 && n.indexOf('ramalho')>-1) return true;
+    if(n.indexOf('jose')>-1 && n.indexOf('rodrig')>-1) return true;
+    return false; }
   function renderAssessoria(){
     if (currentChart) { currentChart.destroy(); currentChart = null; }
     var data=ASSESSORIA_DATA||{}; var years=Object.keys(data).sort();
@@ -2319,7 +2326,7 @@ body {
       return a;
     }
     var A=acc();
-    var recs=Object.keys(A).sort(function(x,y){return (A[y].orcTotal+A[y].osTotal)-(A[x].orcTotal+A[x].osTotal);});
+    var recs=Object.keys(A).filter(function(r){return !avExcluido(r);}).sort(function(x,y){return (A[y].orcTotal+A[y].osTotal)-(A[x].orcTotal+A[x].osTotal);});
     function p(n,d){ return d?Math.round(n/d*100)+'%':'—'; }
     var scopeLabel = state.avMes==='ano' ? ('Ano '+state.avYear) : (MONTHS[state.avMes-1]+' '+state.avYear);
     var h='<div class="comp-section"><div class="comp-title">🤝 Scorecard por rececionista — '+scopeLabel+'</div><div class="comp-subtitle">Orçamentos e OS por rececionista. Novos rececionistas aparecem automaticamente.</div>';

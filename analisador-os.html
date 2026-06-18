@@ -100,6 +100,7 @@ var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologi
 function norm(s){return String(s==null?'':s).replace(/\s+/g,' ').trim();}
 function deaccent(s){return norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
 function stripcode(s){return norm(s).replace(/^\[\d+\]\s*/,'').trim();}
+function avExcluidoAV(nome){ var n=deaccent(nome); if(n.indexOf('vanessa')>-1)return true; if(n.indexOf('andre rafael')>-1||(n.indexOf('andre')>-1&&n.indexOf('mota pereira')>-1))return true; if(n.indexOf('fabio')>-1&&n.indexOf('ramalho')>-1)return true; if(n.indexOf('jose')>-1&&n.indexOf('rodrig')>-1)return true; return false; }
 function codeOf(s){var m=String(s||'').match(/^\[(\d+)\]/);return m?m[1]:null;}
 function isCompany(n){return COMPANY.test(deaccent(n));}
 function ntokens(n){return stripcode(n).split(/\s+/).filter(Boolean).length;}
@@ -275,7 +276,7 @@ function analisar(){
   R.assessMes=(function(){var mc={};OS.forEach(function(o){if(o.date)mc[o.date.getMonth()+1]=(mc[o.date.getMonth()+1]||0)+1;});var b=null,c=-1;Object.keys(mc).forEach(function(k){if(mc[k]>c){c=mc[k];b=k;}});return b?+b:(new Date().getMonth()+1);})();
   R.assessAno=(function(){var ac={};OS.forEach(function(o){if(o.date)ac[o.date.getFullYear()]=(ac[o.date.getFullYear()]||0)+1;});var b=null,c=-1;Object.keys(ac).forEach(function(k){if(ac[k]>c){c=ac[k];b=k;}});return b?+b:(new Date().getFullYear());})();
   R.assess={};
-  Object.keys(R.oper).forEach(function(op){var d=R.oper[op];var rc=stripcode(op)||'(sem rececionista)';R.assess[rc]={osTotal:d.total,osPart:d.part,osFalha:d.falha,osDiag:d.diag,osDiagConv:d.diagConv};});
+  Object.keys(R.oper).forEach(function(op){var rc=stripcode(op)||'(sem rececionista)';if(avExcluidoAV(rc))return;var d=R.oper[op];R.assess[rc]={osTotal:d.total,osPart:d.part,osFalha:d.falha,osDiag:d.diag,osDiagConv:d.diagConv};});
   return R;
 }
 function tipoServ(p){var d=deaccent(p);if(d.indexOf('pintura')>-1)return 'pintura';if(d.indexOf('chapa')>-1)return 'chapa';if(d.indexOf('diagn')>-1)return 'diagnostico';if(d.indexOf('mecanic')>-1||d.indexOf('revis')>-1||d.indexOf('travo')>-1||d.indexOf('embraiag')>-1||d.indexOf('bateria')>-1||d.indexOf('oleo')>-1||d.indexOf('alinha')>-1)return 'mecanica';return 'outro';}

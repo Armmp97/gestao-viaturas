@@ -78,6 +78,12 @@
 <script>
 var ORC=null, VEN=null, EMAIL=null;
 var LAST_ASSESS_ORC=null;
+function avExcluidoAV(nome){ var n=String(nome||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if(n.indexOf('vanessa')>-1) return true;
+  if(n.indexOf('andre rafael')>-1 || (n.indexOf('andre')>-1 && n.indexOf('mota pereira')>-1)) return true;
+  if(n.indexOf('fabio')>-1 && n.indexOf('ramalho')>-1) return true;
+  if(n.indexOf('jose')>-1 && n.indexOf('rodrig')>-1) return true;
+  return false; }
 var REL_STATES={'aprovado':1,'em negociacao':1,'aguarda ne':1};
 
 function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
@@ -208,6 +214,7 @@ function analisar(){
   var em2 = EMAIL ? parseEmailsOrc(EMAIL) : null;
   var assess={};
   quotes.forEach(function(q){ var rc=norm(q.emp).replace(/^\[\d+\]\s*/,'')||'(sem rececionista)';
+    if(avExcluidoAV(rc)) return;
     var a=assess[rc]=assess[rc]||{orcTotal:0,orcEmail:(em2?0:null),orcAprov:0};
     a.orcTotal++; var es=deaccent(q.estado); if(es==='aprovado'||es==='faturado')a.orcAprov++;
     if(em2&&em2.byNum[nmat(q.num)])a.orcEmail++;
