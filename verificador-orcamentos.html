@@ -83,6 +83,7 @@ function avExcluidoAV(nome){ var n=String(nome||'').toLowerCase().normalize('NFD
   if(n.indexOf('andre rafael')>-1 || (n.indexOf('andre')>-1 && n.indexOf('mota pereira')>-1)) return true;
   if(n.indexOf('fabio')>-1 && n.indexOf('ramalho')>-1) return true;
   if(n.indexOf('jose')>-1 && n.indexOf('rodrig')>-1) return true;
+  if(n.indexOf('couto')>-1) return true;
   return false; }
 var REL_STATES={'aprovado':1,'em negociacao':1,'aguarda ne':1};
 

@@ -100,7 +100,7 @@ var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologi
 function norm(s){return String(s==null?'':s).replace(/\s+/g,' ').trim();}
 function deaccent(s){return norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
 function stripcode(s){return norm(s).replace(/^\[\d+\]\s*/,'').trim();}
-function avExcluidoAV(nome){ var n=deaccent(nome); if(n.indexOf('vanessa')>-1)return true; if(n.indexOf('andre rafael')>-1||(n.indexOf('andre')>-1&&n.indexOf('mota pereira')>-1))return true; if(n.indexOf('fabio')>-1&&n.indexOf('ramalho')>-1)return true; if(n.indexOf('jose')>-1&&n.indexOf('rodrig')>-1)return true; return false; }
+function avExcluidoAV(nome){ var n=deaccent(nome); if(n.indexOf('vanessa')>-1)return true; if(n.indexOf('andre rafael')>-1||(n.indexOf('andre')>-1&&n.indexOf('mota pereira')>-1))return true; if(n.indexOf('fabio')>-1&&n.indexOf('ramalho')>-1)return true; if(n.indexOf('jose')>-1&&n.indexOf('rodrig')>-1)return true; if(n.indexOf('couto')>-1)return true; return false; }
 function codeOf(s){var m=String(s||'').match(/^\[(\d+)\]/);return m?m[1]:null;}
 function isCompany(n){return COMPANY.test(deaccent(n));}
 function ntokens(n){return stripcode(n).split(/\s+/).filter(Boolean).length;}
