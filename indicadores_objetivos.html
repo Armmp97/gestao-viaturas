@@ -2333,8 +2333,8 @@ body {
     var h='<div class="comp-section"><div class="comp-title">🤝 Scorecard por rececionista — '+scopeLabel+'</div>';
     h+='<div class="comp-subtitle">Cada linha é um rececionista. As 3 colunas de <b>Orçamentos</b> vêm da <i>Verificação de Orçamentos</i>; as 3 de <b>Ordens de Serviço (OS)</b> vêm do <i>Analisador de OS</i> (OS = nº de ordens de serviço que o rececionista registou). Novos rececionistas aparecem automaticamente.</div>';
     h+='<div class="comp-table-wrap"><table class="comp-table"><thead>'+
-      '<tr><th rowspan="2" style="vertical-align:bottom;">Rececionista</th><th colspan="3" style="text-align:center;background:#eef2ff;color:#3730a3;">Orçamentos</th><th colspan="3" style="text-align:center;background:#ecfdf5;color:#065f46;">Ordens de Serviço (OS)</th></tr>'+
-      '<tr><th style="background:#f5f7ff;">Nº</th><th style="background:#f5f7ff;">% enviados por email</th><th style="background:#f5f7ff;">% aprovados</th><th style="background:#f1fdf7;">Nº</th><th style="background:#f1fdf7;">% regra 3 nomes</th><th style="background:#f1fdf7;">% conversão diagnóstico</th></tr>'+
+      '<tr><th rowspan="2" style="vertical-align:bottom;background:#1e3a5f;color:#fff;">Rececionista</th><th colspan="3" style="text-align:center;background:#3730a3;color:#fff;">Orçamentos</th><th colspan="3" style="text-align:center;background:#065f46;color:#fff;">Ordens de Serviço (OS)</th></tr>'+
+      '<tr><th style="background:#e0e7ff;color:#1e293b;">Nº</th><th style="background:#e0e7ff;color:#1e293b;">% enviados por email</th><th style="background:#e0e7ff;color:#1e293b;">% aprovados</th><th style="background:#d1fae5;color:#1e293b;">Nº</th><th style="background:#d1fae5;color:#1e293b;">% regra 3 nomes</th><th style="background:#d1fae5;color:#1e293b;">% conversão diagnóstico</th></tr>'+
       '</thead><tbody>';
     recs.forEach(function(r){ var t=A[r];
       h+='<tr><td style="text-align:left;font-weight:600;">'+r+'</td>'+
