@@ -177,7 +177,7 @@ function analisar(){
   var R={maxd:maxd,nOS:OS.length,OS:OS,FAT:FAT,GAR:GAR,ORC:ORC,
     particulares:0,empresas:0,correcoes:[],falhas:[],oper:{},estado:{},serie:{},marca:{},modelo:{},
     interv:{},nint:[],soDiag:[],diagTotal:0,diagConv:0,complexas:0,vazias:0,
-    leadtimes:[],abertas:[],atraso:[],caps:0,consumidor:0,repViat:[],obsBuckets:{},obsTotal:0,
+    leadtimes:[],abertas:[],atraso:[],semDataEntrega:[],caps:0,consumidor:0,repViat:[],obsBuckets:{},obsTotal:0,
     cliCount:{},marcaChapa:{}};
   var matr={};
   OS.forEach(function(o){
@@ -208,6 +208,7 @@ function analisar(){
     o.ints.forEach(function(p){var t=tipoServ(p);R.marca_un=R.marca_un;});
     // prazos
     if(o.drec&&o.dent){var dd=days(o.dent,o.drec);R.leadtimes.push(dd);oo.lead.push(dd);}
+    if(!o.dent)R.semDataEntrega.push(o);
     if(ABERTO[deaccent(o.estado)]){var rec=o.drec||o.date;var ab=rec&&maxd?days(maxd,rec):0;R.abertas.push({o:o,dias:ab});
       if(o.dent&&maxd&&o.dent<maxd)R.atraso.push(o);}
     // qualidade dados
@@ -264,6 +265,7 @@ function analisar(){
     if(o.ints.length===0)flags.push('sem intervenção');
     if(R.soDiag.indexOf(o)>-1)flags.push('só diagnóstico');
     if(o.drec&&o.dent&&days(o.dent,o.drec)>14)flags.push('prazo >14d');
+    if(!o.dent)flags.push('sem data entrega');
     if(R.cross_fat && deaccent(o.estado)==='faturado' && R.cross_fat.semFaturaFaturado.indexOf(o)>-1)flags.push('faturado s/ fatura');
     if(R.cross_gar && R.cross_gar.rework.indexOf(o)>-1)flags.push('garantia depois');
     if(flags.length>=2)R.risco.push({o:o,flags:flags});
@@ -335,7 +337,8 @@ function render(R){
 
   // 6. Qualidade de dados
   el.appendChild(sec('<div class="sec-h">🧹 Qualidade de dados</div><div class="grid2">'+
-    '<div><div class="minirow"><span>Proprietário em MAIÚSCULAS</span><b>'+R.caps+'</b></div>'+
+    '<div><div class="minirow"><span>OS sem data prevista de entrega ⚠️</span><b style="color:'+(R.semDataEntrega.length?'#dc2626':'#059669')+';">'+R.semDataEntrega.length+'</b></div>'+
+    '<div class="minirow"><span>Proprietário em MAIÚSCULAS</span><b>'+R.caps+'</b></div>'+
     '<div class="minirow"><span>OS sem intervenções</span><b>'+R.vazias+'</b></div>'+
     '<div class="minirow"><span>Cliente "Consumidor Final"</span><b>'+R.consumidor+'</b></div>'+
     '<div class="minirow"><span>Correções de nome (Cli→Prop)</span><b>'+R.correcoes.length+'</b></div></div>'+

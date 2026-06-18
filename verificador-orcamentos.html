@@ -52,7 +52,7 @@
   <div class="uprow">
     <div class="upbox" id="box1">
       <h3>1 · Orçamentos (ORC)</h3>
-      <p>Extrair ficheiro excel separador orçamentos, filtrado pelo mês de referência</p>
+      <p>Extrair ficheiro excel separador orçamentos, desde 2 meses antes até ao final do mês de referência</p>
       <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileOrc" accept=".xlsx,.xls"></div>
       <div class="ustat" id="statOrc"></div>
     </div>
@@ -62,6 +62,12 @@
       <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileVen" accept=".xlsx,.xls"></div>
       <div class="ustat" id="statVen"></div>
     </div>
+    <div class="upbox" id="box3">
+      <h3>3 · Emails enviados <span style="font-weight:600;font-size:11px;color:#94a3b8;">(opcional)</span></h3>
+      <p>Extrair "Emails enviados" do Officegest — para ver os orçamentos enviados por email e por quem.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileEmail" accept=".xlsx,.xls"></div>
+      <div class="ustat" id="statEmail"></div>
+    </div>
   </div>
   <button class="run-btn" id="runBtn" disabled>Analisar</button>
   <div class="hint">A ligação é feita por <b>matrícula</b> (fatura com data igual ou posterior à do orçamento; o valor escolhe o melhor match). Estados analisados: <b>Aprovado</b>, <b>Em Negociação</b> e <b>Aguarda NE</b>. Notas de Crédito são ignoradas.</div>
@@ -70,7 +76,7 @@
 <div class="results" id="results"></div>
 
 <script>
-var ORC=null, VEN=null;
+var ORC=null, VEN=null, EMAIL=null;
 var REL_STATES={'aprovado':1,'em negociacao':1,'aguarda ne':1};
 
 function norm(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
@@ -116,6 +122,10 @@ document.getElementById('fileVen').addEventListener('change',function(e){
   var f=e.target.files[0]; if(!f) return;
   readFile(f,function(rows){ VEN=rows; document.getElementById('statVen').className='ustat ok'; document.getElementById('statVen').textContent='✓ '+f.name; document.getElementById('box2').classList.add('done'); checkReady(); });
 });
+document.getElementById('fileEmail').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  readFile(f,function(rows){ EMAIL=rows; document.getElementById('statEmail').className='ustat ok'; document.getElementById('statEmail').textContent='✓ '+f.name; document.getElementById('box3').classList.add('done'); checkReady(); });
+});
 function checkReady(){ document.getElementById('runBtn').disabled = !(ORC && VEN); }
 document.getElementById('runBtn').addEventListener('click', analisar);
 
@@ -142,6 +152,19 @@ function parseVen(rows){
     docs[num].tot += Number(r[ci.tot])||0;
   }
   return docs;
+}
+function parseEmailsOrc(rows){
+  var hi=findHeader(rows,['assunto','autor']); var c=colMap(rows[hi]||[]);
+  var ci={assunto:c('assunto'),autor:c('autor'),enviado:c('enviado')};
+  var pat=/ORC\s*[A-Z]{0,4}\d{3}\/\d+/i;
+  var byNum={},list=[];
+  for(var i=hi+1;i<rows.length;i++){ var r=rows[i]; if(!r) continue; var s=norm(r[ci.assunto]); if(!s) continue;
+    if(deaccent(s).indexOf('orcamento')===-1) continue;
+    var m=s.match(pat); if(!m) continue;
+    var e={num:nmat(m[0]),autor:norm(r[ci.autor])||'(sem autor)',enviado:norm(r[ci.enviado])};
+    list.push(e); byNum[e.num]=e;
+  }
+  return {list:list,byNum:byNum};
 }
 
 function analisar(){
@@ -170,7 +193,15 @@ function analisar(){
   forte.sort(function(a,b){return b.q.tot-a.q.tot;});
   confirmar.sort(function(a,b){return Math.abs(b.diff)-Math.abs(a.diff);});
   sem.sort(function(a,b){return b.tot-a.tot;});
-  render(rel.length, forte, confirmar, sem);
+  var emailInfo=null;
+  if(EMAIL){
+    var em=parseEmailsOrc(EMAIL); var byAutor={}, enviados=0;
+    em.list.forEach(function(e){ byAutor[e.autor]=(byAutor[e.autor]||0)+1; });
+    quotes.forEach(function(q){ if(em.byNum[nmat(q.num)]) enviados++; });
+    var aprovNaoEnv=quotes.filter(function(q){ return deaccent(q.estado)==='aprovado' && !em.byNum[nmat(q.num)]; });
+    emailInfo={total:em.list.length, enviados:enviados, totalQuotes:quotes.length, byAutor:byAutor, aprovNaoEnv:aprovNaoEnv};
+  }
+  render(rel.length, forte, confirmar, sem, emailInfo);
 }
 
 function badge(estado){
@@ -182,14 +213,15 @@ function badge(estado){
 }
 function diffCell(diff){ var cls=diff>=0?'pos':'neg'; return '<td class="'+cls+'">'+(diff>=0?'+':'')+eur(diff)+'</td>'; }
 
-function render(nrel, forte, confirmar, sem){
+function render(nrel, forte, confirmar, sem, emailInfo){
   var R=document.getElementById('results'); R.style.display='block'; R.innerHTML='';
   var sum=document.createElement('div'); sum.className='summary';
   sum.innerHTML=
     '<div class="sumbox"><div class="n" style="color:#0f172a;">'+nrel+'</div><div class="l">Orç. analisados</div></div>'+
     '<div class="sumbox"><div class="n" style="color:#0d904f;">'+forte.length+'</div><div class="l">Provavelmente faturados</div></div>'+
     '<div class="sumbox"><div class="n" style="color:#b45309;">'+confirmar.length+'</div><div class="l">A confirmar</div></div>'+
-    '<div class="sumbox"><div class="n" style="color:#d93025;">'+sem.length+'</div><div class="l">Sem faturação</div></div>';
+    '<div class="sumbox"><div class="n" style="color:#d93025;">'+sem.length+'</div><div class="l">Sem faturação</div></div>'+
+    (emailInfo?'<div class="sumbox"><div class="n" style="color:#1d4ed8;">'+emailInfo.aprovNaoEnv.length+'</div><div class="l">Aprovados sem email</div></div>':'');
   R.appendChild(sum);
 
   // Lista A
@@ -220,6 +252,23 @@ function render(nrel, forte, confirmar, sem){
   });
   ch+='</tbody></table></div>';
   c.innerHTML=ch; R.appendChild(c);
+
+  if(emailInfo){
+    var e=document.createElement('div'); e.className='sec';
+    var cov=emailInfo.totalQuotes?(emailInfo.enviados/emailInfo.totalQuotes*100):0;
+    var eh='<div class="sec-h">📧 Orçamentos enviados por email <span style="font-size:12px;color:#64748b;font-weight:600;">('+emailInfo.enviados+')</span></div>';
+    eh+='<div class="sec-d">'+emailInfo.enviados+' de '+emailInfo.totalQuotes+' orçamentos foram enviados por email ('+cov.toFixed(0)+'%). Aprovados sem email são um sinal de alerta (cliente pode nunca ter recebido a proposta).</div>';
+    eh+='<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">Quem enviou (por autor)</div><div class="tbl-wrap" style="max-height:200px;"><table><thead><tr><th class="l">Autor</th><th>Orçamentos enviados</th></tr></thead><tbody>';
+    Object.keys(emailInfo.byAutor).sort(function(a,b){return emailInfo.byAutor[b]-emailInfo.byAutor[a];}).forEach(function(k){ eh+='<tr><td class="l">'+cut(k,30)+'</td><td>'+emailInfo.byAutor[k]+'</td></tr>'; });
+    eh+='</tbody></table></div>';
+    if(emailInfo.aprovNaoEnv.length){
+      eh+='<div style="font-size:12px;font-weight:700;color:#b91c1c;margin:14px 0 6px;">Aprovados NÃO enviados por email ('+emailInfo.aprovNaoEnv.length+'):</div>';
+      eh+='<div class="tbl-wrap"><table><thead><tr><th class="l">Orçamento</th><th class="l">Data</th><th class="l">Matrícula</th><th class="l">Cliente</th><th class="l">Rececionista</th><th>Valor</th></tr></thead><tbody>';
+      emailInfo.aprovNaoEnv.sort(function(a,b){return b.tot-a.tot;}).forEach(function(q){ eh+='<tr><td class="l">'+q.num+'</td><td class="l">'+fdate(q.date)+'</td><td class="l">'+(q.matraw||'—')+'</td><td class="l">'+cut(q.cli,24)+'</td><td class="l">'+cut(q.emp,22)+'</td><td>'+eur(q.tot)+'</td></tr>'; });
+      eh+='</tbody></table></div>';
+    }
+    e.innerHTML=eh; R.appendChild(e);
+  }
 }
 function rowMatch(x){
   var q=x.q,m=x.m;
