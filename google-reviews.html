@@ -107,11 +107,14 @@ function parseData(s,now){
   return null;
 }
 
-// Conta estrelas num bloco de texto que precede a data
+// Conta estrelas CHEIAS num bloco de texto.
+// Google usa Material Icons: 'star' = cheia, 'star_border'/'star_outline' = vazia, 'star_half' = meia.
+// Também suporta glifos ★ (cheia) / ☆ (vazia).
 function contaEstrelas(g){
   if(!g) return 0;
-  if(g.indexOf('★')>-1) return (g.match(/★/g)||[]).length;
-  return (g.match(/star/gi)||[]).length;
+  if(/[★☆]/.test(g)) return (g.match(/★/g)||[]).length; // conta só as cheias
+  var filled=(g.replace(/star_(border|outline|half)/gi,'').match(/star/gi)||[]).length;
+  return filled;
 }
 
 // Parser principal: cada linha de classificação (estrelas + data) = 1 crítica
@@ -123,7 +126,7 @@ function parse(text,now){
 
   var criticas=[];
   // linha de classificação: 1-5 estrelas seguidas de uma data (relativa ou absoluta)
-  var rre=/((?:star\s*){1,5}|★{1,5})\s*(h[áa]\s+[^\n]+|\d{1,2}\/\d{1,2}\/\d{4})/gi;
+  var rre=/((?:star(?:_border|_outline|_half)?|[★☆]){1,5})\s*(h[áa]\s+[^\n]+|\d{1,2}\/\d{1,2}\/\d{4})/gi;
   var rm;
   while(rm=rre.exec(text)){
     var s=contaEstrelas(rm[1]);
