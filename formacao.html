@@ -3,184 +3,307 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendário de Formação 2026 — DomusCar</title>
+<title>Calendário de Formação — DomusCar</title>
 <style>
-  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;}
+  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--green:#0d904f;--amber:#b45309;--red:#dc2626;}
   *{box-sizing:border-box;}
   body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
-  .wrap{max-width:1200px;margin:0 auto;padding:24px 20px 60px;}
-  h1{font-size:1.5rem;color:var(--navy);margin:0 0 4px;}
-  .sub{color:var(--muted);font-size:.9rem;margin:0 0 18px;max-width:820px;}
-  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
-  .sbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;}
-  .sbox .n{font-size:1.5rem;font-weight:800;color:var(--navy);}
-  .sbox .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
-  .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:18px;}
-  .filters .frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
-  .filters .frow:last-child{margin-bottom:0;}
-  .flabel{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;width:80px;}
-  .chip{padding:6px 12px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;font-size:12.5px;font-weight:600;color:#334155;}
-  .chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
-  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 16px;font-size:12px;color:var(--muted);}
-  .legdot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle;}
-  .cal{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-  @media(max-width:900px){.cal{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:560px){.cal{grid-template-columns:1fr;}}
-  .month{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:90px;}
-  .month h3{margin:0 0 8px;font-size:13px;color:var(--navy);border-bottom:2px solid var(--line);padding-bottom:6px;display:flex;justify-content:space-between;}
-  .month h3 .cnt{font-size:11px;color:var(--muted);font-weight:600;}
-  .tr{border-left:4px solid #999;border-radius:6px;padding:6px 8px;margin-bottom:6px;font-size:12px;background:#f8fafc;}
-  .tr .t{font-weight:700;color:#0f172a;}
-  .tr .m{color:var(--muted);font-size:11px;margin-top:2px;}
-  .tr .tags{margin-top:3px;}
-  .tag{display:inline-block;font-size:10px;background:#e2e8f0;color:#334155;border-radius:10px;padding:1px 7px;margin:2px 3px 0 0;}
-  .tag.ob{background:#fee2e2;color:#b91c1c;}
-  .empty{color:#94a3b8;font-size:11.5px;font-style:italic;}
-  table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:22px;}
-  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:var(--navy2);color:#fff;font-weight:600;font-size:11.5px;}
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 20px 60px;}
+  h1{font-size:1.4rem;color:var(--navy);margin:0 0 2px;}
+  .sub{color:var(--muted);font-size:.88rem;margin:0 0 16px;}
+  .bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .navbtn{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;color:var(--navy);font-size:15px;}
+  .mlabel{font-size:1.1rem;font-weight:800;color:var(--navy);min-width:170px;text-align:center;}
+  .today{background:#eef2ff;color:var(--navy);}
+  .legend{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center;}
+  .ldot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .dow{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;padding:4px 0;}
+  .cell{background:#fff;border:1px solid var(--line);border-radius:8px;min-height:96px;padding:5px 6px;cursor:pointer;transition:.1s;display:flex;flex-direction:column;}
+  .cell:hover{border-color:var(--blue);box-shadow:0 1px 4px rgba(29,78,216,.15);}
+  .cell.empty{background:transparent;border:none;cursor:default;}
+  .cell.is-today{border-color:var(--blue);background:#f5f8ff;}
+  .cell.weekend{background:#fafafa;}
+  .daynum{font-size:12px;font-weight:700;color:#334155;margin-bottom:3px;}
+  .ev{font-size:10.5px;border-radius:5px;padding:2px 5px;margin-bottom:3px;line-height:1.25;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ev.plan{background:#2563eb;}
+  .ev.real{background:#0d904f;}
+  .more{font-size:10px;color:var(--muted);}
+  /* modal */
+  .ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:1000;overflow:auto;padding:30px 14px;}
+  .ov.open{display:flex;}
+  .modal{background:#fff;border-radius:14px;max-width:620px;width:100%;padding:20px 22px;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+  .modal h2{font-size:1.1rem;color:var(--navy);margin:0 0 4px;}
+  .modal .mh{font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .evlist{margin-bottom:14px;}
+  .evrow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
+  .evrow .info{font-size:13px;}
+  .evrow .badge{font-size:10px;font-weight:700;border-radius:10px;padding:1px 8px;color:#fff;}
+  .evrow .acts button{font-size:11px;border:none;background:#eef2ff;color:var(--navy);border-radius:6px;padding:4px 8px;cursor:pointer;margin-left:4px;}
+  .evrow .acts button.del{background:#fee2e2;color:#b91c1c;}
+  label.fl{display:block;font-size:12px;font-weight:700;color:#334155;margin:10px 0 4px;}
+  input[type=text],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:13px;}
+  .twocol{display:flex;gap:10px;}.twocol>div{flex:1;}
+  .radios{display:flex;gap:14px;font-size:13px;align-items:center;}
+  .radios label{font-weight:600;display:flex;align-items:center;gap:5px;cursor:pointer;}
+  .colabbox{border:1px solid var(--line);border-radius:8px;max-height:170px;overflow:auto;padding:6px 8px;margin-top:4px;}
+  .colabbox label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:2px 0;cursor:pointer;}
+  .mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+  .btn{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;}
+  .btn-primary{background:var(--blue);color:#fff;}.btn-ghost{background:#e2e8f0;color:#334155;}
+  .sec-title{font-size:1.05rem;color:var(--navy);font-weight:800;margin:26px 0 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;}
+  th{background:var(--navy2);color:#fff;font-weight:600;font-size:12px;}
   td.c,th.c{text-align:center;}
-  .sec-title{font-size:1.05rem;color:var(--navy);font-weight:800;margin:24px 0 10px;}
-  .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6;}
+  .summary-tot{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .sbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;text-align:center;min-width:120px;}
+  .sbox .n{font-size:1.4rem;font-weight:800;color:var(--navy);}.sbox .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+  .toggle{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>🎓 Calendário de Formação 2026</h1>
-  <p class="sub">Plano anual de formação para todos os colaboradores da DOMUSCAR (Cacém, Lisboa e Centro de Colisão), organizado por função e por mês. Inclui formações de segurança, certificações legais, técnicas Bosch Car Service, atendimento e gestão. Filtra por função, oficina ou categoria.</p>
+  <h1>🎓 Calendário de Formação</h1>
+  <p class="sub">Marca as formações dos colaboradores nos dias do calendário. Em baixo vês o resumo de horas por colaborador (planeadas e realizadas). Acesso restrito a Administração, Coordenadores e RH.</p>
 
-  <div class="summary" id="summary"></div>
-
-  <div class="filters">
-    <div class="frow"><span class="flabel">Função</span><span id="fFuncao"></span></div>
-    <div class="frow"><span class="flabel">Oficina</span><span id="fOficina"></span></div>
-    <div class="frow"><span class="flabel">Categoria</span><span id="fCategoria"></span></div>
+  <div class="bar">
+    <button class="navbtn" onclick="moveMonth(-1)">‹</button>
+    <div class="mlabel" id="mlabel"></div>
+    <button class="navbtn" onclick="moveMonth(1)">›</button>
+    <button class="navbtn today" onclick="goToday()">Hoje</button>
+    <div class="legend"><span><span class="ldot" style="background:#2563eb;"></span>Planeada</span><span><span class="ldot" style="background:#0d904f;"></span>Realizada</span></div>
   </div>
 
-  <div class="legend" id="legend"></div>
+  <div class="grid" id="dows"></div>
+  <div class="grid" id="calendar" style="margin-top:6px;"></div>
 
-  <div class="sec-title">📅 Calendário mensal</div>
-  <div class="cal" id="calendar"></div>
+  <div class="sec-title">📊 Resumo por colaborador <span id="sumYearLbl" style="font-size:.8rem;color:var(--muted);font-weight:600;"></span></div>
+  <div class="summary-tot" id="sumTotais"></div>
+  <label class="toggle"><input type="checkbox" id="soComForm" onchange="renderResumo()"> Mostrar só colaboradores com formação marcada</label>
+  <div id="resumoWrap" style="margin-top:10px;"></div>
+</div>
 
-  <div class="sec-title">📋 Plano de Formação (detalhe)</div>
-  <div id="tableWrap"></div>
-
-  <p class="note"><b>Notas:</b> a formação de <b>Gases Fluorados (A/C)</b> e a <b>Segurança em Veículos Elétricos/Híbridos (alta tensão)</b> são obrigatórias por lei para quem manuseia esses sistemas. As formações marcadas como <b>Obrigatória</b> têm presença obrigatória e registo. Agosto e Dezembro ficam mais leves (férias / fecho de ano). Este é um plano-base proponível — ajusta datas, durações e entidades conforme a disponibilidade e os formadores.</p>
+<!-- Modal -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <h2 id="modalTitle">Formações do dia</h2>
+    <div class="mh" id="modalDate"></div>
+    <div class="evlist" id="evlist"></div>
+    <div style="border-top:1px solid var(--line);padding-top:12px;">
+      <div id="formTitle" style="font-weight:800;color:var(--navy);font-size:13px;margin-bottom:4px;">➕ Nova formação</div>
+      <input type="hidden" id="editId" value="">
+      <label class="fl">Título da formação</label>
+      <input type="text" id="fTitulo" placeholder="Ex.: Segurança e Saúde no Trabalho">
+      <div class="twocol">
+        <div><label class="fl">Horas</label><input type="number" id="fHoras" min="0" step="0.5" placeholder="6"></div>
+        <div><label class="fl">Oficina</label><select id="fOficina"><option value="">—</option><option value="Cacém">Cacém</option><option value="Lisboa">Lisboa</option><option value="Colisão">Colisão</option><option value="Geral">Geral / Todas</option></select></div>
+      </div>
+      <label class="fl">Estado</label>
+      <div class="radios"><label><input type="radio" name="estado" value="planeada" checked> Planeada</label><label><input type="radio" name="estado" value="realizada"> Realizada</label></div>
+      <label class="fl">Formador / Entidade (opcional)</label>
+      <input type="text" id="fFormador" placeholder="Ex.: Bosch / Interno / Externo">
+      <label class="fl">Colaboradores</label>
+      <input type="text" id="fSearch" placeholder="🔍 procurar colaborador..." oninput="filterColabs()" style="margin-bottom:4px;">
+      <div class="colabbox" id="colabBox"></div>
+      <label class="fl">Outro nome (opcional, separa por vírgula)</label>
+      <input type="text" id="fOutros" placeholder="Nome não listado">
+      <label class="fl">Notas (opcional)</label>
+      <textarea id="fNotas" rows="2" placeholder=""></textarea>
+      <div class="mbtns">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEvento()">Guardar formação</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-var FUNCOES={todos:'Todos',coord:'Coordenação',rec:'Receção / Orçamentação',mec:'Mecânica',cp:'Chapa e Pintura',pec:'Peças / Logística',qual:'Qualidade'};
-var OFICINAS={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão'};
-var CATS={
-  seg:{label:'Segurança & Ambiente',cor:'#dc2626'},
-  legal:{label:'Legal / Certificação',cor:'#b45309'},
-  tec:{label:'Técnica Bosch',cor:'#1d4ed8'},
-  com:{label:'Atendimento & Comercial',cor:'#0d904f'},
-  gest:{label:'Gestão & Qualidade',cor:'#7c3aed'}
-};
+var COLABS=["André Pereira","Vanessa Borges","Fábio Ramalho","José Rodriguez","Mário Perez","Nuno Montes (Colisão Tagus Park)","Diogo Fernandes","Ajay Kumar Shah","Edmilson Fernandes","Arnaldo Cruz","Sérgio Pereira","Nuno Montês","Jorge Silva","Eduardo Macedo","Filipe Bonifácio","Carlos Antunes","Emanuel Gonçalves","Vitor Soutilha","José Borges","Gonçalo Matos","Gyanu Pujara","José Avelino Fernandes","Pedro Jana","João Bizarro","Xavier Jorge","Pedro Pereira","Ricardo Ferreira","Fernando Couto","Rúben Nogueira","Tomás Figueiredo","Pedro Carvalho","Gonçalo Faustino","Inês Peixinho","Alícia Vieira","André Gomes","Valter Borges","Paulo Rodrigues","Paulo Ferreira","Cláudia Pedro","Marta Marques"];
 var MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var DOW=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 
-// Plano-base 2026 (mes: 1-12)
-var PLANO=[
-  {tema:'Software de Gestão (Officegest)',cat:'com',pub:['rec','pec','coord'],ofi:['cacem','lisboa','colisao'],mes:1,horas:3,modal:'Interna',period:'Anual',ob:false},
-  {tema:'Segurança e Saúde no Trabalho (SST)',cat:'seg',pub:['todos'],ofi:['cacem','lisboa','colisao'],mes:2,horas:6,modal:'Externa',period:'Anual',ob:true},
-  {tema:'Atendimento ao Cliente e Gestão de Reclamações',cat:'com',pub:['rec'],ofi:['cacem','lisboa','colisao'],mes:2,horas:4,modal:'Interna',period:'Anual',ob:false},
-  {tema:'Gestão de Resíduos e Ambiente (óleos, baterias, filtros)',cat:'seg',pub:['mec','cp','pec'],ofi:['cacem','lisboa','colisao'],mes:3,horas:3,modal:'Interna',period:'Anual',ob:true},
-  {tema:'Diagnóstico Eletrónico (OBD / ECU)',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:3,horas:8,modal:'Bosch',period:'Anual',ob:false},
-  {tema:'Liderança e Gestão de Equipas',cat:'gest',pub:['coord'],ofi:['cacem','lisboa','colisao'],mes:3,horas:8,modal:'Externa',period:'—',ob:false},
-  {tema:'Gases Fluorados — Ar Condicionado (certificação)',cat:'legal',pub:['mec'],ofi:['cacem','lisboa'],mes:4,horas:16,modal:'Externa certificada',period:'Conforme legal',ob:true},
-  {tema:'Pintura — Colorimetria e Técnicas',cat:'tec',pub:['cp'],ofi:['colisao'],mes:4,horas:8,modal:'Externa (fornecedor tinta)',period:'—',ob:false},
-  {tema:'Combate a Incêndios e Uso de Extintores',cat:'seg',pub:['todos'],ofi:['cacem','lisboa','colisao'],mes:5,horas:3,modal:'Externa',period:'Anual',ob:true},
-  {tema:'Sistemas de Travagem e Suspensão',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:5,horas:6,modal:'Bosch',period:'—',ob:false},
-  {tema:'Gestão de Stock e Encomendas',cat:'gest',pub:['pec'],ofi:['cacem','lisboa','colisao'],mes:5,horas:4,modal:'Interna',period:'—',ob:false},
-  {tema:'Segurança em Veículos Elétricos/Híbridos (alta tensão)',cat:'legal',pub:['mec'],ofi:['cacem','lisboa'],mes:6,horas:8,modal:'Externa',period:'Reciclagem',ob:true},
-  {tema:'Orçamentação e Peritagem (seguradoras e frotas)',cat:'com',pub:['rec'],ofi:['cacem','lisboa','colisao'],mes:6,horas:6,modal:'Externa',period:'—',ob:false},
-  {tema:'Sistema de Qualidade e Auditoria SQA Bosch Car Service',cat:'gest',pub:['coord','qual'],ofi:['cacem','lisboa','colisao'],mes:7,horas:6,modal:'Bosch',period:'Anual',ob:true},
-  {tema:'Primeiros Socorros',cat:'seg',pub:['coord','rec','qual'],ofi:['cacem','lisboa','colisao'],mes:9,horas:6,modal:'Externa',period:'Bienal',ob:false},
-  {tema:'Sistemas ADAS — Calibração',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:9,horas:8,modal:'Bosch',period:'Anual',ob:false},
-  {tema:'Vendas e Fecho de Serviço',cat:'com',pub:['rec'],ofi:['cacem','lisboa','colisao'],mes:9,horas:4,modal:'Externa',period:'—',ob:false},
-  {tema:'Chapa — Reparação de Carroçaria e Soldadura',cat:'tec',pub:['cp'],ofi:['colisao'],mes:10,horas:8,modal:'Externa',period:'—',ob:false},
-  {tema:'Movimentação de Cargas e Ergonomia',cat:'seg',pub:['mec','cp'],ofi:['cacem','lisboa','colisao'],mes:10,horas:2,modal:'Interna',period:'Anual',ob:false},
-  {tema:'Tecnologia de Injeção (Diesel e Gasolina)',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:11,horas:6,modal:'Bosch',period:'—',ob:false},
-  {tema:'RGPD / Proteção de Dados',cat:'gest',pub:['todos'],ofi:['cacem','lisboa','colisao'],mes:11,horas:2,modal:'Online',period:'Anual',ob:true}
-];
+var EVENTOS=[];
+try{ var s=localStorage.getItem('intranet_formacaoEventos'); if(s) EVENTOS=JSON.parse(s)||[]; }catch(e){}
 
-var filtro={funcao:'todos_all',oficina:'todas',categoria:'todas'};
+var hoje=new Date();
+var view={ano:hoje.getFullYear(), mes:hoje.getMonth()}; // mes 0-11
+var modalDate=null;
 
-function pubMatch(item){
-  if(filtro.funcao==='todos_all') return true;
-  return item.pub.indexOf(filtro.funcao)>=0 || item.pub.indexOf('todos')>=0;
+function pad(n){return (n<10?'0':'')+n;}
+function dkey(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d);}
+function save(){
+  try{ localStorage.setItem('intranet_formacaoEventos', JSON.stringify(EVENTOS)); }catch(e){}
+  if(window.parent && window.parent!==window){ window.parent.postMessage({type:'formacaoEventosUpdate',payload:{eventos:EVENTOS}},'*'); }
 }
-function ofiMatch(item){ if(filtro.oficina==='todas') return true; return item.ofi.indexOf(filtro.oficina)>=0; }
-function catMatch(item){ if(filtro.categoria==='todas') return true; return item.cat===filtro.categoria; }
-function filtrados(){ return PLANO.filter(function(i){ return pubMatch(i)&&ofiMatch(i)&&catMatch(i); }); }
 
-function pubLabels(arr){ return arr.map(function(p){return FUNCOES[p]||p;}).join(', '); }
-function ofiLabels(arr){ if(arr.length===3) return 'Todas'; return arr.map(function(o){return OFICINAS[o]||o;}).join(', '); }
+function renderDows(){ document.getElementById('dows').innerHTML=DOW.map(function(d){return '<div class="dow">'+d+'</div>';}).join(''); }
 
-function chip(label,active,onclick){ return '<span class="chip'+(active?' active':'')+'" onclick="'+onclick+'">'+label+'</span>'; }
-
-function renderFilters(){
-  var f='';
-  f+=chip('Todas',filtro.funcao==='todos_all','setF(\'funcao\',\'todos_all\')');
-  Object.keys(FUNCOES).forEach(function(k){ if(k==='todos')return; f+=chip(FUNCOES[k],filtro.funcao===k,'setF(\'funcao\',\''+k+'\')'); });
-  document.getElementById('fFuncao').innerHTML=f;
-  var o=chip('Todas',filtro.oficina==='todas','setF(\'oficina\',\'todas\')');
-  Object.keys(OFICINAS).forEach(function(k){ o+=chip(OFICINAS[k],filtro.oficina===k,'setF(\'oficina\',\''+k+'\')'); });
-  document.getElementById('fOficina').innerHTML=o;
-  var c=chip('Todas',filtro.categoria==='todas','setF(\'categoria\',\'todas\')');
-  Object.keys(CATS).forEach(function(k){ c+=chip(CATS[k].label,filtro.categoria===k,'setF(\'categoria\',\''+k+'\')'); });
-  document.getElementById('fCategoria').innerHTML=c;
-}
-function renderLegend(){
-  var l=''; Object.keys(CATS).forEach(function(k){ l+='<span><span class="legdot" style="background:'+CATS[k].cor+';"></span>'+CATS[k].label+'</span>'; });
-  l+='<span><span class="legdot" style="background:#fee2e2;border:1px solid #fca5a5;"></span>Obrigatória</span>';
-  document.getElementById('legend').innerHTML=l;
-}
-function renderSummary(){
-  var f=filtrados();
-  var horas=f.reduce(function(a,b){return a+b.horas;},0);
-  var ob=f.filter(function(i){return i.ob;}).length;
-  var s='';
-  s+='<div class="sbox"><div class="n">'+f.length+'</div><div class="l">Ações de formação</div></div>';
-  s+='<div class="sbox"><div class="n">'+ob+'</div><div class="l">Obrigatórias</div></div>';
-  s+='<div class="sbox"><div class="n">'+horas+'h</div><div class="l">Carga horária</div></div>';
-  document.getElementById('summary').innerHTML=s;
-}
 function renderCalendar(){
-  var f=filtrados(); var html='';
-  for(var m=1;m<=12;m++){
-    var items=f.filter(function(i){return i.mes===m;});
-    html+='<div class="month"><h3>'+MES[m-1]+' <span class="cnt">'+(items.length||'')+'</span></h3>';
-    if(!items.length){ html+='<div class="empty">—</div>'; }
-    items.forEach(function(i){
-      html+='<div class="tr" style="border-left-color:'+CATS[i.cat].cor+';">'+
-        '<div class="t">'+i.tema+'</div>'+
-        '<div class="m">'+pubLabels(i.pub)+' · '+ofiLabels(i.ofi)+' · '+i.horas+'h</div>'+
-        '<div class="tags">'+(i.ob?'<span class="tag ob">Obrigatória</span>':'')+'<span class="tag">'+i.modal+'</span></div>'+
-      '</div>';
+  document.getElementById('mlabel').textContent=MES[view.mes]+' '+view.ano;
+  var first=new Date(view.ano,view.mes,1);
+  var startDow=(first.getDay()+6)%7; // segunda=0
+  var days=new Date(view.ano,view.mes+1,0).getDate();
+  var html='';
+  for(var i=0;i<startDow;i++) html+='<div class="cell empty"></div>';
+  for(var d=1;d<=days;d++){
+    var key=dkey(view.ano,view.mes,d);
+    var evs=EVENTOS.filter(function(e){return e.date===key;});
+    var dow=(new Date(view.ano,view.mes,d).getDay()+6)%7;
+    var isToday=(view.ano===hoje.getFullYear()&&view.mes===hoje.getMonth()&&d===hoje.getDate());
+    var cls='cell'+(isToday?' is-today':'')+(dow>=5?' weekend':'');
+    html+='<div class="'+cls+'" onclick="openDay('+d+')"><div class="daynum">'+d+'</div>';
+    evs.slice(0,3).forEach(function(e){
+      var n=(e.colaboradores?e.colaboradores.length:0);
+      html+='<div class="ev '+(e.estado==='realizada'?'real':'plan')+'" title="'+esc(e.titulo)+' · '+(e.horas||0)+'h · '+n+' colab.">'+esc(e.titulo)+' ('+(e.horas||0)+'h)</div>';
     });
+    if(evs.length>3) html+='<div class="more">+'+(evs.length-3)+' mais</div>';
     html+='</div>';
   }
   document.getElementById('calendar').innerHTML=html;
 }
-function renderTable(){
-  var f=filtrados().slice().sort(function(a,b){return a.mes-b.mes;});
-  var h='<table><thead><tr><th>Mês</th><th>Formação</th><th>Categoria</th><th>Público-alvo</th><th>Oficinas</th><th class="c">Horas</th><th>Modalidade</th><th>Periodicidade</th><th class="c">Obrig.</th></tr></thead><tbody>';
-  f.forEach(function(i){
-    h+='<tr><td>'+MES[i.mes-1]+'</td><td><b>'+i.tema+'</b></td>'+
-      '<td><span class="legdot" style="background:'+CATS[i.cat].cor+';"></span>'+CATS[i.cat].label+'</td>'+
-      '<td>'+pubLabels(i.pub)+'</td><td>'+ofiLabels(i.ofi)+'</td><td class="c">'+i.horas+'</td>'+
-      '<td>'+i.modal+'</td><td>'+i.period+'</td><td class="c">'+(i.ob?'✔':'')+'</td></tr>';
-  });
-  h+='</tbody></table>';
-  if(!f.length) h='<div class="empty" style="padding:20px;">Sem formações para este filtro.</div>';
-  document.getElementById('tableWrap').innerHTML=h;
-}
-function renderAll(){ renderSummary(); renderCalendar(); renderTable(); }
-window.setF=function(tipo,val){ filtro[tipo]=val; renderFilters(); renderAll(); };
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-renderFilters(); renderLegend(); renderAll();
+function moveMonth(delta){ view.mes+=delta; if(view.mes<0){view.mes=11;view.ano--;} if(view.mes>11){view.mes=0;view.ano++;} renderCalendar(); renderResumo(); }
+function goToday(){ view.ano=hoje.getFullYear(); view.mes=hoje.getMonth(); renderCalendar(); renderResumo(); }
+
+// ----- modal -----
+function openDay(d){
+  modalDate=dkey(view.ano,view.mes,d);
+  document.getElementById('modalDate').textContent=d+' de '+MES[view.mes]+' de '+view.ano;
+  renderColabBox([]);
+  resetForm();
+  renderEvList();
+  document.getElementById('ov').classList.add('open');
+}
+function closeModal(){ document.getElementById('ov').classList.remove('open'); }
+document.getElementById('ov').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+function renderEvList(){
+  var evs=EVENTOS.filter(function(e){return e.date===modalDate;});
+  var el=document.getElementById('evlist');
+  if(!evs.length){ el.innerHTML='<div style="font-size:12.5px;color:var(--muted);">Sem formações marcadas neste dia.</div>'; return; }
+  el.innerHTML=evs.map(function(e){
+    var col=(e.colaboradores||[]).join(', ');
+    return '<div class="evrow"><div class="info"><b>'+esc(e.titulo)+'</b> · '+(e.horas||0)+'h '+
+      '<span class="badge" style="background:'+(e.estado==='realizada'?'#0d904f':'#2563eb')+'">'+(e.estado==='realizada'?'Realizada':'Planeada')+'</span>'+
+      (e.oficina?' · '+esc(e.oficina):'')+(e.formador?' · '+esc(e.formador):'')+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:3px;">'+(col?esc(col):'<i>sem colaboradores</i>')+(e.notas?(' — '+esc(e.notas)):'')+'</div></div>'+
+      '<div class="acts"><button onclick="editEvento(\''+e.id+'\')">Editar</button><button class="del" onclick="delEvento(\''+e.id+'\')">Apagar</button></div></div>';
+  }).join('');
+}
+
+function renderColabBox(selected){
+  var q=(document.getElementById('fSearch').value||'').toLowerCase();
+  var box=document.getElementById('colabBox');
+  box.innerHTML=COLABS.map(function(n){
+    var hidden = q && n.toLowerCase().indexOf(q)<0;
+    var chk = selected.indexOf(n)>=0?' checked':'';
+    return '<label style="'+(hidden?'display:none;':'')+'"><input type="checkbox" value="'+esc(n)+'"'+chk+'> '+esc(n)+'</label>';
+  }).join('');
+}
+function filterColabs(){
+  var q=(document.getElementById('fSearch').value||'').toLowerCase();
+  var labels=document.getElementById('colabBox').querySelectorAll('label');
+  labels.forEach(function(l){ var t=l.textContent.toLowerCase(); l.style.display=(q&&t.indexOf(q)<0)?'none':'flex'; });
+}
+function selectedColabs(){
+  var out=[];
+  document.getElementById('colabBox').querySelectorAll('input:checked').forEach(function(c){ out.push(c.value); });
+  var outros=(document.getElementById('fOutros').value||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  return out.concat(outros);
+}
+function resetForm(){
+  document.getElementById('editId').value='';
+  document.getElementById('formTitle').textContent='➕ Nova formação';
+  document.getElementById('fTitulo').value='';
+  document.getElementById('fHoras').value='';
+  document.getElementById('fOficina').value='';
+  document.getElementById('fFormador').value='';
+  document.getElementById('fOutros').value='';
+  document.getElementById('fNotas').value='';
+  document.getElementById('fSearch').value='';
+  document.querySelector('input[name=estado][value=planeada]').checked=true;
+  renderColabBox([]);
+}
+function editEvento(id){
+  var e=EVENTOS.filter(function(x){return x.id===id;})[0]; if(!e) return;
+  document.getElementById('editId').value=e.id;
+  document.getElementById('formTitle').textContent='✏️ Editar formação';
+  document.getElementById('fTitulo').value=e.titulo||'';
+  document.getElementById('fHoras').value=e.horas||'';
+  document.getElementById('fOficina').value=e.oficina||'';
+  document.getElementById('fFormador').value=e.formador||'';
+  document.getElementById('fNotas').value=e.notas||'';
+  document.getElementById('fOutros').value='';
+  document.getElementById('fSearch').value='';
+  document.querySelector('input[name=estado][value='+(e.estado==='realizada'?'realizada':'planeada')+']').checked=true;
+  // separa colaboradores conhecidos dos "outros"
+  var known=[], extra=[];
+  (e.colaboradores||[]).forEach(function(n){ if(COLABS.indexOf(n)>=0) known.push(n); else extra.push(n); });
+  renderColabBox(known);
+  if(extra.length) document.getElementById('fOutros').value=extra.join(', ');
+  document.querySelector('.modal').scrollIntoView({block:'start'});
+}
+function delEvento(id){
+  if(!confirm('Apagar esta formação?')) return;
+  EVENTOS=EVENTOS.filter(function(x){return x.id!==id;});
+  save(); renderEvList(); renderCalendar(); renderResumo();
+}
+function saveEvento(){
+  var titulo=document.getElementById('fTitulo').value.trim();
+  if(!titulo){ alert('Indica o título da formação.'); return; }
+  var horas=parseFloat(document.getElementById('fHoras').value)||0;
+  var estado=document.querySelector('input[name=estado]:checked').value;
+  var colaboradores=selectedColabs();
+  var obj={
+    id:document.getElementById('editId').value||('f'+Date.now()+Math.floor(Math.random()*1000)),
+    date:modalDate, titulo:titulo, horas:horas, estado:estado,
+    oficina:document.getElementById('fOficina').value, formador:document.getElementById('fFormador').value.trim(),
+    colaboradores:colaboradores, notas:document.getElementById('fNotas').value.trim()
+  };
+  var idx=-1; for(var i=0;i<EVENTOS.length;i++){ if(EVENTOS[i].id===obj.id){idx=i;break;} }
+  if(idx>=0) EVENTOS[idx]=obj; else EVENTOS.push(obj);
+  save(); resetForm(); renderEvList(); renderCalendar(); renderResumo();
+}
+
+// ----- resumo por colaborador (ano em vista) -----
+function renderResumo(){
+  var ano=view.ano;
+  document.getElementById('sumYearLbl').textContent='— ano '+ano;
+  var stats={}; COLABS.forEach(function(n){ stats[n]={plan:0,real:0,acoes:0}; });
+  var totPlan=0,totReal=0,totAc=0;
+  EVENTOS.forEach(function(e){
+    if(String(e.date).slice(0,4)!==String(ano)) return;
+    (e.colaboradores||[]).forEach(function(n){
+      if(!stats[n]) stats[n]={plan:0,real:0,acoes:0};
+      stats[n].acoes++;
+      if(e.estado==='realizada') stats[n].real+=(e.horas||0); else stats[n].plan+=(e.horas||0);
+    });
+    totAc++;
+    if(e.estado==='realizada') totReal+=(e.horas||0); else totPlan+=(e.horas||0);
+  });
+  // totais
+  var st='';
+  st+='<div class="sbox"><div class="n">'+totAc+'</div><div class="l">Formações '+ano+'</div></div>';
+  st+='<div class="sbox"><div class="n">'+totPlan+'h</div><div class="l">Horas planeadas</div></div>';
+  st+='<div class="sbox"><div class="n">'+totReal+'h</div><div class="l">Horas realizadas</div></div>';
+  st+='<div class="sbox"><div class="n">'+(totPlan+totReal)+'h</div><div class="l">Total horas</div></div>';
+  document.getElementById('sumTotais').innerHTML=st;
+  // tabela
+  var soCom=document.getElementById('soComForm').checked;
+  var nomes=Object.keys(stats).sort(function(a,b){ return (stats[b].plan+stats[b].real)-(stats[a].plan+stats[a].real) || a.localeCompare(b); });
+  var rows='';
+  nomes.forEach(function(n){
+    var s=stats[n]; var tot=s.plan+s.real;
+    if(soCom && tot===0 && s.acoes===0) return;
+    rows+='<tr><td>'+esc(n)+'</td><td class="c">'+s.acoes+'</td><td class="c">'+s.plan+'h</td><td class="c" style="color:#0d904f;font-weight:700;">'+s.real+'h</td><td class="c" style="font-weight:700;">'+tot+'h</td></tr>';
+  });
+  if(!rows) rows='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">Sem formações registadas em '+ano+'.</td></tr>';
+  document.getElementById('resumoWrap').innerHTML='<table><thead><tr><th>Colaborador</th><th class="c">Nº formações</th><th class="c">Planeadas</th><th class="c">Realizadas</th><th class="c">Total</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+renderDows(); renderCalendar(); renderResumo();
 </script>
 </body>
 </html>
