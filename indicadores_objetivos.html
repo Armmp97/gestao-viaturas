@@ -441,7 +441,7 @@ body {
       id: 'assessoria',
       icon: '🤝',
       title: 'Assessoria de Vendas',
-      desc: 'Desempenho por rececionista — orçamentos, envio por email, taxa de aprovação, OS, regra dos nomes e conversão de diagnóstico, por mês e acumulado do ano.'
+      desc: 'Desempenho por rececionista — orçamentos, envio por email, taxa de aprovação, OS, regra dos nomes e % de OS enviadas por email, por mês e acumulado do ano.'
     }
   ];
 
@@ -2303,7 +2303,7 @@ body {
     var data=ASSESSORIA_DATA||{}; var years=Object.keys(data).sort();
     var html='<button class="btn-back" onclick="navigate()">← Voltar</button>';
     html+='<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">🤝 Assessoria de Vendas</h2>';
-    html+='<p style="font-size:.9rem;color:var(--text-body);margin-bottom:18px;">Desempenho por rececionista — orçamentos, % enviados por email, taxa de aprovação, OS, regra dos 3 nomes e conversão de diagnóstico.</p>';
+    html+='<p style="font-size:.9rem;color:var(--text-body);margin-bottom:18px;">Desempenho por rececionista — orçamentos, % enviados por email, taxa de aprovação, OS, regra dos 3 nomes e % de OS enviadas por email.</p>';
     if(years.length===0){ html+='<div class="comp-section" style="text-align:center;padding:40px 20px;color:var(--text-body);"><div style="font-size:32px;margin-bottom:10px;">🤝</div><div style="font-weight:700;color:var(--navy);margin-bottom:6px;">Sem dados</div><div style="font-size:13px;">Publica a partir de <i>Gerar Relatórios → Verificação de Orçamentos</i> e <i>Analisador de OS</i>.</div></div>'; document.getElementById('content').innerHTML=html; renderBreadcrumb(); return; }
     if(!state.avYear||!data[state.avYear]) state.avYear=years[years.length-1];
     var yObj=data[state.avYear];
@@ -2320,9 +2320,9 @@ body {
     // aggregate
     function acc(){
       var a={};
-      function add(mObj){ if(!mObj)return; Object.keys(mObj).forEach(function(rec){ var s=mObj[rec]; var t=a[rec]=a[rec]||{orcTotal:0,orcEmail:0,orcEmailKnown:false,orcAprov:0,osTotal:0,osPart:0,osFalha:0,osDiag:0,osDiagConv:0};
+      function add(mObj){ if(!mObj)return; Object.keys(mObj).forEach(function(rec){ var s=mObj[rec]; var t=a[rec]=a[rec]||{orcTotal:0,orcEmail:0,orcEmailKnown:false,orcAprov:0,osTotal:0,osPart:0,osFalha:0,osDiag:0,osDiagConv:0,osEmail:0,osEmailKnown:false};
         t.orcTotal+=s.orcTotal||0; if(s.orcEmail!=null){t.orcEmail+=s.orcEmail;t.orcEmailKnown=true;} t.orcAprov+=s.orcAprov||0;
-        t.osTotal+=s.osTotal||0; t.osPart+=s.osPart||0; t.osFalha+=s.osFalha||0; t.osDiag+=s.osDiag||0; t.osDiagConv+=s.osDiagConv||0; }); }
+        t.osTotal+=s.osTotal||0; t.osPart+=s.osPart||0; t.osFalha+=s.osFalha||0; t.osDiag+=s.osDiag||0; t.osDiagConv+=s.osDiagConv||0; if(s.osEmail!=null && s.osEmailKnown){t.osEmail+=s.osEmail;t.osEmailKnown=true;} }); }
       if(state.avMes==='ano') months.forEach(function(m){ add(yObj[m]); }); else add(yObj[state.avMes]);
       return a;
     }
@@ -2331,10 +2331,10 @@ body {
     function p(n,d){ return d?Math.round(n/d*100)+'%':'—'; }
     var scopeLabel = state.avMes==='ano' ? ('Ano '+state.avYear) : (MONTHS[state.avMes-1]+' '+state.avYear);
     var h='<div class="comp-section"><div class="comp-title">🤝 Scorecard por rececionista — '+scopeLabel+'</div>';
-    h+='<div class="comp-subtitle">Cada linha é um rececionista. As 3 colunas de <b>Orçamentos</b> vêm da <i>Verificação de Orçamentos</i>; as 3 de <b>Ordens de Serviço (OS)</b> vêm do <i>Analisador de OS</i> (OS = nº de ordens de serviço que o rececionista registou). Novos rececionistas aparecem automaticamente.</div>';
+    h+='<div class="comp-subtitle">Cada linha é um rececionista. As 3 colunas de <b>Orçamentos</b> vêm da <i>Verificação de Orçamentos</i>; as 3 de <b>Ordens de Serviço (OS)</b> vêm do <i>Analisador de OS</i> (OS = nº de ordens de serviço que o rececionista registou). A coluna <b>% enviados por email</b> das OS só tem valores se o ficheiro <i>Emails enviados</i> do Officegest tiver sido carregado no Analisador de OS; caso contrário aparece "—". Novos rececionistas aparecem automaticamente.</div>';
     h+='<div class="comp-table-wrap"><table class="comp-table"><thead>'+
       '<tr><th rowspan="2" style="vertical-align:bottom;background:#1e3a5f;color:#fff;">Rececionista</th><th colspan="3" style="text-align:center;background:#3730a3;color:#fff;">Orçamentos</th><th colspan="3" style="text-align:center;background:#065f46;color:#fff;">Ordens de Serviço (OS)</th></tr>'+
-      '<tr><th style="background:#e0e7ff;color:#1e293b;">Nº</th><th style="background:#e0e7ff;color:#1e293b;">% enviados por email</th><th style="background:#e0e7ff;color:#1e293b;">% aprovados</th><th style="background:#d1fae5;color:#1e293b;">Nº</th><th style="background:#d1fae5;color:#1e293b;">% regra 3 nomes</th><th style="background:#d1fae5;color:#1e293b;">% conversão diagnóstico</th></tr>'+
+      '<tr><th style="background:#e0e7ff;color:#1e293b;">Nº</th><th style="background:#e0e7ff;color:#1e293b;">% enviados por email</th><th style="background:#e0e7ff;color:#1e293b;">% aprovados</th><th style="background:#d1fae5;color:#1e293b;">Nº</th><th style="background:#d1fae5;color:#1e293b;">% regra 3 nomes</th><th style="background:#d1fae5;color:#1e293b;">% enviados por email</th></tr>'+
       '</thead><tbody>';
     recs.forEach(function(r){ var t=A[r];
       h+='<tr><td style="text-align:left;font-weight:600;">'+r+'</td>'+
@@ -2343,7 +2343,7 @@ body {
         '<td>'+p(t.orcAprov,t.orcTotal)+'</td>'+
         '<td>'+t.osTotal+'</td>'+
         '<td>'+p(t.osPart-t.osFalha,t.osPart)+'</td>'+
-        '<td>'+p(t.osDiagConv,t.osDiag)+'</td></tr>';
+        '<td>'+(t.osEmailKnown?p(t.osEmail,t.osTotal):'—')+'</td></tr>';
     });
     h+='</tbody></table></div></div>';
     document.getElementById('content').innerHTML=html+h;

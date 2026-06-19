@@ -188,7 +188,7 @@ function analisar(){
     if(o.modelo)R.modelo[o.modelo]=(R.modelo[o.modelo]||0)+1;
     if(o.mat)matr[o.mat]=(matr[o.mat]||0)+1;
     if(o.ncli)R.cliCount[o.ncli]=(R.cliCount[o.ncli]||0)+1;
-    var oo=R.oper[o.oper]=R.oper[o.oper]||{total:0,part:0,falha:0,diag:0,diagConv:0,lead:[],correc:0,rework:0};
+    var oo=R.oper[o.oper]=R.oper[o.oper]||{total:0,part:0,falha:0,diag:0,diagConv:0,lead:[],correc:0,rework:0,email:0};
     oo.total++;
     // correções
     if(stripcode(o.cli)!==stripcode(o.prop)){R.correcoes.push(o);oo.correc++;}
@@ -256,7 +256,7 @@ function analisar(){
   if(EMAIL){
     R.cross_email={total:EMAIL.list.length,byAutor:{},naOS:[]};
     EMAIL.list.forEach(function(e){R.cross_email.byAutor[e.autor]=(R.cross_email.byAutor[e.autor]||0)+1;});
-    OS.forEach(function(o){var e=EMAIL.byNum[nmat(o.num)];if(e)R.cross_email.naOS.push({o:o,autor:e.autor});});
+    OS.forEach(function(o){var e=EMAIL.byNum[nmat(o.num)];if(e){R.cross_email.naOS.push({o:o,autor:e.autor});var oo=R.oper[o.oper];if(oo)oo.email=(oo.email||0)+1;}});
   }
   // ---- SCORE DE RISCO por OS ----
   R.risco=[];
@@ -276,7 +276,7 @@ function analisar(){
   R.assessMes=(function(){var mc={};OS.forEach(function(o){if(o.date)mc[o.date.getMonth()+1]=(mc[o.date.getMonth()+1]||0)+1;});var b=null,c=-1;Object.keys(mc).forEach(function(k){if(mc[k]>c){c=mc[k];b=k;}});return b?+b:(new Date().getMonth()+1);})();
   R.assessAno=(function(){var ac={};OS.forEach(function(o){if(o.date)ac[o.date.getFullYear()]=(ac[o.date.getFullYear()]||0)+1;});var b=null,c=-1;Object.keys(ac).forEach(function(k){if(ac[k]>c){c=ac[k];b=k;}});return b?+b:(new Date().getFullYear());})();
   R.assess={};
-  Object.keys(R.oper).forEach(function(op){var rc=stripcode(op)||'(sem rececionista)';if(avExcluidoAV(rc))return;var d=R.oper[op];R.assess[rc]={osTotal:d.total,osPart:d.part,osFalha:d.falha,osDiag:d.diag,osDiagConv:d.diagConv};});
+  Object.keys(R.oper).forEach(function(op){var rc=stripcode(op)||'(sem rececionista)';if(avExcluidoAV(rc))return;var d=R.oper[op];R.assess[rc]={osTotal:d.total,osPart:d.part,osFalha:d.falha,osDiag:d.diag,osDiagConv:d.diagConv,osEmail:(d.email||0),osEmailKnown:!!EMAIL};});
   return R;
 }
 function tipoServ(p){var d=deaccent(p);if(d.indexOf('pintura')>-1)return 'pintura';if(d.indexOf('chapa')>-1)return 'chapa';if(d.indexOf('diagn')>-1)return 'diagnostico';if(d.indexOf('mecanic')>-1||d.indexOf('revis')>-1||d.indexOf('travo')>-1||d.indexOf('embraiag')>-1||d.indexOf('bateria')>-1||d.indexOf('oleo')>-1||d.indexOf('alinha')>-1)return 'mecanica';return 'outro';}
@@ -418,13 +418,16 @@ function render(R){
   var moo=''; for(var mi=1;mi<=12;mi++)moo+='<option value="'+mi+'"'+(mi===R.assessMes?' selected':'')+'>'+MESN[mi-1]+'</option>';
   var aoo=''; for(var ai=2025;ai<=2028;ai++)aoo+='<option value="'+ai+'"'+(ai===R.assessAno?' selected':'')+'>'+ai+'</option>';
   var ssel='padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-family:inherit;';
-  pa.innerHTML='<div class="sec-h">📤 Publicar para Indicadores → Assessoria de Vendas</div><div class="sec-d">Envia, por rececionista, o nº de OS, cumprimento da regra dos nomes e conversão de diagnóstico para o scorecard mensal.</div>'+
+  var paTemEmail=Object.keys(R.assess).some(function(r){return R.assess[r].osEmailKnown;});
+  pa.innerHTML='<div class="sec-h">📤 Publicar para Indicadores → Assessoria de Vendas</div><div class="sec-d">Envia, por rececionista, o nº de OS, a regra dos nomes e a % de OS enviadas por email para o scorecard mensal.</div>'+
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;"><label style="font-size:12px;color:#64748b;font-weight:600;">Período:</label><select id="paMes" style="'+ssel+'">'+moo+'</select><select id="paAno" style="'+ssel+'">'+aoo+'</select></div>'+
     '<div id="paStatus" style="font-size:12px;min-height:15px;margin-bottom:8px;"></div>'+
     '<button id="paBtn" style="width:100%;padding:12px;background:#1d4ed8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Publicar para Assessoria de Vendas</button>';
   el.appendChild(pa);
+  if(!paTemEmail) document.getElementById('paStatus').innerHTML='<span style="color:#b45309;font-weight:600;">⚠ Sem ficheiro "Emails enviados" carregado — a coluna "% enviados por email" das OS ficará vazia ("—") para este período. Carrega o ficheiro de emails do Officegest e volta a analisar para a preencher.</span>';
   document.getElementById('paBtn').addEventListener('click',function(){
     var ano=+document.getElementById('paAno').value, mes=+document.getElementById('paMes').value;
+    if(!paTemEmail && !window.confirm('Não carregaste o ficheiro "Emails enviados". A coluna "% enviados por email" das OS vai ficar vazia neste período. Publicar mesmo assim?')) return;
     if(window.parent&&window.parent!==window){
       window.parent.postMessage({type:'assessoriaUpdate',payload:{ano:ano,mes:mes,fonte:'os',rececionistas:R.assess}},'*');
       document.getElementById('paStatus').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Assessoria de Vendas...</span>';
