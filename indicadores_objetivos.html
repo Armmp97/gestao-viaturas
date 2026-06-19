@@ -448,6 +448,12 @@ body {
       icon: '⭐',
       title: 'Google Reviews',
       desc: 'Avaliações Google por oficina — nº de críticas, média de estrelas e negativas, por oficina, por mês e visão global.'
+    },
+    {
+      id: 'questionario',
+      icon: '📝',
+      title: 'Questionário de Satisfação',
+      desc: 'Respostas ao questionário — satisfação média, NPS, % que voltaria e perguntas Sim/Não, por oficina, por mês e visão global.'
     }
   ];
 
@@ -460,6 +466,9 @@ body {
   // Dados de Google Reviews — publicados pela ferramenta Google Reviews (parent → localStorage, sync SharePoint)
   var GOOGLEREVIEWS_DATA = {};
   try { var _gr = localStorage.getItem('intranet_googleReviews'); if (_gr) GOOGLEREVIEWS_DATA = JSON.parse(_gr) || {}; } catch(e) {}
+  // Dados de Questionário de Satisfação — publicados pela ferramenta Questionário de Satisfação
+  var QUESTIONARIO_DATA = {};
+  try { var _qs = localStorage.getItem('intranet_questionario'); if (_qs) QUESTIONARIO_DATA = JSON.parse(_qs) || {}; } catch(e) {}
 
   // ══════ DADOS REAIS KPIs 2025 ══════
   var KPI_DATA = {
@@ -957,6 +966,7 @@ body {
     if (state.category === 'garantias') return renderGarantias();
     if (state.category === 'assessoria') return renderAssessoria();
     if (state.category === 'googlereviews') return renderGoogleReviews();
+    if (state.category === 'questionario') return renderQuestionario();
     if (!state.year) return renderYears();
 
     // Ticket Médio has special Geral/Mensal subview routing
@@ -2443,6 +2453,98 @@ body {
       h+='<div class="comp-title" style="margin-top:18px;color:#dc2626;">⚠ Negativas (≤3★) — '+scopeLabel+'</div>';
       h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#7f1d1d;color:#fff;">Oficina</th><th style="text-align:left;background:#7f1d1d;color:#fff;">Autor</th><th style="background:#7f1d1d;color:#fff;">Data</th><th style="background:#7f1d1d;color:#fff;">Estrelas</th></tr></thead><tbody>';
       tot.negList.forEach(function(x){ h+='<tr><td style="text-align:left;">'+(OF[x.of]||x.of)+'</td><td style="text-align:left;">'+x.n+'</td><td>'+x.d+'</td><td style="color:#dc2626;font-weight:700;">'+x.s+'★</td></tr>'; });
+      h+='</tbody></table></div>';
+    }
+    h+='</div>';
+    document.getElementById('content').innerHTML=html+h;
+    renderBreadcrumb();
+  }
+
+  // ══════ QUESTIONÁRIO DE SATISFAÇÃO ══════
+  var QDIMS=['Qualidade do Serviço','Tempo de Execução','Facilidade de Agendamento','Qualidade dos Produtos','Estrutura da Oficina','Atendimento Geral','Facilidade de Comunicação','Relação Qualidade/Preço'];
+  var QYN=['Rececionista prestável','Previsão de custos dada','Previsão de entrega dada','Informado do check-up','Fatura explicada','Problema resolvido','Bem entregue/seguro','Entregue limpa'];
+  window.qSetYear=function(y){ state.qYear=String(y); state.qMes='ano'; renderQuestionario(); };
+  window.qSetOf=function(o){ state.qOficina=o; state.qMes='ano'; renderQuestionario(); };
+  window.qSetMes=function(m){ state.qMes=m; renderQuestionario(); };
+
+  function renderQuestionario(){
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão'};
+    var data=QUESTIONARIO_DATA||{};
+    var yearsSet={}; Object.keys(data).forEach(function(of){ Object.keys(data[of]||{}).forEach(function(y){ yearsSet[y]=1; }); });
+    var years=Object.keys(yearsSet).sort();
+    var html='<button class="btn-back" onclick="navigate()">← Voltar</button>';
+    html+='<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">📝 Questionário de Satisfação</h2>';
+    html+='<p style="font-size:.9rem;color:var(--text-body);margin-bottom:18px;">Satisfação média (escalas 1–5), NPS, % que voltaria e perguntas Sim/Não. Respostas sem oficina contam apenas no global. Publica a partir de <i>Gerar Relatórios → Questionário de Satisfação</i>.</p>';
+    if(years.length===0){ html+='<div class="comp-section" style="text-align:center;padding:40px 20px;color:var(--text-body);"><div style="font-size:32px;margin-bottom:10px;">📝</div><div style="font-weight:700;color:var(--navy);margin-bottom:6px;">Sem dados</div><div style="font-size:13px;">Carrega o Excel a partir de <i>Gerar Relatórios → Questionário de Satisfação</i>.</div></div>'; document.getElementById('content').innerHTML=html; renderBreadcrumb(); return; }
+    if(!state.qYear||years.indexOf(String(state.qYear))<0) state.qYear=years[years.length-1];
+    if(!state.qOficina) state.qOficina='global';
+    if(state.qMes==null) state.qMes='ano';
+
+    function ofsScope(){ return state.qOficina==='global'?['cacem','lisboa','colisao','_sem']:[state.qOficina]; }
+    function blank(){ return {n:0,scSum:[0,0,0,0,0,0,0,0],scCnt:[0,0,0,0,0,0,0,0],npsSum:0,npsCnt:0,promo:0,detr:0,voltSim:0,voltCnt:0,ynSim:[0,0,0,0,0,0,0,0],ynCnt:[0,0,0,0,0,0,0,0]}; }
+    function addAgg(t,a){ if(!a)return; t.n+=a.n||0; for(var i=0;i<8;i++){ t.scSum[i]+=(a.scSum&&a.scSum[i])||0; t.scCnt[i]+=(a.scCnt&&a.scCnt[i])||0; t.ynSim[i]+=(a.ynSim&&a.ynSim[i])||0; t.ynCnt[i]+=(a.ynCnt&&a.ynCnt[i])||0; } t.npsSum+=a.npsSum||0; t.npsCnt+=a.npsCnt||0; t.promo+=a.promo||0; t.detr+=a.detr||0; t.voltSim+=a.voltSim||0; t.voltCnt+=a.voltCnt||0; }
+    function collect(ofKeys,y,mFilter){ var t=blank(); ofKeys.forEach(function(of){ var yo=(data[of]||{})[y]; if(!yo)return; Object.keys(yo).forEach(function(m){ if(mFilter!=='ano'&&String(m)!==String(mFilter))return; addAgg(t,yo[m]); }); }); return t; }
+    function monthsInYear(y){ var s={}; ofsScope().forEach(function(of){ var yo=(data[of]||{})[y]; if(yo) Object.keys(yo).forEach(function(m){s[m]=1;}); }); return Object.keys(s).map(Number).sort(function(a,b){return a-b;}); }
+    function sat(a){ var s=0,c=0; for(var i=0;i<8;i++){s+=a.scSum[i];c+=a.scCnt[i];} return c?(s/c):null; }
+    function nps(a){ return a.npsCnt?Math.round((a.promo-a.detr)/a.npsCnt*100):null; }
+    function pc(n,d){ return d?Math.round(n/d*100)+'%':'—'; }
+    function satColor(v){ if(v==null)return 'var(--text-body)'; if(v>=4.5)return '#16a34a'; if(v>=3.8)return '#0d904f'; if(v>=3)return '#b45309'; return '#dc2626'; }
+    function npsColor(v){ if(v==null)return 'var(--text-body)'; if(v>=50)return '#16a34a'; if(v>=0)return '#b45309'; return '#dc2626'; }
+    function npsTxt(v){ return v==null?'—':((v>0?'+':'')+v); }
+
+    if(state.qMes!=='ano' && monthsInYear(state.qYear).indexOf(Number(state.qMes))<0) state.qMes='ano';
+
+    // selectors
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
+    years.forEach(function(y){ html+=garBtn(y, String(y)===String(state.qYear), 'qSetYear(\''+y+'\')'); });
+    html+='</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
+    html+=garBtn('Global', state.qOficina==='global', 'qSetOf(\'global\')');
+    Object.keys(OF).forEach(function(k){ html+=garBtn(OF[k], state.qOficina===k, 'qSetOf(\''+k+'\')'); });
+    html+='</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">';
+    html+=garBtn('Ano todo', state.qMes==='ano', 'qSetMes(\'ano\')');
+    monthsInYear(state.qYear).forEach(function(m){ html+=garBtn(MONTHS[m-1], String(state.qMes)===String(m), 'qSetMes(\''+m+'\')'); });
+    html+='</div>';
+
+    var scopeLabel=(state.qOficina==='global'?'Todas as oficinas':OF[state.qOficina])+' · '+(state.qMes==='ano'?('Ano '+state.qYear):(MONTHS[state.qMes-1]+' '+state.qYear));
+    var tot=collect(ofsScope(),state.qYear,state.qMes);
+    var sv=sat(tot), nv=nps(tot);
+
+    var h='<div class="comp-section"><div class="comp-title">📝 '+scopeLabel+'</div>';
+    // headline boxes
+    h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">';
+    h+='<div style="flex:1;min-width:120px;background:#f8fafc;border:1px solid var(--line,#e2e8f0);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:var(--navy);">'+tot.n+'</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Respostas</div></div>';
+    h+='<div style="flex:1;min-width:120px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:'+satColor(sv)+';">'+(sv!=null?sv.toFixed(2):'—')+'<span style="font-size:.9rem;">/5</span></div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Satisfação média</div></div>';
+    h+='<div style="flex:1;min-width:120px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:'+npsColor(nv)+';">'+npsTxt(nv)+'</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">NPS</div></div>';
+    h+='<div style="flex:1;min-width:120px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:#b45309;">'+pc(tot.voltSim,tot.voltCnt)+'</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Voltaria</div></div>';
+    h+='<div style="flex:1;min-width:120px;background:#f8fafc;border:1px solid var(--line,#e2e8f0);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:var(--navy);">'+pc(tot.ynSim[5],tot.ynCnt[5])+'</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Problema resolvido</div></div>';
+    h+='</div>';
+
+    // por oficina
+    h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#1e3a5f;color:#fff;">Oficina</th><th style="background:#1e3a5f;color:#fff;">Respostas</th><th style="background:#1e3a5f;color:#fff;">Satisfação /5</th><th style="background:#1e3a5f;color:#fff;">NPS</th><th style="background:#1e3a5f;color:#fff;">% Voltaria</th></tr></thead><tbody>';
+    Object.keys(OF).forEach(function(k){ var a=collect([k],state.qYear,state.qMes); var s=sat(a); h+='<tr><td style="text-align:left;font-weight:600;">'+OF[k]+'</td><td>'+a.n+'</td><td style="color:'+satColor(s)+';font-weight:700;">'+(s!=null?s.toFixed(2):'—')+'</td><td style="color:'+npsColor(nps(a))+';font-weight:700;">'+npsTxt(nps(a))+'</td><td>'+pc(a.voltSim,a.voltCnt)+'</td></tr>'; });
+    var totAll=collect(['cacem','lisboa','colisao','_sem'],state.qYear,state.qMes);
+    h+='<tr style="font-weight:800;background:#f1f5f9;"><td style="text-align:left;">Total (c/ sem oficina)</td><td>'+totAll.n+'</td><td>'+(sat(totAll)!=null?sat(totAll).toFixed(2):'—')+'</td><td>'+npsTxt(nps(totAll))+'</td><td>'+pc(totAll.voltSim,totAll.voltCnt)+'</td></tr>';
+    h+='</tbody></table></div>';
+
+    // satisfação por dimensão
+    h+='<div class="comp-title" style="margin-top:18px;">⭐ Satisfação por dimensão — '+scopeLabel+'</div>';
+    h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#065f46;color:#fff;">Dimensão</th><th style="background:#065f46;color:#fff;">Média /5</th><th style="background:#065f46;color:#fff;">Respostas</th></tr></thead><tbody>';
+    for(var di=0;di<8;di++){ var dm=tot.scCnt[di]?(tot.scSum[di]/tot.scCnt[di]):null; h+='<tr><td style="text-align:left;">'+QDIMS[di]+'</td><td style="color:'+satColor(dm)+';font-weight:700;">'+(dm!=null?dm.toFixed(2):'—')+'</td><td>'+tot.scCnt[di]+'</td></tr>'; }
+    h+='</tbody></table></div>';
+
+    // perguntas Sim/Não
+    h+='<div class="comp-title" style="margin-top:18px;">✅ Perguntas Sim/Não (% Sim) — '+scopeLabel+'</div>';
+    h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#3730a3;color:#fff;">Pergunta</th><th style="background:#3730a3;color:#fff;">% Sim</th><th style="background:#3730a3;color:#fff;">Respostas</th></tr></thead><tbody>';
+    for(var qi=0;qi<8;qi++){ var p=tot.ynCnt[qi]?Math.round(tot.ynSim[qi]/tot.ynCnt[qi]*100):null; h+='<tr><td style="text-align:left;">'+QYN[qi]+'</td><td style="font-weight:700;color:'+(p==null?'var(--text-body)':(p>=90?'#16a34a':(p>=70?'#b45309':'#dc2626')))+';">'+(p==null?'—':p+'%')+'</td><td>'+tot.ynCnt[qi]+'</td></tr>'; }
+    h+='</tbody></table></div>';
+
+    // por mês
+    var allMonths=[]; for(var mm=1;mm<=12;mm++){ var am=collect(ofsScope(),state.qYear,String(mm)); if(am.n>0) allMonths.push({m:mm,a:am}); }
+    if(allMonths.length){
+      h+='<div class="comp-title" style="margin-top:18px;">📅 Por mês — '+(state.qOficina==='global'?'Todas as oficinas':OF[state.qOficina])+' '+state.qYear+'</div>';
+      h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#7c2d12;color:#fff;">Mês</th><th style="background:#7c2d12;color:#fff;">Respostas</th><th style="background:#7c2d12;color:#fff;">Satisfação /5</th><th style="background:#7c2d12;color:#fff;">NPS</th><th style="background:#7c2d12;color:#fff;">% Voltaria</th></tr></thead><tbody>';
+      allMonths.forEach(function(o){ var s=sat(o.a); h+='<tr'+(String(state.qMes)===String(o.m)?' style="background:#fff7ed;"':'')+'><td style="text-align:left;font-weight:600;">'+MONTHS[o.m-1]+'</td><td>'+o.a.n+'</td><td style="color:'+satColor(s)+';font-weight:700;">'+(s!=null?s.toFixed(2):'—')+'</td><td style="color:'+npsColor(nps(o.a))+';font-weight:700;">'+npsTxt(nps(o.a))+'</td><td>'+pc(o.a.voltSim,o.a.voltCnt)+'</td></tr>'; });
       h+='</tbody></table></div>';
     }
     h+='</div>';

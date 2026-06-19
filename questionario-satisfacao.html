@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionário de Satisfação — DomusCar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--green:#0d904f;--amber:#b45309;--red:#dc2626;}
+  *{box-sizing:border-box;}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
+  h1{font-size:1.5rem;color:var(--navy);margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.9rem;margin:0 0 20px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  .card h2{font-size:1rem;color:var(--navy);margin:0 0 12px;}
+  label{font-size:12px;color:var(--muted);font-weight:600;}
+  button{padding:12px 16px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-primary{background:var(--blue);color:#fff;}
+  .btn-primary:disabled{background:#94a3b8;cursor:not-allowed;}
+  .file-wrap{display:inline-block;}
+  .upload-btn{background:#eef2ff;color:var(--navy);padding:10px 14px;border-radius:8px;cursor:pointer;display:inline-block;font-weight:600;font-size:14px;}
+  input[type=file]{display:none;}
+  .status{font-size:13px;min-height:18px;margin:10px 0 0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;}
+  th{background:var(--navy2);color:#fff;font-weight:600;font-size:12px;}
+  td.l,th.l{text-align:left;}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  .pill{display:inline-block;background:#dbeafe;color:var(--navy);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;}
+  .sat{color:#0d904f;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📝 Questionário de Satisfação</h1>
+  <p class="sub">Carrega o ficheiro Excel exportado das respostas ao questionário automático. A ferramenta lê só os dados necessários (oficina, data, escalas, NPS, Sim/Não) e organiza por oficina e por mês para os Indicadores e Objetivos. Podes carregar sempre o ficheiro completo — cada publicação substitui os dados (não duplica).</p>
+
+  <div class="card">
+    <h2>1. Ficheiro de respostas (.xlsx)</h2>
+    <div class="file-wrap"><label class="upload-btn">📁 Escolher Excel<input type="file" id="fileInput" accept=".xlsx,.xls"></label></div>
+    <span id="fileName" style="font-size:13px;color:var(--muted);margin-left:10px;"></span>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-primary" id="btnPub" onclick="publicar()" disabled>📤 Publicar para Indicadores</button>
+    </div>
+    <div class="status" id="status"></div>
+    <p class="hint">Escalas convertidas: Excelente=5, Bom=4, Médio=3, Mau=2, Muito Mau=1. NPS = % promotores (9–10) − % detratores (0–6). Mês determinado pela <i>Hora de conclusão</i>. Respostas sem oficina preenchida entram apenas no total global.</p>
+  </div>
+
+  <div id="resultado"></div>
+</div>
+
+<script>
+var OF_LABEL={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão'};
+var MESN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var DIMS=['Qualidade do Serviço','Tempo de Execução','Facilidade de Agendamento','Qualidade dos Produtos','Estrutura da Oficina','Atendimento Geral','Facilidade de Comunicação','Relação Qualidade/Preço'];
+var YN=['Rececionista prestável','Previsão de custos dada','Previsão de entrega dada','Informado do check-up','Fatura explicada','Problema resolvido','Bem entregue/seguro','Entregue limpa'];
+var ultimo=null;
+
+function norm(s){ return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+function findCol(headers){ // headers já normalizados; needles é array de arrays
+  var needlesList=Array.prototype.slice.call(arguments,1);
+  for(var i=0;i<headers.length;i++){ var h=headers[i]; var ok=true; for(var k=0;k<needlesList.length;k++){ if(h.indexOf(needlesList[k])<0){ok=false;break;} } if(ok) return i; }
+  return -1;
+}
+function sval(v){ var n=norm(v); if(n.indexOf('muito mau')>=0)return 1; if(n==='mau')return 2; if(n.indexOf('medio')>=0)return 3; if(n.indexOf('bom')>=0)return 4; if(n.indexOf('excelente')>=0)return 5; return null; }
+function ofKey(v){ var n=norm(v); if(n.indexOf('cacem')>=0)return 'cacem'; if(n.indexOf('lisboa')>=0)return 'lisboa'; if(n.indexOf('colisao')>=0)return 'colisao'; return '_sem'; }
+function toDate(v){ if(v instanceof Date && !isNaN(v)) return v; if(typeof v==='number'){ var d=new Date(Date.UTC(1899,11,30)+v*86400000); return isNaN(d)?null:d; } var s=String(v||''); var m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return new Date(+m[3],+m[2]-1,+m[1]); var d2=new Date(s); return isNaN(d2)?null:d2; }
+function newAgg(){ return {n:0,scSum:[0,0,0,0,0,0,0,0],scCnt:[0,0,0,0,0,0,0,0],npsSum:0,npsCnt:0,promo:0,detr:0,voltSim:0,voltCnt:0,ynSim:[0,0,0,0,0,0,0,0],ynCnt:[0,0,0,0,0,0,0,0]}; }
+
+function processar(rows){
+  if(!rows||rows.length<2) return null;
+  var headers=rows[0].map(norm);
+  var ci={
+    of:findCol(headers,'domuscar visitou'),
+    date:findCol(headers,'hora de conclus'),
+    dateIni:findCol(headers,'hora de inicio'),
+    nps:findCol(headers,'recomendar'),
+    volt:findCol(headers,'voltara')
+  };
+  var scaleCols=[
+    findCol(headers,'qualidade do servi'),
+    findCol(headers,'tempo de execu'),
+    findCol(headers,'facilidade de agendamento'),
+    findCol(headers,'qualidade dos produtos'),
+    findCol(headers,'estrutura da oficina'),
+    findCol(headers,'atendimento geral'),
+    findCol(headers,'facilidade de comunica'),
+    findCol(headers,'relacao qualidade')
+  ];
+  var ynCols=[
+    findCol(headers,'rececionista','prest'),
+    findCol(headers,'previsao de custos'),
+    findCol(headers,'previsao de entrega'),
+    findCol(headers,'check'),
+    findCol(headers,'explicado a fatura'),
+    findCol(headers,'problema','resolvido'),
+    findCol(headers,'entregue e seguro'),
+    findCol(headers,'entregue limpa')
+  ];
+  var dateCol = ci.date>=0?ci.date:ci.dateIni;
+  var store={}, total=0, semData=0;
+  for(var r=1;r<rows.length;r++){
+    var row=rows[r]; if(!row) continue;
+    // ignora linhas vazias
+    var any=row.some(function(c){return c!=null && String(c).trim()!=='';}); if(!any) continue;
+    var of=ofKey(ci.of>=0?row[ci.of]:'');
+    var d=dateCol>=0?toDate(row[dateCol]):null;
+    if(!d){ semData++; continue; }
+    var y=String(d.getFullYear()), m=String(d.getMonth()+1);
+    store[of]=store[of]||{}; store[of][y]=store[of][y]||{};
+    var a=store[of][y][m]=store[of][y][m]||newAgg();
+    a.n++; total++;
+    for(var s=0;s<8;s++){ if(scaleCols[s]>=0){ var sv=sval(row[scaleCols[s]]); if(sv){ a.scSum[s]+=sv; a.scCnt[s]++; } } }
+    if(ci.nps>=0){ var nv=row[ci.nps]; if(typeof nv==='number' && nv>=0 && nv<=10){ a.npsCnt++; a.npsSum+=nv; if(nv>=9)a.promo++; else if(nv<=6)a.detr++; } }
+    if(ci.volt>=0){ var vv=row[ci.volt]; if(vv!=null && String(vv).trim()!==''){ a.voltCnt++; if(norm(vv)==='sim')a.voltSim++; } }
+    for(var q=0;q<8;q++){ if(ynCols[q]>=0){ var yv=row[ynCols[q]]; if(yv!=null && String(yv).trim()!==''){ a.ynCnt[q]++; if(norm(yv)==='sim')a.ynSim[q]++; } } }
+  }
+  return {store:store, total:total, semData:semData, colsOk:scaleCols.filter(function(x){return x>=0;}).length, dateOk:dateCol>=0};
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file) return;
+  document.getElementById('fileName').textContent=file.name;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var wb=XLSX.read(ev.target.result, {type:'array', cellDates:true});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+      var res=processar(rows);
+      if(!res || res.total===0){ status('<span style="color:#dc2626;">Não foi possível ler respostas. Confirma que é o Excel do questionário.</span>'); document.getElementById('btnPub').disabled=true; ultimo=null; return; }
+      ultimo=res.store;
+      document.getElementById('btnPub').disabled=false;
+      status('<span style="color:#0d904f;font-weight:600;">✓ '+res.total+' respostas lidas'+(res.semData?(' ('+res.semData+' sem data ignoradas)'):'')+'. Confere abaixo e publica.</span>');
+      render(res.store, res.total);
+    }catch(err){ status('<span style="color:#dc2626;">Erro a ler o ficheiro: '+err.message+'</span>'); }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function status(h){ document.getElementById('status').innerHTML=h; }
+
+// agregação para pré-visualização
+function aggSum(target,a){ target.n+=a.n; for(var i=0;i<8;i++){target.scSum[i]+=a.scSum[i];target.scCnt[i]+=a.scCnt[i];target.ynSim[i]+=a.ynSim[i];target.ynCnt[i]+=a.ynCnt[i];} target.npsSum+=a.npsSum;target.npsCnt+=a.npsCnt;target.promo+=a.promo;target.detr+=a.detr;target.voltSim+=a.voltSim;target.voltCnt+=a.voltCnt; }
+function satOf(a){ var s=0,c=0; for(var i=0;i<8;i++){s+=a.scSum[i];c+=a.scCnt[i];} return c?(s/c):null; }
+function npsOf(a){ return a.npsCnt?Math.round((a.promo-a.detr)/a.npsCnt*100):null; }
+function pct(n,d){ return d?Math.round(n/d*100)+'%':'—'; }
+
+function render(store, total){
+  var of_order=['cacem','lisboa','colisao','_sem'];
+  var h='<div class="card"><h2>2. Pré-visualização <span class="pill">'+total+' respostas</span></h2>';
+  // por oficina (todos os anos)
+  h+='<div style="font-weight:700;color:var(--navy);margin:6px 0;">Por oficina (todos os anos)</div>';
+  h+='<table><thead><tr><th class="l">Oficina</th><th>Respostas</th><th>Satisfação (/5)</th><th>NPS</th><th>% Voltaria</th></tr></thead><tbody>';
+  var tot=newAgg();
+  of_order.forEach(function(of){
+    var o=store[of]; if(!o) return;
+    var a=newAgg(); Object.keys(o).forEach(function(y){ Object.keys(o[y]).forEach(function(m){ aggSum(a,o[y][m]); }); });
+    aggSum(tot,a);
+    var label= of==='_sem'?'(Sem oficina)':OF_LABEL[of];
+    var s=satOf(a), nps=npsOf(a);
+    h+='<tr><td class="l">'+label+'</td><td>'+a.n+'</td><td class="sat">'+(s!=null?s.toFixed(2):'—')+'</td><td>'+(nps!=null?(nps>0?'+':'')+nps:'—')+'</td><td>'+pct(a.voltSim,a.voltCnt)+'</td></tr>';
+  });
+  var st=satOf(tot), nt=npsOf(tot);
+  h+='<tr style="font-weight:800;background:#f1f5f9;"><td class="l">Total</td><td>'+tot.n+'</td><td>'+(st!=null?st.toFixed(2):'—')+'</td><td>'+(nt!=null?(nt>0?'+':'')+nt:'—')+'</td><td>'+pct(tot.voltSim,tot.voltCnt)+'</td></tr>';
+  h+='</tbody></table>';
+  // anos disponíveis
+  var yearsSet={}; Object.keys(store).forEach(function(of){ Object.keys(store[of]).forEach(function(y){ yearsSet[y]=1; }); });
+  var years=Object.keys(yearsSet).sort();
+  var lastY=years[years.length-1];
+  h+='<div style="font-weight:700;color:var(--navy);margin:14px 0 6px;">Por mês — '+lastY+' (todas as oficinas)</div>';
+  h+='<table><thead><tr><th class="l">Mês</th><th>Respostas</th><th>Satisfação</th><th>NPS</th></tr></thead><tbody>';
+  for(var m=1;m<=12;m++){
+    var a=newAgg(); var has=false;
+    Object.keys(store).forEach(function(of){ var mm=store[of][lastY]&&store[of][lastY][String(m)]; if(mm){aggSum(a,mm);has=true;} });
+    if(!has) continue;
+    var s=satOf(a), nps=npsOf(a);
+    h+='<tr><td class="l">'+MESN[m-1]+'</td><td>'+a.n+'</td><td class="sat">'+(s!=null?s.toFixed(2):'—')+'</td><td>'+(nps!=null?(nps>0?'+':'')+nps:'—')+'</td></tr>';
+  }
+  h+='</tbody></table></div>';
+  document.getElementById('resultado').innerHTML=h;
+}
+
+function publicar(){
+  if(!ultimo) return;
+  if(window.parent&&window.parent!==window){
+    window.parent.postMessage({type:'questionarioUpdate',payload:{dados:ultimo}},'*');
+    status('<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Questionário de Satisfação...</span>');
+  } else {
+    status('<span style="color:#dc2626;">Abre dentro da intranet para publicar.</span>');
+  }
+}
+</script>
+</body>
+</html>
