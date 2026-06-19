@@ -983,6 +983,7 @@
         <div class="sidebar-section">Colaborador</div>
         <ul class="sidebar-nav">
             <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
+            <li><a onclick="openModule('formacao')" id="navFormacao"><span class="nav-icon">🎓</span> Calendário de Formação</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -2080,171 +2081,171 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'mario.perez@domuscar.com': {
             role: 'coordenador', name: 'Mário Perez (Colisão Bela Vista)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'nuno.montes@domuscar.com': {
             role: 'coordenador', name: 'Nuno Montes (Colisão Tagus Park)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'diogolj009@gmail.com': {
             role: 'colaborador', name: 'Diogo Henrique Gomes Fernandes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'shahajay724@gmail.com': {
             role: 'colaborador', name: 'Ajay Kumar Shah',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'vladyne00@gmail.com': {
             role: 'colaborador', name: 'Edmilson Jorge Pereira Fernandes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'arnaldo.a4@gmail.com': {
             role: 'colaborador', name: 'Arnaldo José Carvalho Brites da Cruz',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'serginhonekas@gmail.com': {
             role: 'colaborador', name: 'Sérgio Fernando Migueis Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'montez1993@hotmail.com': {
             role: 'colaborador', name: 'Nuno Alexandre Carvalho Montês',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'jorge_silverado@hotmail.com': {
             role: 'colaborador', name: 'Jorge Miguel Alves Silva',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'eduardomacedo624@gmail.com': {
             role: 'colaborador', name: 'Eduardo Macedo',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'filipejose.reisbonifacio@gmail.com': {
             role: 'colaborador', name: 'Filipe José Reis Bonifácio',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'carlos__antunes@hotmail.com': {
             role: 'colaborador', name: 'Carlos Miguel Fernandes Gonçalves Antunes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'eaoag-junior@hotmail.com': {
             role: 'colaborador', name: 'Emanuel Antonio de Oliveira Alves Gonçalves',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'vitorsoutilha@hotmail.com': {
             role: 'colaborador', name: 'Vitor Manuel Vilarinho Soutilha',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'jjborges23@hotmail.com': {
             role: 'colaborador', name: 'José João Ferreira Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'goncalo.myguel@gmail.com': {
             role: 'colaborador', name: 'Gonçalo Miguel Palrinhas Matos',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'henupaneru@gmail.com': {
             role: 'colaborador', name: 'Gyanu Pujara',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'curentcha@gmail.com': {
             role: 'colaborador', name: 'José Avelino da Cruz Fernandes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'pedrojana30@gmail.com': {
             role: 'colaborador', name: 'Pedro Filipe de Castro Jana',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'paulo_bizz@hotmail.com': {
             role: 'colaborador', name: 'João Paulo São Pedro Bizarro',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'xavierjoli2@gmail.com': {
             role: 'colaborador', name: 'Xavier Oliveira Jorge',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'pedro.pereira@domuscar.com': {
             role: 'colaborador', name: 'Pedro Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'ricardo.ferreira@domuscar.com': {
             role: 'colaborador', name: 'Ricardo Ferreira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'fernando.couto@domuscar.com': {
             role: 'colaborador', name: 'Fernando Couto',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'ruben.nogueira@domuscar.com': {
             role: 'colaborador', name: 'Rúben Nogueira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'tomas.figueiredo@domuscar.com': {
             role: 'colaborador', name: 'Tomás Figueiredo',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'pedro.carvalho@domuscar.com': {
             role: 'colaborador', name: 'Pedro Carvalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'goncalo.faustino@domuscar.com': {
             role: 'colaborador', name: 'Gonçalo Faustino',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'ines.peixinho@domuscar.com': {
             role: 'colaborador', name: 'Inês Peixinho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'alicia.vieira@domuscar.com': {
             role: 'colaborador', name: 'Alícia Vieira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'andre.gomes@domuscar.com': {
             role: 'colaborador', name: 'André Gomes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'valter.borges@domuscar.com': {
             role: 'colaborador', name: 'Valter Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'paulo.rodrigues@domuscar.com': {
             role: 'colaborador', name: 'Paulo Rodrigues',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'paulo.ferreira@domuscar.com': {
             role: 'colaborador', name: 'Paulo Ferreira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'asgomesw@gmail.com': {
             role: 'colaborador', name: 'Convidado Externo',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','kpis','margem']
         },
         'claudia.pedro@domuscar.com': {
             role: 'rh', name: 'Cláudia Pedro',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         'marta.marques@domuscar.com': {
             role: 'rh', name: 'Marta Marques',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','formacao','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem']
         }
     };
 
@@ -3249,6 +3250,7 @@
         const modules = {
             visao_missao: { title: 'Visão, Missão & Valores', url: 'intranet_visao_missao.html' },
             estrutura_org: { title: 'Estrutura Organizacional', url: 'estrutura_organizacional.html' },
+            formacao: { title: 'Calendário de Formação', url: 'formacao.html' },
             normas_regras: { title: 'Normas e Regras Internas', url: 'normas_regras_internas.html' },
             qualidade_seguranca: { title: 'Sistema de Qualidade e Segurança', url: 'qualidade_seguranca.html' },
             doc_tecnica: { title: 'Documentação Técnica', url: 'documentacao_tecnica.html' },

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendário de Formação 2026 — DomusCar</title>
+<style>
+  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;}
+  *{box-sizing:border-box;}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1200px;margin:0 auto;padding:24px 20px 60px;}
+  h1{font-size:1.5rem;color:var(--navy);margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.9rem;margin:0 0 18px;max-width:820px;}
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .sbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;}
+  .sbox .n{font-size:1.5rem;font-weight:800;color:var(--navy);}
+  .sbox .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+  .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:18px;}
+  .filters .frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}
+  .filters .frow:last-child{margin-bottom:0;}
+  .flabel{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;width:80px;}
+  .chip{padding:6px 12px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;font-size:12.5px;font-weight:600;color:#334155;}
+  .chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 16px;font-size:12px;color:var(--muted);}
+  .legdot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+  .cal{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  @media(max-width:900px){.cal{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.cal{grid-template-columns:1fr;}}
+  .month{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:90px;}
+  .month h3{margin:0 0 8px;font-size:13px;color:var(--navy);border-bottom:2px solid var(--line);padding-bottom:6px;display:flex;justify-content:space-between;}
+  .month h3 .cnt{font-size:11px;color:var(--muted);font-weight:600;}
+  .tr{border-left:4px solid #999;border-radius:6px;padding:6px 8px;margin-bottom:6px;font-size:12px;background:#f8fafc;}
+  .tr .t{font-weight:700;color:#0f172a;}
+  .tr .m{color:var(--muted);font-size:11px;margin-top:2px;}
+  .tr .tags{margin-top:3px;}
+  .tag{display:inline-block;font-size:10px;background:#e2e8f0;color:#334155;border-radius:10px;padding:1px 7px;margin:2px 3px 0 0;}
+  .tag.ob{background:#fee2e2;color:#b91c1c;}
+  .empty{color:#94a3b8;font-size:11.5px;font-style:italic;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:22px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--navy2);color:#fff;font-weight:600;font-size:11.5px;}
+  td.c,th.c{text-align:center;}
+  .sec-title{font-size:1.05rem;color:var(--navy);font-weight:800;margin:24px 0 10px;}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎓 Calendário de Formação 2026</h1>
+  <p class="sub">Plano anual de formação para todos os colaboradores da DOMUSCAR (Cacém, Lisboa e Centro de Colisão), organizado por função e por mês. Inclui formações de segurança, certificações legais, técnicas Bosch Car Service, atendimento e gestão. Filtra por função, oficina ou categoria.</p>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="filters">
+    <div class="frow"><span class="flabel">Função</span><span id="fFuncao"></span></div>
+    <div class="frow"><span class="flabel">Oficina</span><span id="fOficina"></span></div>
+    <div class="frow"><span class="flabel">Categoria</span><span id="fCategoria"></span></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="sec-title">📅 Calendário mensal</div>
+  <div class="cal" id="calendar"></div>
+
+  <div class="sec-title">📋 Plano de Formação (detalhe)</div>
+  <div id="tableWrap"></div>
+
+  <p class="note"><b>Notas:</b> a formação de <b>Gases Fluorados (A/C)</b> e a <b>Segurança em Veículos Elétricos/Híbridos (alta tensão)</b> são obrigatórias por lei para quem manuseia esses sistemas. As formações marcadas como <b>Obrigatória</b> têm presença obrigatória e registo. Agosto e Dezembro ficam mais leves (férias / fecho de ano). Este é um plano-base proponível — ajusta datas, durações e entidades conforme a disponibilidade e os formadores.</p>
+</div>
+
+<script>
+var FUNCOES={todos:'Todos',coord:'Coordenação',rec:'Receção / Orçamentação',mec:'Mecânica',cp:'Chapa e Pintura',pec:'Peças / Logística',qual:'Qualidade'};
+var OFICINAS={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão'};
+var CATS={
+  seg:{label:'Segurança & Ambiente',cor:'#dc2626'},
+  legal:{label:'Legal / Certificação',cor:'#b45309'},
+  tec:{label:'Técnica Bosch',cor:'#1d4ed8'},
+  com:{label:'Atendimento & Comercial',cor:'#0d904f'},
+  gest:{label:'Gestão & Qualidade',cor:'#7c3aed'}
+};
+var MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// Plano-base 2026 (mes: 1-12)
+var PLANO=[
+  {tema:'Software de Gestão (Officegest)',cat:'com',pub:['rec','pec','coord'],ofi:['cacem','lisboa','colisao'],mes:1,horas:3,modal:'Interna',period:'Anual',ob:false},
+  {tema:'Segurança e Saúde no Trabalho (SST)',cat:'seg',pub:['todos'],ofi:['cacem','lisboa','colisao'],mes:2,horas:6,modal:'Externa',period:'Anual',ob:true},
+  {tema:'Atendimento ao Cliente e Gestão de Reclamações',cat:'com',pub:['rec'],ofi:['cacem','lisboa','colisao'],mes:2,horas:4,modal:'Interna',period:'Anual',ob:false},
+  {tema:'Gestão de Resíduos e Ambiente (óleos, baterias, filtros)',cat:'seg',pub:['mec','cp','pec'],ofi:['cacem','lisboa','colisao'],mes:3,horas:3,modal:'Interna',period:'Anual',ob:true},
+  {tema:'Diagnóstico Eletrónico (OBD / ECU)',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:3,horas:8,modal:'Bosch',period:'Anual',ob:false},
+  {tema:'Liderança e Gestão de Equipas',cat:'gest',pub:['coord'],ofi:['cacem','lisboa','colisao'],mes:3,horas:8,modal:'Externa',period:'—',ob:false},
+  {tema:'Gases Fluorados — Ar Condicionado (certificação)',cat:'legal',pub:['mec'],ofi:['cacem','lisboa'],mes:4,horas:16,modal:'Externa certificada',period:'Conforme legal',ob:true},
+  {tema:'Pintura — Colorimetria e Técnicas',cat:'tec',pub:['cp'],ofi:['colisao'],mes:4,horas:8,modal:'Externa (fornecedor tinta)',period:'—',ob:false},
+  {tema:'Combate a Incêndios e Uso de Extintores',cat:'seg',pub:['todos'],ofi:['cacem','lisboa','colisao'],mes:5,horas:3,modal:'Externa',period:'Anual',ob:true},
+  {tema:'Sistemas de Travagem e Suspensão',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:5,horas:6,modal:'Bosch',period:'—',ob:false},
+  {tema:'Gestão de Stock e Encomendas',cat:'gest',pub:['pec'],ofi:['cacem','lisboa','colisao'],mes:5,horas:4,modal:'Interna',period:'—',ob:false},
+  {tema:'Segurança em Veículos Elétricos/Híbridos (alta tensão)',cat:'legal',pub:['mec'],ofi:['cacem','lisboa'],mes:6,horas:8,modal:'Externa',period:'Reciclagem',ob:true},
+  {tema:'Orçamentação e Peritagem (seguradoras e frotas)',cat:'com',pub:['rec'],ofi:['cacem','lisboa','colisao'],mes:6,horas:6,modal:'Externa',period:'—',ob:false},
+  {tema:'Sistema de Qualidade e Auditoria SQA Bosch Car Service',cat:'gest',pub:['coord','qual'],ofi:['cacem','lisboa','colisao'],mes:7,horas:6,modal:'Bosch',period:'Anual',ob:true},
+  {tema:'Primeiros Socorros',cat:'seg',pub:['coord','rec','qual'],ofi:['cacem','lisboa','colisao'],mes:9,horas:6,modal:'Externa',period:'Bienal',ob:false},
+  {tema:'Sistemas ADAS — Calibração',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:9,horas:8,modal:'Bosch',period:'Anual',ob:false},
+  {tema:'Vendas e Fecho de Serviço',cat:'com',pub:['rec'],ofi:['cacem','lisboa','colisao'],mes:9,horas:4,modal:'Externa',period:'—',ob:false},
+  {tema:'Chapa — Reparação de Carroçaria e Soldadura',cat:'tec',pub:['cp'],ofi:['colisao'],mes:10,horas:8,modal:'Externa',period:'—',ob:false},
+  {tema:'Movimentação de Cargas e Ergonomia',cat:'seg',pub:['mec','cp'],ofi:['cacem','lisboa','colisao'],mes:10,horas:2,modal:'Interna',period:'Anual',ob:false},
+  {tema:'Tecnologia de Injeção (Diesel e Gasolina)',cat:'tec',pub:['mec'],ofi:['cacem','lisboa'],mes:11,horas:6,modal:'Bosch',period:'—',ob:false},
+  {tema:'RGPD / Proteção de Dados',cat:'gest',pub:['todos'],ofi:['cacem','lisboa','colisao'],mes:11,horas:2,modal:'Online',period:'Anual',ob:true}
+];
+
+var filtro={funcao:'todos_all',oficina:'todas',categoria:'todas'};
+
+function pubMatch(item){
+  if(filtro.funcao==='todos_all') return true;
+  return item.pub.indexOf(filtro.funcao)>=0 || item.pub.indexOf('todos')>=0;
+}
+function ofiMatch(item){ if(filtro.oficina==='todas') return true; return item.ofi.indexOf(filtro.oficina)>=0; }
+function catMatch(item){ if(filtro.categoria==='todas') return true; return item.cat===filtro.categoria; }
+function filtrados(){ return PLANO.filter(function(i){ return pubMatch(i)&&ofiMatch(i)&&catMatch(i); }); }
+
+function pubLabels(arr){ return arr.map(function(p){return FUNCOES[p]||p;}).join(', '); }
+function ofiLabels(arr){ if(arr.length===3) return 'Todas'; return arr.map(function(o){return OFICINAS[o]||o;}).join(', '); }
+
+function chip(label,active,onclick){ return '<span class="chip'+(active?' active':'')+'" onclick="'+onclick+'">'+label+'</span>'; }
+
+function renderFilters(){
+  var f='';
+  f+=chip('Todas',filtro.funcao==='todos_all','setF(\'funcao\',\'todos_all\')');
+  Object.keys(FUNCOES).forEach(function(k){ if(k==='todos')return; f+=chip(FUNCOES[k],filtro.funcao===k,'setF(\'funcao\',\''+k+'\')'); });
+  document.getElementById('fFuncao').innerHTML=f;
+  var o=chip('Todas',filtro.oficina==='todas','setF(\'oficina\',\'todas\')');
+  Object.keys(OFICINAS).forEach(function(k){ o+=chip(OFICINAS[k],filtro.oficina===k,'setF(\'oficina\',\''+k+'\')'); });
+  document.getElementById('fOficina').innerHTML=o;
+  var c=chip('Todas',filtro.categoria==='todas','setF(\'categoria\',\'todas\')');
+  Object.keys(CATS).forEach(function(k){ c+=chip(CATS[k].label,filtro.categoria===k,'setF(\'categoria\',\''+k+'\')'); });
+  document.getElementById('fCategoria').innerHTML=c;
+}
+function renderLegend(){
+  var l=''; Object.keys(CATS).forEach(function(k){ l+='<span><span class="legdot" style="background:'+CATS[k].cor+';"></span>'+CATS[k].label+'</span>'; });
+  l+='<span><span class="legdot" style="background:#fee2e2;border:1px solid #fca5a5;"></span>Obrigatória</span>';
+  document.getElementById('legend').innerHTML=l;
+}
+function renderSummary(){
+  var f=filtrados();
+  var horas=f.reduce(function(a,b){return a+b.horas;},0);
+  var ob=f.filter(function(i){return i.ob;}).length;
+  var s='';
+  s+='<div class="sbox"><div class="n">'+f.length+'</div><div class="l">Ações de formação</div></div>';
+  s+='<div class="sbox"><div class="n">'+ob+'</div><div class="l">Obrigatórias</div></div>';
+  s+='<div class="sbox"><div class="n">'+horas+'h</div><div class="l">Carga horária</div></div>';
+  document.getElementById('summary').innerHTML=s;
+}
+function renderCalendar(){
+  var f=filtrados(); var html='';
+  for(var m=1;m<=12;m++){
+    var items=f.filter(function(i){return i.mes===m;});
+    html+='<div class="month"><h3>'+MES[m-1]+' <span class="cnt">'+(items.length||'')+'</span></h3>';
+    if(!items.length){ html+='<div class="empty">—</div>'; }
+    items.forEach(function(i){
+      html+='<div class="tr" style="border-left-color:'+CATS[i.cat].cor+';">'+
+        '<div class="t">'+i.tema+'</div>'+
+        '<div class="m">'+pubLabels(i.pub)+' · '+ofiLabels(i.ofi)+' · '+i.horas+'h</div>'+
+        '<div class="tags">'+(i.ob?'<span class="tag ob">Obrigatória</span>':'')+'<span class="tag">'+i.modal+'</span></div>'+
+      '</div>';
+    });
+    html+='</div>';
+  }
+  document.getElementById('calendar').innerHTML=html;
+}
+function renderTable(){
+  var f=filtrados().slice().sort(function(a,b){return a.mes-b.mes;});
+  var h='<table><thead><tr><th>Mês</th><th>Formação</th><th>Categoria</th><th>Público-alvo</th><th>Oficinas</th><th class="c">Horas</th><th>Modalidade</th><th>Periodicidade</th><th class="c">Obrig.</th></tr></thead><tbody>';
+  f.forEach(function(i){
+    h+='<tr><td>'+MES[i.mes-1]+'</td><td><b>'+i.tema+'</b></td>'+
+      '<td><span class="legdot" style="background:'+CATS[i.cat].cor+';"></span>'+CATS[i.cat].label+'</td>'+
+      '<td>'+pubLabels(i.pub)+'</td><td>'+ofiLabels(i.ofi)+'</td><td class="c">'+i.horas+'</td>'+
+      '<td>'+i.modal+'</td><td>'+i.period+'</td><td class="c">'+(i.ob?'✔':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  if(!f.length) h='<div class="empty" style="padding:20px;">Sem formações para este filtro.</div>';
+  document.getElementById('tableWrap').innerHTML=h;
+}
+function renderAll(){ renderSummary(); renderCalendar(); renderTable(); }
+window.setF=function(tipo,val){ filtro[tipo]=val; renderFilters(); renderAll(); };
+
+renderFilters(); renderLegend(); renderAll();
+</script>
+</body>
+</html>
