@@ -1030,6 +1030,7 @@
                     <li><a onclick="openModule('prep_auditoria_sqa_bcs')" id="navPrep_auditoria_sqa_bcs"><span class="nav-icon">🔍</span> Preparação Auditoria SQA - Bosch Car Service</a></li>
                 </ul>
             </li>
+            <li><a onclick="openModule('equipamentos')" id="navEquipamentos"><span class="nav-icon">🛠️</span> Manutenção de Equipamentos</a></li>
         </ul>
 
         <div class="sidebar-section" id="adminSection" style="display: none;">Administração</div>
@@ -2389,6 +2390,7 @@
         loadGoogleReviews();
         loadQuestionario();
         loadFormacaoEventos();
+        loadEquipamentos();
         renderMargemMensalReal();
         updateGreeting();
         // Hide breadcrumb on home
@@ -2943,6 +2945,12 @@
         saveFormacaoEventos(event.data.payload);
     });
 
+    // Listen for Manutenção de Equipamentos from equipamentos iframe
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'equipamentosUpdate') return;
+        saveEquipamentos(event.data.payload);
+    });
+
     // Listen for KPI dashboard data from gerador-kpis iframe
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
@@ -3249,6 +3257,7 @@
         loadGoogleReviews();
         loadQuestionario();
         loadFormacaoEventos();
+        loadEquipamentos();
         renderMargemMensalReal();
     }
 
@@ -3283,6 +3292,7 @@
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
+            equipamentos: { title: 'Manutenção de Equipamentos', url: 'manutencao-equipamentos.html' },
             coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' },
             prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' }
         };
@@ -3292,6 +3302,13 @@
             // Calendário de Formação: acesso restrito a Administração, Coordenadores e RH
             var rF = currentUserPermissions ? currentUserPermissions.role : null;
             if (rF !== 'admin' && rF !== 'coordenador' && rF !== 'rh') {
+                alert('Não tem permissão para aceder a este módulo');
+                return;
+            }
+        } else if (id === 'equipamentos') {
+            // Manutenção de Equipamentos: acesso a Administração e Coordenadores
+            var rE = currentUserPermissions ? currentUserPermissions.role : null;
+            if (rE !== 'admin' && rE !== 'coordenador') {
                 alert('Não tem permissão para aceder a este módulo');
                 return;
             }
@@ -3736,6 +3753,21 @@
                 try { localStorage.setItem('intranet_formacaoEventos', JSON.stringify(data)); } catch(e) {}
             }
         }).catch(function(e) { console.warn('[Formacao] SP load:', e && e.message); });
+    }
+
+    // ======== MANUTENÇÃO DE EQUIPAMENTOS (equipamentos iframe → SharePoint) ========
+    function saveEquipamentos(payload) {
+        if (!payload || !Array.isArray(payload.equip)) return;
+        try { localStorage.setItem('intranet_equipamentos', JSON.stringify(payload.equip)); } catch(e) { console.error('[Equipamentos] save:', e); }
+        saveDashboardToSP('equipamentos.json', payload.equip);
+        console.log('[Equipamentos] guardado:', payload.equip.length, 'equipamentos');
+    }
+    function loadEquipamentos() {
+        loadDashboardFromSP('equipamentos.json').then(function(data) {
+            if (Array.isArray(data)) {
+                try { localStorage.setItem('intranet_equipamentos', JSON.stringify(data)); } catch(e) {}
+            }
+        }).catch(function(e) { console.warn('[Equipamentos] SP load:', e && e.message); });
     }
 
     // Converte "Março 2026" → 202603 para comparação numérica

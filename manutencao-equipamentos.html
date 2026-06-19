@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manutenção de Equipamentos — DomusCar</title>
+<style>
+  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--green:#16a34a;--amber:#b45309;--red:#dc2626;--gray:#94a3b8;}
+  *{box-sizing:border-box;}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 20px 60px;}
+  h1{font-size:1.4rem;color:var(--navy);margin:0 0 2px;}
+  .sub{color:var(--muted);font-size:.88rem;margin:0 0 16px;max-width:880px;}
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .sbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1;}
+  .sbox .n{font-size:1.6rem;font-weight:800;}.sbox .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+  .btn{padding:9px 14px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13.5px;}
+  .btn-primary{background:var(--blue);color:#fff;}.btn-ghost{background:#e2e8f0;color:#334155;}
+  .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+  .frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}.frow:last-child{margin-bottom:0;}
+  .flabel{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;width:70px;}
+  .chip{padding:5px 11px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#334155;}
+  .chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;}
+  th{background:var(--navy2);color:#fff;font-weight:600;font-size:11.5px;}
+  td.c,th.c{text-align:center;}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;}
+  .badge{font-size:10.5px;font-weight:700;border-radius:10px;padding:2px 8px;color:#fff;white-space:nowrap;}
+  .acts button{font-size:11px;border:none;border-radius:6px;padding:4px 7px;cursor:pointer;margin:1px;}
+  .acts .feita{background:#dcfce7;color:#166534;}.acts .ed{background:#eef2ff;color:var(--navy);}.acts .del{background:#fee2e2;color:#b91c1c;}
+  /* modal */
+  .ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:1000;overflow:auto;padding:30px 14px;}
+  .ov.open{display:flex;}
+  .modal{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:20px 22px;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+  .modal h2{font-size:1.05rem;color:var(--navy);margin:0 0 12px;}
+  label.fl{display:block;font-size:12px;font-weight:700;color:#334155;margin:9px 0 4px;}
+  input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:13px;}
+  .twocol{display:flex;gap:10px;}.twocol>div{flex:1;}
+  .mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+  .empty{color:var(--muted);text-align:center;padding:18px;}
+  .small{font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛠️ Manutenção de Equipamentos</h1>
+  <p class="sub">Calendário de manutenções, revisões e inspeções dos equipamentos/ferramentas das oficinas. Cada equipamento tem uma periodicidade — o sistema calcula a próxima data e mostra o estado (🟢 em dia · 🟡 a vencer · 🔴 vencido). Marca como feita e a próxima é agendada automaticamente.</p>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="openAdd()">➕ Adicionar equipamento</button>
+    <span class="small" id="lastInfo"></span>
+  </div>
+
+  <div class="filters">
+    <div class="frow"><span class="flabel">Oficina</span><span id="fOf"></span></div>
+    <div class="frow"><span class="flabel">Estado</span><span id="fEs"></span></div>
+    <div class="frow"><span class="flabel">Tipo</span><span id="fTp"></span></div>
+  </div>
+
+  <div id="tableWrap"></div>
+</div>
+
+<!-- Modal adicionar/editar -->
+<div class="ov" id="ovEdit">
+  <div class="modal">
+    <h2 id="editTitle">Adicionar equipamento</h2>
+    <input type="hidden" id="eId">
+    <label class="fl">Equipamento / Ferramenta</label>
+    <input type="text" id="eNome" placeholder="Ex.: Elevador de 2 colunas nº1">
+    <div class="twocol">
+      <div><label class="fl">Oficina</label><select id="eOf"><option value="cacem">Cacém</option><option value="lisboa">Lisboa</option><option value="colisao">Colisão</option><option value="geral">Geral / Todas</option></select></div>
+      <div><label class="fl">Tipo de manutenção</label><select id="eTipo"><option value="preventiva">Manutenção preventiva</option><option value="calibracao">Calibração / Verificação</option><option value="inspecao">Inspeção de segurança</option></select></div>
+    </div>
+    <div class="twocol">
+      <div><label class="fl">Periodicidade</label><select id="ePer"><option value="3">Trimestral (3 meses)</option><option value="6">Semestral (6 meses)</option><option value="12" selected>Anual (12 meses)</option><option value="24">Bienal (24 meses)</option><option value="1">Mensal (1 mês)</option></select></div>
+      <div><label class="fl">Data da última manutenção</label><input type="date" id="eUltima"></div>
+    </div>
+    <div class="twocol">
+      <div><label class="fl">Responsável / Entidade</label><input type="text" id="eResp" placeholder="Interno / empresa externa"></div>
+      <div><label class="fl">Custo (€)</label><input type="number" id="eCusto" min="0" step="0.01" placeholder="0"></div>
+    </div>
+    <label class="fl">Notas</label>
+    <textarea id="eNotas" rows="2"></textarea>
+    <div class="mbtns"><button class="btn btn-ghost" onclick="closeOv('ovEdit')">Cancelar</button><button class="btn btn-primary" onclick="saveEquip()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- Modal marcar como feita -->
+<div class="ov" id="ovDone">
+  <div class="modal">
+    <h2>✓ Registar manutenção feita</h2>
+    <div id="doneEquipName" style="font-weight:700;color:var(--navy);margin-bottom:6px;"></div>
+    <input type="hidden" id="dId">
+    <div class="twocol">
+      <div><label class="fl">Data da intervenção</label><input type="date" id="dData"></div>
+      <div><label class="fl">Custo (€)</label><input type="number" id="dCusto" min="0" step="0.01" placeholder="0"></div>
+    </div>
+    <label class="fl">Responsável / Entidade</label>
+    <input type="text" id="dResp" placeholder="Quem executou">
+    <label class="fl">Notas da intervenção</label>
+    <textarea id="dNotas" rows="2"></textarea>
+    <div class="small" id="dNext" style="margin-top:8px;"></div>
+    <div class="mbtns"><button class="btn btn-ghost" onclick="closeOv('ovDone')">Cancelar</button><button class="btn btn-primary" onclick="confirmDone()">Registar e agendar próxima</button></div>
+  </div>
+</div>
+
+<script>
+var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão',geral:'Geral'};
+var TIPOS={preventiva:'Manutenção preventiva',calibracao:'Calibração / Verificação',inspecao:'Inspeção de segurança'};
+var EST={emdia:{l:'Em dia',c:'#16a34a'},avencer:{l:'A vencer',c:'#b45309'},vencido:{l:'Vencido',c:'#dc2626'},sem:{l:'Por agendar',c:'#94a3b8'}};
+
+// Inventário-base proposto (sem data de última manutenção — preenche tu)
+var SEED=[
+  {id:'s1',nome:'Elevador de 2 colunas nº1',of:'cacem',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s2',nome:'Compressor de ar',of:'cacem',tipo:'preventiva',per:6,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s3',nome:'Máquina de Ar Condicionado (carga de gás)',of:'cacem',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s4',nome:'Equipamento de Diagnóstico (Bosch KTS)',of:'cacem',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s5',nome:'Aparelho de Alinhamento de Direção',of:'cacem',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s6',nome:'Desmonta-pneus',of:'cacem',tipo:'preventiva',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s7',nome:'Equilibradora de rodas',of:'cacem',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s8',nome:'Chaves dinamométricas',of:'cacem',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s9',nome:'Elevador de 2 colunas',of:'lisboa',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s10',nome:'Compressor de ar',of:'lisboa',tipo:'preventiva',per:6,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s11',nome:'Máquina de Ar Condicionado (carga de gás)',of:'lisboa',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s12',nome:'Equipamento de Diagnóstico (Bosch KTS)',of:'lisboa',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s13',nome:'Aparelho de Alinhamento de Direção',of:'lisboa',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s14',nome:'Desmonta-pneus',of:'lisboa',tipo:'preventiva',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s15',nome:'Cabine de Pintura (substituição de filtros)',of:'colisao',tipo:'preventiva',per:6,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s16',nome:'Banco de Medição / Reparação de Chapa',of:'colisao',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s17',nome:'Elevador de tesoura',of:'colisao',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s18',nome:'Extintores e meios de combate a incêndio',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s19',nome:'Macacos / cricos hidráulicos',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]}
+];
+
+var EQUIP;
+(function(){ var st=null; try{ st=JSON.parse(localStorage.getItem('intranet_equipamentos')); }catch(e){} EQUIP=(Array.isArray(st)&&st.length)?st:SEED.map(function(x){return Object.assign({},x);}); })();
+
+var filtro={of:'todas',es:'todos',tp:'todos'};
+
+function save(){
+  try{ localStorage.setItem('intranet_equipamentos', JSON.stringify(EQUIP)); }catch(e){}
+  if(window.parent && window.parent!==window){ window.parent.postMessage({type:'equipamentosUpdate',payload:{equip:EQUIP}},'*'); }
+}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function pad(n){return (n<10?'0':'')+n;}
+function fmtD(s){ if(!s) return '—'; var p=String(s).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):s; }
+function addMonths(dstr,m){ var d=new Date(dstr); var x=new Date(d.getTime()); x.setMonth(x.getMonth()+Number(m)); return x; }
+function proxima(e){ if(!e.ultima) return null; return addMonths(e.ultima,e.per); }
+function estadoOf(e){
+  var p=proxima(e); if(!p) return {k:'sem',dias:null};
+  var hoje=new Date(); hoje.setHours(0,0,0,0);
+  var dias=Math.round((p-hoje)/86400000);
+  if(dias<0) return {k:'vencido',dias:dias};
+  if(dias<=30) return {k:'avencer',dias:dias};
+  return {k:'emdia',dias:dias};
+}
+function perLabel(m){ return ({1:'Mensal',3:'Trimestral',6:'Semestral',12:'Anual',24:'Bienal'})[m] || (m+' meses'); }
+
+function chip(label,active,onclick){ return '<span class="chip'+(active?' active':'')+'" onclick="'+onclick+'">'+label+'</span>'; }
+function renderFilters(){
+  var of=chip('Todas',filtro.of==='todas','setF(\'of\',\'todas\')');
+  Object.keys(OF).forEach(function(k){ of+=chip(OF[k],filtro.of===k,'setF(\'of\',\''+k+'\')'); });
+  document.getElementById('fOf').innerHTML=of;
+  var es=chip('Todos',filtro.es==='todos','setF(\'es\',\'todos\')');
+  ['vencido','avencer','emdia','sem'].forEach(function(k){ es+=chip(EST[k].l,filtro.es===k,'setF(\'es\',\''+k+'\')'); });
+  document.getElementById('fEs').innerHTML=es;
+  var tp=chip('Todos',filtro.tp==='todos','setF(\'tp\',\'todos\')');
+  Object.keys(TIPOS).forEach(function(k){ tp+=chip(TIPOS[k],filtro.tp===k,'setF(\'tp\',\''+k+'\')'); });
+  document.getElementById('fTp').innerHTML=tp;
+}
+window.setF=function(t,v){ filtro[t]=v; render(); };
+
+function filtered(){
+  return EQUIP.filter(function(e){
+    if(filtro.of!=='todas' && e.of!==filtro.of) return false;
+    if(filtro.tp!=='todos' && e.tipo!==filtro.tp) return false;
+    if(filtro.es!=='todos' && estadoOf(e).k!==filtro.es) return false;
+    return true;
+  });
+}
+var sev={vencido:0,avencer:1,sem:2,emdia:3};
+function render(){
+  // summary (sobre TODOS, não filtrado)
+  var c={total:EQUIP.length,emdia:0,avencer:0,vencido:0,sem:0};
+  EQUIP.forEach(function(e){ c[estadoOf(e).k]++; });
+  var s='';
+  s+='<div class="sbox"><div class="n" style="color:var(--navy);">'+c.total+'</div><div class="l">Equipamentos</div></div>';
+  s+='<div class="sbox"><div class="n" style="color:var(--green);">'+c.emdia+'</div><div class="l">Em dia</div></div>';
+  s+='<div class="sbox"><div class="n" style="color:var(--amber);">'+c.avencer+'</div><div class="l">A vencer (≤30d)</div></div>';
+  s+='<div class="sbox"><div class="n" style="color:var(--red);">'+c.vencido+'</div><div class="l">Vencidos</div></div>';
+  s+='<div class="sbox"><div class="n" style="color:var(--gray);">'+c.sem+'</div><div class="l">Por agendar</div></div>';
+  document.getElementById('summary').innerHTML=s;
+  // tabela
+  var list=filtered().slice().sort(function(a,b){
+    var ea=estadoOf(a),eb=estadoOf(b);
+    if(sev[ea.k]!==sev[eb.k]) return sev[ea.k]-sev[eb.k];
+    var pa=proxima(a),pb=proxima(b);
+    if(pa&&pb) return pa-pb; if(pa) return -1; if(pb) return 1; return 0;
+  });
+  var h='<table><thead><tr><th>Equipamento</th><th>Oficina</th><th>Tipo</th><th class="c">Periodic.</th><th class="c">Última</th><th class="c">Próxima</th><th>Estado</th><th>Responsável</th><th class="c">Custo</th><th class="c">Ações</th></tr></thead><tbody>';
+  list.forEach(function(e){
+    var st=estadoOf(e); var p=proxima(e);
+    var estLbl=EST[st.k].l+(st.k==='vencido'?(' ('+Math.abs(st.dias)+'d)'):(st.k==='avencer'?(' ('+st.dias+'d)'):''));
+    h+='<tr>'+
+      '<td><b>'+esc(e.nome)+'</b>'+(e.notas?'<div class="small">'+esc(e.notas)+'</div>':'')+'</td>'+
+      '<td>'+(OF[e.of]||e.of)+'</td>'+
+      '<td>'+(TIPOS[e.tipo]||e.tipo)+'</td>'+
+      '<td class="c">'+perLabel(e.per)+'</td>'+
+      '<td class="c">'+fmtD(e.ultima)+'</td>'+
+      '<td class="c">'+(p?fmtD(p.toISOString()):'—')+'</td>'+
+      '<td><span class="badge" style="background:'+EST[st.k].c+'">'+estLbl+'</span></td>'+
+      '<td>'+esc(e.resp||'—')+'</td>'+
+      '<td class="c">'+(e.custo!==''&&e.custo!=null?(Number(e.custo).toFixed(2)+'€'):'—')+'</td>'+
+      '<td class="c acts"><button class="feita" onclick="openDone(\''+e.id+'\')">✓ Feita</button><button class="ed" onclick="openEdit(\''+e.id+'\')">Editar</button><button class="del" onclick="delEquip(\''+e.id+'\')">✕</button></td>'+
+    '</tr>';
+  });
+  h+='</tbody></table>';
+  if(!list.length) h='<div class="empty">Sem equipamentos para este filtro.</div>';
+  document.getElementById('tableWrap').innerHTML=h;
+  var venc=c.vencido, ave=c.avencer;
+  document.getElementById('lastInfo').textContent = (venc||ave) ? ('⚠ '+venc+' vencido(s) e '+ave+' a vencer nos próximos 30 dias.') : 'Tudo em dia 👍';
+}
+
+function closeOv(id){ document.getElementById(id).classList.remove('open'); }
+document.getElementById('ovEdit').addEventListener('click',function(e){ if(e.target===this) closeOv('ovEdit'); });
+document.getElementById('ovDone').addEventListener('click',function(e){ if(e.target===this) closeOv('ovDone'); });
+
+function openAdd(){
+  document.getElementById('editTitle').textContent='Adicionar equipamento';
+  document.getElementById('eId').value='';
+  document.getElementById('eNome').value='';
+  document.getElementById('eOf').value='cacem';
+  document.getElementById('eTipo').value='preventiva';
+  document.getElementById('ePer').value='12';
+  document.getElementById('eUltima').value='';
+  document.getElementById('eResp').value='';
+  document.getElementById('eCusto').value='';
+  document.getElementById('eNotas').value='';
+  document.getElementById('ovEdit').classList.add('open');
+}
+function openEdit(id){
+  var e=EQUIP.filter(function(x){return x.id===id;})[0]; if(!e) return;
+  document.getElementById('editTitle').textContent='Editar equipamento';
+  document.getElementById('eId').value=e.id;
+  document.getElementById('eNome').value=e.nome||'';
+  document.getElementById('eOf').value=e.of||'cacem';
+  document.getElementById('eTipo').value=e.tipo||'preventiva';
+  document.getElementById('ePer').value=String(e.per||12);
+  document.getElementById('eUltima').value=e.ultima?String(e.ultima).slice(0,10):'';
+  document.getElementById('eResp').value=e.resp||'';
+  document.getElementById('eCusto').value=(e.custo===''||e.custo==null)?'':e.custo;
+  document.getElementById('eNotas').value=e.notas||'';
+  document.getElementById('ovEdit').classList.add('open');
+}
+function saveEquip(){
+  var nome=document.getElementById('eNome').value.trim();
+  if(!nome){ alert('Indica o nome do equipamento.'); return; }
+  var id=document.getElementById('eId').value;
+  var obj={
+    id:id||('e'+Date.now()+Math.floor(Math.random()*1000)),
+    nome:nome, of:document.getElementById('eOf').value, tipo:document.getElementById('eTipo').value,
+    per:Number(document.getElementById('ePer').value), ultima:document.getElementById('eUltima').value||'',
+    resp:document.getElementById('eResp').value.trim(),
+    custo:document.getElementById('eCusto').value===''?'':Number(document.getElementById('eCusto').value),
+    notas:document.getElementById('eNotas').value.trim(), hist:[]
+  };
+  if(id){ var i=EQUIP.findIndex(function(x){return x.id===id;}); if(i>=0){ obj.hist=EQUIP[i].hist||[]; EQUIP[i]=obj; } }
+  else EQUIP.push(obj);
+  save(); closeOv('ovEdit'); render();
+}
+function delEquip(id){
+  if(!confirm('Remover este equipamento do registo?')) return;
+  EQUIP=EQUIP.filter(function(x){return x.id!==id;});
+  save(); render();
+}
+
+function openDone(id){
+  var e=EQUIP.filter(function(x){return x.id===id;})[0]; if(!e) return;
+  document.getElementById('dId').value=id;
+  document.getElementById('doneEquipName').textContent=e.nome+' · '+(OF[e.of]||e.of);
+  var t=new Date(); document.getElementById('dData').value=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
+  document.getElementById('dCusto').value=''; document.getElementById('dResp').value=e.resp||''; document.getElementById('dNotas').value='';
+  updateDNext();
+  document.getElementById('dData').onchange=updateDNext;
+  document.getElementById('ovDone').classList.add('open');
+  function updateDNext(){
+    var e2=EQUIP.filter(function(x){return x.id===id;})[0];
+    var dv=document.getElementById('dData').value;
+    if(dv){ var nx=addMonths(dv,e2.per); document.getElementById('dNext').textContent='Próxima manutenção será agendada para '+fmtD(nx.toISOString())+' (periodicidade '+perLabel(e2.per).toLowerCase()+').'; }
+  }
+}
+function confirmDone(){
+  var id=document.getElementById('dId').value;
+  var i=EQUIP.findIndex(function(x){return x.id===id;}); if(i<0) return;
+  var data=document.getElementById('dData').value; if(!data){ alert('Indica a data da intervenção.'); return; }
+  var custo=document.getElementById('dCusto').value===''?'':Number(document.getElementById('dCusto').value);
+  var resp=document.getElementById('dResp').value.trim();
+  var notas=document.getElementById('dNotas').value.trim();
+  EQUIP[i].hist=EQUIP[i].hist||[];
+  EQUIP[i].hist.push({data:data,custo:custo,resp:resp,notas:notas});
+  EQUIP[i].ultima=data; if(custo!=='') EQUIP[i].custo=custo; if(resp) EQUIP[i].resp=resp;
+  save(); closeOv('ovDone'); render();
+}
+
+renderFilters(); render();
+</script>
+</body>
+</html>
