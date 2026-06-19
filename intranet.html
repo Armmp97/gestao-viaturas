@@ -1044,6 +1044,7 @@
                     <li id="navVerificadorGarantiasLi"><a onclick="openModule('verificador_garantias')" id="navVerificador_garantias"><span class="nav-icon">🛡️</span> Verificador Garantias</a></li>
                     <li id="navVerificadorOrcamentosLi"><a onclick="openModule('verificador_orcamentos')" id="navVerificador_orcamentos"><span class="nav-icon">🧾</span> Verificação Orçamentos</a></li>
                     <li id="navAnalisadorOsLi"><a onclick="openModule('analisador_os')" id="navAnalisador_os"><span class="nav-icon">🛠️</span> Analisador de OS</a></li>
+                    <li id="navGoogleReviewsLi"><a onclick="openModule('google_reviews')" id="navGoogle_reviews"><span class="nav-icon">⭐</span> Google Reviews</a></li>
                 </ul>
             </li>
         </ul>
@@ -2078,11 +2079,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
@@ -2383,6 +2384,7 @@
         loadMargemReal();
         loadGarantias();
         loadAssessoria();
+        loadGoogleReviews();
         renderMargemMensalReal();
         updateGreeting();
         // Hide breadcrumb on home
@@ -2916,6 +2918,12 @@
         saveAssessoria(event.data.payload);
     });
 
+    // Listen for Google Reviews data from google-reviews iframe
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'googleReviewsUpdate') return;
+        saveGoogleReviews(event.data.payload);
+    });
+
     // Listen for KPI dashboard data from gerador-kpis iframe
     window.addEventListener('message', function(event) {
         if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
@@ -3219,6 +3227,7 @@
         loadMargemReal();
         loadGarantias();
         loadAssessoria();
+        loadGoogleReviews();
         renderMargemMensalReal();
     }
 
@@ -3247,6 +3256,7 @@
             verificador_garantias: { title: 'Verificador de Faturas de Garantia', url: 'verificador-garantias.html' },
             verificador_orcamentos: { title: 'Verificação de Orçamentos', url: 'verificador-orcamentos.html' },
             analisador_os: { title: 'Analisador de Ordens de Serviço', url: 'analisador-os.html' },
+            google_reviews: { title: 'Google Reviews', url: 'google-reviews.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
@@ -3644,6 +3654,26 @@
                 try { localStorage.setItem('intranet_assessoria', JSON.stringify(data)); } catch(e) {}
             }
         }).catch(function(e) { console.warn('[Assessoria] SP load:', e && e.message); });
+    }
+
+    // ======== GOOGLE REVIEWS (google-reviews → Indicadores) ========
+    // Cada publicação substitui TODOS os dados da oficina (a lista colada é sempre completa).
+    function saveGoogleReviews(payload) {
+        if (!payload || !payload.oficina || !payload.dados) return;
+        var store = {};
+        try { var s = localStorage.getItem('intranet_googleReviews'); if (s) store = JSON.parse(s) || {}; } catch(e) {}
+        store[payload.oficina] = payload.dados; // substitui a oficina inteira
+        try { localStorage.setItem('intranet_googleReviews', JSON.stringify(store)); } catch(e) { console.error('[GoogleReviews] save:', e); }
+        saveDashboardToSP('google_reviews.json', store);
+        console.log('[GoogleReviews] publicado:', payload.oficina);
+        openModule('indicadores_obj', 'googlereviews');
+    }
+    function loadGoogleReviews() {
+        loadDashboardFromSP('google_reviews.json').then(function(data) {
+            if (data && typeof data === 'object') {
+                try { localStorage.setItem('intranet_googleReviews', JSON.stringify(data)); } catch(e) {}
+            }
+        }).catch(function(e) { console.warn('[GoogleReviews] SP load:', e && e.message); });
     }
 
     // Converte "Março 2026" → 202603 para comparação numérica

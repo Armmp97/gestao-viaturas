@@ -442,6 +442,12 @@ body {
       icon: '🤝',
       title: 'Assessoria de Vendas',
       desc: 'Desempenho por rececionista — orçamentos, envio por email, taxa de aprovação, OS, regra dos nomes e % de OS enviadas por email, por mês e acumulado do ano.'
+    },
+    {
+      id: 'googlereviews',
+      icon: '⭐',
+      title: 'Google Reviews',
+      desc: 'Avaliações Google por oficina — nº de críticas, média de estrelas e negativas, por oficina, por mês e visão global.'
     }
   ];
 
@@ -451,6 +457,9 @@ body {
   // Dados de Assessoria de Vendas — publicados por Verificação Orçamentos + Analisador OS
   var ASSESSORIA_DATA = {};
   try { var _ad = localStorage.getItem('intranet_assessoria'); if (_ad) ASSESSORIA_DATA = JSON.parse(_ad) || {}; } catch(e) {}
+  // Dados de Google Reviews — publicados pela ferramenta Google Reviews (parent → localStorage, sync SharePoint)
+  var GOOGLEREVIEWS_DATA = {};
+  try { var _gr = localStorage.getItem('intranet_googleReviews'); if (_gr) GOOGLEREVIEWS_DATA = JSON.parse(_gr) || {}; } catch(e) {}
 
   // ══════ DADOS REAIS KPIs 2025 ══════
   var KPI_DATA = {
@@ -947,6 +956,7 @@ body {
     if (!state.category) return renderCategories();
     if (state.category === 'garantias') return renderGarantias();
     if (state.category === 'assessoria') return renderAssessoria();
+    if (state.category === 'googlereviews') return renderGoogleReviews();
     if (!state.year) return renderYears();
 
     // Ticket Médio has special Geral/Mensal subview routing
@@ -2346,6 +2356,96 @@ body {
         '<td>'+(t.osEmailKnown?p(t.osEmail,t.osTotal):'—')+'</td></tr>';
     });
     h+='</tbody></table></div></div>';
+    document.getElementById('content').innerHTML=html+h;
+    renderBreadcrumb();
+  }
+
+  // ══════ GOOGLE REVIEWS ══════
+  window.grSetYear=function(y){ state.grYear=String(y); state.grMes='ano'; renderGoogleReviews(); };
+  window.grSetOf=function(o){ state.grOficina=o; state.grMes='ano'; renderGoogleReviews(); };
+  window.grSetMes=function(m){ state.grMes=m; renderGoogleReviews(); };
+
+  function renderGoogleReviews(){
+    if (currentChart) { currentChart.destroy(); currentChart = null; }
+    var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão'};
+    var data=GOOGLEREVIEWS_DATA||{};
+    var yearsSet={};
+    Object.keys(data).forEach(function(of){ Object.keys(data[of]||{}).forEach(function(y){ yearsSet[y]=1; }); });
+    var years=Object.keys(yearsSet).sort();
+    var html='<button class="btn-back" onclick="navigate()">← Voltar</button>';
+    html+='<h2 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin:20px 0 8px;">⭐ Google Reviews</h2>';
+    html+='<p style="font-size:.9rem;color:var(--text-body);margin-bottom:18px;">Avaliações Google por oficina — apenas estrelas. Negativa = avaliação ≤ 3★. Publica a partir de <i>Gerar Relatórios → Google Reviews</i>.</p>';
+    if(years.length===0){ html+='<div class="comp-section" style="text-align:center;padding:40px 20px;color:var(--text-body);"><div style="font-size:32px;margin-bottom:10px;">⭐</div><div style="font-weight:700;color:var(--navy);margin-bottom:6px;">Sem dados</div><div style="font-size:13px;">Cola e publica a partir de <i>Gerar Relatórios → Google Reviews</i>.</div></div>'; document.getElementById('content').innerHTML=html; renderBreadcrumb(); return; }
+    if(!state.grYear||years.indexOf(String(state.grYear))<0) state.grYear=years[years.length-1];
+    if(!state.grOficina) state.grOficina='global';
+    if(state.grMes==null) state.grMes='ano';
+
+    function ofs(){ return state.grOficina==='global'?Object.keys(OF):[state.grOficina]; }
+    function agg(of,y,mFilter){
+      var r={count:0,starsSum:0,neg:0,negList:[]};
+      var yo=(data[of]||{})[y]; if(!yo) return r;
+      Object.keys(yo).forEach(function(m){
+        if(mFilter!=='ano' && String(m)!==String(mFilter)) return;
+        var b=yo[m]||{}; r.count+=b.count||0; r.starsSum+=b.starsSum||0; r.neg+=b.neg||0;
+        (b.negList||[]).forEach(function(x){ r.negList.push({n:x.n,d:x.d,s:x.s,of:of}); });
+      });
+      return r;
+    }
+    function aggScope(y,mFilter){ var r={count:0,starsSum:0,neg:0,negList:[]}; ofs().forEach(function(of){ var a=agg(of,y,mFilter); r.count+=a.count;r.starsSum+=a.starsSum;r.neg+=a.neg;r.negList=r.negList.concat(a.negList); }); return r; }
+    function monthsInYear(y){ var s={}; ofs().forEach(function(of){ var yo=(data[of]||{})[y]; if(yo) Object.keys(yo).forEach(function(m){s[m]=1;}); }); return Object.keys(s).map(Number).sort(function(a,b){return a-b;}); }
+    function avg(o){ return o.count?(o.starsSum/o.count).toFixed(2):'—'; }
+    function starHtml(o){ return o.count?('<span style="color:#f59e0b;font-weight:700;">'+(o.starsSum/o.count).toFixed(2)+'★</span>'):'—'; }
+
+    if(state.grMes!=='ano' && monthsInYear(state.grYear).indexOf(Number(state.grMes))<0) state.grMes='ano';
+
+    // selectors
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
+    years.forEach(function(y){ html+=garBtn(y, String(y)===String(state.grYear), 'grSetYear(\''+y+'\')'); });
+    html+='</div>';
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
+    html+=garBtn('Global', state.grOficina==='global', 'grSetOf(\'global\')');
+    Object.keys(OF).forEach(function(k){ html+=garBtn(OF[k], state.grOficina===k, 'grSetOf(\''+k+'\')'); });
+    html+='</div>';
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">';
+    html+=garBtn('Ano todo', state.grMes==='ano', 'grSetMes(\'ano\')');
+    monthsInYear(state.grYear).forEach(function(m){ html+=garBtn(MONTHS[m-1], String(state.grMes)===String(m), 'grSetMes(\''+m+'\')'); });
+    html+='</div>';
+
+    var scopeLabel=(state.grOficina==='global'?'Todas as oficinas':OF[state.grOficina])+' · '+(state.grMes==='ano'?('Ano '+state.grYear):(MONTHS[state.grMes-1]+' '+state.grYear));
+    var tot=aggScope(state.grYear,state.grMes);
+
+    var h='<div class="comp-section"><div class="comp-title">⭐ '+scopeLabel+'</div>';
+    // headline boxes
+    h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">';
+    h+='<div style="flex:1;min-width:130px;background:#f8fafc;border:1px solid var(--line,#e2e8f0);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:var(--navy);">'+tot.count+'</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Nº de críticas</div></div>';
+    h+='<div style="flex:1;min-width:130px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:#b45309;">'+avg(tot)+'★</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Média de estrelas</div></div>';
+    h+='<div style="flex:1;min-width:130px;background:'+(tot.neg?'#fef2f2':'#f0fdf4')+';border:1px solid '+(tot.neg?'#fecaca':'#bbf7d0')+';border-radius:10px;padding:14px;text-align:center;"><div style="font-size:1.7rem;font-weight:800;color:'+(tot.neg?'#dc2626':'#16a34a')+';">'+tot.neg+'</div><div style="font-size:11px;color:var(--text-body);font-weight:600;text-transform:uppercase;">Negativas (≤3★)</div></div>';
+    h+='</div>';
+
+    // tabela por oficina
+    h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#1e3a5f;color:#fff;">Oficina</th><th style="background:#1e3a5f;color:#fff;">Nº críticas</th><th style="background:#1e3a5f;color:#fff;">Média ★</th><th style="background:#1e3a5f;color:#fff;">Negativas</th></tr></thead><tbody>';
+    Object.keys(OF).forEach(function(k){ var a=agg(k,state.grYear,state.grMes); h+='<tr><td style="text-align:left;font-weight:600;">'+OF[k]+'</td><td>'+a.count+'</td><td>'+starHtml(a)+'</td><td'+(a.neg?' style="color:#dc2626;font-weight:700;"':'')+'>'+a.neg+'</td></tr>'; });
+    h+='<tr style="font-weight:800;background:#f1f5f9;"><td style="text-align:left;">Total</td><td>'+tot.count+'</td><td>'+starHtml(tot)+'</td><td>'+tot.neg+'</td></tr>';
+    h+='</tbody></table></div>';
+
+    // tabela por mês (do âmbito de oficina selecionado)
+    var allMonths=[]; for(var mm=1;mm<=12;mm++){ var am=aggScope(state.grYear,String(mm)); if(am.count>0) allMonths.push({m:mm,a:am}); }
+    if(allMonths.length){
+      h+='<div class="comp-title" style="margin-top:18px;">📅 Por mês — '+(state.grOficina==='global'?'Todas as oficinas':OF[state.grOficina])+' '+state.grYear+'</div>';
+      h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#065f46;color:#fff;">Mês</th><th style="background:#065f46;color:#fff;">Nº críticas</th><th style="background:#065f46;color:#fff;">Média ★</th><th style="background:#065f46;color:#fff;">Negativas</th></tr></thead><tbody>';
+      allMonths.forEach(function(o){ h+='<tr'+(String(state.grMes)===String(o.m)?' style="background:#ecfdf5;"':'')+'><td style="text-align:left;font-weight:600;">'+MONTHS[o.m-1]+'</td><td>'+o.a.count+'</td><td>'+starHtml(o.a)+'</td><td'+(o.a.neg?' style="color:#dc2626;font-weight:700;"':'')+'>'+o.a.neg+'</td></tr>'; });
+      h+='</tbody></table></div>';
+    }
+
+    // lista de negativas
+    if(tot.negList.length){
+      tot.negList.sort(function(a,b){return a.d<b.d?1:-1;});
+      h+='<div class="comp-title" style="margin-top:18px;color:#dc2626;">⚠ Negativas (≤3★) — '+scopeLabel+'</div>';
+      h+='<div class="comp-table-wrap"><table class="comp-table"><thead><tr><th style="text-align:left;background:#7f1d1d;color:#fff;">Oficina</th><th style="text-align:left;background:#7f1d1d;color:#fff;">Autor</th><th style="background:#7f1d1d;color:#fff;">Data</th><th style="background:#7f1d1d;color:#fff;">Estrelas</th></tr></thead><tbody>';
+      tot.negList.forEach(function(x){ h+='<tr><td style="text-align:left;">'+(OF[x.of]||x.of)+'</td><td style="text-align:left;">'+x.n+'</td><td>'+x.d+'</td><td style="color:#dc2626;font-weight:700;">'+x.s+'★</td></tr>'; });
+      h+='</tbody></table></div>';
+    }
+    h+='</div>';
     document.getElementById('content').innerHTML=html+h;
     renderBreadcrumb();
   }

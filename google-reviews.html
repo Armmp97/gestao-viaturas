@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Reviews — DomusCar</title>
+<style>
+  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--green:#0d904f;--amber:#b45309;--red:#dc2626;}
+  *{box-sizing:border-box;}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
+  h1{font-size:1.5rem;color:var(--navy);margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.9rem;margin:0 0 20px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  .card h2{font-size:1rem;color:var(--navy);margin:0 0 12px;}
+  label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;}
+  select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;}
+  textarea{min-height:220px;resize:vertical;line-height:1.4;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;}
+  .row > div{flex:1;min-width:180px;}
+  button{padding:12px 16px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-primary{background:var(--blue);color:#fff;}
+  .btn-primary:disabled{background:#94a3b8;cursor:not-allowed;}
+  .btn-ghost{background:#eef2ff;color:var(--navy);}
+  .status{font-size:13px;min-height:18px;margin:10px 0 0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;}
+  th{background:var(--navy2);color:#fff;font-weight:600;font-size:12px;}
+  td.l,th.l{text-align:left;}
+  .boxes{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .box{flex:1;min-width:130px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;}
+  .box .n{font-size:1.6rem;font-weight:800;color:var(--navy);}
+  .box .lb{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+  .stars{color:#f59e0b;letter-spacing:1px;}
+  .neg td{background:#fef2f2;}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  .pill{display:inline-block;background:#dbeafe;color:var(--navy);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⭐ Google Reviews</h1>
+  <p class="sub">Cola o texto das avaliações do Google de cada oficina. A ferramenta lê apenas as <b>estrelas</b> e a <b>data</b> de cada crítica, organiza por mês e publica para os Indicadores e Objetivos. Podes colar sempre a lista completa — cada publicação substitui os dados da oficina (não duplica).</p>
+
+  <div class="card">
+    <h2>1. Dados</h2>
+    <div class="row">
+      <div>
+        <label>Oficina</label>
+        <select id="oficina">
+          <option value="cacem">DomusCar Cacém</option>
+          <option value="lisboa">DomusCar Lisboa</option>
+          <option value="colisao">DomusCar Colisão</option>
+        </select>
+      </div>
+      <div>
+        <label>Data de referência (para converter "Há X semanas")</label>
+        <input type="date" id="refDate" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px;">
+      </div>
+    </div>
+    <label>Texto das avaliações (colar)</label>
+    <textarea id="raw" placeholder="Cola aqui o texto copiado da página de Google Reviews..."></textarea>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-ghost" onclick="analisar()">🔍 Analisar</button>
+      <button class="btn-primary" id="btnPub" onclick="publicar()" disabled>📤 Publicar para Indicadores</button>
+    </div>
+    <div class="status" id="status"></div>
+    <p class="hint">As <b>estrelas são lidas tal como aparecem no texto</b>. Negativa = avaliação ≤ 3★. As datas relativas ("Há X dias/semanas/meses") são convertidas com base na data de referência acima (por omissão, hoje), por isso podes colar a mesma lista todos os meses que cada crítica fica sempre no mês certo.</p>
+  </div>
+
+  <div id="resultado"></div>
+</div>
+
+<script>
+var OFICINAS={cacem:'DomusCar Cacém',lisboa:'DomusCar Lisboa',colisao:'DomusCar Colisão'};
+var MESN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var ultimoParse=null;
+
+(function(){ // refDate default = hoje
+  var d=new Date();
+  document.getElementById('refDate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+})();
+
+function refNow(){
+  var v=document.getElementById('refDate').value;
+  if(v){ var p=v.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+  return new Date();
+}
+function addDays(d,n){var x=new Date(d.getTime());x.setDate(x.getDate()+n);return x;}
+function addMonths(d,n){var x=new Date(d.getTime());x.setMonth(x.getMonth()+n);return x;}
+function addYears(d,n){var x=new Date(d.getTime());x.setFullYear(x.getFullYear()+n);return x;}
+
+// Converte um rótulo de data do Google numa Date
+function parseData(s,now){
+  s=(s||'').toLowerCase().replace(/ /g,' ');
+  var m;
+  if(m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/)) return new Date(+m[3],+m[2]-1,+m[1]);
+  if(/h[áa]\s+(um|uma)\s+dia/.test(s)) return addDays(now,-1);
+  if(m=s.match(/h[áa]\s+(\d+)\s*dia/)) return addDays(now,-(+m[1]));
+  if(/h[áa]\s+(um|uma)\s+semana/.test(s)) return addDays(now,-7);
+  if(m=s.match(/h[áa]\s+(\d+)\s*semana/)) return addDays(now,-7*(+m[1]));
+  if(/h[áa]\s+(um|uma)\s+m[êe]s/.test(s)) return addMonths(now,-1);
+  if(m=s.match(/h[áa]\s+(\d+)\s*m[êe]s/)) return addMonths(now,-(+m[1]));
+  if(/h[áa]\s+(um|uma)\s+ano/.test(s)) return addYears(now,-1);
+  if(m=s.match(/h[áa]\s+(\d+)\s*ano/)) return addYears(now,-(+m[1]));
+  if(/h[áa]\s+\d+\s*(hora|minuto|segundo)|agora|h[áa]\s+(um|uma)\s+(hora|minuto)/.test(s)) return new Date(now.getTime());
+  return null;
+}
+
+// Conta estrelas num bloco de texto que precede a data
+function contaEstrelas(g){
+  if(!g) return 0;
+  if(g.indexOf('★')>-1) return (g.match(/★/g)||[]).length;
+  return (g.match(/star/gi)||[]).length;
+}
+
+// Parser principal: cada linha de classificação (estrelas + data) = 1 crítica
+function parse(text,now){
+  // posições dos nomes (links de contribuidor) para atribuir autor
+  var nomes=[]; var lre=/\[([^\]]+)\]\(https:\/\/www\.google\.com\/maps\/contrib\/[^)]*\)/g; var lm;
+  while(lm=lre.exec(text)) nomes.push({i:lm.index,name:lm[1].trim()});
+  function autorAntes(idx){ var nm='(desconhecido)'; for(var k=0;k<nomes.length;k++){ if(nomes[k].i<idx) nm=nomes[k].name; else break; } return nm; }
+
+  var criticas=[];
+  // linha de classificação: 1-5 estrelas seguidas de uma data (relativa ou absoluta)
+  var rre=/((?:star\s*){1,5}|★{1,5})\s*(h[áa]\s+[^\n]+|\d{1,2}\/\d{1,2}\/\d{4})/gi;
+  var rm;
+  while(rm=rre.exec(text)){
+    var s=contaEstrelas(rm[1]);
+    if(s<1||s>5) continue;
+    var d=parseData(rm[2],now);
+    if(!d) continue;
+    criticas.push({autor:autorAntes(rm.index),stars:s,date:d});
+  }
+  return criticas;
+}
+
+// Agrega por ano/mês
+function agregar(criticas){
+  var by={};
+  criticas.forEach(function(c){
+    var y=String(c.date.getFullYear()), m=String(c.date.getMonth()+1);
+    by[y]=by[y]||{};
+    var b=by[y][m]=by[y][m]||{count:0,starsSum:0,neg:0,negList:[]};
+    b.count++; b.starsSum+=c.stars;
+    if(c.stars<=3){ b.neg++; b.negList.push({n:c.autor,d:c.date.toISOString().slice(0,10),s:c.stars}); }
+  });
+  return by;
+}
+
+function analisar(){
+  var txt=document.getElementById('raw').value||'';
+  var now=refNow();
+  var criticas=parse(txt,now);
+  if(!criticas.length){
+    document.getElementById('status').innerHTML='<span style="color:#dc2626;">Não foram encontradas críticas. Verifica se colaste o texto completo (com as estrelas e datas).</span>';
+    document.getElementById('btnPub').disabled=true; ultimoParse=null;
+    document.getElementById('resultado').innerHTML='';
+    return;
+  }
+  var by=agregar(criticas);
+  ultimoParse={oficina:document.getElementById('oficina').value,dados:by};
+  document.getElementById('btnPub').disabled=false;
+  document.getElementById('status').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ '+criticas.length+' críticas analisadas. Confere abaixo e publica.</span>';
+  render(by,criticas.length);
+}
+
+function render(by,total){
+  var of=OFICINAS[document.getElementById('oficina').value];
+  var years=Object.keys(by).sort();
+  var h='<div class="card"><h2>2. Pré-visualização — '+of+' <span class="pill">'+total+' críticas</span></h2>';
+  years.forEach(function(y){
+    var months=Object.keys(by[y]).map(Number).sort(function(a,b){return a-b;});
+    var tc=0,ts=0,tn=0;
+    h+='<div style="margin:10px 0 4px;font-weight:700;color:var(--navy);">'+y+'</div>';
+    h+='<table><thead><tr><th class="l">Mês</th><th>Nº críticas</th><th>Média ★</th><th>Negativas (≤3★)</th></tr></thead><tbody>';
+    months.forEach(function(m){
+      var b=by[y][String(m)]; tc+=b.count; ts+=b.starsSum; tn+=b.neg;
+      var avg=b.count?(b.starsSum/b.count):0;
+      h+='<tr><td class="l">'+MESN[m-1]+'</td><td>'+b.count+'</td><td><span class="stars">'+avg.toFixed(2)+'★</span></td><td'+(b.neg?' style="color:#dc2626;font-weight:700;"':'')+'>'+b.neg+'</td></tr>';
+    });
+    h+='<tr style="font-weight:800;background:#f1f5f9;"><td class="l">Total '+y+'</td><td>'+tc+'</td><td><span class="stars">'+(tc?(ts/tc).toFixed(2):'0.00')+'★</span></td><td>'+tn+'</td></tr>';
+    h+='</tbody></table>';
+  });
+  // lista de negativas
+  var negs=[];
+  years.forEach(function(y){ Object.keys(by[y]).forEach(function(m){ by[y][m].negList.forEach(function(x){ negs.push(x); }); }); });
+  if(negs.length){
+    negs.sort(function(a,b){return a.d<b.d?1:-1;});
+    h+='<div style="margin-top:16px;font-weight:700;color:#dc2626;">Negativas (≤3★)</div>';
+    h+='<table><thead><tr><th class="l">Autor</th><th>Data</th><th>Estrelas</th></tr></thead><tbody>';
+    negs.forEach(function(x){ h+='<tr class="neg"><td class="l">'+x.n+'</td><td>'+x.d+'</td><td>'+x.s+'★</td></tr>'; });
+    h+='</tbody></table>';
+  }
+  h+='</div>';
+  document.getElementById('resultado').innerHTML=h;
+}
+
+function publicar(){
+  if(!ultimoParse){ return; }
+  ultimoParse.oficina=document.getElementById('oficina').value;
+  if(window.parent&&window.parent!==window){
+    window.parent.postMessage({type:'googleReviewsUpdate',payload:ultimoParse},'*');
+    document.getElementById('status').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Google Reviews...</span>';
+  } else {
+    document.getElementById('status').innerHTML='<span style="color:#dc2626;">Abre dentro da intranet para publicar.</span>';
+  }
+}
+</script>
+</body>
+</html>
