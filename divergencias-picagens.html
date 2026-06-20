@@ -39,13 +39,18 @@ h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
 
 <div id="uploadScreen">
 <div class="upload-area">
-<h2>PDF do 2Smart</h2>
+<h2>1. Data do Relatório</h2>
+<p style="font-size:0.85em;color:#666;margin-bottom:10px">Selecione o dia a que se referem os dados. É este o dia usado para buscar do Officegest. Se não indicar, será extraída do PDF.</p>
+<input type="date" id="reportDateInput" style="padding:10px 14px;border:1px solid #ccc;border-radius:8px;font-size:1em;font-family:inherit;width:100%;max-width:250px">
+</div>
+<div class="upload-area">
+<h2>2. PDF do 2Smart</h2>
 <div class="drop-zone" id="pdfZone"><div class="icon">📋</div><p>Arraste o PDF aqui ou clique para selecionar</p></div>
 <input type="file" id="pdfInput" accept=".pdf" style="display:none">
 <div class="file-info" id="pdfInfo"></div>
 </div>
 <div class="upload-area">
-<h2>Excel do Officegest</h2>
+<h2>3. Officegest (Excel ou API)</h2>
 <div class="drop-zone" id="xlsxZone"><div class="icon">📊</div><p>Arraste o Excel aqui ou clique para selecionar</p></div>
 <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none">
 <div class="file-info" id="xlsxInfo"></div>
@@ -54,12 +59,7 @@ h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
   <button type="button" id="apiOgBtn" style="padding:9px 18px;background:#003B73;color:#fff;border:none;border-radius:8px;font-size:0.9em;font-weight:600;cursor:pointer">⬇ Buscar do Officegest (API)</button>
 </div>
 <div class="file-info" id="apiOgInfo" style="display:none;margin-top:8px"></div>
-<div style="text-align:center;color:#9aa;font-size:11px;margin-top:6px">Usa a <b>Data do Relatório</b> (em baixo). Credenciais: definidas uma vez no módulo "API Officegest (Consola)".</div>
-</div>
-<div class="upload-area">
-<h2>Data do Relatório</h2>
-<p style="font-size:0.85em;color:#666;margin-bottom:10px">Selecione o dia a que se referem os ficheiros. Se não indicar, será extraída do PDF.</p>
-<input type="date" id="reportDateInput" style="padding:10px 14px;border:1px solid #ccc;border-radius:8px;font-size:1em;font-family:inherit;width:100%;max-width:250px">
+<div style="text-align:center;color:#9aa;font-size:11px;margin-top:6px">Usa a <b>Data do Relatório</b> (passo 1, em cima) — escolhe-a primeiro. Credenciais: definidas uma vez no módulo "API Officegest (Consola)".</div>
 </div>
 <button class="btn" id="generateBtn" disabled>Gerar Relatórios</button>
 <div class="progress" id="progress"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div><p class="progress-text" id="progressText">A processar...</p></div>
@@ -174,6 +174,7 @@ function initUI() {
         document.getElementById('xlsxInfo').style.display='none';
         var _ai=document.getElementById('apiOgInfo'); if(_ai) _ai.style.display='none';
         document.getElementById('reportDateInput').value='';
+        var _ab=document.getElementById('apiOgBtn'); if(_ab){ _ab.disabled=true; _ab.style.opacity='0.5'; _ab.style.cursor='not-allowed'; }
         document.getElementById('generateBtn').disabled=true;
     });
 }
@@ -428,9 +429,13 @@ async function fetchOfficegestFromAPI(dateStr, onProgress){
 }
 function setupApiOg(){
     var btn=document.getElementById('apiOgBtn'); if(!btn) return;
+    var dateEl=document.getElementById('reportDateInput');
+    function syncApiBtn(){ var has=!!(dateEl && dateEl.value); btn.disabled=!has; btn.style.opacity=has?'1':'0.5'; btn.style.cursor=has?'pointer':'not-allowed'; btn.title=has?'':'Escolhe primeiro a Data do Relatório (passo 1)'; }
+    if(dateEl){ dateEl.addEventListener('change', syncApiBtn); dateEl.addEventListener('input', syncApiBtn); }
+    syncApiBtn();
     btn.addEventListener('click', async function(){
-        var date=document.getElementById('reportDateInput').value;
-        if(!date){ alert('Escolhe primeiro a Data do Relatório (em baixo).'); return; }
+        var date=dateEl.value;
+        if(!date){ alert('Escolhe primeiro a Data do Relatório (passo 1, em cima).'); return; }
         var info=document.getElementById('apiOgInfo');
         btn.disabled=true; info.style.display='block'; info.style.color='#1976d2'; info.textContent='A buscar do Officegest...';
         try{
