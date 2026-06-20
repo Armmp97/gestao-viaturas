@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OfficeGest API Explorer — Walkinggarage</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2129; --panel2:#222c37; --line:#2d3a48;
+    --txt:#e6edf3; --muted:#8b97a5; --accent:#3b9eff; --accent2:#1f6feb;
+    --ok:#2ea043; --warn:#d29922; --err:#f85149; --chip:#243240;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);font-size:14px;line-height:1.45}
+  header{background:linear-gradient(90deg,#10243d,#0f1419);border-bottom:1px solid var(--line);
+    padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+  header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
+  header .sub{color:var(--muted);font-size:12px}
+  .status-dot{width:9px;height:9px;border-radius:50%;background:var(--err);display:inline-block;margin-right:5px}
+  .status-dot.on{background:var(--ok)}
+  .badge{background:var(--chip);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted)}
+  .layout{display:flex;min-height:calc(100vh - 49px)}
+  nav{width:230px;background:var(--panel);border-right:1px solid var(--line);padding:8px;overflow-y:auto;flex-shrink:0}
+  nav .group{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin:14px 8px 4px}
+  nav button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--txt);
+    padding:7px 10px;border-radius:6px;cursor:pointer;font-size:13px}
+  nav button:hover{background:var(--panel2)}
+  nav button.active{background:var(--accent2);color:#fff}
+  main{flex:1;padding:16px 20px;overflow-x:auto;min-width:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+  .card h2{margin:0 0 4px;font-size:15px}
+  .card .desc{color:var(--muted);font-size:12px;margin-bottom:10px}
+  label{display:block;font-size:11px;color:var(--muted);margin:6px 0 3px}
+  input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit}
+  textarea{min-height:70px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:140px}
+  button.btn{background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:8px 16px;
+    cursor:pointer;font-size:13px;font-weight:500}
+  button.btn:hover{background:var(--accent)}
+  button.btn.sec{background:var(--chip);border:1px solid var(--line);color:var(--txt)}
+  button.btn.sec:hover{background:var(--panel2)}
+  button.btn.sm{padding:4px 10px;font-size:12px}
+  .toolbar{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
+  .toolbar>div{flex:0 0 auto}
+  .pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;border:1px solid var(--line);
+    background:var(--chip);cursor:pointer;margin:0 4px 4px 0}
+  .pill.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top;white-space:nowrap;
+    max-width:340px;overflow:hidden;text-overflow:ellipsis}
+  th{background:var(--panel2);position:sticky;top:0;cursor:pointer;font-weight:600}
+  tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+  tr:hover td{background:rgba(59,158,255,.07)}
+  td.act{white-space:nowrap}
+  .tablewrap{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  pre{background:#0a0e13;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;
+    font-size:12px;max-height:60vh;margin:0;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .msg{padding:8px 12px;border-radius:6px;font-size:12.5px;margin:8px 0}
+  .msg.err{background:rgba(248,81,73,.12);border:1px solid var(--err);color:#ffb3ae}
+  .msg.ok{background:rgba(46,160,67,.12);border:1px solid var(--ok);color:#7ee787}
+  .msg.info{background:rgba(59,158,255,.1);border:1px solid var(--accent);color:#9fd0ff}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
+    justify-content:center;z-index:100;padding:30px 16px;overflow:auto}
+  .modal.open{display:flex}
+  .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(900px,100%);
+    padding:18px 20px;max-height:92vh;overflow:auto}
+  .modal h3{margin:0 0 10px}
+  .close{float:right;cursor:pointer;color:var(--muted);font-size:20px;line-height:1}
+  .kv{display:grid;grid-template-columns:200px 1fr;gap:2px 12px;font-size:12.5px}
+  .kv div{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);overflow:hidden;text-overflow:ellipsis}
+  .kv .k{color:var(--muted)}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:10px;flex-wrap:wrap}
+  .tabs button{background:none;border:none;color:var(--muted);padding:7px 12px;cursor:pointer;
+    border-bottom:2px solid transparent;font-size:12.5px}
+  .tabs button.active{color:var(--txt);border-bottom-color:var(--accent)}
+  .muted{color:var(--muted)}
+  .small{font-size:11px}
+  a{color:var(--accent)}
+  .count{color:var(--muted);font-size:12px;margin-left:8px}
+  details{margin:6px 0}
+  summary{cursor:pointer;color:var(--accent);font-size:12px}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#2d3a48;border-radius:5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔧 OfficeGest API Explorer</h1>
+  <span class="sub">Walkinggarage, Lda</span>
+  <span class="badge"><span id="dotV1" class="status-dot"></span>V1 Basic</span>
+  <span class="badge"><span id="dotV2" class="status-dot"></span>V2 Bearer</span>
+  <span id="activeVer" class="badge">Auto: …</span>
+  <span style="flex:1"></span>
+  <span id="quota" class="badge"></span>
+  <button class="btn sec sm" onclick="openCfg()">⚙ Credenciais</button>
+</header>
+
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<!-- Config modal -->
+<div class="modal" id="cfgModal">
+  <div class="box" style="max-width:560px">
+    <span class="close" onclick="closeCfg()">&times;</span>
+    <h3>⚙ Credenciais & Ligação</h3>
+    <label>Base URL (sem barra final)</label>
+    <input id="cfgBase" placeholder="https://walkinggarage.officegest.com">
+    <div class="row">
+      <div><label>Utilizador</label><input id="cfgUser"></div>
+      <div><label>API Hash (V1 Basic)</label><input id="cfgHash" type="text"></div>
+    </div>
+    <label>Password da conta (login V2) — só se for diferente do hash</label>
+    <input id="cfgV2pass" type="password" placeholder="deixa vazio para usar o hash">
+    <div class="msg info small" style="margin-top:10px">
+      As credenciais ficam guardadas <b>localmente no teu browser</b> (localStorage) — não saem daqui.
+      A versão da API é escolhida <b>automaticamente</b>: V1 usa <b>Basic</b> (<code>user:hash</code>); V2 obtém um <b>token Bearer</b> via <code>/api/v2/auth/login</code>,
+      que normalmente exige a <b>password da conta</b> (não o hash). Se a V2 der 401, preenche a password acima.
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="saveCfg()">Guardar</button>
+      <button class="btn sec" onclick="testConn()">Testar ligação V1 + V2</button>
+      <button class="btn sec" onclick="loginV2()">Renovar token V2</button>
+    </div>
+    <div id="cfgMsg"></div>
+  </div>
+</div>
+
+<!-- Generic detail modal -->
+<div class="modal" id="detModal">
+  <div class="box">
+    <span class="close" onclick="document.getElementById('detModal').classList.remove('open')">&times;</span>
+    <div id="detBody"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   OfficeGest API Explorer — single file, vanilla JS
+   Versão V1/V2 escolhida AUTOMATICAMENTE (sem seletor manual)
+   ============================================================ */
+const DEFAULTS = {
+  base: "https://walkinggarage.officegest.com",
+  user: "w_andre",
+  // SEM credenciais embebidas: este ficheiro fica num repositório/host público.
+  // Cada admin introduz o hash (V1) e a password (V2) uma vez em ⚙ Credenciais;
+  // ficam guardados apenas no localStorage do próprio browser.
+  hash: "",
+  v2pass: ""
+};
+const LS = "officegest_cfg_v1";
+let cfg = loadCfg();
+let v2token = null;
+
+// Connection state — drives AUTOMATIC version selection
+const state = {v1ok:false, v2ok:false, active:"v1"};
+function chooseActive(){
+  // Prefer V2 when disponível: pagina correctamente (respeita limit/per_page),
+  // tem maintenance-notices e dados mais ricos. V1 fica como fallback —
+  // o V1 deste servidor ignora o limit e devolve tudo (milhares de linhas).
+  state.active = state.v2ok ? "v2" : (state.v1ok ? "v1" : "v2");
+  refreshActive();
+}
+function refreshActive(){
+  document.querySelectorAll(".verAutoBadge").forEach(e=>e.textContent=state.active.toUpperCase());
+  const h=document.getElementById("activeVer");
+  if(h) h.textContent = "Auto: " + state.active.toUpperCase() + (state.active!=="v2"&&state.v2ok?" (+V2)":"");
+}
+
+function loadCfg(){
+  try{ const s = JSON.parse(localStorage.getItem(LS)); if(s&&s.base) return {...DEFAULTS, ...s, v2pass:(s.v2pass||DEFAULTS.v2pass)}; }catch(e){}
+  return {...DEFAULTS};
+}
+function persist(){ localStorage.setItem(LS, JSON.stringify(cfg)); }
+
+/* ---------- low level fetch ---------- */
+function basicHeader(){ return "Basic " + btoa(cfg.user + ":" + cfg.hash); }
+
+async function api(version, method, path, {query, body, raw}={}){
+  let url = cfg.base.replace(/\/$/,"") + (version==="v2" ? "/api/v2" : "/api") + path;
+  if(query){
+    const qs = new URLSearchParams();
+    for(const [k,v] of Object.entries(query)){
+      if(v===""||v===null||v===undefined) continue;
+      qs.append(k, v);
+    }
+    const s = qs.toString(); if(s) url += "?" + s;
+  }
+  const headers = {"Accept":"application/json"};
+  if(version==="v2"){
+    if(!v2token) await loginV2(true);
+    headers["Authorization"] = "Bearer " + v2token;
+  } else {
+    headers["Authorization"] = basicHeader();
+  }
+  const opt = {method, headers, mode:"cors"};
+  if(body!==undefined){
+    if(raw){ opt.body = body; }
+    else { headers["Content-Type"]="application/json"; opt.body = JSON.stringify(body); }
+  }
+  let res;
+  try{
+    res = await fetch(url, opt);
+  }catch(e){
+    throw new ApiError(0, "Falha de rede / CORS: "+e.message+
+      "\n\nSe abriste o ficheiro com file://, o browser pode bloquear o pedido (CORS). "+
+      "Soluções: (1) abre a partir do próprio domínio officegest, ou (2) usa uma extensão que desative CORS para testes, "+
+      "ou (3) corre um pequeno proxy local. O URL tentado foi:\n"+url, null);
+  }
+  updateQuota(res.headers);
+  const text = await res.text();
+  let data; try{ data = text ? JSON.parse(text) : null; }catch(e){ data = text; }
+  if(data && typeof data==="object" && (data.api_throttle_left!=null || data.api_monthly_left!=null)){
+    const q=document.getElementById("quota");
+    if(q) q.textContent=(data.api_throttle_left!=null?("throttle "+data.api_throttle_left):"")+(data.api_monthly_left!=null?("  ·  mensal "+data.api_monthly_left):"");
+  }
+  if(!res.ok){
+    const m = (data && (data.message || (data.error&&data.error.message))) || res.statusText;
+    throw new ApiError(res.status, m, data);
+  }
+  if(version==="v2"){ state.v2ok=true; } else { state.v1ok=true; }
+  chooseActive();
+  return data;
+}
+class ApiError extends Error{ constructor(status,msg,data){ super(msg); this.status=status; this.data=data; } }
+
+function updateQuota(h){
+  const left = h.get("x-api-throttle-left") || h.get("api-throttle-left");
+  const month = h.get("x-api-monthly-left") || h.get("api-monthly-left");
+  if(left||month){
+    document.getElementById("quota").textContent =
+      (left?("throttle "+left):"") + (month?("  ·  mensal "+month):"");
+  }
+}
+
+/* ---------- V2 login ---------- */
+async function loginV2(silent){
+  const url = cfg.base.replace(/\/$/,"") + "/api/v2/auth/login";
+  try{
+    const res = await fetch(url,{method:"POST",mode:"cors",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({username:cfg.user,password:(cfg.v2pass||cfg.hash)})});
+    const data = await res.json();
+    const tok = data && ( (data.data && (data.data.token || data.data.access_token)) || data.token || data.access_token );
+    if(res.ok && tok){ v2token = tok; state.v2ok=true; chooseActive(); setDot("dotV2",true); if(!silent) flash("cfgMsg","ok","Token V2 obtido com sucesso."); return tok; }
+    state.v2ok=false; chooseActive(); setDot("dotV2",false);
+    if(!silent) flash("cfgMsg","err","Login V2 falhou: "+(data&&(data.error&&data.error.message||data.message)||res.status));
+  }catch(e){
+    state.v2ok=false; chooseActive(); setDot("dotV2",false);
+    if(!silent) flash("cfgMsg","err","Login V2 erro de rede/CORS: "+e.message);
+  }
+  return null;
+}
+
+/* ---------- config UI ---------- */
+function openCfg(){
+  document.getElementById("cfgBase").value=cfg.base;
+  document.getElementById("cfgUser").value=cfg.user;
+  document.getElementById("cfgHash").value=cfg.hash;
+  document.getElementById("cfgV2pass").value=cfg.v2pass||"";
+  document.getElementById("cfgMsg").innerHTML="";
+  document.getElementById("cfgModal").classList.add("open");
+}
+function closeCfg(){ document.getElementById("cfgModal").classList.remove("open"); }
+function saveCfg(){
+  cfg.base=document.getElementById("cfgBase").value.trim();
+  cfg.user=document.getElementById("cfgUser").value.trim();
+  cfg.hash=document.getElementById("cfgHash").value.trim();
+  cfg.v2pass=document.getElementById("cfgV2pass").value;
+  persist(); v2token=null; flash("cfgMsg","ok","Guardado.");
+}
+async function testConn(){
+  flash("cfgMsg","info",'<span class="spinner"></span> A testar…');
+  let v1ok=false,v2ok=false,parts=[];
+  try{ await api("v1","GET","/workshop/vehicles",{query:{limit:1}}); v1ok=true; parts.push("V1 ✓"); }
+  catch(e){ parts.push("V1 ✗ ("+e.status+": "+(e.message||"").split("\n")[0]+")"); }
+  const t = await loginV2(true); if(t){ v2ok=true; parts.push("V2 ✓"); } else parts.push("V2 ✗");
+  state.v1ok=v1ok; state.v2ok=v2ok; chooseActive();
+  setDot("dotV1",v1ok); setDot("dotV2",v2ok);
+  parts.push("→ usar <b>"+state.active.toUpperCase()+"</b> automaticamente");
+  flash("cfgMsg", (v1ok||v2ok)?"ok":"err", parts.join("  ·  "));
+}
+function setDot(id,on){ const e=document.getElementById(id); if(e) e.classList.toggle("on",!!on); }
+function flash(id,kind,html){ const e=document.getElementById(id); if(e) e.innerHTML='<div class="msg '+kind+'">'+html+'</div>'; }
+
+/* ============================================================
+   RESOURCE REGISTRY
+   ============================================================ */
+const GROUPS = [
+  {name:"Ligação", items:[
+    {id:"home", label:"🏠 Início", custom:"home"},
+    {id:"explorer", label:"🧪 API Explorer (tudo)", custom:"explorer"},
+  ]},
+  {name:"Viaturas", items:[
+    {id:"vehicles", label:"🚗 Viaturas", custom:"vehicles"},
+    {id:"veh_articles", label:"📦 Artigos da viatura", custom:"vehArticles"},
+    {id:"alerts", label:"🔔 Alertas (cliente)", custom:"alerts"},
+  ]},
+  {name:"Oficina / OS", items:[
+    {id:"os", label:"📋 Ordens de Serviço", custom:"os"},
+    {id:"monitor", label:"🖥 Monitor", custom:"monitor"},
+    {id:"schedules", label:"📅 Agenda", custom:"schedules"},
+    {id:"maintenance", label:"🛠 Manutenção", custom:"maintenance"},
+    {id:"mechavail", label:"👷 Disponib. mecânicos", v:"v2", method:"GET", path:"/workshop/mechanic-availability"},
+  ]},
+  {name:"Processos", items:[
+    {id:"processes", label:"🗂 Processos", custom:"processes"},
+    {id:"proc_status", label:"🏷 Estados de processo", v:"v2", method:"GET", path:"/workshop/processes/statuses"},
+  ]},
+  {name:"Catálogo", items:[
+    {id:"interventions", label:"🔧 Intervenções", custom:"interventions"},
+    {id:"brands", label:"Ⓜ Marcas", custom:"crud", resource:"brands"},
+    {id:"models", label:"Ⓜ Modelos", custom:"crud", resource:"models"},
+    {id:"versions", label:"Ⓜ Versões", custom:"crud", resource:"versions"},
+    {id:"fuels", label:"⛽ Combustíveis", custom:"crud", resource:"fuels"},
+  ]},
+  {name:"Divergências", items:[
+    {id:"exportdiv", label:"📤 Export Officegest (dia)", custom:"exportDiv"},
+  ]},
+  {name:"Outros", items:[
+    {id:"camera", label:"📷 Câmara matrículas", custom:"camera"},
+    {id:"logs", label:"📜 Logs / Auditoria", custom:"logs"},
+  ]},
+];
+
+/* ---------- nav build ---------- */
+function buildNav(){
+  const nav=document.getElementById("nav"); nav.innerHTML="";
+  GROUPS.forEach(g=>{
+    const h=document.createElement("div"); h.className="group"; h.textContent=g.name; nav.appendChild(h);
+    g.items.forEach(it=>{
+      const b=document.createElement("button"); b.textContent=it.label; b.dataset.id=it.id;
+      b.onclick=()=>{ select(it); };
+      nav.appendChild(b);
+    });
+  });
+}
+let current=null;
+function select(it){
+  current=it;
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.id===it.id));
+  const m=document.getElementById("main"); m.innerHTML="";
+  if(it.custom){ RENDER[it.custom](it); }
+  else { renderSimple(it); }
+}
+
+/* ============================================================
+   GENERIC TABLE RENDER
+   ============================================================ */
+function extractRows(data){
+  if(data==null) return [];
+  if(Array.isArray(data)) return data;
+  if(data.data!==undefined){
+    if(Array.isArray(data.data)) return data.data;
+    if(data.data && typeof data.data==="object") return objToRows(data.data);
+  }
+  const skip=new Set(["order","sorder","total","meta","success","result","code","message","trace_id","api_throttle_left","api_monthly_left"]);
+  for(const [k,v] of Object.entries(data)){
+    if(skip.has(k)) continue;
+    if(Array.isArray(v)) return v;
+    if(v && typeof v==="object") return objToRows(v);
+  }
+  return objToRows(data);
+}
+function objToRows(o){
+  const vals=Object.values(o);
+  if(vals.length && vals.every(x=>x&&typeof x==="object"&&!Array.isArray(x))) return vals;
+  return [o];
+}
+function totalOf(data){
+  if(!data) return null;
+  if(data.total!=null) return data.total;
+  if(data.meta&&data.meta.total!=null) return data.meta.total;
+  return null;
+}
+function flatCols(rows,limit=14){
+  const seen=[]; const set=new Set();
+  rows.slice(0,30).forEach(r=>{
+    if(r&&typeof r==="object") Object.keys(r).forEach(k=>{ if(!set.has(k)){set.add(k);seen.push(k);} });
+  });
+  return seen.slice(0,limit);
+}
+function cell(v){
+  if(v==null) return '<span class="muted">—</span>';
+  if(typeof v==="object") return '<span class="muted">{'+(Array.isArray(v)?v.length+' itens':'obj')+'}</span>';
+  let s=String(v); if(s.length>60) s=s.slice(0,60)+"…";
+  return escapeHtml(s);
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+let sortState={};
+function renderTable(containerId, rows, opts={}){
+  const c=document.getElementById(containerId);
+  if(!c) return;
+  if(!rows||!rows.length){ c.innerHTML='<div class="msg info">Sem registos.</div>'; return; }
+  const cols = opts.cols || flatCols(rows, opts.maxCols||14);
+  const key=containerId;
+  const st=sortState[key];
+  let data=[...rows];
+  if(st){ data.sort((a,b)=>{ let x=a[st.col],y=b[st.col]; x=x==null?"":x;y=y==null?"":y;
+    if(typeof x==="number"&&typeof y==="number") return st.dir*(x-y);
+    return st.dir*String(x).localeCompare(String(y),"pt",{numeric:true}); }); }
+  // Render cap — protege o browser quando a API devolve milhares de linhas
+  const CAP = opts.cap || 800;
+  const totalRows = data.length;
+  const truncated = totalRows > CAP;
+  if(truncated) data = data.slice(0, CAP);
+  let h='';
+  if(truncated) h+='<div class="msg info">A mostrar as primeiras <b>'+CAP+'</b> de <b>'+totalRows+'</b> linhas (a API devolveu tudo). Usa os filtros em cima para reduzir o resultado.</div>';
+  h+='<div class="tablewrap"><table><thead><tr>';
+  cols.forEach(col=>{ const ar=st&&st.col===col?(st.dir>0?" ▲":" ▼"):""; h+='<th data-col="'+escapeHtml(col)+'">'+escapeHtml(col)+ar+'</th>'; });
+  if(opts.actions) h+='<th>Acções</th>';
+  h+='</tr></thead><tbody>';
+  data.forEach((r,i)=>{
+    h+='<tr>';
+    cols.forEach(col=>h+='<td title="'+escapeHtml(typeof r[col]==="object"?JSON.stringify(r[col]):(r[col]==null?"":r[col]))+'">'+cell(r[col])+'</td>');
+    if(opts.actions){ h+='<td class="act">'+opts.actions.map(a=>'<button class="btn sec sm" data-i="'+i+'" data-a="'+a.id+'">'+a.label+'</button>').join(" ")+'</td>'; }
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  c.innerHTML=h;
+  c.querySelectorAll("th").forEach(th=>th.onclick=()=>{
+    const col=th.dataset.col; const cur=sortState[key];
+    sortState[key]= cur&&cur.col===col?{col,dir:-cur.dir}:{col,dir:1};
+    renderTable(containerId, rows, opts);
+  });
+  if(opts.actions){
+    c.querySelectorAll("button[data-a]").forEach(b=>b.onclick=()=>{
+      const a=opts.actions.find(x=>x.id===b.dataset.a); a.fn(data[+b.dataset.i]);
+    });
+  }
+}
+
+/* ---------- layout helpers ---------- */
+function mainCard(title,desc,inner){
+  document.getElementById("main").innerHTML=
+   '<div class="card"><h2>'+title+'</h2><div class="desc">'+desc+'</div>'+inner+'</div>';
+}
+function loading(id){ const e=document.getElementById(id); if(e) e.innerHTML='<div class="msg info"><span class="spinner"></span> A carregar…</div>'; }
+function errBox(id,e){
+  const el=document.getElementById(id); if(!el) return;
+  el.innerHTML='<div class="msg err"><b>Erro '+(e.status||"")+'</b><br>'+
+    escapeHtml(e.message||String(e)).replace(/\n/g,"<br>")+'</div>';
+}
+function showDetail(title, obj){
+  document.getElementById("detBody").innerHTML='<h3>'+escapeHtml(title)+'</h3>'+renderObject(obj);
+  document.getElementById("detModal").classList.add("open");
+}
+function renderObject(obj){
+  if(obj==null) return '<div class="muted">vazio</div>';
+  let h='<div class="kv">';
+  for(const [k,v] of Object.entries(obj)){
+    let val;
+    if(v==null) val='<span class="muted">—</span>';
+    else if(Array.isArray(v)) val='<details><summary>'+v.length+' itens</summary><pre>'+escapeHtml(JSON.stringify(v,null,2))+'</pre></details>';
+    else if(typeof v==="object") val='<details><summary>objecto</summary><pre>'+escapeHtml(JSON.stringify(v,null,2))+'</pre></details>';
+    else val=escapeHtml(String(v));
+    h+='<div class="k">'+escapeHtml(k)+'</div><div>'+val+'</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+/* ============================================================
+   RENDERERS
+   ============================================================ */
+const RENDER={};
+
+RENDER.home=()=>{
+  const hasCreds = cfg.hash && cfg.hash.trim();
+  const credLine = hasCreds
+    ? '<div class="msg ok">Credenciais presentes para <b>'+escapeHtml(cfg.user)+'</b> · Base <b>'+escapeHtml(cfg.base)+'</b></div>'
+    : '<div class="msg err">Sem credenciais. Abre <b>⚙ Credenciais</b> (canto superior direito), introduz o teu <b>API Hash</b> e a <b>password</b>, e clica Guardar. Ficam só no teu browser.</div>';
+  mainCard("Início","Cliente para a API OfficeGest da Walkinggarage. Corre no teu browser; a versão (V1/V2) é escolhida automaticamente.",
+   credLine+
+   '<p class="muted small">Usa os separadores à esquerda. Cada listagem permite abrir o detalhe de qualquer registo. '+
+   'O <b>API Explorer</b> deixa-te chamar QUALQUER endpoint, incluindo os que não têm separador próprio.</p>'+
+   '<div id="homeStat"></div>');
+  if(hasCreds) testConn().catch(()=>{}); else openCfg();
+};
+
+function renderSimple(it){
+  mainCard(it.label, "<code>"+it.method+" "+(it.v==="v2"?"/api/v2":"/api")+it.path+"</code>",
+   '<button class="btn" id="goBtn">Carregar</button><div id="out" style="margin-top:10px"></div>');
+  document.getElementById("goBtn").onclick=async()=>{
+    loading("out");
+    try{ const d=await api(it.v||state.active, it.method, it.path);
+      renderTable("out", extractRows(d), {actions:[{id:"v",label:"Ver",fn:r=>showDetail(it.label,r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("goBtn").click();
+}
+
+/* ---- VEHICLES ---- */
+RENDER.vehicles=()=>{
+  mainCard("🚗 Viaturas","Listar, abrir ficha e editar viaturas. Versão automática.",
+   verSwitch("veh")+
+   '<div class="toolbar">'+
+     '<div><label>Matrícula</label><input id="veh_plate" placeholder="ex: 12-AB-34"></div>'+
+     '<div><label>Marca (texto)</label><input id="veh_brand"></div>'+
+     '<div><label>Activos</label><select id="veh_active"><option value="">todos</option><option value="T">sim</option><option value="F">não</option></select></div>'+
+     '<div><label>Limite</label><input id="veh_limit" type="number" value="50"></div>'+
+     '<div><label>&nbsp;</label><button class="btn" id="vehGo">Listar</button></div>'+
+     '<div><label>&nbsp;</label><button class="btn sec" id="vehNew">+ Nova viatura</button></div>'+
+   '</div><div id="out"></div>');
+  document.getElementById("vehGo").onclick=loadVehicles;
+  document.getElementById("vehNew").onclick=createVehicle;
+  loadVehicles();
+};
+async function loadVehicles(){
+  loading("out");
+  const ver=state.active;
+  const plate=val("veh_plate"), brand=val("veh_brand"), active=val("veh_active"), limit=val("veh_limit");
+  try{
+    let d;
+    if(ver==="v1"){
+      const q={limit}; if(plate)q["filter[plate]"]=plate; if(brand){q["filter[brand_desc]"]=brand;q.FULL=1;}
+      if(active)q["filter[active]"]=active;
+      d=await api("v1","GET","/workshop/vehicles",{query:q});
+    } else {
+      const q={limit}; if(plate)q.plate=plate; if(brand)q.brand_id=brand; if(active)q.is_active=(active==="T"?1:0);
+      d=await api("v2","GET","/workshop/vehicles",{query:q});
+    }
+    const rows=extractRows(d);
+    document.getElementById("out").innerHTML='<div class="count">'+(rows.length)+' viaturas'+(totalOf(d)!=null?(" de "+totalOf(d)):"")+'</div><div id="vehTbl"></div>';
+    renderTable("vehTbl", rows, {maxCols:10, actions:[
+      {id:"open",label:"Ficha",fn:r=>openVehicle(r.plate||r.matricula, state.active)},
+      {id:"edit",label:"✎ Editar",fn:r=>openVehicle(r.plate||r.matricula, state.active, true)},
+    ]});
+  }catch(e){ errBox("out",e); }
+}
+async function openVehicle(plate, ver, edit){
+  if(!plate){ alert("Sem matrícula nesta linha."); return; }
+  document.getElementById("detBody").innerHTML='<div class="msg info"><span class="spinner"></span> A carregar ficha '+escapeHtml(plate)+'…</div>';
+  document.getElementById("detModal").classList.add("open");
+  try{
+    const d=await api(ver,"GET","/workshop/vehicles/"+encodeURIComponent(plate));
+    const veh = (d&&d.data) || d.vehicle || d;
+    if(!edit){
+      document.getElementById("detBody").innerHTML='<h3>Ficha viatura '+escapeHtml(plate)+'</h3>'+
+        '<button class="btn sm" onclick=\'openVehicle("'+escapeHtml(plate)+'","'+ver+'",true)\'>✎ Editar</button>'+
+        '<div style="height:8px"></div>'+renderObject(veh);
+      return;
+    }
+    const editable = ver==="v2"
+      ? ["vin","version_id","color","owner_customer_id","billing_customer_id","door_count","registration_plate_date","monthly_kms","brand_id","model_id","fuel_id","description"]
+      : Object.keys(veh).filter(k=>!k.endsWith("_desc")).slice(0,40);
+    let h='<h3>Editar viatura '+escapeHtml(plate)+' <span class="small muted">('+ver.toUpperCase()+')</span></h3>';
+    h+='<div class="msg info small">V2: <code>PATCH /workshop/vehicles/{plate}</code> exige <b>brand_id, model_id, fuel_id</b>. V1: <code>POST /workshop/vehicles/{plate}</code>.</div>';
+    h+='<div class="row" style="flex-wrap:wrap">';
+    editable.forEach(k=>{
+      const v=veh[k]; if(v!=null&&typeof v==="object") return;
+      h+='<div style="flex:1 1 220px"><label>'+escapeHtml(k)+'</label><input data-f="'+escapeHtml(k)+'" value="'+escapeHtml(v==null?"":v)+'"></div>';
+    });
+    h+='</div>';
+    h+='<details style="margin-top:10px"><summary>Editar JSON livre (avançado)</summary>'+
+       '<textarea id="vehRaw" style="min-height:160px">'+escapeHtml(JSON.stringify(veh,null,2))+'</textarea></details>';
+    h+='<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="vehSave">💾 Guardar alterações</button>'+
+       '<button class="btn sec" onclick="document.getElementById(\'detModal\').classList.remove(\'open\')">Cancelar</button></div>'+
+       '<div id="vehSaveMsg"></div>';
+    document.getElementById("detBody").innerHTML=h;
+    document.getElementById("vehSave").onclick=async()=>{
+      let payload={};
+      const raw=document.getElementById("vehRaw");
+      if(raw && raw.value.trim()){ try{ payload=JSON.parse(raw.value); }catch(e){ flash("vehSaveMsg","err","JSON inválido: "+e.message); return; } }
+      document.querySelectorAll('#detBody input[data-f]').forEach(inp=>{
+        if(inp.value!=="") payload[inp.dataset.f]=inp.value;
+      });
+      delete payload.plate;
+      flash("vehSaveMsg","info",'<span class="spinner"></span> A guardar…');
+      try{
+        if(ver==="v2") await api("v2","PATCH","/workshop/vehicles/"+encodeURIComponent(plate),{body:payload});
+        else await api("v1","POST","/workshop/vehicles/"+encodeURIComponent(plate),{body:payload});
+        flash("vehSaveMsg","ok","Guardado com sucesso ✓");
+        loadVehicles();
+      }catch(e){ flash("vehSaveMsg","err","Erro "+(e.status||"")+": "+escapeHtml(e.message)); }
+    };
+  }catch(e){ errBox("detBody",e); }
+}
+
+/* ---- VEHICLE ARTICLES ---- */
+RENDER.vehArticles=()=>{
+  mainCard("📦 Artigos da viatura","Histórico de artigos por matrícula.",
+   verSwitch("va")+
+   '<div class="toolbar"><div><label>Matrícula *</label><input id="va_plate" placeholder="12-AB-34"></div>'+
+   '<div><label>Cliente (id)</label><input id="va_cust"></div>'+
+   '<div><label>&nbsp;</label><button class="btn" id="vaGo">Listar artigos</button></div></div><div id="out"></div>');
+  document.getElementById("vaGo").onclick=async()=>{
+    const plate=val("va_plate"); if(!plate){ alert("Indica a matrícula."); return; }
+    const ver=state.active; loading("out");
+    try{
+      let d;
+      if(ver==="v1"){ const q={}; if(val("va_cust"))q["filter[idcustomer]"]=val("va_cust");
+        d=await api("v1","GET","/workshop/vehicles_articles/"+encodeURIComponent(plate),{query:q}); }
+      else { const q={}; if(val("va_cust"))q.customer_id=val("va_cust");
+        d=await api("v2","GET","/workshop/vehicles/"+encodeURIComponent(plate)+"/articles",{query:q}); }
+      renderTable("out", extractRows(d), {maxCols:14, actions:[{id:"v",label:"Ver",fn:r=>showDetail("Artigo",r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+};
+
+/* ---- ALERTS ---- */
+RENDER.alerts=()=>{
+  mainCard("🔔 Alertas do cliente","Inspeções, mudanças de óleo e pneus.",
+   verSwitch("al")+
+   '<div class="toolbar"><div><label>ID / Cliente *</label><input id="al_id"></div>'+
+   '<div><label>&nbsp;</label><button class="btn" id="alGo">Carregar</button></div></div><div id="out"></div>');
+  document.getElementById("alGo").onclick=async()=>{
+    const id=val("al_id"); if(!id){ alert("Indica o id do cliente."); return; }
+    const ver=state.active; loading("out");
+    try{
+      const d=await api(ver,"GET","/workshop/alerts/"+encodeURIComponent(id));
+      const root=(d&&d.data)||d;
+      let h="";
+      ["inspections","oil","tires"].forEach(k=>{
+        const rows=Array.isArray(root[k])?root[k]:extractRows(root[k]);
+        h+='<h2 style="font-size:14px;margin:14px 0 4px">'+k+' <span class="count">'+(rows?rows.length:0)+'</span></h2><div id="al_'+k+'"></div>';
+      });
+      document.getElementById("out").innerHTML=h;
+      ["inspections","oil","tires"].forEach(k=>{ const rows=Array.isArray(root[k])?root[k]:extractRows(root[k]); renderTable("al_"+k, rows||[], {}); });
+    }catch(e){ errBox("out",e); }
+  };
+};
+
+/* ---- ORDERS OF SERVICE ---- */
+const OS_STATES=[
+  {c:"",l:"Todos"},{c:"RAS",l:"Rascunho"},{c:"ESP",l:"Espera"},{c:"MAR",l:"Marcado"},
+  {c:"EXE",l:"Execução"},{c:"FIN",l:"Finalizado"},{c:"FAT",l:"Faturado"},{c:"ANU",l:"Anulado"}
+];
+RENDER.os=()=>{
+  mainCard("📋 Ordens de Serviço","Listar OS por estado e abrir detalhe completo (linhas, intervenções, horas, linhas extra, notas, imagens, fluxo).",
+   verSwitch("os")+
+   '<div style="margin:6px 0">'+OS_STATES.map(s=>'<span class="pill" data-st="'+s.c+'">'+s.l+'</span>').join("")+'</div>'+
+   '<div class="toolbar">'+
+     '<div><label>Matrícula</label><input id="os_plate"></div>'+
+     '<div><label>Nº OS</label><input id="os_num"></div>'+
+     '<div><label>Cliente id</label><input id="os_cust"></div>'+
+     '<div><label>Limite</label><input id="os_limit" type="number" value="50"></div>'+
+     '<div><label>&nbsp;</label><button class="btn" id="osGo">Listar</button></div>'+
+     '<div><label>&nbsp;</label><button class="btn sec" id="osNew">+ Nova OS</button></div>'+
+   '</div><div id="out"></div>');
+  document.getElementById("osNew").onclick=createOS;
+  let st="";
+  document.querySelectorAll('#main .pill').forEach(p=>p.onclick=()=>{
+    document.querySelectorAll('#main .pill').forEach(x=>x.classList.remove("active"));
+    p.classList.add("active"); st=p.dataset.st; loadOS(st);
+  });
+  document.querySelector('#main .pill').classList.add("active");
+  document.getElementById("osGo").onclick=()=>loadOS(st);
+  loadOS("");
+};
+async function loadOS(stateCode){
+  loading("out"); const ver=state.active;
+  try{
+    let d;
+    if(ver==="v1"){
+      const q={limit:val("os_limit"),INTERVENTIONS:1};
+      if(stateCode)q["filter[state]"]=stateCode;
+      if(val("os_plate"))q["filter[plate]"]=val("os_plate");
+      if(val("os_num"))q["filter[number]"]=val("os_num");
+      if(val("os_cust"))q["filter[idcustomer]"]=val("os_cust");
+      d=await api("v1","GET","/workshop/os",{query:q});
+    } else {
+      const q={per_page:val("os_limit")};
+      if(stateCode)q.status=stateCode;
+      if(val("os_plate"))q.plate=val("os_plate");
+      if(val("os_num"))q.number=val("os_num");
+      if(val("os_cust"))q.customer_id=val("os_cust");
+      d=await api("v2","GET","/workshop/service-orders",{query:q});
+    }
+    const rows=extractRows(d);
+    document.getElementById("out").innerHTML='<div class="count">'+rows.length+' OS'+(totalOf(d)!=null?(" de "+totalOf(d)):"")+'</div><div id="osTbl"></div>';
+    renderTable("osTbl", rows, {maxCols:11, actions:[{id:"d",label:"Abrir OS",fn:r=>openOS(r, state.active)}]});
+  }catch(e){ errBox("out",e); }
+}
+async function openOS(row, ver){
+  const id=row.id||row.num||row.number||row.documentnumber;
+  document.getElementById("detBody").innerHTML='<div class="msg info"><span class="spinner"></span> A abrir OS '+escapeHtml(id)+'…</div>';
+  document.getElementById("detModal").classList.add("open");
+  try{
+    let head;
+    if(ver==="v1") head=await api("v1","GET","/workshop/os/"+encodeURIComponent(id));
+    else head=await api("v2","GET","/workshop/service-orders/"+encodeURIComponent(id));
+    const doc=(head&&head.data)||head.document||head;
+    let h='<h3>Ordem de Serviço '+escapeHtml(id)+' <span class="small muted">('+ver.toUpperCase()+')</span></h3>';
+    h+='<div class="tabs" id="osTabs">'+
+       ['Cabeçalho','Linhas','Linhas extra','Intervenções','Horas','Notas','Imagens','Fluxo','➕ Ações']
+        .map((t,i)=>'<button data-t="'+i+'"'+(i===0?' class="active"':'')+'>'+t+'</button>').join("")+'</div>';
+    h+='<div id="osPane"></div>';
+    document.getElementById("detBody").innerHTML=h;
+    function tbl(rows){
+      if(!rows||!rows.length) return '<div class="msg info">Sem registos.</div>';
+      setTimeout(()=>renderTable("osPaneTbl", rows, {actions:[{id:"v",label:"Ver",fn:r=>showDetail("Registo",r)}]}),0);
+      return '<div id="osPaneTbl"></div>';
+    }
+    const panes={};
+    panes[0]=()=>renderObject(doc);
+    panes[1]=()=>tbl(doc.lines||head.lines);
+    panes[2]=async()=>{
+      if(doc.extra_lines||head.extra_lines) return tbl(doc.extra_lines||head.extra_lines);
+      if(state.v2ok){ const d=await api("v2","GET","/workshop/service-orders/"+id+"/extra-lines"); return tbl(extractRows(d)); }
+      return '<div class="msg info">Sem linhas extra.</div>';
+    };
+    panes[3]=async()=>{
+      if(doc.interventions||head.interventions) return tbl(doc.interventions||head.interventions);
+      if(state.v2ok){ const d=await api("v2","GET","/workshop/service-orders/"+id+"/interventions"); return tbl(extractRows(d)); }
+      return '<div class="msg info">Sem intervenções.</div>';
+    };
+    panes[4]=async()=>{
+      if(state.v2ok){ const d=await api("v2","GET","/workshop/service-orders/"+id+"/times"); return tbl(extractRows(d)); }
+      return '<div class="msg info">As horas de mecânica só existem na API V2, indisponível nesta ligação.</div>';
+    };
+    panes[5]=async()=>{
+      if(state.v2ok){ const d=await api("v2","GET","/workshop/service-orders/"+id+"/notes"); return tbl(extractRows(d)); }
+      return '<div class="msg info">A leitura de notas (GET) só existe na API V2, indisponível nesta ligação.</div>';
+    };
+    panes[6]=async()=>{
+      if(state.v2ok){ const d=await api("v2","GET","/workshop/service-orders/"+id+"/images"); return tbl(extractRows(d)); }
+      return '<div class="msg info">As imagens da OS só existem na API V2, indisponível nesta ligação.</div>';
+    };
+    panes[7]=async()=>{
+      if(state.v2ok){ const d=await api("v2","GET","/workshop/service-orders/"+id+"/flow-docs"); return tbl(extractRows(d)); }
+      return '<div class="msg info">O fluxo de documentos só existe na API V2, indisponível nesta ligação.</div>';
+    };
+    panes[8]=()=>{ setTimeout(()=>bindOsActions(id),0); return osActionsHtml(); };
+    async function showPane(i){
+      const pane=document.getElementById("osPane");
+      pane.innerHTML='<div class="msg info"><span class="spinner"></span></div>';
+      try{ const r=await panes[i](); pane.innerHTML=(typeof r==="string")?r:""; }
+      catch(e){ errBox("osPane",e); }
+    }
+    document.querySelectorAll("#osTabs button").forEach(b=>b.onclick=()=>{
+      document.querySelectorAll("#osTabs button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active"); showPane(+b.dataset.t);
+    });
+    showPane(0);
+  }catch(e){ errBox("detBody",e); }
+}
+
+/* ---- MONITOR ---- */
+RENDER.monitor=()=>{
+  mainCard("🖥 Monitor de oficina","Quadro de trabalhos.",
+   verSwitch("mon")+
+   '<div class="toolbar"><div><label>Vista</label><select id="mon_view"><option value="monitor">Monitor</option><option value="so">Monitor OS</option></select></div>'+
+   '<div><label>Estado</label><input id="mon_state"></div>'+
+   '<div><label>&nbsp;</label><button class="btn" id="monGo">Carregar</button></div></div><div id="out"></div>');
+  document.getElementById("monGo").onclick=async()=>{
+    const ver=state.active, view=val("mon_view"); loading("out");
+    try{
+      let path="/workshop/monitor";
+      if(view==="so") path = ver==="v2" ? "/workshop/monitor/service-orders" : "/workshop/monitor/getSV";
+      const q={}; if(val("mon_state")) q[ver==="v2"?"status":"filter[estado]"]=val("mon_state");
+      const d=await api(ver,"GET",path,{query:q});
+      renderTable("out", extractRows(d), {maxCols:12, actions:[{id:"v",label:"Ver",fn:r=>showDetail("Monitor",r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("monGo").click();
+};
+
+/* ---- SCHEDULES ---- */
+RENDER.schedules=()=>{
+  mainCard("📅 Agenda / Marcações","V1 <code>/workshop/shedules</code> · V2 <code>/workshop/schedules</code>.",
+   verSwitch("sch")+'<button class="btn" id="schGo">Carregar</button><div id="out" style="margin-top:10px"></div>');
+  document.getElementById("schGo").onclick=async()=>{
+    const ver=state.active; loading("out");
+    try{ const path= ver==="v2"?"/workshop/schedules":"/workshop/shedules";
+      const d=await api(ver,"GET",path); renderTable("out",extractRows(d),{actions:[{id:"v",label:"Ver",fn:r=>showDetail("Marcação",r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("schGo").click();
+};
+
+/* ---- MAINTENANCE ---- */
+RENDER.maintenance=()=>{
+  mainCard("🛠 Avisos de manutenção","V1 <code>/workshop/maintenance</code> · V2 <code>/workshop/maintenance-notices</code>.",
+   verSwitch("mt")+'<button class="btn" id="mtGo">Carregar</button><div id="out" style="margin-top:10px"></div>');
+  document.getElementById("mtGo").onclick=async()=>{
+    const ver=state.active; loading("out");
+    try{ const path=ver==="v2"?"/workshop/maintenance-notices":"/workshop/maintenance";
+      const d=await api(ver,"GET",path); renderTable("out",extractRows(d),{actions:[{id:"v",label:"Ver",fn:r=>showDetail("Aviso",r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("mtGo").click();
+};
+
+/* ---- PROCESSES ---- */
+RENDER.processes=()=>{
+  mainCard("🗂 Processos","Listar processos e abrir detalhe com anexos, imagens e peças.",
+   verSwitch("pr")+
+   '<div class="toolbar"><div><label>Matrícula</label><input id="pr_plate"></div>'+
+   '<div><label>Estado id</label><input id="pr_status"></div>'+
+   '<div><label>Limite</label><input id="pr_limit" type="number" value="50"></div>'+
+   '<div><label>&nbsp;</label><button class="btn" id="prGo">Listar</button></div>'+
+   '<div><label>&nbsp;</label><button class="btn sec" id="prNew">+ Novo processo</button></div></div><div id="out"></div>');
+  document.getElementById("prGo").onclick=loadProcesses;
+  document.getElementById("prNew").onclick=createProcess;
+  loadProcesses();
+};
+async function loadProcesses(){
+  loading("out"); const ver=state.active;
+  try{
+    let d;
+    if(ver==="v1"){ const q={}; if(val("pr_plate"))q["filter[plate]"]=val("pr_plate");
+      d=await api("v1","GET","/workshop/process",{query:q}); }
+    else { const q={limit:val("pr_limit")}; if(val("pr_plate"))q.plate=val("pr_plate"); if(val("pr_status"))q.status_id=val("pr_status");
+      d=await api("v2","GET","/workshop/processes",{query:q}); }
+    renderTable("out", extractRows(d), {maxCols:11, actions:[{id:"d",label:"Abrir",fn:r=>openProcess(r, state.active)}]});
+  }catch(e){ errBox("out",e); }
+}
+async function openProcess(row, ver){
+  const id=row.id||row.codequipext;
+  document.getElementById("detBody").innerHTML='<div class="msg info"><span class="spinner"></span> A abrir processo…</div>';
+  document.getElementById("detModal").classList.add("open");
+  try{
+    const det = ver==="v2"
+      ? await api("v2","GET","/workshop/processes/"+encodeURIComponent(id))
+      : await api("v1","GET","/workshop/process/"+encodeURIComponent(id));
+    const obj=(det&&det.data)||det;
+    let h='<h3>Processo '+escapeHtml(id)+'</h3>';
+    h+='<div class="tabs" id="prTabs">'+['Detalhe','Anexos','Imagens','Peças'].map((t,i)=>'<button data-t="'+i+'"'+(i===0?' class="active"':'')+'>'+t+'</button>').join("")+'</div><div id="prPane"></div>';
+    document.getElementById("detBody").innerHTML=h;
+    function tblP(rows){ if(!rows||!rows.length) return '<div class="msg info">Sem registos.</div>';
+      setTimeout(()=>renderTable("prPaneTbl",rows,{actions:[{id:"v",label:"Ver",fn:r=>showDetail("Registo",r)}]}),0);
+      return '<div id="prPaneTbl"></div>'; }
+    const load={
+      0:()=>Promise.resolve(renderObject(obj)),
+      1:async()=>{ const p=ver==="v2"?"/workshop/processes/"+id+"/attachments":"/workshop/process/attachments";
+        const d=await api(ver,"GET",p,{query:ver==="v2"?undefined:{"filter[id]":id}}); return tblP(extractRows(d)); },
+      2:async()=>{ const p=ver==="v2"?"/workshop/processes/"+id+"/images":"/workshop/process/images";
+        const d=await api(ver,"GET",p,{query:ver==="v2"?undefined:{"filter[id]":id}}); return tblP(extractRows(d)); },
+      3:async()=>{ const p=ver==="v2"?"/workshop/processes/"+id+"/parts":"/workshop/process/parts";
+        const d=await api(ver,"GET",p,{query:ver==="v2"?undefined:{"filter[id]":id}}); return tblP(extractRows(d)); },
+    };
+    async function show(i){ const pane=document.getElementById("prPane"); pane.innerHTML='<div class="msg info"><span class="spinner"></span></div>';
+      try{ pane.innerHTML=await load[i](); }catch(e){ errBox("prPane",e); } }
+    document.querySelectorAll("#prTabs button").forEach(b=>b.onclick=()=>{
+      document.querySelectorAll("#prTabs button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); show(+b.dataset.t); });
+    show(0);
+  }catch(e){ errBox("detBody",e); }
+}
+
+/* ---- INTERVENTIONS ---- */
+RENDER.interventions=()=>{
+  mainCard("🔧 Intervenções","Catálogo de intervenções. Listar / ver / criar / editar.",
+   verSwitch("iv")+
+   '<div class="toolbar"><div><label>Descrição contém</label><input id="iv_desc"></div>'+
+   '<div><label>&nbsp;</label><button class="btn" id="ivGo">Listar</button></div>'+
+   '<div><label>&nbsp;</label><button class="btn sec" id="ivNew">+ Nova</button></div></div><div id="out"></div>');
+  document.getElementById("ivGo").onclick=loadIntervs;
+  document.getElementById("ivNew").onclick=()=>editInterv({}, state.active);
+  loadIntervs();
+};
+async function loadIntervs(){
+  loading("out"); const ver=state.active;
+  try{
+    const q={}; if(val("iv_desc")) q[ver==="v2"?"description":"filter[description]"]=val("iv_desc");
+    const d=await api(ver,"GET","/workshop/interventions",{query:q});
+    renderTable("out", extractRows(d), {actions:[
+      {id:"v",label:"Ver",fn:r=>showDetail("Intervenção",r)},
+      {id:"e",label:"✎",fn:r=>editInterv(r, state.active)},
+    ]});
+  }catch(e){ errBox("out",e); }
+}
+function editInterv(r, ver){
+  const f = ver==="v2"
+    ? [["description","Descrição"],["estimated_time","Tempo estimado"],["value_without_vat","Valor s/ IVA"],["vat_id","IVA id"],["is_active","Activo (1/0)"]]
+    : [["description","Descrição"],["estimatedtime","Tempo estimado"],["valuewithoutvat","Valor s/ IVA"],["vatid","IVA id"]];
+  let h='<h3>'+(r.id?("Editar intervenção "+r.id):"Nova intervenção")+' <span class="small muted">('+ver.toUpperCase()+')</span></h3><div class="row" style="flex-wrap:wrap">';
+  f.forEach(([k,l])=>h+='<div style="flex:1 1 200px"><label>'+l+'</label><input data-f="'+k+'" value="'+escapeHtml(r[k]==null?"":r[k])+'"></div>');
+  h+='</div><div style="margin-top:12px"><button class="btn" id="ivSave">💾 Guardar</button></div><div id="ivMsg"></div>';
+  document.getElementById("detBody").innerHTML=h;
+  document.getElementById("detModal").classList.add("open");
+  document.getElementById("ivSave").onclick=async()=>{
+    const payload={}; document.querySelectorAll('#detBody input[data-f]').forEach(i=>{ if(i.value!=="")payload[i.dataset.f]=i.value; });
+    flash("ivMsg","info",'<span class="spinner"></span> A guardar…');
+    try{
+      if(ver==="v2"){
+        if(r.id) await api("v2","PATCH","/workshop/interventions/"+r.id,{body:payload});
+        else await api("v2","POST","/workshop/interventions",{body:payload});
+      } else {
+        if(r.id) await api("v1","POST","/workshop/interventions/"+r.id,{body:payload});
+        else await api("v1","POST","/workshop/interventions",{body:payload});
+      }
+      flash("ivMsg","ok","Guardado ✓"); loadIntervs();
+    }catch(e){ flash("ivMsg","err","Erro "+(e.status||"")+": "+escapeHtml(e.message)); }
+  };
+}
+
+/* ---- CRUD tables ---- */
+RENDER.crud=(it)=>{
+  const res=it.resource;
+  mainCard("Ⓜ "+it.label.replace(/^.\s*/,""),"CRUD <code>/workshop/"+res+"</code>. V1 update=POST · V2 update=PATCH.",
+   verSwitch("cr")+
+   '<div class="toolbar"><div><label>&nbsp;</label><button class="btn" id="crGo">Listar</button></div>'+
+   '<div><label>&nbsp;</label><button class="btn sec" id="crNew">+ Novo</button></div></div><div id="out"></div>');
+  const load=async()=>{ loading("out"); const ver=state.active;
+    try{ const d=await api(ver,"GET","/workshop/"+res); renderTable("out",extractRows(d),{actions:[
+      {id:"v",label:"Ver",fn:r=>showDetail(res,r)},{id:"e",label:"✎",fn:r=>editCrud(res,r,state.active)}]});
+    }catch(e){ errBox("out",e); } };
+  document.getElementById("crGo").onclick=load;
+  document.getElementById("crNew").onclick=()=>editCrud(res,{},state.active);
+  load();
+};
+function editCrud(res,r,ver){
+  const keys = Object.keys(r).length?Object.keys(r).filter(k=>!["created_at","updated_at"].includes(k)) : ["name","is_active"];
+  let h='<h3>'+(r.id?("Editar "+res+" "+r.id):("Novo "+res))+'</h3><div class="row" style="flex-wrap:wrap">';
+  keys.forEach(k=>{ if(k==="id")return; const v=r[k]; if(v!=null&&typeof v==="object")return;
+    h+='<div style="flex:1 1 200px"><label>'+escapeHtml(k)+'</label><input data-f="'+k+'" value="'+escapeHtml(v==null?"":v)+'"></div>'; });
+  h+='</div><div style="margin-top:12px"><button class="btn" id="crSave">💾 Guardar</button></div><div id="crMsg"></div>';
+  document.getElementById("detBody").innerHTML=h; document.getElementById("detModal").classList.add("open");
+  document.getElementById("crSave").onclick=async()=>{
+    const payload={}; document.querySelectorAll('#detBody input[data-f]').forEach(i=>{ if(i.value!=="")payload[i.dataset.f]=i.value; });
+    flash("crMsg","info",'<span class="spinner"></span> A guardar…');
+    try{
+      if(r.id){ if(ver==="v2") await api("v2","PATCH","/workshop/"+res+"/"+r.id,{body:payload});
+                else await api("v1","POST","/workshop/"+res+"/"+r.id,{body:payload}); }
+      else await api(ver,"POST","/workshop/"+res,{body:payload});
+      flash("crMsg","ok","Guardado ✓");
+    }catch(e){ flash("crMsg","err","Erro "+(e.status||"")+": "+escapeHtml(e.message)); }
+  };
+}
+
+/* ---- CAMERA ---- */
+RENDER.camera=()=>{
+  mainCard("📷 Câmara de matrículas","Leituras de matrícula.",
+   verSwitch("cam")+'<button class="btn" id="camGo">Carregar leituras</button><div id="out" style="margin-top:10px"></div>');
+  document.getElementById("camGo").onclick=async()=>{
+    const ver=state.active; loading("out");
+    try{ const path=ver==="v2"?"/workshop/camera-plates":"/workshop/camera";
+      const d=await api(ver,"GET",path); renderTable("out",extractRows(d),{actions:[{id:"v",label:"Ver",fn:r=>showDetail("Leitura",r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("camGo").click();
+};
+
+/* ---- LOGS / AUDITORIA ---- */
+RENDER.logs=()=>{
+  mainCard("📜 Logs / Auditoria",
+   "A API OfficeGest <b>não expõe um endpoint central de log de auditoria</b>. O que existe são campos de carimbo (<code>created_at</code>, <code>updated_at</code>, <code>created_by</code>, <code>data_alter</code>, <code>date_alter</code>) em cada recurso. Esta vista agrega esses campos como pista de alterações.",
+   '<div class="msg info">Escolhe um recurso. Mostro os registos ordenados pela última alteração — o mais próximo de um “log de quem mexeu no quê” que a API permite. Para horas de mecânica, cada registo tem <code>created_at</code>/<code>updated_at</code> + <code>employee_name</code>.</div>'+
+   verSwitch("lg")+
+   '<div class="toolbar">'+
+     '<div><label>Recurso</label><select id="lg_res">'+
+       '<option value="vehicles">Viaturas (data_alter)</option>'+
+       '<option value="os">Ordens de serviço (date_alter)</option>'+
+       '<option value="times">Horas de mecânica (V2)</option>'+
+       '<option value="processes">Processos</option>'+
+       '<option value="interventions">Intervenções</option>'+
+     '</select></div>'+
+     '<div><label>Nº OS (p/ horas)</label><input id="lg_os"></div>'+
+     '<div><label>Limite</label><input id="lg_limit" type="number" value="100"></div>'+
+     '<div><label>&nbsp;</label><button class="btn" id="lgGo">Carregar</button></div>'+
+   '</div><div id="out"></div>');
+  document.getElementById("lgGo").onclick=async()=>{
+    const ver=state.active, res=val("lg_res"); loading("out");
+    try{
+      let d;
+      if(res==="vehicles"){ d=await api(ver,"GET","/workshop/vehicles",{query:ver==="v2"?{limit:val("lg_limit"),sort:"updated_at",sorder:"DESC"}:{limit:val("lg_limit"),order:"data_alter",sorder:"DESC"}}); }
+      else if(res==="os"){ d=await api(ver,"GET",ver==="v2"?"/workshop/service-orders":"/workshop/os",{query:ver==="v2"?{per_page:val("lg_limit"),sort_by:"date_alter",sort_direction:"DESC"}:{limit:val("lg_limit"),order:"date_alter",sorder:"DESC"}}); }
+      else if(res==="times"){ const os=val("lg_os"); if(!os){ errBox("out",{message:"Para horas indica o Nº da OS."}); return; }
+        if(!state.v2ok){ errBox("out",{message:"As horas de mecânica exigem a API V2, indisponível nesta ligação."}); return; }
+        d=await api("v2","GET","/workshop/service-orders/"+encodeURIComponent(os)+"/times"); }
+      else if(res==="processes"){ d=await api(ver,"GET",ver==="v2"?"/workshop/processes":"/workshop/process",{query:ver==="v2"?{limit:val("lg_limit")}:undefined}); }
+      else { d=await api(ver,"GET","/workshop/interventions"); }
+      let rows=extractRows(d);
+      const auditCols=["id","num","number","plate","matricula","employee_name","created_by","created_at","updated_at","data_alter","date_alter","status","estado"];
+      const present=auditCols.filter(c=>rows.some(r=>r&&r[c]!==undefined));
+      const rest=flatCols(rows,20).filter(c=>!present.includes(c));
+      renderTable("out", rows, {cols:[...present,...rest].slice(0,16), actions:[{id:"v",label:"Ver tudo",fn:r=>showDetail("Registo",r)}]});
+    }catch(e){ errBox("out",e); }
+  };
+};
+
+/* ---- API EXPLORER ---- */
+RENDER.explorer=()=>{
+  mainCard("🧪 API Explorer","Chama QUALQUER endpoint das duas versões. Útil para tudo o que não tem separador próprio.",
+   '<div class="toolbar">'+
+     '<div><label>Versão</label><select id="ex_ver"><option value="v1">V1 (Basic)</option><option value="v2">V2 (Bearer)</option></select></div>'+
+     '<div><label>Método</label><select id="ex_m"><option>GET</option><option>POST</option><option>PATCH</option><option>DELETE</option></select></div>'+
+     '<div style="flex:1 1 320px"><label>Caminho (depois de /api ou /api/v2)</label><input id="ex_path" placeholder="/workshop/vehicles"></div>'+
+   '</div>'+
+   '<label>Query params (um por linha: chave=valor)</label><textarea id="ex_q" placeholder="limit=5"></textarea>'+
+   '<label>Body JSON (POST/PATCH)</label><textarea id="ex_b" placeholder=\'{"description":"..."}\'></textarea>'+
+   '<div style="margin:10px 0;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="exGo">▶ Enviar</button>'+
+     '<button class="btn sec" id="exTbl">Ver como tabela</button>'+
+     '<span class="small muted" style="align-self:center" id="exQuick"></span></div>'+
+   '<div id="exStatus"></div>'+
+   '<label>Resposta</label><pre id="exOut">—</pre>');
+  const quick=[
+    ["v1","GET","/workshop/vehicles"],["v1","GET","/workshop/os"],["v1","GET","/workshop/monitor"],
+    ["v2","GET","/workshop/service-orders"],["v2","GET","/workshop/processes"],["v2","GET","/workshop/mechanic-availability"],
+    ["v2","GET","/workshop/processes/statuses"],["v2","GET","/workshop/schedules"]
+  ];
+  document.getElementById("exQuick").innerHTML="Atalhos: "+quick.map((q,i)=>'<a href="#" data-i="'+i+'">'+q[0]+" "+q[2].split("/").pop()+'</a>').join(" · ");
+  document.querySelectorAll("#exQuick a").forEach(a=>a.onclick=(e)=>{e.preventDefault();const q=quick[+a.dataset.i];
+    document.getElementById("ex_ver").value=q[0];document.getElementById("ex_m").value=q[1];document.getElementById("ex_path").value=q[2];});
+  document.getElementById("ex_ver").value=state.active;
+  let lastData=null;
+  async function send(){
+    const ver=val("ex_ver"),m=val("ex_m"),path=val("ex_path");
+    if(!path){ flash("exStatus","err","Indica o caminho."); return; }
+    const query={}; val("ex_q").split("\n").forEach(l=>{ l=l.trim(); if(!l)return; const i=l.indexOf("="); if(i<0)return; query[l.slice(0,i)]=l.slice(i+1); });
+    let body; const bt=val("ex_b").trim(); if(bt){ try{ body=JSON.parse(bt); }catch(e){ flash("exStatus","err","Body JSON inválido: "+e.message); return; } }
+    flash("exStatus","info",'<span class="spinner"></span> A enviar '+m+' '+ver+' '+path+'…');
+    document.getElementById("exOut").textContent="…";
+    try{
+      const d=await api(ver,m,path,{query, body});
+      lastData=d;
+      flash("exStatus","ok","OK");
+      document.getElementById("exOut").textContent=JSON.stringify(d,null,2);
+    }catch(e){
+      flash("exStatus","err","Erro "+(e.status||"")+": "+escapeHtml(e.message).replace(/\n/g,"<br>"));
+      document.getElementById("exOut").textContent=e.data?JSON.stringify(e.data,null,2):(e.message||"");
+    }
+  }
+  document.getElementById("exGo").onclick=send;
+  document.getElementById("exTbl").onclick=()=>{ if(!lastData){alert("Envia um pedido primeiro.");return;}
+    const rows=extractRows(lastData);
+    document.getElementById("detBody").innerHTML='<h3>Resposta como tabela</h3><div id="exTblBox"></div>';
+    document.getElementById("detModal").classList.add("open");
+    renderTable("exTblBox", rows, {actions:[{id:"v",label:"Ver",fn:r=>showDetail("Linha",r)}]});
+  };
+};
+
+/* ============================================================
+   WRITE FORMS (escrita)
+   ============================================================ */
+function osActionsHtml(){
+  const today=new Date().toISOString().slice(0,10);
+  return ''+
+  '<div class="msg info small">Ações de escrita sobre esta OS. Horas, notas e linhas extra usam a V2; "aguardar autorização" usa a V1.</div>'+
+  '<details open><summary><b>⏱ Registar horas de mecânica</b></summary>'+
+    '<div class="row" style="flex-wrap:wrap">'+
+      '<div style="flex:1 1 140px"><label>Empregado (id) *</label><input id="act_emp"></div>'+
+      '<div style="flex:1 1 140px"><label>Intervenção (id)</label><input id="act_int"></div>'+
+      '<div style="flex:1 1 170px"><label>Coluna</label><select id="act_taskcol"><option value="intervention_id">intervention_id</option><option value="article_id">article_id</option><option value="article_extra_id">article_extra_id</option></select></div>'+
+    '</div><div class="row" style="flex-wrap:wrap">'+
+      '<div style="flex:1 1 130px"><label>Data início *</label><input id="act_sdate" type="date" value="'+today+'"></div>'+
+      '<div style="flex:1 1 110px"><label>Hora início *</label><input id="act_stime" type="time"></div>'+
+      '<div style="flex:1 1 130px"><label>Data fim</label><input id="act_edate" type="date" value="'+today+'"></div>'+
+      '<div style="flex:1 1 110px"><label>Hora fim</label><input id="act_etime" type="time"></div>'+
+      '<div style="flex:1 1 170px"><label>Concluir intervenção</label><select id="act_endint"><option value="0">Não</option><option value="1">Sim (end_intervention)</option></select></div>'+
+    '</div><button class="btn" id="act_times_btn">Registar horas</button></details>'+
+  '<details><summary><b>📝 Adicionar nota</b></summary>'+
+    '<div class="row"><div><label>Assunto *</label><input id="act_nsub"></div>'+
+      '<div><label>Notificar</label><select id="act_nnotify"><option value="">nada</option><option value="employee">employee</option><option value="customer">customer</option></select></div></div>'+
+    '<label>Conteúdo *</label><textarea id="act_ncontent"></textarea>'+
+    '<button class="btn" id="act_note_btn">Adicionar nota</button></details>'+
+  '<details><summary><b>➕ Adicionar linha extra (artigo)</b></summary>'+
+    '<div class="row" style="flex-wrap:wrap">'+
+      '<div style="flex:1 1 120px"><label>Artigo (id) *</label><input id="act_lart"></div>'+
+      '<div style="flex:1 1 90px"><label>Qtd *</label><input id="act_lqty" type="number" value="1"></div>'+
+      '<div style="flex:1 1 110px"><label>Preço unit.</label><input id="act_lprice" type="number"></div>'+
+      '<div style="flex:1 1 200px"><label>Descrição extra</label><input id="act_ldesc"></div></div>'+
+    '<button class="btn" id="act_line_btn">Adicionar linha extra</button></details>'+
+  '<details><summary><b>🔐 Aguardar autorização (V1)</b></summary>'+
+    '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn sec" id="act_await_on">Ativar</button><button class="btn sec" id="act_await_off">Desativar</button></div></details>'+
+  '<div id="actMsg"></div>';
+}
+function bindOsActions(id){
+  const A=document.getElementById('act_times_btn'); if(!A) return;
+  A.onclick=async()=>{
+    if(!state.v2ok){ flash('actMsg','err','Registar horas exige a API V2.'); return; }
+    const body={employee_id:val('act_emp'),start_date:val('act_sdate'),start_time:val('act_stime'),
+      task_column:val('act_taskcol'),end_intervention:val('act_endint')};
+    if(val('act_edate')) body.end_date=val('act_edate');
+    if(val('act_etime')) body.end_time=val('act_etime');
+    if(val('act_int')) body.intervention_id=val('act_int');
+    if(!body.employee_id||!body.start_date||!body.start_time){ flash('actMsg','err','Preenche empregado, data e hora de início.'); return; }
+    flash('actMsg','info','<span class="spinner"></span> A registar horas…');
+    try{ await api('v2','POST','/workshop/service-orders/'+id+'/times',{body}); flash('actMsg','ok','Horas registadas ✓'); }
+    catch(e){ flash('actMsg','err','Erro '+(e.status||'')+': '+escapeHtml(e.message)); }
+  };
+  document.getElementById('act_note_btn').onclick=async()=>{
+    const body={subject:val('act_nsub'),content:val('act_ncontent')};
+    if(val('act_nnotify')) body.notify=val('act_nnotify');
+    if(!body.subject||!body.content){ flash('actMsg','err','Assunto e conteúdo obrigatórios.'); return; }
+    flash('actMsg','info','<span class="spinner"></span> A guardar nota…');
+    try{ if(state.v2ok) await api('v2','POST','/workshop/service-orders/'+id+'/notes',{body});
+         else await api('v1','POST','/workshop/os/'+id+'/notes',{body});
+         flash('actMsg','ok','Nota adicionada ✓'); }
+    catch(e){ flash('actMsg','err','Erro '+(e.status||'')+': '+escapeHtml(e.message)); }
+  };
+  document.getElementById('act_line_btn').onclick=async()=>{
+    if(!state.v2ok){ flash('actMsg','err','Linhas extra exigem a API V2.'); return; }
+    const body={article_id:val('act_lart'),quantity:Number(val('act_lqty')||1)};
+    if(val('act_lprice')) body.unit_price=Number(val('act_lprice'));
+    if(val('act_ldesc')) body.description_extra=val('act_ldesc');
+    if(!body.article_id){ flash('actMsg','err','Indica o id do artigo.'); return; }
+    flash('actMsg','info','<span class="spinner"></span> A adicionar linha…');
+    try{ await api('v2','POST','/workshop/service-orders/'+id+'/extra-lines',{body}); flash('actMsg','ok','Linha extra adicionada ✓'); }
+    catch(e){ flash('actMsg','err','Erro '+(e.status||'')+': '+escapeHtml(e.message)); }
+  };
+  const aw=(en)=>async()=>{ flash('actMsg','info','<span class="spinner"></span> …');
+    try{ await api('v1','PATCH','/workshop/os/'+id+'/awaiting-authorization',{query:{enable:en}}); flash('actMsg','ok','Aguardar autorização: '+(en?'ativado':'desativado')+' ✓'); }
+    catch(e){ flash('actMsg','err','Erro '+(e.status||'')+': '+escapeHtml(e.message)); } };
+  document.getElementById('act_await_on').onclick=aw(true);
+  document.getElementById('act_await_off').onclick=aw(false);
+}
+function genericCreateForm(title, infoHtml, fields, onSave){
+  let h='<h3>'+title+' <span class="small muted">('+state.active.toUpperCase()+')</span></h3>';
+  if(infoHtml) h+='<div class="msg info small">'+infoHtml+'</div>';
+  h+='<div class="row" style="flex-wrap:wrap">'+fields.map(f=>{const k=Array.isArray(f)?f[0]:f;const l=Array.isArray(f)?f[1]:f;
+    return '<div style="flex:1 1 200px"><label>'+escapeHtml(l)+'</label><input data-f="'+escapeHtml(k)+'"></div>';}).join('')+'</div>';
+  h+='<div style="margin-top:12px"><button class="btn" id="gcSave">💾 Criar</button>'+
+     '<button class="btn sec" style="margin-left:8px" onclick="document.getElementById(\'detModal\').classList.remove(\'open\')">Cancelar</button></div><div id="gcMsg"></div>';
+  document.getElementById('detBody').innerHTML=h; document.getElementById('detModal').classList.add('open');
+  document.getElementById('gcSave').onclick=async()=>{
+    const payload={}; document.querySelectorAll('#detBody input[data-f]').forEach(i=>{ if(i.value!=='')payload[i.dataset.f]=i.value; });
+    if(!payload.plate){ flash('gcMsg','err','Matrícula (plate) obrigatória.'); return; }
+    flash('gcMsg','info','<span class="spinner"></span> A criar…');
+    try{ await onSave(payload); flash('gcMsg','ok','Criado com sucesso ✓'); }
+    catch(e){ flash('gcMsg','err','Erro '+(e.status||'')+': '+escapeHtml(e.message)); }
+  };
+}
+function createVehicle(){
+  const v2=state.active==='v2';
+  genericCreateForm('Nova viatura', v2?'V2 exige: plate, brand_id, model_id, fuel_id.':'V1 exige: plate.',
+    v2?['plate','brand_id','model_id','fuel_id','vin','version_id','color','owner_customer_id','billing_customer_id','monthly_kms']
+       :['plate','description','vin','brand','model','version','colour','fuel','customerowner','customerbilling'],
+    async(p)=>{ await api(state.active,'POST','/workshop/vehicles',{body:p}); loadVehicles(); });
+}
+function createOS(){
+  const v2=state.active==='v2';
+  genericCreateForm('Nova Ordem de Serviço','Cria a OS. Linhas/intervenções podem ser adicionadas depois nas Ações da OS.',
+    v2?[['plate','Matrícula *'],['customer_id','Cliente id'],['status','Estado (RAS/ESP)'],['series','Série'],['km_counter','Kms'],['observations','Observações']]
+       :[['plate','Matrícula *'],['idcustomer','Cliente id'],['status','Estado (RAS/ESP)'],['serie','Série'],['currentkm','Kms']],
+    async(p)=>{ await api(state.active,'POST',v2?'/workshop/service-orders':'/workshop/os',{body:p}); loadOS(''); });
+}
+function createProcess(){
+  const v2=state.active==='v2';
+  genericCreateForm('Novo processo','',
+    v2?['plate','customer_id','km_counter','observations','reception_date','expected_delivery_date','warehouse_id']
+       :['plate','idcustomer','current_km','observations','date_reception','date_expected_delivery'],
+    async(p)=>{ await api(state.active,'POST',v2?'/workshop/processes':'/workshop/process',{body:p}); loadProcesses(); });
+}
+
+/* ============================================================
+   EXPORTADOR EXCEL OFFICEGEST (relatório de divergências)
+   Formato lido pelo skill: linha 3+ , colunas
+   A Codempr · B Nome · C Ordemservico · D Classificacao · E Matricula
+   F Estado · G Intervencao · H Hora_inicio · I Hora_fim
+   J Tempo_previsto · K Tempo_previsto_tot · L Tempo_real
+   ============================================================ */
+const OG_HEADERS=["Codempr","Nome","Ordemservico","Classificacao","Matricula","Estado","Intervencao","Hora_inicio","Hora_fim","Tempo_previsto","Tempo_previsto_tot","Tempo_real"];
+function loadSheetJS(){
+  return new Promise((res,rej)=>{
+    if(window.XLSX) return res();
+    const s=document.createElement('script');
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload=()=>res(); s.onerror=()=>rej(new Error("Não foi possível carregar a biblioteca XLSX (precisa de internet)."));
+    document.head.appendChild(s);
+  });
+}
+function fmtDur(min){ min=Number(min)||0; if(min<=0) return "00:00:00";
+  const h=Math.floor(min/60), m=Math.floor(min%60), s=Math.round((min-Math.floor(min))*60);
+  return String(h).padStart(2,'0')+":"+String(m).padStart(2,'0')+":"+String(s).padStart(2,'0'); }
+
+RENDER.exportDiv=()=>{
+  const y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+  mainCard("📤 Exportar Excel Officegest (Divergências)",
+    "Gera o Excel de <b>tempos por intervenção</b> de um dia, no formato exato que o relatório de divergências consome — substitui o export manual do Officegest. O <b>PDF do 2Smart</b> juntas tu como sempre.",
+    '<div class="msg info small">Lista as OS modificadas no dia (V1, <code>filter[date_alter]</code>), recolhe as horas de mecânica (<code>times</code>) cujo <b>início</b> é nesse dia, e gera o <code>.xlsx</code> no formato Officegest. Precisa de V1+V2 e internet (biblioteca XLSX). Só lê — não escreve no Officegest.</div>'+
+    '<div class="toolbar">'+
+      '<div><label>Dia *</label><input id="ed_date" type="date" value="'+y+'"></div>'+
+      '<div><label>&nbsp;</label><button class="btn" id="edGo">⬇ Gerar Excel Officegest</button></div>'+
+    '</div><div id="edOut"></div>');
+  document.getElementById("edGo").onclick=runExportDiv;
+};
+async function runExportDiv(){
+  const dateStr=val("ed_date"); if(!dateStr){ alert("Escolhe o dia."); return; }
+  if(!state.v1ok){ errBox("edOut",{message:"Precisas da API V1 (hash) para listar as OS do dia."}); return; }
+  if(!state.v2ok){ errBox("edOut",{message:"Precisas da API V2 (password da conta) para as horas."}); return; }
+  const out=document.getElementById("edOut");
+  const setP=(t)=>{ out.innerHTML='<div class="msg info"><span class="spinner"></span> '+t+'</div>'; };
+  const ogDate=(s)=>{ s=String(s||''); return /^\d{4}-/.test(s)? s.slice(2): s; };
+  setP("A preparar (biblioteca XLSX)…");
+  try{ await loadSheetJS(); }catch(e){ errBox("edOut",e); return; }
+  try{
+    setP("A carregar catálogo de intervenções…");
+    const interv={};
+    try{ const d=await api('v1','GET','/workshop/interventions'); extractRows(d).forEach(i=>{ if(i&&i.id!=null) interv[i.id]=i.description; }); }catch(e){}
+    // mapa employee_id -> nome COMPLETO (o endpoint times trunca o nome aos 40 chars)
+    const empNames={};
+    try{ const m=await api('v2','GET','/workshop/mechanic-availability'); const root=(m&&m.data)||m;
+      [].concat(root.available||[],root.busy||[]).forEach(e=>{ const id=(e.employee_id!=null?e.employee_id:e.id); if(id!=null && e.name) empNames[id]=e.name; });
+    }catch(e){}
+    setP("A listar OS modificadas em "+dateStr+"…");
+    let cands=[];
+    try{ const d=await api('v1','GET','/workshop/os',{query:{'filter[date_alter]':dateStr,'operator':'>='}});
+      cands=extractRows(d).map(o=>({num:o.number||o.num||o.documentnumber, plate:o.plate||'', state:o.state||o.estado||''})).filter(c=>c.num!=null);
+    }catch(e){ errBox("edOut",{status:e.status,message:"Falha a listar OS (V1): "+e.message}); return; }
+    if(!cands.length){ out.innerHTML='<div class="msg info">Sem OS modificadas em '+dateStr+'.</div>'; return; }
+    const docCache={};
+    async function docNumber(num){
+      if(docCache[num]!==undefined) return docCache[num];
+      try{ const d=await api('v2','GET','/workshop/service-orders/'+encodeURIComponent(num)); const o=(d&&d.data)||d; docCache[num]=o.document_number||o.number||num; }
+      catch(e){ docCache[num]=num; }
+      return docCache[num];
+    }
+    const rows=[]; let skipped=0;
+    for(let i=0;i<cands.length;i++){
+      const c=cands[i];
+      setP("A recolher horas… OS "+(i+1)+"/"+cands.length+" · "+rows.length+" registos");
+      let times=[];
+      try{ const d=await api('v2','GET','/workshop/service-orders/'+encodeURIComponent(c.num)+'/times'); times=extractRows(d); }
+      catch(e){ if(e.status===429){ await new Promise(r=>setTimeout(r,3000)); i--; continue; } skipped++; continue; }
+      const dayTimes=times.filter(t=>String(t.start_time||'').slice(0,10)===dateStr);
+      if(dayTimes.length){
+        const doc=await docNumber(c.num);
+        dayTimes.forEach(t=>{ rows.push([ t.employee_id!=null?t.employee_id:'', (empNames[t.employee_id]||t.employee_name||''), doc, '', c.plate||'', c.state||'',
+          '['+(t.intervention_id!=null?t.intervention_id:'')+'] '+(interv[t.intervention_id]||''),
+          ogDate(t.start_time), ogDate(t.end_time), 0, 0, (t.difference_hours!=null?parseFloat(t.difference_hours):'') ]); });
+      }
+      await new Promise(r=>setTimeout(r,110));
+    }
+    if(!rows.length){ out.innerHTML='<div class="msg info">Sem horas de mecânica com início em <b>'+dateStr+'</b> ('+cands.length+' OS analisadas).</div>'; return; }
+    rows.sort((a,b)=>String(a[7]).localeCompare(String(b[7])));
+    const aoa=[["OfficeGest"], OG_HEADERS, ...rows];
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    const fn="OfficeGest_"+dateStr.replace(/-/g,'')+".xlsx";
+    XLSX.writeFile(wb, fn);
+    out.innerHTML='<div class="msg ok">✓ Gerado <b>'+fn+'</b> — <b>'+rows.length+'</b> registos de '+cands.length+' OS analisadas'+(skipped?(' ('+skipped+' sem acesso)'):'')+'. Junta o PDF do 2Smart no relatório de divergências.</div><div id="edPrev"></div>';
+    renderTable("edPrev", rows.slice(0,300).map(r=>{const o={}; OG_HEADERS.forEach((h,i)=>o[h]=r[i]); return o;}), {});
+  }catch(e){ errBox("edOut",e); }
+}
+
+/* ---- automatic version indicator (read-only) ---- */
+function verSwitch(key){
+  return '<div class="small muted" style="margin-bottom:8px">Versão da API: '+
+    '<b class="verAutoBadge">'+state.active.toUpperCase()+'</b> '+
+    '<span class="muted">— escolhida automaticamente; dados exclusivos da V2 são obtidos sozinhos quando disponível.</span></div>';
+}
+
+/* ---- small utils ---- */
+function val(id){ const e=document.getElementById(id); return e?e.value.trim():""; }
+
+/* ---- init ---- */
+buildNav();
+select(GROUPS[0].items[0]);
+if(cfg.hash && cfg.hash.trim()) testConn().catch(()=>{});
+</script>
+</body>
+</html>

@@ -1037,6 +1037,7 @@
         <ul class="sidebar-nav" id="adminNav" style="display: none;">
             <li><a onclick="openSettings()" id="navDefinicoes"><span class="nav-icon">⚙️</span> Definições</a></li>
             <li><a onclick="openModule('coord_inspecoes')" id="navCoord_inspecoes"><span class="nav-icon">🔍</span> Auditoria Interna Trimestral</a></li>
+            <li><a onclick="openModule('officegest_api')" id="navOfficegest_api"><span class="nav-icon">🔧</span> API Officegest (Consola)</a></li>
             <li id="navGerarRelatoriosLi">
                 <a onclick="toggleRelatoriosSubmenu()" id="navGerarRelatorios" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">📋</span> Gerar Relatórios</span><span id="relatoriosArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="relatoriosSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
@@ -2082,11 +2083,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
@@ -3294,7 +3295,8 @@
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
             equipamentos: { title: 'Manutenção de Equipamentos', url: 'manutencao-equipamentos.html' },
             coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' },
-            prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' }
+            prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' },
+            officegest_api: { title: 'API Officegest (Consola)', url: 'officegest-api-explorer.html' }
         };
         const mod = modules[id];
         if (!mod) return;
