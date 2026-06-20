@@ -49,6 +49,12 @@ h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
 <div class="drop-zone" id="xlsxZone"><div class="icon">📊</div><p>Arraste o Excel aqui ou clique para selecionar</p></div>
 <input type="file" id="xlsxInput" accept=".xlsx,.xls" style="display:none">
 <div class="file-info" id="xlsxInfo"></div>
+<div style="text-align:center;color:#9aa;font-size:12px;margin:12px 0 8px">— ou buscar diretamente da API —</div>
+<div style="display:flex;justify-content:center">
+  <button type="button" id="apiOgBtn" style="padding:9px 18px;background:#003B73;color:#fff;border:none;border-radius:8px;font-size:0.9em;font-weight:600;cursor:pointer">⬇ Buscar do Officegest (API)</button>
+</div>
+<div class="file-info" id="apiOgInfo" style="display:none;margin-top:8px"></div>
+<div style="text-align:center;color:#9aa;font-size:11px;margin-top:6px">Usa a <b>Data do Relatório</b> (em baixo). Credenciais: definidas uma vez no módulo "API Officegest (Consola)".</div>
 </div>
 <div class="upload-area">
 <h2>Data do Relatório</h2>
@@ -158,13 +164,15 @@ function initUI() {
     }
     setupDrop('pdfZone','pdfInput','pdf');
     setupDrop('xlsxZone','xlsxInput','xlsx');
+    setupApiOg();
     document.getElementById('generateBtn').addEventListener('click', generate);
     document.getElementById('backBtn').addEventListener('click', function() {
         document.getElementById('uploadScreen').style.display='block';
         document.getElementById('resultsScreen').style.display='none';
-        pdfFile=null; xlsxFile=null;
+        pdfFile=null; xlsxFile=null; window.__apiOgData=null;
         document.getElementById('pdfInfo').style.display='none';
         document.getElementById('xlsxInfo').style.display='none';
+        var _ai=document.getElementById('apiOgInfo'); if(_ai) _ai.style.display='none';
         document.getElementById('reportDateInput').value='';
         document.getElementById('generateBtn').disabled=true;
     });
@@ -181,8 +189,8 @@ function setupDrop(zoneId, inputId, type) {
 }
 function handleFile(file, type) {
     if(type==='pdf') { pdfFile=file; document.getElementById('pdfInfo').textContent='OK: '+file.name; document.getElementById('pdfInfo').style.display='block'; }
-    else { xlsxFile=file; document.getElementById('xlsxInfo').textContent='OK: '+file.name; document.getElementById('xlsxInfo').style.display='block'; }
-    document.getElementById('generateBtn').disabled = !(pdfFile && xlsxFile);
+    else { xlsxFile=file; window.__apiOgData=null; var _ai=document.getElementById('apiOgInfo'); if(_ai) _ai.style.display='none'; document.getElementById('xlsxInfo').textContent='OK: '+file.name; document.getElementById('xlsxInfo').style.display='block'; }
+    document.getElementById('generateBtn').disabled = !(pdfFile && (xlsxFile || window.__apiOgData));
     // Save imported file to SharePoint with descriptive name
     var ext = file.name.substring(file.name.lastIndexOf('.'));
     var prefix = type === 'pdf' ? '2Smart_Presencas' : 'OG_Intervencoes';
@@ -356,6 +364,85 @@ async function extractPDF(file) {
     console.log("[2Smart] Colaboradores:", Object.keys(smart2));
     for(var nn in smart2) console.log("  ", nn, "->", JSON.stringify(smart2[nn]));
     return smart2;
+}
+
+// ============================================================
+// OFFICEGEST via API — produz o MESMO ogData que o Excel
+// (reutiliza credenciais guardadas pela consola: localStorage 'officegest_cfg_v1')
+// ============================================================
+function ogApiCfg(){ try{ var c=JSON.parse(localStorage.getItem('officegest_cfg_v1')); if(c&&c.base) return c; }catch(e){} return null; }
+function ogMinutes(s){ var m=String(s||'').match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/); if(!m) return null; return parseInt(m[1])*60+parseInt(m[2])+(m[3]?parseInt(m[3]):0)/60; }
+var _ogToken=null;
+async function ogApiLogin(cfg){
+    var r=await fetch(cfg.base.replace(/\/$/,'')+'/api/v2/auth/login',{method:'POST',mode:'cors',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({username:cfg.user,password:(cfg.v2pass||cfg.hash)})});
+    var j=await r.json(); var t=j&&((j.data&&(j.data.token||j.data.access_token))||j.token||j.access_token);
+    if(!t) throw new Error('Login V2 falhou (confirma a password na consola API Officegest).'); _ogToken=t; return t;
+}
+async function ogApi(cfg, ver, path, query){
+    var url=cfg.base.replace(/\/$/,'')+(ver==='v2'?'/api/v2':'/api')+path;
+    if(query){ var qs=[]; for(var k in query){ if(query[k]!==''&&query[k]!=null) qs.push(encodeURIComponent(k)+'='+encodeURIComponent(query[k])); } if(qs.length) url+='?'+qs.join('&'); }
+    var headers={'Accept':'application/json'};
+    if(ver==='v2'){ if(!_ogToken) await ogApiLogin(cfg); headers['Authorization']='Bearer '+_ogToken; }
+    else headers['Authorization']='Basic '+btoa(cfg.user+':'+cfg.hash);
+    var r=await fetch(url,{mode:'cors',headers:headers});
+    if(!r.ok) throw new Error('API '+ver+' '+path+' → '+r.status);
+    return await r.json();
+}
+function ogRows(d){
+    if(!d) return []; if(Array.isArray(d)) return d;
+    if(d.data!==undefined){ if(Array.isArray(d.data)) return d.data; if(d.data&&typeof d.data==='object') return Object.values(d.data); }
+    var skip={order:1,sorder:1,total:1,meta:1,success:1,result:1,code:1,message:1,trace_id:1,api_throttle_left:1,api_monthly_left:1};
+    for(var k in d){ if(skip[k]) continue; if(Array.isArray(d[k])) return d[k]; if(d[k]&&typeof d[k]==='object') return Object.values(d[k]); }
+    return [];
+}
+async function fetchOfficegestFromAPI(dateStr, onProgress){
+    var cfg=ogApiCfg();
+    if(!cfg||!cfg.hash) throw new Error('Sem credenciais. Abre "API Officegest (Consola)" → ⚙ Credenciais e mete o hash + password uma vez.');
+    _ogToken=null;
+    onProgress&&onProgress('A ligar à API...'); await ogApiLogin(cfg);
+    var interv={}; try{ ogRows(await ogApi(cfg,'v1','/workshop/interventions')).forEach(function(i){ if(i&&i.id!=null) interv[i.id]=i.description; }); }catch(e){}
+    var empNames={}; try{ var m=await ogApi(cfg,'v2','/workshop/mechanic-availability'); var root=(m&&m.data)||m; [].concat(root.available||[],root.busy||[]).forEach(function(e){ var id=(e.employee_id!=null?e.employee_id:e.id); if(id!=null&&e.name) empNames[id]=e.name; }); }catch(e){}
+    onProgress&&onProgress('A listar OS do dia...');
+    var cands=ogRows(await ogApi(cfg,'v1','/workshop/os',{'filter[date_alter]':dateStr,'operator':'>='})).map(function(o){ return {num:o.number, plate:o.plate||'', state:o.state||''}; }).filter(function(c){ return c.num!=null; });
+    var docCache={};
+    async function docNum(n){ if(docCache[n]!==undefined) return docCache[n]; try{ var d=await ogApi(cfg,'v2','/workshop/service-orders/'+n); var o=(d&&d.data)||d; docCache[n]=o.document_number||o.number||n; }catch(e){ docCache[n]=n; } return docCache[n]; }
+    var data={};
+    for(var i=0;i<cands.length;i++){
+        onProgress&&onProgress('A recolher horas... OS '+(i+1)+'/'+cands.length);
+        var c=cands[i]; var times=[];
+        try{ times=ogRows(await ogApi(cfg,'v2','/workshop/service-orders/'+c.num+'/times')); }catch(e){ if(String(e.message).indexOf('429')>=0){ await new Promise(function(r){setTimeout(r,3000);}); i--; continue; } continue; }
+        var dayT=times.filter(function(t){ return String(t.start_time||'').slice(0,10)===dateStr; });
+        if(dayT.length){
+            var doc=await docNum(c.num);
+            for(var j=0;j<dayT.length;j++){ var t=dayT[j];
+                var name=(empNames[t.employee_id]||t.employee_name||'').trim(); if(!name) continue;
+                var hi=ogMinutes(t.start_time), hf=ogMinutes(t.end_time); if(hi===null) continue;
+                if(!data[name]) data[name]=[];
+                data[name].push({inicio:hi, fim:hf, intervencao:'['+(t.intervention_id!=null?t.intervention_id:'')+'] '+(interv[t.intervention_id]||''), osv:doc});
+            }
+        }
+        await new Promise(function(r){setTimeout(r,110);});
+    }
+    for(var n in data) data[n].sort(function(a,b){ return a.inicio-b.inicio; });
+    return data;
+}
+function setupApiOg(){
+    var btn=document.getElementById('apiOgBtn'); if(!btn) return;
+    btn.addEventListener('click', async function(){
+        var date=document.getElementById('reportDateInput').value;
+        if(!date){ alert('Escolhe primeiro a Data do Relatório (em baixo).'); return; }
+        var info=document.getElementById('apiOgInfo');
+        btn.disabled=true; info.style.display='block'; info.style.color='#1976d2'; info.textContent='A buscar do Officegest...';
+        try{
+            var data=await fetchOfficegestFromAPI(date, function(msg){ info.textContent=msg; });
+            window.__apiOgData=data; xlsxFile=null;
+            var nrec=0; for(var n in data) nrec+=data[n].length;
+            info.style.color='#27ae60'; info.textContent='✓ Officegest via API: '+nrec+' registos, '+Object.keys(data).length+' colaboradores ('+date+')';
+            document.getElementById('xlsxInfo').style.display='none';
+            document.getElementById('generateBtn').disabled = !(pdfFile && (xlsxFile || window.__apiOgData));
+        }catch(e){ window.__apiOgData=null; info.style.color='#c62828'; info.textContent='Erro: '+e.message; }
+        btn.disabled=false;
+    });
 }
 
 // ============================================================
@@ -975,7 +1062,7 @@ async function generate() {
         }
 
         setProgress(40, 'A carregar Officegest...');
-        var ogData = await extractExcel(xlsxFile);
+        var ogData = window.__apiOgData ? window.__apiOgData : await extractExcel(xlsxFile);
 
         // Atribuir colaboradores de Colisão a Bela Vista / Tagus Park (passo manual)
         setProgress(55, 'A pedir atribuição de Colisão...');
