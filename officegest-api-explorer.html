@@ -321,6 +321,25 @@ const GROUPS = [
     {id:"versions", label:"Ⓜ Versões", custom:"crud", resource:"versions"},
     {id:"fuels", label:"⛽ Combustíveis", custom:"crud", resource:"fuels"},
   ]},
+  {name:"Comercial", items:[
+    {id:"sales_docs", label:"🧾 Faturas de venda", custom:"docList", base:"/sales/documents"},
+    {id:"sales_receipts", label:"💶 Recibos de venda", custom:"docList", base:"/sales/receipts"},
+    {id:"purch_docs", label:"📥 Faturas de compra", custom:"docList", base:"/purchases/documents", ver:"v1"},
+    {id:"purch_receipts", label:"💸 Recibos de compra", custom:"docList", base:"/purchases/receipts", ver:"v1"},
+  ]},
+  {name:"Entidades", items:[
+    {id:"customers", label:"👤 Clientes", custom:"resList", res:{path:"/entities/customers", search:"name"}},
+    {id:"suppliers", label:"🏭 Fornecedores", custom:"resList", res:{path:"/entities/suppliers", search:"name"}},
+    {id:"employees", label:"👷 Funcionários", custom:"resList", res:{path:"/entities/employees", search:"name"}},
+    {id:"contacts", label:"📇 Contactos", custom:"resList", res:{path:"/entities/contacts", search:"name"}},
+  ]},
+  {name:"Stocks", items:[
+    {id:"articles", label:"📦 Artigos", custom:"resList", res:{path:"/stocks/articles", search:"description"}},
+    {id:"stock_mov", label:"🔁 Movimentos de stock", custom:"resList", res:{path:"/stocks/movements", search:"description"}},
+    {id:"families", label:"🗂 Famílias", custom:"resList", res:{path:"/stocks/families", search:"description"}},
+    {id:"subfamilies", label:"🗂 Subfamílias", custom:"resList", res:{path:"/stocks/subfamilies", search:"description"}},
+    {id:"sbrands", label:"Ⓜ Marcas (stock)", custom:"resList", res:{path:"/stocks/brands", search:"description"}},
+  ]},
   {name:"Divergências", items:[
     {id:"exportdiv", label:"📤 Export Officegest (dia)", custom:"exportDiv"},
   ]},
@@ -1140,6 +1159,85 @@ function createProcess(){
     v2?['plate','customer_id','km_counter','observations','reception_date','expected_delivery_date','warehouse_id']
        :['plate','idcustomer','current_km','observations','date_reception','date_expected_delivery'],
     async(p)=>{ await api(state.active,'POST',v2?'/workshop/processes':'/workshop/process',{body:p}); loadProcesses(); });
+}
+
+/* ============================================================
+   ENTIDADES / STOCKS — listas genéricas (V1 Basic)
+   ============================================================ */
+RENDER.resList=(it)=>{
+  const r=it.res;
+  mainCard(it.label, "<code>GET /api"+r.path+"</code> — dados em leitura.",
+   '<div class="toolbar">'+
+     (r.search?('<div><label>Pesquisar ('+r.search+' contém)</label><input id="rl_q"></div>'):'')+
+     '<div><label>Limite</label><input id="rl_limit" type="number" value="100"></div>'+
+     '<div><label>&nbsp;</label><button class="btn" id="rlGo">Listar</button></div>'+
+   '</div><div id="out"></div>');
+  const load=async()=>{
+    loading("out");
+    try{
+      const q={limit:val("rl_limit")};
+      if(r.search && val("rl_q")){ q["filter["+r.search+"]"]=val("rl_q"); q["operator"]="like"; }
+      const d=await api("v1","GET",r.path,{query:q});
+      const rows=extractRows(d);
+      document.getElementById("out").innerHTML='<div class="count">'+rows.length+' registos'+(totalOf(d)!=null?(" de "+totalOf(d)):"")+'</div><div id="rlTbl"></div>';
+      renderTable("rlTbl", rows, {maxCols:12, actions:[{id:"v",label:"Ver",fn:row=>showDetail(it.label, row)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("rlGo").onclick=load;
+  load();
+};
+
+/* ============================================================
+   VENDAS / COMPRAS — documentos por tipo + detalhe
+   ============================================================ */
+RENDER.docList=(it)=>{
+  const base=it.base, ver=it.ver||state.active;
+  mainCard(it.label, "<code>GET "+(ver==='v2'?'/api/v2':'/api')+base+"/{tipo}</code> — escolhe o tipo de documento e o período.",
+   '<div class="toolbar">'+
+     '<div style="min-width:240px"><label>Tipo de documento</label><select id="dl_type"><option value="">a carregar tipos…</option></select></div>'+
+     '<div><label>De (data)</label><input id="dl_from" type="date"></div>'+
+     '<div><label>Até (data)</label><input id="dl_to" type="date"></div>'+
+     '<div><label>Limite</label><input id="dl_limit" type="number" value="100"></div>'+
+     '<div><label>&nbsp;</label><button class="btn" id="dlGo">Listar documentos</button></div>'+
+   '</div><div id="out"></div>');
+  // carregar tipos
+  (async()=>{
+    try{
+      const d=await api(ver,"GET",base);
+      const types=extractRows(d);
+      const sel=document.getElementById("dl_type");
+      sel.innerHTML='<option value="">— escolher tipo —</option>'+types.map(t=>'<option value="'+escapeHtml(t.type)+'">'+escapeHtml(t.type+(t.description?(' — '+t.description):''))+'</option>').join("");
+    }catch(e){ errBox("out",e); }
+  })();
+  const load=async()=>{
+    const type=val("dl_type"); if(!type){ alert("Escolhe o tipo de documento."); return; }
+    loading("out");
+    try{
+      const q = ver==="v2" ? {per_page:val("dl_limit")} : {limit:val("dl_limit")};
+      if(val("dl_from")){ if(ver==="v2") q.date_from=val("dl_from"); else { q["filter[date]"]=val("dl_from"); q["operator"]=">="; } }
+      if(val("dl_to") && ver==="v2") q.date_to=val("dl_to");
+      const d=await api(ver,"GET",base+"/"+encodeURIComponent(type),{query:q});
+      const rows=extractRows(d);
+      document.getElementById("out").innerHTML='<div class="count">'+rows.length+' documentos'+(totalOf(d)!=null?(" de "+totalOf(d)):"")+'</div><div id="dlTbl"></div>';
+      renderTable("dlTbl", rows, {maxCols:12, actions:[{id:"v",label:"Abrir",fn:row=>openDoc(base, type, row, ver)}]});
+    }catch(e){ errBox("out",e); }
+  };
+  document.getElementById("dlGo").onclick=load;
+};
+function openDoc(base, type, row, ver){
+  const num=row.number||row.document_number||row.id;
+  document.getElementById("detBody").innerHTML='<div class="msg info"><span class="spinner"></span> A abrir documento…</div>';
+  document.getElementById("detModal").classList.add("open");
+  (async()=>{
+    try{
+      const d=await api(ver,"GET",base+"/"+encodeURIComponent(type)+"/"+encodeURIComponent(num));
+      const o=(d&&d.data)||d;
+      showDetail("Documento "+(row.document_number||num), o);
+    }catch(e){
+      document.getElementById("detBody").innerHTML='<h3>Documento '+escapeHtml(row.document_number||num)+'</h3>'+
+        '<div class="msg info small">Detalhe não disponível ('+(e.status||'')+'); a mostrar os dados da lista.</div>'+renderObject(row);
+    }
+  })();
 }
 
 /* ============================================================
