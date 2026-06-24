@@ -1542,6 +1542,10 @@
                 renderCalendar();
                 console.log('[SP-Sync] Merge concluido:', bookings.length, 'reservas totais');
                 showToast('Dados sincronizados com SharePoint.', 'success');
+                // Verificar viaturas em atraso assim que os dados do SharePoint chegam
+                // (garante que o popup aparece a todos os utilizadores, independentemente
+                // da velocidade de sincronização).
+                try { checkOverdueVehicles(); } catch(e) { console.warn('checkOverdueVehicles:', e); }
                 // Enviar para SP quaisquer bookings locais que nao tenham _spItemId
                 var locaisOrfas = bookings.filter(function(b) { return !b._spItemId; });
                 if (locaisOrfas.length > 0) {
@@ -2187,6 +2191,9 @@
     function checkOverdueVehicles(force) {
         var overdue = getOverdueBookings();
         if (overdue.length === 0) { if (force) showToast('Não há viaturas em atraso.', 'success'); return; }
+        // Auto-mostrar uma única vez por sessão (re-tenta enquanto não houver dados/atrasos);
+        // o botão manual (force=true) mostra sempre.
+        if (!force) { if (window._overdueAutoShown) return; window._overdueAutoShown = true; }
         var today = new Date();
         var rows = overdue.map(function(b) {
             var saida = b.dataSaida || b.dataEntrada;
