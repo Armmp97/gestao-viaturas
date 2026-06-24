@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Viaturas - DomusCar</title>
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    <!-- PDF.js: desenha PDFs em canvas (sem iframe/blob), imune a bloqueios de extensões/Edge -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         :root {
             --primary: #1a73e8;
@@ -3271,7 +3273,7 @@
         if (doc.type && doc.type.startsWith('image/')) {
             openImageModal(doc.data);
         } else {
-            openPdfModal(doc.data);
+            openPdfWithPdfJs(doc.blobObj || doc.data);
         }
     }
 
@@ -3346,7 +3348,7 @@
                     return r.blob();
                 }).then(function(blob) {
                     var blobUrl = URL.createObjectURL(blob);
-                    result[category].push({ name: name, type: mime || blob.type, data: blobUrl, isBlob: true, webUrl: item.webUrl });
+                    result[category].push({ name: name, type: mime || blob.type, data: blobUrl, isBlob: true, webUrl: item.webUrl, blobObj: blob });
                 }).catch(function() {
                     result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
                 });
@@ -3379,9 +3381,10 @@
                     var isLocal = f.isBlob || /^blob:|^data:/.test(f.data || '');
                     if (isImg) {
                         html += '<div class="file-preview" style="aspect-ratio:auto;"><img src="' + f.data + '" style="width:100%;height:180px;object-fit:cover;cursor:pointer;" onclick="openImageModal(this.src)"><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
-                    } else if (isPdf && isLocal) {
-                        // Pré-visualização inline do PDF a partir do blob/data URL; clique abre em modal na própria página.
-                        html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="openPdfModal(\'' + f.data + '\')"><iframe src="' + f.data + '#toolbar=0&navpanes=0" style="width:100%;height:180px;border:0;pointer-events:none;background:#fff;"></iframe><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Documento') + ' (clique para abrir)</div></div>';
+                    } else if (isPdf) {
+                        // PDF: abre com PDF.js (canvas) a partir dos bytes — imune a bloqueios de Edge/extensões.
+                        var _kPdf = registerPdfSource(f.blobObj || f.data, f.name);
+                        html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="openPdfWithPdfJs(\'' + _kPdf + '\')"><div class="file-icon">&#128196;</div><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Documento') + ' (clique para abrir)</div></div>';
                     } else if (isLocal) {
                         html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="openPdfModal(\'' + f.data + '\')"><div class="file-icon">&#128196;</div><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
                     } else if (f.isWebUrl) {
@@ -3468,6 +3471,82 @@
             '<iframe src="' + url + '" style="flex:1;width:100%;border:0;background:#fff;"></iframe>';
         overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.id === 'pdfModalClose') overlay.remove(); });
         document.body.appendChild(overlay);
+    }
+
+    // Registo de fontes de PDF (Blob/URL + nome) para passar uma chave curta no onclick.
+    window._pdfRegistry = window._pdfRegistry || {};
+    function registerPdfSource(src, name) {
+        var key = 'pdf_' + (window._pdfRegCounter = (window._pdfRegCounter || 0) + 1);
+        window._pdfRegistry[key] = { src: src, name: name || 'documento.pdf' };
+        return key;
+    }
+
+    function _downloadBytes(bufOrBlob, filename) {
+        try {
+            var blob = (bufOrBlob instanceof Blob) ? bufOrBlob : new Blob([bufOrBlob], { type: 'application/pdf' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = filename || 'documento.pdf';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
+        } catch (e) { console.error('[download]', e); showToast('Não foi possível descarregar o ficheiro.', 'error'); }
+    }
+
+    function _withTimeout(p, ms) { return Promise.race([p, new Promise(function(_, rej) { setTimeout(function() { rej(new Error('render-timeout')); }, ms); })]); }
+
+    // Visualizador de PDF com PDF.js: desenha as páginas em <canvas> a partir dos bytes.
+    // Sem iframe nem navegação blob:/sharepoint.com — imune a ERR_BLOCKED_BY_CLIENT (Edge/extensões).
+    // Inclui sempre um botão "Descarregar" como alternativa garantida.
+    async function openPdfWithPdfJs(keyOrSource) {
+        var entry = (window._pdfRegistry && window._pdfRegistry[keyOrSource]) || null;
+        var source = entry ? entry.src : keyOrSource;
+        var fileName = entry ? entry.name : 'documento.pdf';
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:400;display:flex;flex-direction:column;';
+        var bar = document.createElement('div');
+        bar.style.cssText = 'padding:8px 14px;display:flex;justify-content:flex-end;gap:8px;flex:0 0 auto;';
+        var btnDl = document.createElement('button');
+        btnDl.type = 'button'; btnDl.innerHTML = '&#11015; Descarregar';
+        btnDl.style.cssText = 'background:#fff;border:0;border-radius:6px;padding:6px 16px;font-weight:600;cursor:pointer;opacity:.5;';
+        btnDl.disabled = true;
+        var btnClose = document.createElement('button');
+        btnClose.type = 'button'; btnClose.innerHTML = 'Fechar &#10006;';
+        btnClose.style.cssText = 'background:#fff;border:0;border-radius:6px;padding:6px 16px;font-weight:600;cursor:pointer;';
+        btnClose.onclick = function() { overlay.remove(); };
+        bar.appendChild(btnDl); bar.appendChild(btnClose);
+        var scroll = document.createElement('div');
+        scroll.style.cssText = 'flex:1 1 auto;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px;';
+        scroll.innerHTML = '<div style="color:#fff;font-size:14px;">A carregar documento…</div>';
+        overlay.appendChild(bar); overlay.appendChild(scroll);
+        document.body.appendChild(overlay);
+        var buf = null;
+        try {
+            if (source instanceof Blob) buf = await source.arrayBuffer();
+            else buf = await (await fetch(source)).arrayBuffer();
+            // Assim que temos os bytes, o download fica disponível (rede de segurança).
+            btnDl.disabled = false; btnDl.style.opacity = '1';
+            btnDl.onclick = function() { _downloadBytes(buf, fileName); };
+            if (!window.pdfjsLib) throw new Error('PDF.js não carregado');
+            if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            // Passa uma CÓPIA dos bytes ao PDF.js (transfere/esvazia o buffer para o worker);
+            // mantemos 'buf' intacto para o botão Descarregar.
+            var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)) }).promise;
+            scroll.innerHTML = '';
+            for (var p = 1; p <= pdf.numPages; p++) {
+                var page = await pdf.getPage(p);
+                var viewport = page.getViewport({ scale: 1.5 });
+                var canvas = document.createElement('canvas');
+                canvas.width = viewport.width; canvas.height = viewport.height;
+                canvas.style.cssText = 'max-width:96%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.4);';
+                scroll.appendChild(canvas);
+                await _withTimeout(page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise, 20000);
+            }
+        } catch (e) {
+            console.error('[PDF.js]', e);
+            scroll.innerHTML = '<div style="color:#fff;font-size:14px;max-width:520px;text-align:center;line-height:1.6;">Não foi possível pré-visualizar o PDF aqui.<br>Usa o botão <strong>&#11015; Descarregar</strong> em cima para o abrir no teu leitor de PDF.</div>';
+        }
     }
 
     function openFileInNewTab(dataUrl) {
