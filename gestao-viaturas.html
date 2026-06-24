@@ -637,6 +637,24 @@
                             <label>Nº Carta de Condução <span class="required">*</span></label>
                             <input type="text" id="pk_numCarta" required placeholder="Nº da carta de condução">
                         </div>
+                        <div class="form-group">
+                            <label>Tipo de Documento de Identificação <span class="required">*</span></label>
+                            <select id="pk_tipoDocId" required>
+                                <option value="">Selecione...</option>
+                                <option value="Cartão de Cidadão">Cartão de Cidadão</option>
+                                <option value="Bilhete de Identidade">Bilhete de Identidade</option>
+                                <option value="Passaporte">Passaporte</option>
+                                <option value="Título de Residência">Título de Residência</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nº do Documento de Identificação <span class="required">*</span></label>
+                            <input type="text" id="pk_numDocId" required placeholder="Nº do Cartão de Cidadão / BI / Passaporte / Título de Residência">
+                        </div>
+                        <div class="form-group">
+                            <label>Validade do Documento <span class="required">*</span></label>
+                            <input type="date" id="pk_validadeDocId" required>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
@@ -677,50 +695,13 @@
                     <div class="file-preview-grid" id="pk_fotosPreview"></div>
                 </div>
                 <div class="card">
-                    <div class="card-title">&#128196; Documentos do Cliente</div>
-                    <p style="font-size:13px;color:var(--gray-600);margin-bottom:16px;">É obrigatório o upload dos seguintes documentos:</p>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                        <div>
-                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Cartão de Cidadão — Frente <span style="color:var(--danger);">*</span></label>
-                            <div class="file-upload-area" onclick="document.getElementById('pk_ccFrente').click()" style="padding:16px;">
-                                <div class="upload-icon">&#127380;</div>
-                                <p>CC Frente</p>
-                                <input type="file" id="pk_ccFrente" accept="image/*,.pdf" onchange="handleFileUpload(this, 'pk_ccFrentePreview')">
-                            </div>
-                            <div class="file-preview-grid" id="pk_ccFrentePreview"></div>
-                        </div>
-                        <div>
-                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Cartão de Cidadão — Verso <span style="color:var(--danger);">*</span></label>
-                            <div class="file-upload-area" onclick="document.getElementById('pk_ccVerso').click()" style="padding:16px;">
-                                <div class="upload-icon">&#127380;</div>
-                                <p>CC Verso</p>
-                                <input type="file" id="pk_ccVerso" accept="image/*,.pdf" onchange="handleFileUpload(this, 'pk_ccVersoPreview')">
-                            </div>
-                            <div class="file-preview-grid" id="pk_ccVersoPreview"></div>
-                        </div>
-                        <div>
-                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Carta de Condução — Frente <span style="color:var(--danger);">*</span></label>
-                            <div class="file-upload-area" onclick="document.getElementById('pk_cartaFrente').click()" style="padding:16px;">
-                                <div class="upload-icon">&#128179;</div>
-                                <p>Carta Frente</p>
-                                <input type="file" id="pk_cartaFrente" accept="image/*,.pdf" onchange="handleFileUpload(this, 'pk_cartaFrentePreview')">
-                            </div>
-                            <div class="file-preview-grid" id="pk_cartaFrentePreview"></div>
-                        </div>
-                        <div>
-                            <label style="font-size:13px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px;">Carta de Condução — Verso <span style="color:var(--danger);">*</span></label>
-                            <div class="file-upload-area" onclick="document.getElementById('pk_cartaVerso').click()" style="padding:16px;">
-                                <div class="upload-icon">&#128179;</div>
-                                <p>Carta Verso</p>
-                                <input type="file" id="pk_cartaVerso" accept="image/*,.pdf" onchange="handleFileUpload(this, 'pk_cartaVersoPreview')">
-                            </div>
-                            <div class="file-preview-grid" id="pk_cartaVersoPreview"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
                     <div class="card-title">&#128220; Condições Gerais de Cedência</div>
-                    <div style="font-size:13px;color:var(--gray-700);line-height:1.8;max-height:400px;overflow-y:auto;padding:12px;background:var(--gray-50);border-radius:var(--radius);border:1px solid var(--gray-200);">
+                    <div style="margin-bottom:14px;">
+                        <label style="font-weight:600;font-size:14px;display:block;margin-bottom:8px;">Tipo de Condições Gerais <span class="required">*</span></label>
+                        <label style="margin-right:20px;font-size:14px;cursor:pointer;"><input type="radio" name="pk_condicoesTipo" value="domuscar" checked onchange="togglePickupCondicoes()" style="margin-right:6px;vertical-align:middle;">Domuscar</label>
+                        <label style="font-size:14px;cursor:pointer;"><input type="radio" name="pk_condicoesTipo" value="fidelidade" onchange="togglePickupCondicoes()" style="margin-right:6px;vertical-align:middle;">Fidelidade</label>
+                    </div>
+                    <div id="pk_condicoesDomuscar" style="font-size:13px;color:var(--gray-700);line-height:1.8;max-height:400px;overflow-y:auto;padding:12px;background:var(--gray-50);border-radius:var(--radius);border:1px solid var(--gray-200);">
                         <p style="margin-bottom:12px;">O Utilizador compromete-se:</p>
                         <p style="margin-bottom:8px;">1. Que este veículo só será conduzido por um possuidor de carta de condução válida, assim como, exclusivamente, pelo representado neste contrato;</p>
                         <p style="margin-bottom:8px;">2. A restituir esta viatura em perfeito estado de manutenção no prazo solicitado pela entidade solicitante e a fazer respeitar perante terceiros os direitos de propriedade da Walkingarage Lda; Os danos não existentes na reserva e presentes na devolução, serão cobrados ao proprietário da mesma no momento da devolução da viatura;</p>
@@ -730,12 +711,32 @@
                         <p style="margin-bottom:8px;">6. <strong>Este veículo encontra-se com seguro de danos próprios (franquia 4%),</strong> pelo que se solicita que em caso de roubo, acidente ou incidente ocorrido, este nos seja comunicado imediatamente e até ao limite de 5 dias a contar da sua ocorrência, acompanhado de todos os documentos necessários para participação à Companhia de Seguros.</p>
                         <p style="margin-bottom:8px;">7. No caso de roubo deve constar o comprovativo da participação efetuada junto das autoridades oficiais (Polícia).</p>
                         <p style="margin-bottom:16px;">8. <strong>Existe um limite diário de 75 (setenta e cinco) quilómetros, acumuláveis pelos dias de reserva da viatura, se esse valor for ultrapassado, será custeado por via de pack km's adicionais de 75 (setenta e cinco) quilómetros, com um custo de 13.84€ C/IVA.</strong></p>
-                        <p style="margin-bottom:16px;">9. No ato do levantamento, a Walkingarage Lda retém cópias do Cartão de Cidadão (frente e verso) e da Carta de Condução (frente e verso) do Cessionário, bem como registo fotográfico do estado geral da viatura, os quais ficam anexos ao presente contrato de cedência.</p>
+                        <p style="margin-bottom:8px;">9. No ato do levantamento, a Walkingarage Lda retém registo fotográfico do estado geral da viatura, os quais ficam anexos ao presente contrato de cedência.</p>
+                        <p style="margin-bottom:16px;">10. A viatura possui identificador via verde ativo, a sua utilização não é permitida, pelo que qualquer uso será devidamente cobrado ao tomador do presente contrato.</p>
                         <hr style="border:none;border-top:1px solid var(--gray-300);margin:16px 0;">
                         <p style="font-size:12px;color:var(--gray-600);margin-bottom:8px;">Em conformidade com a lei de proteção de dados, os dados pessoais acima referidos são recolhidos com vista às seguintes finalidades: gestão do processo de cedência de veículos; gestão de processos contraordenacionais inerentes à posse/condução do veículo.</p>
                         <p style="font-size:12px;color:var(--gray-600);margin-bottom:8px;">Os dados pessoais são mantidos durante o período de cedência e até ao termo dos prazos prescricionais de eventuais ilícitos, de forma a permitir a identificação dos condutores da viatura em causa junto de entidades reguladoras, empresas municipais, concessionárias e entidades judiciais.</p>
                         <p style="font-size:12px;color:var(--gray-600);margin-bottom:8px;">Os dados recolhidos poderão ser comunicados a empresas do Grupo Walkingarage Lda e a prestadores de serviço, exclusivamente para as finalidades supra descritas, bem como às entidades notificadoras suprarreferidas, com vista à concretização dos fins supra descritos.</p>
                         <p style="font-size:12px;color:var(--gray-600);">O Utilizador tem direito ao acesso, à alteração, à retificação e/ou eliminação dos dados pessoais recolhidos, em conformidade com a lei de proteção de dados. Para exercer esse direito, o Utilizador deve entrar em contacto com – 217817490 - <strong>rgpd@domuscar.com</strong></p>
+                    </div>
+                    <div id="pk_condicoesFidelidade" style="display:none;font-size:13px;color:var(--gray-700);line-height:1.7;max-height:400px;overflow-y:auto;padding:12px;background:var(--gray-50);border-radius:var(--radius);border:1px solid var(--gray-200);">
+                        <p style="text-align:center;font-weight:700;margin-bottom:12px;">DECLARAÇÃO</p>
+                        <p style="margin-bottom:10px;">Eu, __________ abaixo assinado, portador do (documento de identificação) nº __________, válido até __/__/____, com o nº de contribuinte __________, declaro que me foi cedido a título de empréstimo pela oficina __________ em nome da Companhia de Seguros __________, o veículo com a marca __________, modelo __________, com a matrícula nº __________, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ___-___-___, durante o período que durar a reparação decorrente do acidente de viação havido no dia __/__/____ e até à entrega da minha viatura reparada em __/__/____.</p>
+                        <p style="margin-bottom:10px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de __________ euros.</p>
+                        <p style="margin-bottom:8px;font-weight:600;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>
+                        <p style="margin-bottom:6px;"><em>Em caso de acidente com o veículo de cortesia:</em></p>
+                        <p style="margin-bottom:6px;">1) Preenchimento da Declaração Amigável de Acidente Automóvel que se encontra junto dos documentos.</p>
+                        <p style="margin-bottom:10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de __________ euros (IVA incluído).</p>
+                        <p style="margin-bottom:6px;"><em>Combustível</em></p>
+                        <p style="margin-bottom:10px;">A viatura de cortesia deverá ser devolvida obrigatoriamente com o mesmo nível de combustível com que foi entregue, de forma a evitar que me seja cobrado uma taxa adicional para atesto do depósito.</p>
+                        <p style="margin-bottom:6px;"><em>Devolução da viatura de cortesia</em></p>
+                        <p style="margin-bottom:6px;">Suportarei uma diária de __________ euros (este valor inclui o seguro acima mencionado e IVA) nos seguintes casos:</p>
+                        <p style="margin-bottom:6px;">1) Sempre que o veículo de cortesia não seja entregue na data estipulada pela Oficina – em __/__/____</p>
+                        <p style="margin-bottom:10px;">2) Sempre que o veículo de cortesia não seja devolvido à Oficina por instruções expressas por parte da Seguradora.</p>
+                        <p style="margin-bottom:6px;"><em>Perda total</em></p>
+                        <p style="margin-bottom:10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de __________ euros (este valor inclui o seguro acima mencionado e IVA).</p>
+                        <p style="margin-bottom:6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>
+                        <p style="margin-bottom:6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>
                     </div>
                     <div style="margin-top:16px;">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:500;">
@@ -2235,18 +2236,13 @@
         if (!uploadedFiles['pk_fotosPreview'] || uploadedFiles['pk_fotosPreview'].length === 0) {
             showToast('É obrigatório carregar fotos do estado da viatura.', 'error'); return;
         }
-        if (!uploadedFiles['pk_ccFrentePreview'] || uploadedFiles['pk_ccFrentePreview'].length === 0) {
-            showToast('É obrigatório carregar o Cartão de Cidadão (frente).', 'error'); return;
-        }
-        if (!uploadedFiles['pk_ccVersoPreview'] || uploadedFiles['pk_ccVersoPreview'].length === 0) {
-            showToast('É obrigatório carregar o Cartão de Cidadão (verso).', 'error'); return;
-        }
-        if (!uploadedFiles['pk_cartaFrentePreview'] || uploadedFiles['pk_cartaFrentePreview'].length === 0) {
-            showToast('É obrigatório carregar a Carta de Condução (frente).', 'error'); return;
-        }
-        if (!uploadedFiles['pk_cartaVersoPreview'] || uploadedFiles['pk_cartaVersoPreview'].length === 0) {
-            showToast('É obrigatório carregar a Carta de Condução (verso).', 'error'); return;
-        }
+        // Validar documento de identificação (tipo, número e validade obrigatórios)
+        var _tipoDocId = (document.getElementById('pk_tipoDocId').value || '').trim();
+        var _numDocId = (document.getElementById('pk_numDocId').value || '').trim();
+        var _validadeDocId = (document.getElementById('pk_validadeDocId').value || '').trim();
+        if (!_tipoDocId) { showToast('Selecione o tipo de documento de identificação.', 'error'); return; }
+        if (!_numDocId) { showToast('Indique o nº do documento de identificação.', 'error'); return; }
+        if (!_validadeDocId) { showToast('Indique a validade do documento de identificação.', 'error'); return; }
         // Atualizar localização se alterada no formulário
         var pkLocSel = document.getElementById('pk_localizacao');
         if (pkLocSel) b.localizacao = pkLocSel.value;
@@ -2258,6 +2254,10 @@
             localidade: document.getElementById('pk_localidade').value.trim(),
             nif: document.getElementById('pk_nif').value.trim(),
             numCarta: document.getElementById('pk_numCarta').value.trim(),
+            tipoDocId: _tipoDocId,
+            numDocId: _numDocId,
+            validadeDocId: _validadeDocId,
+            condicoesTipo: (document.querySelector('input[name="pk_condicoesTipo"]:checked') || {}).value || 'domuscar',
             kms: parseInt(document.getElementById('pk_kms').value),
             combustivel: parseInt(document.getElementById('pk_combustivel').value),
             danos: document.getElementById('pk_danos').value.trim(),
@@ -2300,10 +2300,6 @@
         // Show signed document upload
         document.getElementById('pickupForm').style.display = 'none';
         document.getElementById('pk_fotosPreview').innerHTML = '';
-        document.getElementById('pk_ccFrentePreview').innerHTML = '';
-        document.getElementById('pk_ccVersoPreview').innerHTML = '';
-        document.getElementById('pk_cartaFrentePreview').innerHTML = '';
-        document.getElementById('pk_cartaVersoPreview').innerHTML = '';
         try { showSignedDocUpload(id, 'levantamento'); } catch(err) { console.warn('showSignedDocUpload error:', err); }
     }
 
@@ -2312,6 +2308,16 @@
         document.getElementById('pickupSearchCard').style.display = 'block';
         document.getElementById('quickPickupCard').style.display = 'none';
         selectedPickupBooking = null;
+    }
+
+    // Alterna entre o texto das Condições Gerais Domuscar e Fidelidade no formulário.
+    function togglePickupCondicoes() {
+        var sel = document.querySelector('input[name="pk_condicoesTipo"]:checked');
+        var tipo = sel ? sel.value : 'domuscar';
+        var dom = document.getElementById('pk_condicoesDomuscar');
+        var fid = document.getElementById('pk_condicoesFidelidade');
+        if (dom) dom.style.display = (tipo === 'fidelidade') ? 'none' : 'block';
+        if (fid) fid.style.display = (tipo === 'fidelidade') ? 'block' : 'none';
     }
 
     function startNewPickupWithoutBooking() {
@@ -2422,6 +2428,33 @@
         printWin.document.write('</style></head><body>');
         var logoHtml = logoBase64 ? '<img src="' + logoBase64 + '" style="height:40px;">' : '<img src="' + getLogoUrl() + '" style="height:40px;" onerror="this.outerHTML=\'<div style=font-size:24px;font-weight:800>DOMUS<span style=font-weight:300;color:#999>car</span></div>\'">';
         printWin.document.write('<div class="header">' + logoHtml + '<div class="header-right"><strong>' + b.localizacao + '</strong><br>' + locAddr + '</div></div>');
+        var _isFidelidade = (lev.condicoesTipo === 'fidelidade');
+        var _blank = function(w) { return '<span style="display:inline-block;border-bottom:1px solid #333;min-width:' + (w || 60) + 'px;">&nbsp;</span>'; };
+        if (_isFidelidade) {
+            printWin.document.write('<h1>Declaração</h1>');
+            printWin.document.write('<div class="subtitle">Veículo de Cortesia | Nº <strong>' + (lev.id || '—') + '</strong> | ' + formatDateTime(lev.dataHora) + '</div>');
+            var _tipoDoc = lev.tipoDocId || 'documento de identificação';
+            var _val = lev.validadeDocId ? formatDate(lev.validadeDocId) : _blank(70);
+            var dcl = '<div style="font-size:11px;line-height:1.6;text-align:justify;">';
+            dcl += '<p style="margin:0 0 10px;">Eu, <strong>' + (lev.nomeCompleto || _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId || _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif || _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + b.localizacao + '</strong> em nome da Companhia de Seguros ' + _blank(130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo || _blank(130)) + '</strong>, com a matrícula nº <strong>' + b.matricula + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _blank(90) + ', durante o período que durar a reparação decorrente do acidente de viação havido no dia ' + _blank(70) + ' e até à entrega da minha viatura reparada em ' + _blank(70) + '.</p>';
+            dcl += '<p style="margin:0 0 10px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de ' + _blank(70) + ' euros.</p>';
+            dcl += '<p style="margin:0 0 6px;font-weight:700;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>';
+            dcl += '<p style="margin:0 0 4px;font-style:italic;">Em caso de acidente com o veículo de cortesia:</p>';
+            dcl += '<p style="margin:0 0 4px;">1) Preenchimento da Declaração Amigável de Acidente Automóvel que se encontra junto dos documentos.</p>';
+            dcl += '<p style="margin:0 0 10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de ' + _blank(70) + ' euros (IVA incluído).</p>';
+            dcl += '<p style="margin:0 0 4px;font-style:italic;">Combustível</p>';
+            dcl += '<p style="margin:0 0 10px;">A viatura de cortesia deverá ser devolvida obrigatoriamente com o mesmo nível de combustível com que foi entregue, de forma a evitar que me seja cobrado uma taxa adicional para atesto do depósito.</p>';
+            dcl += '<p style="margin:0 0 4px;font-style:italic;">Devolução da viatura de cortesia</p>';
+            dcl += '<p style="margin:0 0 4px;">Suportarei uma diária de ' + _blank(70) + ' euros (este valor inclui o seguro acima mencionado e IVA) nos seguintes casos:</p>';
+            dcl += '<p style="margin:0 0 4px;">1) Sempre que o veículo de cortesia não seja entregue na data estipulada pela Oficina – em <strong>' + (b.dataSaida ? formatDate(b.dataSaida) : _blank(70)) + '</strong></p>';
+            dcl += '<p style="margin:0 0 10px;">2) Sempre que o veículo de cortesia não seja devolvido à Oficina por instruções expressas por parte da Seguradora.</p>';
+            dcl += '<p style="margin:0 0 4px;font-style:italic;">Perda total</p>';
+            dcl += '<p style="margin:0 0 10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de ' + _blank(70) + ' euros (este valor inclui o seguro acima mencionado e IVA).</p>';
+            dcl += '<p style="margin:0 0 6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>';
+            dcl += '<p style="margin:0 0 6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>';
+            dcl += '</div>';
+            printWin.document.write(dcl);
+        } else {
         printWin.document.write('<h1>Contrato de Cedência de Viatura</h1>');
         printWin.document.write('<div class="subtitle">Documento de Levantamento | Nº <strong>' + (lev.id || '—') + '</strong> | ' + formatDateTime(lev.dataHora) + '</div>');
         printWin.document.write('<div class="section"><div class="section-title">Dados do Cessionário</div><div class="grid">');
@@ -2429,6 +2462,9 @@
         printWin.document.write('<div class="field"><label>NIF</label><span>' + (lev.nif || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Morada</label><span>' + lev.morada + '</span></div>');
         printWin.document.write('<div class="field"><label>Nº Carta de Condução</label><span>' + (lev.numCarta || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Tipo de Documento de Identificação</label><span>' + (lev.tipoDocId || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Nº do Documento</label><span>' + (lev.numDocId || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Validade do Documento</label><span>' + (lev.validadeDocId ? formatDate(lev.validadeDocId) : '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Código Postal</label><span>' + lev.codigoPostal + '</span></div>');
         printWin.document.write('<div class="field"><label>Localidade</label><span>' + lev.localidade + '</span></div>');
         printWin.document.write('</div></div>');
@@ -2453,7 +2489,8 @@
         printWin.document.write('<p>6. <strong>Este veículo encontra-se com seguro de danos próprios (franquia 4%),</strong> pelo que se solicita que em caso de roubo, acidente ou incidente ocorrido, este nos seja comunicado imediatamente e até ao limite de 5 dias a contar da sua ocorrência, acompanhado de todos os documentos necessários para participação à Companhia de Seguros.</p>');
         printWin.document.write('<p>7. No caso de roubo deve constar o comprovativo da participação efetuada junto das autoridades oficiais (Polícia).</p>');
         printWin.document.write('<p>8. <strong>Existe um limite diário de 75 (setenta e cinco) quilómetros, acumuláveis pelos dias de reserva da viatura, se esse valor for ultrapassado, será custeado por via de pack km\'s adicionais de 75 (setenta e cinco) quilómetros, com um custo de 13.84€ C/IVA.</strong></p>');
-        printWin.document.write('<p>9. No ato do levantamento, a Walkingarage Lda retém cópias do Cartão de Cidadão (frente e verso) e da Carta de Condução (frente e verso) do Cessionário, bem como registo fotográfico do estado geral da viatura, os quais ficam anexos ao presente contrato de cedência.</p>');
+        printWin.document.write('<p>9. No ato do levantamento, a Walkingarage Lda retém registo fotográfico do estado geral da viatura, os quais ficam anexos ao presente contrato de cedência.</p>');
+        printWin.document.write('<p>10. A viatura possui identificador via verde ativo, a sua utilização não é permitida, pelo que qualquer uso será devidamente cobrado ao tomador do presente contrato.</p>');
         printWin.document.write('<hr style="border:none;border-top:1px solid #ccc;margin:8px 0;">');
         printWin.document.write('<p style="font-size:9px;color:#888;">Em conformidade com a lei de proteção de dados, os dados pessoais acima referidos são recolhidos com vista às seguintes finalidades: gestão do processo de cedência de veículos; gestão de processos contraordenacionais inerentes à posse/condução do veículo. Os dados pessoais são mantidos durante o período de cedência e até ao termo dos prazos prescricionais de eventuais ilícitos. Os dados recolhidos poderão ser comunicados a empresas do Grupo Walkingarage Lda e a prestadores de serviço, exclusivamente para as finalidades supra descritas. O Utilizador tem direito ao acesso, à alteração, à retificação e/ou eliminação dos dados pessoais recolhidos. Contacto: 217817490 - rgpd@domuscar.com</p>');
         printWin.document.write('</div></div>');
@@ -2461,6 +2498,7 @@
         printWin.document.write('<div class="sig-block"><div class="sig-line">O Cessionário (Cliente)</div><div class="sig-label">' + lev.nomeCompleto + '<br>NIF: ' + (lev.nif || '—') + '</div></div>');
         printWin.document.write('<div class="sig-block"><div class="sig-line">Walkingarage Lda</div><div class="sig-label">Representante da Empresa</div></div>');
         printWin.document.write('</div>');
+        }
         printWin.document.write('</body></html>');
         printWin.document.close();
         printWin.focus();
