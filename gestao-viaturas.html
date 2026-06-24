@@ -1680,6 +1680,19 @@
        NAVIGATION
        ============================================ */
     function navigate(page, params) {
+        // Guarda de documento assinado obrigatório: se há um upload de documento
+        // assinado pendente no ecrã actual, não deixa sair sem confirmação. Se o
+        // utilizador insistir em sair, o registo fica marcado como PENDENTE.
+        if (window._signedDocGuard && page !== window._signedDocGuard.page) {
+            var _g = window._signedDocGuard;
+            var _ok = confirm('⚠️ O DOCUMENTO ASSINADO ainda não foi carregado.\n\nSe sair agora, o registo fica marcado como PENDENTE até o documento ser carregado (aparece a vermelho no histórico).\n\nSair mesmo assim?');
+            if (!_ok) return;
+            try {
+                var _bk = bookings.find(function(x) { return x.id === _g.bookingId; });
+                if (_bk && _bk[_g.stage]) { _bk[_g.stage].documentoAssinadoPendente = true; saveData(); }
+            } catch (e) {}
+            window._signedDocGuard = null;
+        }
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.header-nav button').forEach(b => b.classList.remove('active'));
         const pageEl = document.getElementById('page-' + page);
@@ -2254,6 +2267,8 @@
         b.estado = 'Levantado';
         b.atualizadoEm = new Date().toISOString();
         b.atualizadoPor = getUserStamp();
+        // Documento assinado obrigatório: marca como pendente até ser carregado.
+        if (b.levantamento && !b.levantamento.documentoAssinado) b.levantamento.documentoAssinadoPendente = true;
         // Iniciar upload dos ficheiros (assíncrono). Mostramos sucesso provisório;
         // se algum upload falhar, o user recebe toast de erro com a contagem.
         var uploadPromise;
@@ -2461,8 +2476,10 @@
             pickupPage.appendChild(container);
         }
         container.style.display = 'block';
-        container.innerHTML = '<div class="card-title">&#128196; Upload do Documento Assinado</div>' +
-            '<p style="font-size:13px;color:var(--gray-600);margin-bottom:16px;">Após imprimir e assinar o documento de levantamento, faça upload do documento digitalizado/fotografado aqui.</p>' +
+        // Activa a guarda: enquanto este cartão estiver aberto, sair da página exige confirmação.
+        window._signedDocGuard = { bookingId: bookingId, stage: stage, page: (stage === 'devolucao' ? 'return' : 'pickup') };
+        container.innerHTML = '<div class="card-title">&#128196; Upload do Documento Assinado <span style="color:var(--danger);">(obrigatório)</span></div>' +
+            '<div style="padding:10px 14px;background:#fdecea;border-left:3px solid var(--danger);border-radius:4px;font-size:13px;color:#a61b1b;margin-bottom:16px;">⚠️ <strong>Passo obrigatório.</strong> Após imprimir e o cliente assinar, carregue aqui o documento digitalizado/fotografado. Enquanto não o fizer, o registo fica marcado como <strong>PENDENTE</strong>.</div>' +
             '<div class="file-upload-area" onclick="document.getElementById(\'signedDocInput\').click()">' +
             '<div class="upload-icon">&#128196;</div>' +
             '<p>Clique para carregar o documento assinado (PDF ou imagem)</p>' +
@@ -2522,7 +2539,8 @@
             jobsSig.push(function() { return mirrorToIntranet(mirrorFolderKey, buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedDocPreview'];
-        if (b && stageObj) stageObj.documentoAssinado = true;
+        if (b && stageObj) { stageObj.documentoAssinado = true; stageObj.documentoAssinadoPendente = false; }
+        window._signedDocGuard = null;
         saveData();
         showToast('A enviar documento assinado…', 'success');
         _runUploadBatch(jobsSig).then(function(report) {
@@ -2663,6 +2681,8 @@
         var dataDevolucaoReal = new Date().toISOString().split('T')[0];
         b.dataSaida = dataDevolucaoReal;
         b.atualizadoEm = new Date().toISOString();
+        // Documento assinado obrigatório: marca como pendente até ser carregado.
+        if (b.devolucao && !b.devolucao.documentoAssinado) b.devolucao.documentoAssinadoPendente = true;
         var uploadPromiseRet;
         try {
             uploadPromiseRet = saveUploadedFiles(id, 'devolucao');
@@ -2762,8 +2782,10 @@
             returnPage.appendChild(container);
         }
         container.style.display = 'block';
-        container.innerHTML = '<div class="card-title">&#128196; Upload do Documento de Devolução Assinado</div>' +
-            '<p style="font-size:13px;color:var(--gray-600);margin-bottom:16px;">Após imprimir e assinar o documento de devolução, faça upload do documento digitalizado/fotografado aqui.</p>' +
+        // Activa a guarda: enquanto este cartão estiver aberto, sair da página exige confirmação.
+        window._signedDocGuard = { bookingId: bookingId, stage: 'devolucao', page: 'return' };
+        container.innerHTML = '<div class="card-title">&#128196; Upload do Documento de Devolução Assinado <span style="color:var(--danger);">(obrigatório)</span></div>' +
+            '<div style="padding:10px 14px;background:#fdecea;border-left:3px solid var(--danger);border-radius:4px;font-size:13px;color:#a61b1b;margin-bottom:16px;">⚠️ <strong>Passo obrigatório.</strong> Após imprimir e o cliente assinar, carregue aqui o documento digitalizado/fotografado. Enquanto não o fizer, o registo fica marcado como <strong>PENDENTE</strong>.</div>' +
             '<div class="file-upload-area" onclick="document.getElementById(\'signedReturnDocInput\').click()">' +
             '<div class="upload-icon">&#128196;</div>' +
             '<p>Clique para carregar o documento assinado (PDF ou imagem)</p>' +
@@ -2814,7 +2836,8 @@
             jobsSigDev.push(function() { return mirrorToIntranet('gv_docs_assinados_dev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedReturnDocPreview'];
-        if (b && b.devolucao) b.devolucao.documentoAssinado = true;
+        if (b && b.devolucao) { b.devolucao.documentoAssinado = true; b.devolucao.documentoAssinadoPendente = false; }
+        window._signedDocGuard = null;
         saveData();
         showToast('A enviar documento de devolução assinado…', 'success');
         _runUploadBatch(jobsSigDev).then(function(report) {
@@ -3154,10 +3177,16 @@
         var container = document.getElementById('histPickupList');
         container.innerHTML = '';
         if (results.length === 0) { container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:24px;">Sem levantamentos registados.</p>'; return; }
+        var pendentesCount = results.filter(function(b) {
+            var fc = (fileStore[b.id] && fileStore[b.id].levantamento && fileStore[b.id].levantamento.documentoAssinado) || [];
+            return !(b.levantamento && b.levantamento.documentoAssinado === true) && fc.length === 0;
+        }).length;
+        if (pendentesCount > 0) container.innerHTML = '<div style="padding:10px 14px;background:#fdecea;border-left:4px solid var(--danger);border-radius:4px;font-size:13px;color:#a61b1b;margin-bottom:14px;font-weight:700;">&#9888;&#65039; ' + pendentesCount + ' levantamento(s) sem documento assinado — carregue o documento em falta.</div>';
         results.forEach(function(b) {
             var lev = b.levantamento;
             var files = fileStore[b.id] && fileStore[b.id].levantamento ? fileStore[b.id].levantamento : {};
             var hasSignedDoc = files.documentoAssinado && files.documentoAssinado.length > 0;
+            var signedDone = hasSignedDoc || (lev && lev.documentoAssinado === true);
             var hasPhotos = files.fotos && files.fotos.length > 0;
             var hasCCFrente = files.ccFrente && files.ccFrente.length > 0;
             var hasCCVerso = files.ccVerso && files.ccVerso.length > 0;
@@ -3169,7 +3198,8 @@
             if (hasPhotos) filesHtml += '<span style="background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128247; ' + files.fotos.length + ' Foto(s)</span>';
             if (hasCCFrente || hasCCVerso) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#127380; CC</span>';
             if (hasCartaFrente || hasCartaVerso) filesHtml += '<span style="background:var(--warning-light);color:var(--warning);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128179; Carta</span>';
-            if (hasSignedDoc) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
+            if (signedDone) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
+            else filesHtml += '<span style="background:#fdecea;color:var(--danger);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">&#9888;&#65039; FALTA Doc. Assinado</span>';
             filesHtml += '</div>';
             card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span class="booking-status ' + b.estado.toLowerCase() + '">' + b.estado + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>' + (lev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + lev.id + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(lev.dataHora) + '</span></div>' +
                 '<div class="booking-info"><strong>' + b.matricula + ' — ' + (lev.nomeCompleto || b.nomeCliente) + '</strong>' +
@@ -3182,7 +3212,7 @@
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); printPickupDocument(bookings.find(function(x){return x.id===\'' + b.id + '\';}))">&#128424; Reimprimir</button>' +
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); showBookingDetail(\'' + b.id + '\')">&#128065; Ver Detalhes</button>' +
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewHistoryFiles(\'' + b.id + '\', \'levantamento\')">&#128193; Ver Ficheiros</button>' +
-                (hasSignedDoc ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); viewSignedDoc(\'' + b.id + '\', \'levantamento\')">&#128196; Doc. Assinado</button>' : '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showSignedDocUploadFromHistory(\'' + b.id + '\', \'levantamento\')">&#128196; Carregar Doc. Assinado</button>') +
+                (signedDone ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); viewSignedDoc(\'' + b.id + '\', \'levantamento\')">&#128196; Doc. Assinado</button>' : '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showSignedDocUploadFromHistory(\'' + b.id + '\', \'levantamento\')">&#128196; Carregar Doc. Assinado</button>') +
                 '</div>';
             container.appendChild(card);
         });
@@ -3198,10 +3228,16 @@
         var container = document.getElementById('histReturnList');
         container.innerHTML = '';
         if (results.length === 0) { container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:24px;">Sem devoluções registadas.</p>'; return; }
+        var pendentesCount = results.filter(function(b) {
+            var fc = (fileStore[b.id] && fileStore[b.id].devolucao && fileStore[b.id].devolucao.documentoAssinado) || [];
+            return !(b.devolucao && b.devolucao.documentoAssinado === true) && fc.length === 0;
+        }).length;
+        if (pendentesCount > 0) container.innerHTML = '<div style="padding:10px 14px;background:#fdecea;border-left:4px solid var(--danger);border-radius:4px;font-size:13px;color:#a61b1b;margin-bottom:14px;font-weight:700;">&#9888;&#65039; ' + pendentesCount + ' devolução(ões) sem documento assinado — carregue o documento em falta.</div>';
         results.forEach(function(b) {
             var dev = b.devolucao;
             var files = fileStore[b.id] && fileStore[b.id].devolucao ? fileStore[b.id].devolucao : {};
             var hasSignedDoc = files.documentoAssinado && files.documentoAssinado.length > 0;
+            var signedDone = hasSignedDoc || (dev && dev.documentoAssinado === true);
             var hasPhotos = files.fotos && files.fotos.length > 0;
             var hasOrcamento = files.orcamento && files.orcamento.length > 0;
             var card = document.createElement('div');
@@ -3209,7 +3245,8 @@
             var filesHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">';
             if (hasPhotos) filesHtml += '<span style="background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128247; ' + files.fotos.length + ' Foto(s)</span>';
             if (hasOrcamento) filesHtml += '<span style="background:var(--warning-light);color:var(--warning);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Orçamento</span>';
-            if (hasSignedDoc) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
+            if (signedDone) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
+            else filesHtml += '<span style="background:#fdecea;color:var(--danger);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">&#9888;&#65039; FALTA Doc. Assinado</span>';
             filesHtml += '</div>';
             card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span class="booking-status devolvido">Devolvido</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>' + (dev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + dev.id + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(dev.dataHora) + '</span></div>' +
                 '<div class="booking-info"><strong>' + b.matricula + ' — ' + b.nomeCliente + '</strong>' +
@@ -3221,7 +3258,7 @@
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); printReturnDocument(bookings.find(function(x){return x.id===\'' + b.id + '\';}))">&#128424; Reimprimir</button>' +
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); showBookingDetail(\'' + b.id + '\')">&#128065; Ver Detalhes</button>' +
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewHistoryFiles(\'' + b.id + '\', \'devolucao\')">&#128193; Ver Ficheiros</button>' +
-                (hasSignedDoc ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); viewSignedDoc(\'' + b.id + '\', \'devolucao\')">&#128196; Doc. Assinado</button>' : '') +
+                (signedDone ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); viewSignedDoc(\'' + b.id + '\', \'devolucao\')">&#128196; Doc. Assinado</button>' : '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showSignedDocUploadFromHistory(\'' + b.id + '\', \'devolucao\')">&#128196; Carregar Doc. Assinado</button>') +
                 '</div>';
             container.appendChild(card);
         });
@@ -3301,6 +3338,16 @@
                             reader.readAsDataURL(blob);
                         });
                     }).catch(function() { return null; });
+                } else if (downloadUrl) {
+                    // Não-imagem (ex.: PDF): descarrega autenticado e cria um blob URL.
+                    // Evita abrir o link sharepoint.com directamente — esse era bloqueado
+                    // por extensões/Edge com ERR_BLOCKED_BY_CLIENT — e permite pré-visualização inline.
+                    return fetch(downloadUrl).then(function(r) { return r.blob(); }).then(function(blob) {
+                        var blobUrl = URL.createObjectURL(blob);
+                        result[category].push({ name: name, type: mime, data: blobUrl, isBlob: true, webUrl: item.webUrl });
+                    }).catch(function() {
+                        result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
+                    });
                 } else {
                     result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
                     return Promise.resolve();
@@ -3329,8 +3376,16 @@
             } else {
                 html += '<div class="file-preview-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">';
                 fileArr.forEach(function(f) {
-                    if (f.type && f.type.startsWith('image/')) {
+                    var isImg = f.type && f.type.indexOf('image/') === 0;
+                    var isPdf = (f.type && f.type.indexOf('pdf') !== -1) || /\.pdf$/i.test(f.name || '');
+                    var isLocal = f.isBlob || /^blob:|^data:/.test(f.data || '');
+                    if (isImg) {
                         html += '<div class="file-preview" style="aspect-ratio:auto;"><img src="' + f.data + '" style="width:100%;height:180px;object-fit:cover;cursor:pointer;" onclick="openImageModal(this.src)"><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
+                    } else if (isPdf && isLocal) {
+                        // Pré-visualização inline do PDF a partir do blob/data URL (não abre sharepoint.com).
+                        html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="window.open(\'' + f.data + '\', \'_blank\')"><iframe src="' + f.data + '#toolbar=0&navpanes=0" style="width:100%;height:180px;border:0;pointer-events:none;background:#fff;"></iframe><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Documento') + ' (clique para abrir)</div></div>';
+                    } else if (isLocal) {
+                        html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="window.open(\'' + f.data + '\', \'_blank\')"><div class="file-icon">&#128196;</div><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
                     } else if (f.isWebUrl) {
                         html += '<div class="file-preview" style="aspect-ratio:auto;cursor:pointer;" onclick="window.open(\'' + f.data + '\', \'_blank\')"><div class="file-icon">&#128196;</div><div style="padding:4px;font-size:11px;color:var(--gray-600);text-align:center;">' + (f.name || 'Ficheiro') + '</div></div>';
                     } else {
