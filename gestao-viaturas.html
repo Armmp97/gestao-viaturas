@@ -3284,6 +3284,7 @@
      */
     function loadFilesFromSP(bookingId, stage) {
         var folderPath = bookingId + '/' + stage;
+        var _spToken = null; // guardado para descarregar conteúdo autenticado (/content) por item
         // Esperar pelo _ensureSpReady — quando o user clica em Ver Ficheiros pode ainda
         // não haver spDriveId (init SP é assíncrono). Sem esta espera, returnaríamos null silenciosamente.
         var spReadyPromise = (typeof _ensureSpReady === 'function') ? _ensureSpReady() : Promise.resolve();
@@ -3295,6 +3296,7 @@
             return getAccessToken();
         }).then(function(token) {
             if (!token) return null;
+            _spToken = token;
             return fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/root:/' + folderPath + ':/children?$select=id,name,webUrl,file,size,@microsoft.graph.downloadUrl', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
@@ -3326,32 +3328,28 @@
                 if (!category) return Promise.resolve();
                 var mime = (item.file && item.file.mimeType) || '';
                 var downloadUrl = item['@microsoft.graph.downloadUrl'];
-                if (mime.indexOf('image/') === 0 && downloadUrl) {
-                    return fetch(downloadUrl).then(function(r) { return r.blob(); }).then(function(blob) {
-                        return new Promise(function(resolve) {
-                            var reader = new FileReader();
-                            reader.onloadend = function() {
-                                result[category].push({ name: name, type: mime, data: reader.result });
-                                resolve();
-                            };
-                            reader.onerror = function() { resolve(); };
-                            reader.readAsDataURL(blob);
-                        });
-                    }).catch(function() { return null; });
+                // Descarrega SEMPRE pelo endpoint /content autenticado do Graph e cria um blob URL.
+                // O SharePoint nem sempre devolve @microsoft.graph.downloadUrl na listagem, e abrir
+                // o link sharepoint.com directamente era bloqueado pelo Edge (ERR_BLOCKED_BY_CLIENT).
+                // O blob não tem domínio, por isso abre/pré-visualiza sempre — imagens e PDFs.
+                var fetchBlob;
+                if (item.id && _spToken) {
+                    fetchBlob = fetch('https://graph.microsoft.com/v1.0/drives/' + spDriveId + '/items/' + item.id + '/content', { headers: { 'Authorization': 'Bearer ' + _spToken } });
                 } else if (downloadUrl) {
-                    // Não-imagem (ex.: PDF): descarrega autenticado e cria um blob URL.
-                    // Evita abrir o link sharepoint.com directamente — esse era bloqueado
-                    // por extensões/Edge com ERR_BLOCKED_BY_CLIENT — e permite pré-visualização inline.
-                    return fetch(downloadUrl).then(function(r) { return r.blob(); }).then(function(blob) {
-                        var blobUrl = URL.createObjectURL(blob);
-                        result[category].push({ name: name, type: mime, data: blobUrl, isBlob: true, webUrl: item.webUrl });
-                    }).catch(function() {
-                        result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
-                    });
+                    fetchBlob = fetch(downloadUrl);
                 } else {
                     result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
                     return Promise.resolve();
                 }
+                return fetchBlob.then(function(r) {
+                    if (!r || !r.ok) throw new Error('content ' + (r ? r.status : 'sem-resposta'));
+                    return r.blob();
+                }).then(function(blob) {
+                    var blobUrl = URL.createObjectURL(blob);
+                    result[category].push({ name: name, type: mime || blob.type, data: blobUrl, isBlob: true, webUrl: item.webUrl });
+                }).catch(function() {
+                    result[category].push({ name: name, type: mime, data: item.webUrl, isWebUrl: true });
+                });
             });
             return Promise.all(promises).then(function() { return result; });
         }).catch(function(e) {
