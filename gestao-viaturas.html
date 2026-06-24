@@ -424,6 +424,11 @@
                         <h3>Hist. Devoluções</h3>
                         <p>Consultar devoluções realizadas</p>
                     </div>
+                    <div class="home-btn" onclick="checkOverdueVehicles(true)" style="border-color:var(--danger);">
+                        <div class="icon" style="background:#fdecea;">&#9888;&#65039;</div>
+                        <h3>Viaturas em Atraso</h3>
+                        <p>Levantadas e por devolver fora do prazo</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -737,6 +742,46 @@
                         <p style="margin-bottom:10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de __________ euros (este valor inclui o seguro acima mencionado e IVA).</p>
                         <p style="margin-bottom:6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>
                         <p style="margin-bottom:6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>
+                        <hr style="border:none;border-top:1px solid var(--gray-300);margin:14px 0;">
+                        <p style="font-weight:700;margin-bottom:10px;color:var(--gray-800);">Dados a preencher na Declaração (editáveis — saem no documento impresso):</p>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Companhia de Seguros</label>
+                                <input type="text" id="fid_companhiaSeguros" placeholder="Ex: Fidelidade">
+                            </div>
+                            <div class="form-group">
+                                <label>Matrícula da viatura do cliente (em reparação)</label>
+                                <input type="text" id="fid_matriculaCliente" placeholder="00-AA-00">
+                            </div>
+                            <div class="form-group">
+                                <label>Data do acidente</label>
+                                <input type="date" id="fid_dataAcidente">
+                            </div>
+                            <div class="form-group">
+                                <label>Data prevista de entrega da viatura reparada</label>
+                                <input type="date" id="fid_dataReparacao">
+                            </div>
+                            <div class="form-group">
+                                <label>Franquia de danos próprios (€)</label>
+                                <input type="text" id="fid_franquiaDanosProprios" placeholder="Ex: 500">
+                            </div>
+                            <div class="form-group">
+                                <label>Franquia por sinistro — IVA incl. (€)</label>
+                                <input type="text" id="fid_franquiaSinistro" placeholder="Ex: 500">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor da diária (€)</label>
+                                <input type="text" id="fid_diaria" placeholder="Ex: 25">
+                            </div>
+                            <div class="form-group">
+                                <label>Data estipulada para devolução</label>
+                                <input type="date" id="fid_dataEstipulada">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor da diária em Perda Total (€)</label>
+                                <input type="text" id="fid_diariaPerdaTotal" placeholder="Ex: 25">
+                            </div>
+                        </div>
                     </div>
                     <div style="margin-top:16px;">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:500;">
@@ -1090,6 +1135,12 @@
     function getUserStamp() {
         if (!currentUser) return { nome: '(não identificado)', email: '', id: '', dataHora: new Date().toISOString() };
         return { nome: currentUser.name, email: currentUser.email, id: currentUser.id, dataHora: new Date().toISOString() };
+    }
+
+    // Formata um carimbo de utilizador {nome,email,dataHora} para apresentação.
+    function fmtStamp(s) {
+        if (!s || !s.nome) return '—';
+        return s.nome + (s.dataHora ? ' — ' + formatDateTime(s.dataHora) : '');
     }
 
     function updateUserBadge() {
@@ -1976,6 +2027,8 @@
         if (overlap) { showToast('Não é possível prolongar. A viatura ' + b.matricula + ' já tem outro agendamento de ' + overlap.dataEntrada + ' a ' + (overlap.dataSaida || overlap.dataEntrada) + '.', 'error'); return; }
         b.dataSaida = newDate;
         b.atualizadoEm = new Date().toISOString();
+        b.atualizadoPor = getUserStamp();
+        b.prolongadoPor = getUserStamp();
         saveData();
         showToast('Agendamento prolongado até ' + formatDate(newDate) + '.', 'success');
         closeDayPanel();
@@ -2104,6 +2157,14 @@
             '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128663; Viatura</div><div class="detail-grid"><div class="detail-item"><label>Matrícula</label><span><strong>' + b.matricula + '</strong></span></div><div class="detail-item"><label>Marca/Modelo</label><span>' + (b.marcaModelo || '—') + '</span></div><div class="detail-item"><label>Tipo Serviço</label><span>' + b.tipoServico + '</span></div><div class="detail-item"><label>Data Levantamento</label><span>' + formatDate(b.dataEntrada) + '</span></div><div class="detail-item"><label>Data Prev. Devolução</label><span>' + (b.dataSaida ? formatDate(b.dataSaida) : '—') + '</span></div></div></div>' +
             (b.levantamento ? '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128663; Levantamento <span style="font-weight:400;font-size:12px;color:var(--gray-600);">Nº ' + (b.levantamento.id || '—') + '</span></div><div class="detail-grid"><div class="detail-item"><label>Kms</label><span>' + b.levantamento.kms + '</span></div><div class="detail-item"><label>Combustível</label><span>' + b.levantamento.combustivel + '%</span></div><div class="detail-item"><label>Data/Hora</label><span>' + formatDateTime(b.levantamento.dataHora) + '</span></div></div></div>' : '') +
             (b.devolucao ? '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128230; Devolução <span style="font-weight:400;font-size:12px;color:var(--gray-600);">Nº ' + (b.devolucao.id || '—') + '</span></div><div class="detail-grid"><div class="detail-item"><label>Kms</label><span>' + b.devolucao.kms + '</span></div><div class="detail-item"><label>Combustível</label><span>' + b.devolucao.combustivel + '%</span></div><div class="detail-item"><label>Valor</label><span>' + (b.devolucao.valor ? b.devolucao.valor + ' €' : '—') + '</span></div><div class="detail-item"><label>Data/Hora</label><span>' + formatDateTime(b.devolucao.dataHora) + '</span></div></div></div>' : '') +
+            '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128100; Responsáveis (auditoria)</div><div class="detail-grid">' +
+            '<div class="detail-item"><label>Reserva criada por</label><span>' + fmtStamp(b.criadoPor) + '</span></div>' +
+            (b.prolongadoPor ? '<div class="detail-item"><label>Prazo prolongado por</label><span>' + fmtStamp(b.prolongadoPor) + '</span></div>' : '') +
+            (b.canceladoPor ? '<div class="detail-item"><label>Cancelado por</label><span>' + fmtStamp(b.canceladoPor) + '</span></div>' : '') +
+            ((b.levantamento && b.levantamento.registadoPor) ? '<div class="detail-item"><label>Levantamento por</label><span>' + fmtStamp(b.levantamento.registadoPor) + '</span></div>' : '') +
+            ((b.devolucao && b.devolucao.registadoPor) ? '<div class="detail-item"><label>Devolução por</label><span>' + fmtStamp(b.devolucao.registadoPor) + '</span></div>' : '') +
+            (b.atualizadoPor ? '<div class="detail-item"><label>Última atualização por</label><span>' + fmtStamp(b.atualizadoPor) + '</span></div>' : '') +
+            '</div></div>' +
             '<div style="display:flex;gap:8px;margin-top:16px;">' +
             (b.estado === 'Agendado' ? '<button class="btn btn-success" onclick="closeModal(); startPickupFromBooking(\'' + b.id + '\')">&#128663; Levantamento</button><button class="btn btn-outline" onclick="closeModal(); editBooking(\'' + b.id + '\')">&#9998; Editar</button><button class="btn btn-danger" onclick="closeModal(); cancelBooking(\'' + b.id + '\')">&#10060; Cancelar</button>' : '') +
             (b.estado === 'Levantado' ? '<button class="btn btn-warning" onclick="closeModal(); startReturnFromBooking(\'' + b.id + '\')">&#128230; Devolução</button><button class="btn btn-primary" onclick="closeModal(); extendBooking(\'' + b.id + '\')">&#128197; Prolongar</button><button class="btn btn-danger" onclick="closeModal(); cancelBooking(\'' + b.id + '\')">&#10060; Cancelar</button>' : '') + '</div>';
@@ -2111,6 +2172,51 @@
     }
 
     function closeModal() { document.getElementById('bookingModal').classList.remove('active'); }
+
+    // Viaturas em atraso: levantadas, com data prevista de devolução já passada e
+    // ainda sem devolução feita (e sem prolongamento, pois prolongar atualiza a dataSaida).
+    function getOverdueBookings() {
+        var today = new Date().toISOString().split('T')[0];
+        return bookings.filter(function(b) {
+            if (b.estado !== 'Levantado') return false;
+            var saida = b.dataSaida || b.dataEntrada;
+            return saida && saida < today;
+        }).sort(function(a, c) { return (a.dataSaida || a.dataEntrada) < (c.dataSaida || c.dataEntrada) ? -1 : 1; });
+    }
+
+    function checkOverdueVehicles(force) {
+        var overdue = getOverdueBookings();
+        if (overdue.length === 0) { if (force) showToast('Não há viaturas em atraso.', 'success'); return; }
+        var today = new Date();
+        var rows = overdue.map(function(b) {
+            var saida = b.dataSaida || b.dataEntrada;
+            var dias = Math.max(0, Math.floor((today - new Date(saida + 'T12:00:00')) / 86400000));
+            var lev = b.levantamento || {};
+            var resp = (lev.registadoPor && lev.registadoPor.nome) || (b.criadoPor && b.criadoPor.nome) || '—';
+            return '<tr>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;font-weight:600;">' + b.matricula + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;">' + (b.nomeCliente || '—') + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;">' + b.localizacao + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#c0392b;font-weight:600;">' + formatDate(saida) + ' (' + dias + 'd)</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:11px;color:#666;">' + resp + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap;"><button class="btn btn-warning btn-sm" onclick="var m=document.getElementById(\'overdueModal\');if(m)m.remove();startReturnFromBooking(\'' + b.id + '\')">Devolução</button> <button class="btn btn-outline btn-sm" onclick="var m=document.getElementById(\'overdueModal\');if(m)m.remove();extendBooking(\'' + b.id + '\')">Prolongar</button></td>' +
+                '</tr>';
+        }).join('');
+        var existing = document.getElementById('overdueModal'); if (existing) existing.remove();
+        var overlay = document.createElement('div');
+        overlay.id = 'overdueModal';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+        overlay.innerHTML = '<div style="background:#fff;border-radius:10px;max-width:860px;width:100%;max-height:85vh;overflow:auto;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.3);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+            '<h2 style="margin:0;font-size:18px;color:#c0392b;">&#9888;&#65039; ' + overdue.length + ' viatura(s) em atraso</h2>' +
+            '<button class="btn btn-outline btn-sm" onclick="document.getElementById(\'overdueModal\').remove()">Fechar &#10006;</button></div>' +
+            '<p style="font-size:13px;color:#666;margin:0 0 12px;">Viaturas levantadas cuja data prevista de devolução já passou e que ainda não foram devolvidas nem tiveram o prazo prolongado.</p>' +
+            '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;background:#f5f5f5;">' +
+            '<th style="padding:6px 8px;">Matrícula</th><th style="padding:6px 8px;">Cliente</th><th style="padding:6px 8px;">Local</th><th style="padding:6px 8px;">Devolução prevista</th><th style="padding:6px 8px;">Responsável (levantamento)</th><th style="padding:6px 8px;">Ações</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+        document.body.appendChild(overlay);
+    }
 
     /* ============================================
        PICKUP
@@ -2211,6 +2317,9 @@
                     '<option value="Mecânica Lisboa"' + (b.localizacao === 'Mecânica Lisboa' ? ' selected' : '') + '>Mecânica Lisboa</option>' +
                 '</select></span></div>';
         document.getElementById('pk_nomeCompleto').value = b.nomeCliente || '';
+        // Pré-preencher a data estipulada de devolução da Declaração Fidelidade
+        var _fidEst = document.getElementById('fid_dataEstipulada');
+        if (_fidEst) _fidEst.value = b.dataSaida || '';
 
         // Auto-fill damages from last pickup + return of same vehicle
         var previousDanos = getLastVehicleDamages(b.matricula, b.id);
@@ -2258,6 +2367,17 @@
             numDocId: _numDocId,
             validadeDocId: _validadeDocId,
             condicoesTipo: (document.querySelector('input[name="pk_condicoesTipo"]:checked') || {}).value || 'domuscar',
+            fidelidade: {
+                companhiaSeguros: (document.getElementById('fid_companhiaSeguros').value || '').trim(),
+                matriculaCliente: (document.getElementById('fid_matriculaCliente').value || '').trim(),
+                dataAcidente: document.getElementById('fid_dataAcidente').value || '',
+                dataReparacao: document.getElementById('fid_dataReparacao').value || '',
+                franquiaDanosProprios: (document.getElementById('fid_franquiaDanosProprios').value || '').trim(),
+                franquiaSinistro: (document.getElementById('fid_franquiaSinistro').value || '').trim(),
+                diaria: (document.getElementById('fid_diaria').value || '').trim(),
+                dataEstipulada: document.getElementById('fid_dataEstipulada').value || '',
+                diariaPerdaTotal: (document.getElementById('fid_diariaPerdaTotal').value || '').trim()
+            },
             kms: parseInt(document.getElementById('pk_kms').value),
             combustivel: parseInt(document.getElementById('pk_combustivel').value),
             danos: document.getElementById('pk_danos').value.trim(),
@@ -2343,6 +2463,18 @@
         document.querySelectorAll('#qp_vehicleGrid .vehicle-option').forEach(function(el) {
             var matricula = el.querySelector('.v-matricula').textContent;
             var statusEl = el.querySelector('.v-status');
+            // Viatura LEVANTADA e ainda não devolvida está fisicamente fora — indisponível
+            // independentemente das datas (cobre os casos de prazo ultrapassado sem devolução).
+            var emServico = bookings.find(function(b) {
+                return b.matricula === matricula && b.estado === 'Levantado';
+            });
+            if (emServico) {
+                el.classList.add('unavailable');
+                var _saidaServ = emServico.dataSaida || emServico.dataEntrada;
+                var _atraso = _saidaServ && _saidaServ < today;
+                statusEl.innerHTML = '<span style="color:var(--danger);font-weight:600;">Indisponível — em serviço, devolução pendente (' + emServico.nomeCliente + (_atraso ? ', PRAZO ULTRAPASSADO desde ' + formatDate(_saidaServ) : '') + ')</span>';
+                return;
+            }
             // Verificar conflito (viatura indisponível à data)
             var conflict = bookings.find(function(b) {
                 if (b.matricula !== matricula) return false;
@@ -2435,21 +2567,24 @@
             printWin.document.write('<div class="subtitle">Veículo de Cortesia | Nº <strong>' + (lev.id || '—') + '</strong> | ' + formatDateTime(lev.dataHora) + '</div>');
             var _tipoDoc = lev.tipoDocId || 'documento de identificação';
             var _val = lev.validadeDocId ? formatDate(lev.validadeDocId) : _blank(70);
+            var f = lev.fidelidade || {};
+            var _fv = function(val, w) { return val ? '<strong>' + val + '</strong>' : _blank(w); };
+            var _fvDate = function(val, w) { return val ? '<strong>' + formatDate(val) + '</strong>' : _blank(w); };
             var dcl = '<div style="font-size:11px;line-height:1.6;text-align:justify;">';
-            dcl += '<p style="margin:0 0 10px;">Eu, <strong>' + (lev.nomeCompleto || _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId || _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif || _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + b.localizacao + '</strong> em nome da Companhia de Seguros ' + _blank(130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo || _blank(130)) + '</strong>, com a matrícula nº <strong>' + b.matricula + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _blank(90) + ', durante o período que durar a reparação decorrente do acidente de viação havido no dia ' + _blank(70) + ' e até à entrega da minha viatura reparada em ' + _blank(70) + '.</p>';
-            dcl += '<p style="margin:0 0 10px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de ' + _blank(70) + ' euros.</p>';
+            dcl += '<p style="margin:0 0 10px;">Eu, <strong>' + (lev.nomeCompleto || _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId || _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif || _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + b.localizacao + '</strong> em nome da Companhia de Seguros ' + _fv(f.companhiaSeguros, 130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo || _blank(130)) + '</strong>, com a matrícula nº <strong>' + b.matricula + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _fv(f.matriculaCliente, 90) + ', durante o período que durar a reparação decorrente do acidente de viação havido no dia ' + _fvDate(f.dataAcidente, 70) + ' e até à entrega da minha viatura reparada em ' + _fvDate(f.dataReparacao, 70) + '.</p>';
+            dcl += '<p style="margin:0 0 10px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de ' + _fv(f.franquiaDanosProprios, 70) + ' euros.</p>';
             dcl += '<p style="margin:0 0 6px;font-weight:700;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Em caso de acidente com o veículo de cortesia:</p>';
             dcl += '<p style="margin:0 0 4px;">1) Preenchimento da Declaração Amigável de Acidente Automóvel que se encontra junto dos documentos.</p>';
-            dcl += '<p style="margin:0 0 10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de ' + _blank(70) + ' euros (IVA incluído).</p>';
+            dcl += '<p style="margin:0 0 10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de ' + _fv(f.franquiaSinistro, 70) + ' euros (IVA incluído).</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Combustível</p>';
             dcl += '<p style="margin:0 0 10px;">A viatura de cortesia deverá ser devolvida obrigatoriamente com o mesmo nível de combustível com que foi entregue, de forma a evitar que me seja cobrado uma taxa adicional para atesto do depósito.</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Devolução da viatura de cortesia</p>';
-            dcl += '<p style="margin:0 0 4px;">Suportarei uma diária de ' + _blank(70) + ' euros (este valor inclui o seguro acima mencionado e IVA) nos seguintes casos:</p>';
-            dcl += '<p style="margin:0 0 4px;">1) Sempre que o veículo de cortesia não seja entregue na data estipulada pela Oficina – em <strong>' + (b.dataSaida ? formatDate(b.dataSaida) : _blank(70)) + '</strong></p>';
+            dcl += '<p style="margin:0 0 4px;">Suportarei uma diária de ' + _fv(f.diaria, 70) + ' euros (este valor inclui o seguro acima mencionado e IVA) nos seguintes casos:</p>';
+            dcl += '<p style="margin:0 0 4px;">1) Sempre que o veículo de cortesia não seja entregue na data estipulada pela Oficina – em ' + _fvDate(f.dataEstipulada || b.dataSaida, 70) + '</p>';
             dcl += '<p style="margin:0 0 10px;">2) Sempre que o veículo de cortesia não seja devolvido à Oficina por instruções expressas por parte da Seguradora.</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Perda total</p>';
-            dcl += '<p style="margin:0 0 10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de ' + _blank(70) + ' euros (este valor inclui o seguro acima mencionado e IVA).</p>';
+            dcl += '<p style="margin:0 0 10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de ' + _fv(f.diariaPerdaTotal, 70) + ' euros (este valor inclui o seguro acima mencionado e IVA).</p>';
             dcl += '<p style="margin:0 0 6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>';
             dcl += '<p style="margin:0 0 6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>';
             dcl += '</div>';
@@ -3755,6 +3890,9 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') { closeModal(); closeDayPanel(); closeSpConfig(); }
         });
+
+        // Alerta de viaturas em atraso ao abrir o módulo (após carregar dados).
+        setTimeout(function() { try { checkOverdueVehicles(); } catch (e) { console.warn('checkOverdueVehicles:', e); } }, (CONFIG.storageMode === 'sharepoint') ? 4500 : 800);
     }
 
     init();
