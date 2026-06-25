@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Fardas — DomusCar</title>
+<style>
+  :root{--navy:#003B73;--navy2:#1e3a5f;--blue:#1d4ed8;--bg:#f5f7fa;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--green:#16a34a;--amber:#b45309;--red:#dc2626;--gray:#94a3b8;}
+  *{box-sizing:border-box;}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 20px 60px;}
+  h1{font-size:1.4rem;color:var(--navy);margin:0 0 2px;}
+  .sub{color:var(--muted);font-size:.88rem;margin:0 0 16px;max-width:900px;}
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .sbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;text-align:center;min-width:120px;flex:1;}
+  .sbox .n{font-size:1.6rem;font-weight:800;color:var(--navy);}.sbox .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+  .toolbar input{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px;min-width:240px;font-family:inherit;}
+  .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+  .frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;}.frow:last-child{margin-bottom:0;}
+  .flabel{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;width:70px;}
+  .chip{padding:5px 11px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#334155;}
+  .chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;}
+  th{background:var(--navy2);color:#fff;font-weight:600;font-size:11.5px;}
+  td.c,th.c{text-align:center;}
+  tr.prow{cursor:pointer;}tr.prow:hover{background:#f1f5f9;}
+  .ofbadge{font-size:10.5px;font-weight:700;border-radius:10px;padding:2px 8px;color:#fff;white-space:nowrap;}
+  .of-cacem{background:#0369a1;}.of-lisboa{background:#7c3aed;}.of-colisao{background:#b45309;}.of-multi{background:#475569;}
+  .pchip{display:inline-block;font-size:10.5px;background:#eef2ff;color:var(--navy);border-radius:8px;padding:2px 7px;margin:1px 2px;font-weight:600;}
+  .miss{color:var(--red);font-weight:700;font-size:11.5px;}
+  .arrow{display:inline-block;transition:transform .15s;color:var(--muted);font-size:11px;}
+  tr.open .arrow{transform:rotate(90deg);}
+  .detail td{background:#f8fafc;padding:0;}
+  .detail-inner{padding:10px 16px 14px;}
+  .reno{margin:8px 0;}
+  .reno-date{font-weight:700;color:var(--navy);font-size:12px;margin-bottom:4px;}
+  .reno table{border:none;background:transparent;}
+  .reno th,.reno td{border-bottom:1px solid #e8edf3;padding:4px 8px;background:transparent;color:var(--text);}
+  .reno th{background:#eef2f7;color:var(--navy2);font-size:10.5px;}
+  .obs{font-size:11.5px;color:var(--amber);background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin-top:8px;}
+  .small{font-size:11px;color:var(--muted);}
+  .updnote{font-size:11px;color:var(--muted);margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>👕 Gestão de Fardas</h1>
+  <p class="sub">Fardamento atribuído a cada colaborador e data da última renovação, com base nos termos de entrega assinados (2024–2025). Clica numa linha para ver o detalhe das peças e o histórico de renovações. As renovações futuras devem ser registadas aqui após cada entrega assinada.</p>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="🔍 Procurar colaborador…" oninput="render()">
+    <span class="small" id="count"></span>
+  </div>
+
+  <div class="filters">
+    <div class="frow"><span class="flabel">Oficina</span><span id="fOf"></span></div>
+    <div class="frow"><span class="flabel">Estado</span><span id="fEs"></span></div>
+  </div>
+
+  <div id="tableWrap"></div>
+  <div class="updnote" id="updnote"></div>
+</div>
+
+<script>
+const DATA = [{"nome": "José Rodriguez", "oficina": "Mecânica Cacém", "funcao": "Coordenador", "ano": "2019", "hist": [["2024-07-30", "30/07/2024", [["Sapatos Segurança Securlite", "-", 1], ["Calças Vale", "-", 2], ["Polo Manga Curta Azul", "-", 3], ["Polo Manga Comprida Azul", "-", 2]]], ["2025-09", "Set 2025", [["Polo Manga Curta Azul", "XXL", 3], ["Colete Softshell", "XL", 1], ["Polo Manga Comprida Azul", "XXL", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Tomás Figueiredo", "oficina": "Mecânica Cacém", "funcao": "Receção", "ano": "2024", "hist": [["2024-10", "Out 2024", [["Camisa Homem Manga Comprida", "-", 5], ["Pullover Inverno Homem", "-", 1]]], ["2025-09", "Set 2025", [["Camisa Homem Manga Comprida", "M", 3], ["Pullover Inverno Homem", "M", 1], ["Forro Polar Petróleo", "S", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Rúben Nogueira", "oficina": "Mecânica Cacém", "funcao": "Receção", "ano": "2024", "hist": [["2024-10", "Out 2024", [["Camisa Homem Manga Comprida", "-", 5], ["Pullover Inverno Homem", "-", 1]]], ["2025-09", "Set 2025", [["Camisa Homem Manga Comprida", "L", 3], ["Pullover Inverno Homem", "L", 1], ["Forro Polar Petróleo", "L", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Arnaldo Cruz", "oficina": "Mecânica Cacém", "funcao": "Técnico Mecânica", "ano": "2017", "hist": [["2025-08", "Ago 2025", [["Calça Homem", "XL", 2], ["Polo Verão 100% PES", "L", 3]]], ["2025-09", "Set 2025", [["Forro Polar Petróleo", "XXL", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Edmilson Fernandes", "oficina": "Mecânica Cacém", "funcao": "Técnico Mecânica", "ano": "2021", "hist": [["2024-10", "Out 2024", [["Sapatos Segurança Securlite", "-", 1]]], ["2025-08", "Ago 2025", [["Calça Homem", "L", 2], ["Polo Verão 100% PES", "L", 3]]], ["2025-09", "Set 2025", [["Forro Polar Petróleo", "L", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Filipe Bonifácio", "oficina": "Mecânica Cacém", "funcao": "Técnico Mecânica", "ano": "2023", "hist": [["2025-09", "Set 2025", [["Polo Manga Curta PES", "L", 3], ["Calça", "L", 2], ["Forro Polar Petróleo", "L", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Gonçalo Matos", "oficina": "Mecânica Cacém", "funcao": "Técnico Mecânica", "ano": "2024", "hist": [], "obs": "Sem termo de farda assinado registado (2024 só com regulamento). Consta na encomenda atual (Polo verão L + Calça L).", "ultima": "—", "ultimasort": "0000"}, {"nome": "Olesya Vieira", "oficina": "Mec. Cacém / Colisão", "funcao": "Peças e Logística", "ano": "2025", "hist": [["2025-12", "Dez 2025", [["Polo Manga Curta PES", "L", 1], ["Forro Polar Petróleo", "L", 1]]]], "obs": "", "ultima": "Dez 2025", "ultimasort": "2025-12"}, {"nome": "Inês Peixinho", "oficina": "Mec. Cacém / Colisão", "funcao": "Peças e Logística", "ano": "2021", "hist": [["2025-12", "Dez 2025", [["Polo Manga Curta PES", "M", 1], ["Forro Polar Petróleo", "M", 1]]]], "obs": "", "ultima": "Dez 2025", "ultimasort": "2025-12"}, {"nome": "André Gomes", "oficina": "Mec. Cacém / Colisão", "funcao": "Peças e Logística", "ano": "2026", "hist": [], "obs": "Sem registo de farda — dados em falta.", "ultima": "—", "ultimasort": "0000"}, {"nome": "Eduardo Macedo", "oficina": "Mecânica Cacém", "funcao": "Lavagem", "ano": "2023", "hist": [], "obs": "Sem registo de farda — dados em falta.", "ultima": "—", "ultimasort": "0000"}, {"nome": "Fábio Ramalho", "oficina": "Mecânica Lisboa", "funcao": "Coordenador", "ano": "2019", "hist": [["2024-07-30", "30/07/2024", [["Sapatos Segurança Securlite", "-", 1], ["Calças Vale", "-", 2], ["Polo Manga Curta Azul", "-", 3], ["Polo Manga Comprida Azul", "-", 2]]], ["2025-09", "Set 2025", [["Polo Manga Curta Azul", "M", 3], ["Colete Softshell", "S", 1], ["Polo Manga Comprida Azul", "M", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Ricardo Ferreira", "oficina": "Mecânica Lisboa", "funcao": "Receção", "ano": "2025", "hist": [["2025-01", "Jan 2025", [["Camisa Homem Manga Comprida", "L", 5], ["Pullover Inverno Homem", "L", 1]]], ["2025-09", "Set 2025", [["Pullover Inverno Homem", "L", 1], ["Camisa Homem Manga Comprida", "L", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Pedro Pereira", "oficina": "Mecânica Lisboa", "funcao": "Receção", "ano": "2025", "hist": [], "obs": "Sem registo de farda — dados em falta.", "ultima": "—", "ultimasort": "0000"}, {"nome": "Sérgio Pereira", "oficina": "Mecânica Lisboa", "funcao": "Técnico Mecânica", "ano": "2010", "hist": [["2025-08", "Ago 2025", [["Calça Homem", "L", 2], ["Polo Verão 100% PES", "L", 3]]]], "obs": "", "ultima": "Ago 2025", "ultimasort": "2025-08"}, {"nome": "Jorge Silva", "oficina": "Mecânica Lisboa", "funcao": "Técnico Mecânica", "ano": "2023", "hist": [["2025-08", "Ago 2025", [["Calça Homem", "L", 2], ["Polo Verão 100% PES", "XL", 3]]], ["2025-09", "Set 2025", [["Forro Polar Petróleo", "XL", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Emanuel Gonçalves", "oficina": "Mecânica Lisboa", "funcao": "Técnico Mecânica", "ano": "2024", "hist": [["2025-08", "Ago 2025", [["Calça Homem", "M", 2], ["Polo Verão 100% PES", "M", 3]]], ["2025-09", "Set 2025", [["Forro Polar Petróleo", "M", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Ajay Shah", "oficina": "Mecânica Lisboa", "funcao": "Lavagem", "ano": "2022", "hist": [], "obs": "Sem registo de farda — dados em falta.", "ultima": "—", "ultimasort": "0000"}, {"nome": "Pedro Carvalho", "oficina": "Mecânica Lisboa", "funcao": "Peças e Logística", "ano": "2008", "hist": [["2025-12", "Dez 2025", [["Polo Manga Curta PES", "XL", 1], ["Forro Polar Petróleo", "XL", 1]]]], "obs": "", "ultima": "Dez 2025", "ultimasort": "2025-12"}, {"nome": "Gonçalo Faustino", "oficina": "Mecânica Lisboa", "funcao": "Peças e Logística", "ano": "2025", "hist": [["2025-12", "Dez 2025", [["Polo Manga Curta PES", "XXL", 1], ["Forro Polar Petróleo", "XXL", 1]]]], "obs": "", "ultima": "Dez 2025", "ultimasort": "2025-12"}, {"nome": "Xavier Jorge", "oficina": "Mecânica Lisboa", "funcao": "Estagiário", "ano": "2025", "hist": [], "obs": "Sem termo de farda assinado registado. Consta na encomenda atual (Polo verão M + Calça S).", "ultima": "—", "ultimasort": "0000"}, {"nome": "Mário Peres", "oficina": "Colisão", "funcao": "Coordenador", "ano": "2022", "hist": [["2025-04", "Abr 2025", [["Calça", "L", 2], ["Polo Manga Curta Azul", "XL", 3], ["Colete Softshell", "XL", 1], ["Polo Manga Comprida Azul", "XL", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Nuno Montes", "oficina": "Colisão", "funcao": "Coordenador", "ano": "2024", "hist": [["2025-04", "Abr 2025", [["Calça", "M", 2], ["Polo Manga Curta Petróleo PES", "M", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "Promovido a Coordenador (na empresa desde 2023).", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Valter Borges", "oficina": "Colisão", "funcao": "Receção", "ano": "2021", "hist": [["2024-10-04", "04/10/2024", [["Camisa Homem Manga Comprida", "-", 5], ["Pullover Inverno Homem", "-", 1]]], ["2025-09", "Set 2025", [["Camisa Homem Manga Comprida", "XL", 3], ["Pullover Inverno Homem", "XL", 1], ["Forro Polar Petróleo", "XL", 1]]]], "obs": "", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "Paulo Rodrigues", "oficina": "Colisão", "funcao": "Receção", "ano": "2024", "hist": [["2024-10-04", "04/10/2024", [["Camisa Homem Manga Comprida", "-", 5], ["Pullover Inverno Homem", "-", 1]]], ["2025-09", "Set 2025", [["Camisa Homem Manga Comprida", "M", 3], ["Pullover Inverno Homem", "XL", 1], ["Forro Polar Petróleo", "M", 1]]]], "obs": "Termo de 2024 emitido em nome de Paulo Serfaty (mesma pessoa).", "ultima": "Set 2025", "ultimasort": "2025-09"}, {"nome": "José Borges", "oficina": "Colisão", "funcao": "Técnico Chapa", "ano": "2024", "hist": [["2025-04", "Abr 2025", [["Calça", "M", 2], ["Polo Manga Curta Petróleo PES", "M", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Pedro Jana", "oficina": "Colisão", "funcao": "Técnico Chapa", "ano": "2025", "hist": [["2025-04", "Abr 2025", [["Calça", "M", 2], ["Polo Manga Curta Petróleo PES", "M", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Carlos Antunes", "oficina": "Colisão", "funcao": "Técnico Chapa", "ano": "2024", "hist": [["2025-04", "Abr 2025", [["Calça", "XL", 2], ["Polo Manga Curta Petróleo PES", "XXL", 3], ["Forro Polar Petróleo", "XXL", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Diogo Fernandes", "oficina": "Colisão", "funcao": "Técnico Pintura/Preparação", "ano": "2022", "hist": [["2025-04", "Abr 2025", [["Calça", "L", 2], ["Polo Manga Curta Petróleo PES", "L", 3], ["Forro Polar Petróleo", "XL", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Vítor Soutilha", "oficina": "Colisão", "funcao": "Técnico Pintura/Preparação", "ano": "2024", "hist": [["2025-04", "Abr 2025", [["Calça", "M", 2], ["Polo Manga Curta Petróleo PES", "M", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Gyanu Pujara", "oficina": "Colisão", "funcao": "Técnico Pintura/Preparação", "ano": "2025", "hist": [["2025-04", "Abr 2025", [["Calça", "S", 2], ["Polo Manga Curta Petróleo PES", "M", 3], ["Forro Polar Petróleo", "S", 1]]]], "obs": "", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "João Bizarro", "oficina": "Colisão", "funcao": "Técnico Pintura/Preparação", "ano": "2025", "hist": [["2025-04", "Abr 2025", [["Calça", "M", 2], ["Polo Manga Curta Petróleo PES", "S", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "Termo/encomenda também em nome de Paulo Bizarro (mesma pessoa).", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "José Avelino", "oficina": "Colisão", "funcao": "Técnico Pintura/Preparação", "ano": "2025", "hist": [["2025-04", "Abr 2025", [["Calça", "M", 2], ["Polo Manga Curta Petróleo PES", "M", 3], ["Forro Polar Petróleo", "M", 1]]]], "obs": "Termo de farda emitido em nome de José Fernandes (mesma pessoa).", "ultima": "Abr 2025", "ultimasort": "2025-04"}, {"nome": "Alícia Vieira", "oficina": "Mec. Cacém / Colisão", "funcao": "Peças e Logística", "ano": "2025", "hist": [], "obs": "Sem registo de farda — dados em falta.", "ultima": "—", "ultimasort": "0000"}];
+let fOficina = "Todas";
+let fEstado = "Todos";
+
+function ofClass(of){
+  if(of==="Mecânica Cacém")return "of-cacem";
+  if(of==="Mecânica Lisboa")return "of-lisboa";
+  if(of==="Colisão")return "of-colisao";
+  return "of-multi";
+}
+function pecasResumo(p){
+  const set=[];
+  p.hist.forEach(h=>h[2].forEach(it=>{ if(!set.includes(it[0]))set.push(it[0]); }));
+  if(set.length===0)return '<span class="miss">⚠ Dados em falta</span>';
+  return set.map(s=>'<span class="pchip">'+s+'</span>').join("");
+}
+function matchOf(p){
+  if(fOficina==="Todas")return true;
+  return p.oficina.indexOf(fOficina.replace("Mecânica ",""))>-1 || p.oficina===fOficina;
+}
+function buildFilters(){
+  const ofs=["Todas","Mecânica Cacém","Mecânica Lisboa","Colisão"];
+  document.getElementById("fOf").innerHTML=ofs.map(o=>'<span class="chip'+(o===fOficina?' active':'')+'" onclick="setOf(\''+o+'\')">'+o+'</span>').join("");
+  const es=["Todos","Com farda registada","Dados em falta"];
+  document.getElementById("fEs").innerHTML=es.map(o=>'<span class="chip'+(o===fEstado?' active':'')+'" onclick="setEs(\''+o+'\')">'+o+'</span>').join("");
+}
+function setOf(o){fOficina=o;buildFilters();render();}
+function setEs(o){fEstado=o;buildFilters();render();}
+
+function render(){
+  buildFilters();
+  const q=(document.getElementById("search").value||"").toLowerCase();
+  let rows=DATA.filter(p=>{
+    if(!matchOf(p))return false;
+    if(fEstado==="Com farda registada" && p.hist.length===0)return false;
+    if(fEstado==="Dados em falta" && p.hist.length>0)return false;
+    if(q && p.nome.toLowerCase().indexOf(q)<0 && p.funcao.toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+  const ofOrder={"Mecânica Cacém":1,"Mec. Cacém / Colisão":1,"Mecânica Lisboa":2,"Mec. Lisboa / Colisão":2,"Colisão":3};
+  rows.sort((a,b)=>(ofOrder[a.oficina]||9)-(ofOrder[b.oficina]||9) || a.funcao.localeCompare(b.funcao) || a.nome.localeCompare(b.nome));
+
+  let h='<table><thead><tr><th style="width:24px"></th><th>Colaborador</th><th>Oficina</th><th>Função</th><th class="c">Desde</th><th>Peças atribuídas</th><th class="c">Última renovação</th></tr></thead><tbody>';
+  rows.forEach((p,i)=>{
+    h+='<tr class="prow" onclick="toggle('+i+')" id="r'+i+'">'
+      +'<td class="c"><span class="arrow">▶</span></td>'
+      +'<td><strong>'+p.nome+'</strong></td>'
+      +'<td><span class="ofbadge '+ofClass(p.oficina)+'">'+p.oficina+'</span></td>'
+      +'<td>'+p.funcao+'</td>'
+      +'<td class="c">'+p.ano+'</td>'
+      +'<td>'+pecasResumo(p)+'</td>'
+      +'<td class="c">'+(p.ultima==="—"?'<span class="miss">—</span>':'<strong>'+p.ultima+'</strong>')+'</td></tr>';
+    // detail
+    let d='<tr class="detail" id="d'+i+'" style="display:none"><td colspan="7"><div class="detail-inner">';
+    if(p.hist.length===0){
+      d+='<div class="small">Sem termo de farda registado para este colaborador.</div>';
+    } else {
+      p.hist.slice().sort((a,b)=>a[0]<b[0]?1:-1).forEach(rn=>{
+        d+='<div class="reno"><div class="reno-date">📅 '+rn[1]+'</div><table><thead><tr><th>Artigo</th><th>Tamanho</th><th>Qt.</th></tr></thead><tbody>';
+        rn[2].forEach(it=>{ d+='<tr><td>'+it[0]+'</td><td>'+it[1]+'</td><td>'+it[2]+'</td></tr>'; });
+        d+='</tbody></table></div>';
+      });
+    }
+    if(p.obs) d+='<div class="obs">ℹ '+p.obs+'</div>';
+    d+='</div></td></tr>';
+    h+=d;
+  });
+  h+='</tbody></table>';
+  if(rows.length===0)h='<div class="sbox" style="padding:30px">Nenhum colaborador corresponde aos filtros.</div>';
+  document.getElementById("tableWrap").innerHTML=h;
+  document.getElementById("count").textContent=rows.length+" colaborador(es)";
+
+  // summary
+  const tot=DATA.length;
+  const cac=DATA.filter(p=>p.oficina.indexOf("Cacém")>-1).length;
+  const lis=DATA.filter(p=>p.oficina.indexOf("Lisboa")>-1).length;
+  const col=DATA.filter(p=>p.oficina.indexOf("Colisão")>-1).length;
+  const miss=DATA.filter(p=>p.hist.length===0).length;
+  document.getElementById("summary").innerHTML=
+    box(tot,"Colaboradores")+box(cac,"Mecânica Cacém")+box(lis,"Mecânica Lisboa")+box(col,"Colisão")+box(miss,"Dados em falta");
+}
+function box(n,l){return '<div class="sbox"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>';}
+function toggle(i){
+  const d=document.getElementById("d"+i), r=document.getElementById("r"+i);
+  if(!d)return;
+  const open=d.style.display!=="none";
+  d.style.display=open?"none":"table-row";
+  r.classList.toggle("open",!open);
+}
+document.getElementById("updnote").textContent="Fonte: termos de entrega de farda assinados (2024–2025). Última atualização da página: Junho 2026.";
+render();
+</script>
+</body>
+</html>
