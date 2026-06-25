@@ -29,7 +29,13 @@
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;}
   .badge{font-size:10.5px;font-weight:700;border-radius:10px;padding:2px 8px;color:#fff;white-space:nowrap;}
   .acts button{font-size:11px;border:none;border-radius:6px;padding:4px 7px;cursor:pointer;margin:1px;}
-  .acts .feita{background:#dcfce7;color:#166534;}.acts .ed{background:#eef2ff;color:var(--navy);}.acts .del{background:#fee2e2;color:#b91c1c;}
+  .acts .feita{background:#dcfce7;color:#166534;}.acts .ed{background:#eef2ff;color:var(--navy);}.acts .del{background:#fee2e2;color:#b91c1c;}.acts .docs{background:#e0e7ff;color:#3730a3;}
+  .doclist{margin:6px 0 4px;}
+  .docrow{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:12.5px;}
+  .docrow a{color:var(--blue);font-weight:600;text-decoration:none;}
+  .docrow .dmeta{color:var(--muted);font-size:11px;margin-left:auto;text-align:right;}
+  .docrow .ddel{background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;padding:3px 7px;cursor:pointer;font-weight:700;font-size:11px;}
+  .vtag{font-size:10.5px;font-weight:700;border-radius:8px;padding:1px 7px;color:#fff;}
   /* modal */
   .ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:1000;overflow:auto;padding:30px 14px;}
   .ov.open{display:flex;}
@@ -46,7 +52,7 @@
 <body>
 <div class="wrap">
   <h1>🛠️ Manutenção de Equipamentos</h1>
-  <p class="sub">Calendário de manutenções, revisões e inspeções dos equipamentos/ferramentas das oficinas. Cada equipamento tem uma periodicidade — o sistema calcula a próxima data e mostra o estado (🟢 em dia · 🟡 a vencer · 🔴 vencido). Marca como feita e a próxima é agendada automaticamente.</p>
+  <p class="sub">Calendário de manutenções, revisões e inspeções dos equipamentos/ferramentas das oficinas. Cada equipamento tem uma periodicidade — o sistema calcula a próxima data e mostra o estado (🟢 em dia · 🟡 a vencer · 🔴 vencido). Marca como feita e a próxima é agendada automaticamente. Em equipamentos com verificação metrológica, anexa o certificado/relatório e a data de validade passa a controlar o estado.</p>
 
   <div class="summary" id="summary"></div>
 
@@ -72,7 +78,7 @@
     <label class="fl">Equipamento / Ferramenta</label>
     <input type="text" id="eNome" placeholder="Ex.: Elevador de 2 colunas nº1">
     <div class="twocol">
-      <div><label class="fl">Oficina</label><select id="eOf"><option value="cacem">Cacém</option><option value="lisboa">Lisboa</option><option value="colisao">Colisão</option><option value="geral">Geral / Todas</option></select></div>
+      <div><label class="fl">Oficina</label><select id="eOf"><option value="cacem">Cacém</option><option value="lisboa">Lisboa</option><option value="colisao">Colisão</option><option value="lisboa_cacem">Lisboa / Cacém (móvel)</option><option value="geral">Geral / Todas</option></select></div>
       <div><label class="fl">Tipo de manutenção</label><select id="eTipo"><option value="preventiva">Manutenção preventiva</option><option value="calibracao">Calibração / Verificação</option><option value="inspecao">Inspeção de segurança</option></select></div>
     </div>
     <div class="twocol">
@@ -108,8 +114,32 @@
   </div>
 </div>
 
+<!-- Modal documentos (certificados / relatórios) -->
+<div class="ov" id="ovDocs">
+  <div class="modal">
+    <h2>📎 Documentos de verificação</h2>
+    <div id="docsEquipName" style="font-weight:700;color:var(--navy);margin-bottom:8px;"></div>
+    <input type="hidden" id="docId">
+    <div class="doclist" id="docList"></div>
+    <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px;">
+      <div style="font-weight:700;font-size:12.5px;color:var(--navy2);margin-bottom:6px;">Adicionar documento</div>
+      <div class="twocol">
+        <div><label class="fl">Tipo de documento</label><select id="docTipo"><option value="certificado">Certificado de verificação</option><option value="relatorio">Relatório de verificação</option></select></div>
+        <div><label class="fl">Ficheiro (PDF)</label><input type="file" id="docFile" accept="application/pdf"></div>
+      </div>
+      <div class="twocol">
+        <div><label class="fl">Data de execução</label><input type="date" id="docExec"></div>
+        <div><label class="fl">Data de validade</label><input type="date" id="docValid"></div>
+      </div>
+      <div class="small" id="docStatus" style="margin-top:8px;"></div>
+      <div class="mbtns"><button class="btn btn-ghost" onclick="closeOv('ovDocs')">Fechar</button><button class="btn btn-primary" id="docAddBtn" onclick="addDoc()">⬆️ Carregar e guardar</button></div>
+    </div>
+  </div>
+</div>
+
 <script>
-var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão',geral:'Geral'};
+var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão',lisboa_cacem:'Lisboa / Cacém (móvel)',geral:'Geral'};
+var DOCT={certificado:'Certificado de verificação',relatorio:'Relatório de verificação'};
 var TIPOS={preventiva:'Manutenção preventiva',calibracao:'Calibração / Verificação',inspecao:'Inspeção de segurança'};
 var EST={emdia:{l:'Em dia',c:'#16a34a'},avencer:{l:'A vencer',c:'#b45309'},vencido:{l:'Vencido',c:'#dc2626'},sem:{l:'Por agendar',c:'#94a3b8'}};
 
@@ -133,11 +163,24 @@ var SEED=[
   {id:'s16',nome:'Banco de Medição / Reparação de Chapa',of:'colisao',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s17',nome:'Elevador de tesoura',of:'colisao',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s18',nome:'Extintores e meios de combate a incêndio',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
-  {id:'s19',nome:'Macacos / cricos hidráulicos',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]}
+  {id:'s19',nome:'Macacos / cricos hidráulicos',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
+  {id:'s20',nome:'Analisador de Gases de Escape',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]},
+  {id:'s21',nome:'Opacímetro',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]}
 ];
 
 var EQUIP;
-(function(){ var st=null; try{ st=JSON.parse(localStorage.getItem('intranet_equipamentos')); }catch(e){} EQUIP=(Array.isArray(st)&&st.length)?st:SEED.map(function(x){return Object.assign({},x);}); })();
+(function(){
+  var st=null; try{ st=JSON.parse(localStorage.getItem('intranet_equipamentos')); }catch(e){}
+  EQUIP=(Array.isArray(st)&&st.length)?st:SEED.map(function(x){return Object.assign({},x);});
+  // garantir que os equipamentos móveis novos aparecem mesmo com inventário já guardado
+  ['s20','s21'].forEach(function(nid){
+    if(!EQUIP.some(function(e){return e.id===nid;})){
+      var seed=SEED.filter(function(x){return x.id===nid;})[0];
+      if(seed) EQUIP.push(Object.assign({},seed));
+    }
+  });
+  EQUIP.forEach(function(e){ if(!Array.isArray(e.docs)) e.docs=[]; });
+})();
 
 var filtro={of:'todas',es:'todos',tp:'todos'};
 
@@ -149,7 +192,7 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function pad(n){return (n<10?'0':'')+n;}
 function fmtD(s){ if(!s) return '—'; var p=String(s).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):s; }
 function addMonths(dstr,m){ var d=new Date(dstr); var x=new Date(d.getTime()); x.setMonth(x.getMonth()+Number(m)); return x; }
-function proxima(e){ if(!e.ultima) return null; return addMonths(e.ultima,e.per); }
+function proxima(e){ if(e.validade) return new Date(String(e.validade).slice(0,10)); if(!e.ultima) return null; return addMonths(e.ultima,e.per); }
 function estadoOf(e){
   var p=proxima(e); if(!p) return {k:'sem',dias:null};
   var hoje=new Date(); hoje.setHours(0,0,0,0);
@@ -184,7 +227,6 @@ function filtered(){
 }
 var sev={vencido:0,avencer:1,sem:2,emdia:3};
 function render(){
-  // summary (sobre TODOS, não filtrado)
   var c={total:EQUIP.length,emdia:0,avencer:0,vencido:0,sem:0};
   EQUIP.forEach(function(e){ c[estadoOf(e).k]++; });
   var s='';
@@ -194,19 +236,18 @@ function render(){
   s+='<div class="sbox"><div class="n" style="color:var(--red);">'+c.vencido+'</div><div class="l">Vencidos</div></div>';
   s+='<div class="sbox"><div class="n" style="color:var(--gray);">'+c.sem+'</div><div class="l">Por agendar</div></div>';
   document.getElementById('summary').innerHTML=s;
-  // tabela
   var list=filtered().slice().sort(function(a,b){
     var ea=estadoOf(a),eb=estadoOf(b);
     if(sev[ea.k]!==sev[eb.k]) return sev[ea.k]-sev[eb.k];
     var pa=proxima(a),pb=proxima(b);
     if(pa&&pb) return pa-pb; if(pa) return -1; if(pb) return 1; return 0;
   });
-  var h='<table><thead><tr><th>Equipamento</th><th>Oficina</th><th>Tipo</th><th class="c">Periodic.</th><th class="c">Última</th><th class="c">Próxima</th><th>Estado</th><th>Responsável</th><th class="c">Custo</th><th class="c">Ações</th></tr></thead><tbody>';
+  var h='<table><thead><tr><th>Equipamento</th><th>Oficina</th><th>Tipo</th><th class="c">Periodic.</th><th class="c">Última</th><th class="c">Próxima / Validade</th><th>Estado</th><th>Responsável</th><th class="c">Custo</th><th class="c">Ações</th></tr></thead><tbody>';
   list.forEach(function(e){
     var st=estadoOf(e); var p=proxima(e);
     var estLbl=EST[st.k].l+(st.k==='vencido'?(' ('+Math.abs(st.dias)+'d)'):(st.k==='avencer'?(' ('+st.dias+'d)'):''));
     h+='<tr>'+
-      '<td><b>'+esc(e.nome)+'</b>'+(e.notas?'<div class="small">'+esc(e.notas)+'</div>':'')+'</td>'+
+      '<td><b>'+esc(e.nome)+'</b>'+((e.docs&&e.docs.length)?' <span class="badge" style="background:#475569">📎 '+e.docs.length+'</span>':'')+(e.notas?'<div class="small">'+esc(e.notas)+'</div>':'')+'</td>'+
       '<td>'+(OF[e.of]||e.of)+'</td>'+
       '<td>'+(TIPOS[e.tipo]||e.tipo)+'</td>'+
       '<td class="c">'+perLabel(e.per)+'</td>'+
@@ -215,7 +256,7 @@ function render(){
       '<td><span class="badge" style="background:'+EST[st.k].c+'">'+estLbl+'</span></td>'+
       '<td>'+esc(e.resp||'—')+'</td>'+
       '<td class="c">'+(e.custo!==''&&e.custo!=null?(Number(e.custo).toFixed(2)+'€'):'—')+'</td>'+
-      '<td class="c acts"><button class="feita" onclick="openDone(\''+e.id+'\')">✓ Feita</button><button class="ed" onclick="openEdit(\''+e.id+'\')">Editar</button><button class="del" onclick="delEquip(\''+e.id+'\')">✕</button></td>'+
+      '<td class="c acts"><button class="feita" onclick="openDone(\''+e.id+'\')">✓ Feita</button><button class="docs" onclick="openDocs(\''+e.id+'\')">📎 Docs</button><button class="ed" onclick="openEdit(\''+e.id+'\')">Editar</button><button class="del" onclick="delEquip(\''+e.id+'\')">✕</button></td>'+
     '</tr>';
   });
   h+='</tbody></table>';
@@ -228,6 +269,7 @@ function render(){
 function closeOv(id){ document.getElementById(id).classList.remove('open'); }
 document.getElementById('ovEdit').addEventListener('click',function(e){ if(e.target===this) closeOv('ovEdit'); });
 document.getElementById('ovDone').addEventListener('click',function(e){ if(e.target===this) closeOv('ovDone'); });
+document.getElementById('ovDocs').addEventListener('click',function(e){ if(e.target===this) closeOv('ovDocs'); });
 
 function openAdd(){
   document.getElementById('editTitle').textContent='Adicionar equipamento';
@@ -266,9 +308,9 @@ function saveEquip(){
     per:Number(document.getElementById('ePer').value), ultima:document.getElementById('eUltima').value||'',
     resp:document.getElementById('eResp').value.trim(),
     custo:document.getElementById('eCusto').value===''?'':Number(document.getElementById('eCusto').value),
-    notas:document.getElementById('eNotas').value.trim(), hist:[]
+    notas:document.getElementById('eNotas').value.trim(), hist:[], docs:[]
   };
-  if(id){ var i=EQUIP.findIndex(function(x){return x.id===id;}); if(i>=0){ obj.hist=EQUIP[i].hist||[]; EQUIP[i]=obj; } }
+  if(id){ var i=EQUIP.findIndex(function(x){return x.id===id;}); if(i>=0){ obj.hist=EQUIP[i].hist||[]; obj.docs=EQUIP[i].docs||[]; obj.validade=EQUIP[i].validade||''; EQUIP[i]=obj; } }
   else EQUIP.push(obj);
   save(); closeOv('ovEdit'); render();
 }
@@ -305,6 +347,83 @@ function confirmDone(){
   EQUIP[i].ultima=data; if(custo!=='') EQUIP[i].custo=custo; if(resp) EQUIP[i].resp=resp;
   save(); closeOv('ovDone'); render();
 }
+
+/* ===== Documentos (certificados / relatórios) + SharePoint ===== */
+var _pend={};
+window.addEventListener('message',function(ev){ var d=ev.data; if(!d||d.type!=='saveToSharePointResult'||!d.correlationId)return; var p=_pend[d.correlationId]; if(!p)return; delete _pend[d.correlationId]; p(d); });
+function spSave(folderKey,fileName,dataUrl,mime){
+  return new Promise(function(resolve){
+    if(!window.parent||window.parent===window){ resolve({success:false,error:'sem parent'}); return; }
+    var cid='eq_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    _pend[cid]=resolve;
+    window.parent.postMessage({type:'saveToSharePoint',correlationId:cid,folderKey:folderKey,fileName:fileName,fileContent:dataUrl,contentType:mime},'*');
+    setTimeout(function(){ if(_pend[cid]){ delete _pend[cid]; resolve({success:false,error:'timeout'}); } },30000);
+  });
+}
+function readDataURL(file){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=function(){rej(r.error);}; r.readAsDataURL(file); }); }
+function dlLocal(fn,uri){ try{ var a=document.createElement('a'); a.href=uri; a.download=fn; document.body.appendChild(a); a.click(); a.remove(); }catch(e){} }
+function vState(valid){ if(!valid) return null; var p=new Date(String(valid).slice(0,10)); var h=new Date(); h.setHours(0,0,0,0); var dias=Math.round((p-h)/86400000); if(dias<0)return{l:'Vencido',c:'#dc2626'}; if(dias<=30)return{l:'A vencer',c:'#b45309'}; return{l:'Válido',c:'#16a34a'}; }
+function refreshFromDocs(e){
+  var execs=(e.docs||[]).map(function(d){return d.exec;}).filter(Boolean).sort();
+  var vals=(e.docs||[]).map(function(d){return d.valid;}).filter(Boolean).sort();
+  if(execs.length) e.ultima=execs[execs.length-1];
+  if(vals.length) e.validade=vals[vals.length-1];
+}
+window.openDocs=function(id){
+  var e=EQUIP.filter(function(x){return x.id===id;})[0]; if(!e) return;
+  if(!Array.isArray(e.docs)) e.docs=[];
+  document.getElementById('docId').value=id;
+  document.getElementById('docsEquipName').textContent=e.nome+' · '+(OF[e.of]||e.of);
+  document.getElementById('docTipo').value='certificado';
+  document.getElementById('docFile').value='';
+  document.getElementById('docExec').value='';
+  document.getElementById('docValid').value='';
+  document.getElementById('docStatus').textContent='';
+  renderDocList(e);
+  document.getElementById('ovDocs').classList.add('open');
+};
+function renderDocList(e){
+  var el=document.getElementById('docList');
+  if(!e.docs||!e.docs.length){ el.innerHTML='<div class="small">Ainda sem documentos. Adiciona o certificado e/ou o relatório de verificação abaixo.</div>'; return; }
+  el.innerHTML=e.docs.slice().sort(function(a,b){return (b.valid||'').localeCompare(a.valid||'');}).map(function(d){
+    var vs=vState(d.valid); var link=d.url?('<a href="'+esc(d.url)+'" target="_blank" rel="noopener">'+esc(d.fileName||DOCT[d.tipo])+'</a>'):('<span>'+esc(d.fileName||DOCT[d.tipo])+' <em class="small">(não enviado p/ SharePoint)</em></span>');
+    return '<div class="docrow">📄 <div>'+ (DOCT[d.tipo]||d.tipo) +'<div class="small">'+link+'</div></div>'+
+      '<div class="dmeta">Exec.: '+fmtD(d.exec)+'<br>Validade: '+fmtD(d.valid)+(vs?' <span class="vtag" style="background:'+vs.c+'">'+vs.l+'</span>':'')+'</div>'+
+      '<button class="ddel" onclick="delDoc(\''+e.id+'\',\''+d.ts+'\')">✕</button></div>';
+  }).join('');
+}
+window.delDoc=function(id,ts){
+  var e=EQUIP.filter(function(x){return x.id===id;})[0]; if(!e) return;
+  if(!confirm('Remover este documento do registo? (não apaga o ficheiro do SharePoint)')) return;
+  e.docs=(e.docs||[]).filter(function(d){return String(d.ts)!==String(ts);});
+  refreshFromDocs(e); save(); renderDocList(e); render();
+};
+window.addDoc=function(){
+  var id=document.getElementById('docId').value;
+  var e=EQUIP.filter(function(x){return x.id===id;})[0]; if(!e) return;
+  var tipo=document.getElementById('docTipo').value;
+  var exec=document.getElementById('docExec').value;
+  var valid=document.getElementById('docValid').value;
+  var fileEl=document.getElementById('docFile'); var file=fileEl.files&&fileEl.files[0];
+  if(!file){ alert('Seleciona o ficheiro PDF.'); return; }
+  if(!exec){ alert('Indica a data de execução.'); return; }
+  if(!valid){ alert('Indica a data de validade.'); return; }
+  var btn=document.getElementById('docAddBtn'); btn.disabled=true;
+  var st=document.getElementById('docStatus'); st.textContent='A carregar…';
+  var nomeSan=(e.nome||'Equip').replace(/[^A-Za-zÀ-ÿ0-9]+/g,'');
+  var fn=tipo[0].toUpperCase()+tipo.slice(1)+'_'+nomeSan+'_'+exec+'.pdf';
+  readDataURL(file).then(function(dataUrl){
+    return spSave('equipamentos_docs',fn,dataUrl,'application/pdf').then(function(up){
+      var url=(up&&up.webUrl)||'';
+      if(!(up&&up.success)){ dlLocal(fn,dataUrl); }
+      e.docs=e.docs||[]; e.docs.push({tipo:tipo,exec:exec,valid:valid,fileName:fn,url:url,ts:Date.now()});
+      refreshFromDocs(e); save(); renderDocList(e); render();
+      st.textContent=(up&&up.success)?'✓ Documento carregado e arquivado no SharePoint.':'Guardado. SharePoint indisponível — ficheiro descarregado localmente; coloca-o na pasta Intranet/Equipamentos/Documentos.';
+      document.getElementById('docFile').value=''; document.getElementById('docExec').value=''; document.getElementById('docValid').value='';
+      btn.disabled=false;
+    });
+  }).catch(function(err){ st.textContent='Erro: '+(err&&err.message?err.message:err); btn.disabled=false; });
+};
 
 renderFilters(); render();
 </script>

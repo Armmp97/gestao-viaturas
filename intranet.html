@@ -2560,7 +2560,8 @@
             rh_pedidos_formacao: 'Intranet/RH/Pedidos_Formacao',
             fardas: 'Intranet/RH/Fardas',
             fardas_termos: 'Intranet/RH/Fardas/Termos',
-            fardas_arquivo: 'Intranet/RH/Fardas/Arquivo'
+            fardas_arquivo: 'Intranet/RH/Fardas/Arquivo',
+            equipamentos_docs: 'Intranet/Equipamentos/Documentos'
         }
     };
     let spSiteId = null;
@@ -2901,7 +2902,9 @@
         }
         uploadToSharePoint(data.folderKey, data.fileName, content, data.contentType)
             .then(function(result) {
-                try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: true, fileName: data.fileName }, '*'); } catch(e) {}
+                var webUrl = (result && result.webUrl) || null;
+                var dlUrl = (result && result['@microsoft.graph.downloadUrl']) || null;
+                try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: true, fileName: data.fileName, webUrl: webUrl, downloadUrl: dlUrl }, '*'); } catch(e) {}
             })
             .catch(function(err) {
                 try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: false, error: err && err.message ? err.message : String(err), fileName: data.fileName }, '*'); } catch(e) {}
