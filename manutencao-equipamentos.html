@@ -78,7 +78,7 @@
     <label class="fl">Equipamento / Ferramenta</label>
     <input type="text" id="eNome" placeholder="Ex.: Elevador de 2 colunas nº1">
     <div class="twocol">
-      <div><label class="fl">Oficina</label><select id="eOf"><option value="cacem">Cacém</option><option value="lisboa">Lisboa</option><option value="colisao">Colisão</option><option value="lisboa_cacem">Lisboa / Cacém (móvel)</option><option value="geral">Geral / Todas</option></select></div>
+      <div><label class="fl">Oficina</label><select id="eOf"><option value="cacem">Mecânica Cacém</option><option value="colisao">Colisão Bela Vista</option><option value="colisao_taguspark">Colisão Taguspark</option><option value="cacem_colisao_bv">Mecânica Cacém e Colisão Bela Vista</option><option value="lisboa">Mecânica Lisboa</option><option value="lisboa_cacem">Mecânica Cacém e Mecânica Lisboa</option></select></div>
       <div><label class="fl">Tipo de manutenção</label><select id="eTipo"><option value="preventiva">Manutenção preventiva</option><option value="calibracao">Calibração / Verificação</option><option value="inspecao">Inspeção de segurança</option></select></div>
     </div>
     <div class="twocol">
@@ -138,7 +138,7 @@
 </div>
 
 <script>
-var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão',lisboa_cacem:'Lisboa / Cacém (móvel)',geral:'Geral'};
+var OF={cacem:'Mecânica Cacém',colisao:'Colisão Bela Vista',colisao_taguspark:'Colisão Taguspark',cacem_colisao_bv:'Mecânica Cacém e Colisão Bela Vista',lisboa:'Mecânica Lisboa',lisboa_cacem:'Mecânica Cacém e Mecânica Lisboa'};
 var DOCT={certificado:'Certificado de verificação',relatorio:'Relatório de verificação',fatura:'Fatura'};
 var TIPOS={preventiva:'Manutenção preventiva',calibracao:'Calibração / Verificação',inspecao:'Inspeção de segurança'};
 var EST={emdia:{l:'Em dia',c:'#16a34a'},avencer:{l:'A vencer',c:'#b45309'},vencido:{l:'Vencido',c:'#dc2626'},sem:{l:'Por agendar',c:'#94a3b8'}};
@@ -162,8 +162,6 @@ var SEED=[
   {id:'s15',nome:'Cabine de Pintura (substituição de filtros)',of:'colisao',tipo:'preventiva',per:6,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s16',nome:'Banco de Medição / Reparação de Chapa',of:'colisao',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s17',nome:'Elevador de tesoura',of:'colisao',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
-  {id:'s18',nome:'Extintores e meios de combate a incêndio',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
-  {id:'s19',nome:'Macacos / cricos hidráulicos',of:'geral',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s20',nome:'Analisador de Gases de Escape',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]},
   {id:'s21',nome:'Opacímetro',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]}
 ];
