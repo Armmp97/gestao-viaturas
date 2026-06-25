@@ -2557,7 +2557,10 @@
             auditorias_internas: 'Intranet/Auditorias_Internas',
             rh_justificacoes_faltas: 'Intranet/RH/Justificacoes_Faltas',
             rh_justificacoes_anexos: 'Intranet/RH/Justificacoes_Faltas_Anexos',
-            rh_pedidos_formacao: 'Intranet/RH/Pedidos_Formacao'
+            rh_pedidos_formacao: 'Intranet/RH/Pedidos_Formacao',
+            fardas: 'Intranet/RH/Fardas',
+            fardas_termos: 'Intranet/RH/Fardas/Termos',
+            fardas_arquivo: 'Intranet/RH/Fardas/Arquivo'
         }
     };
     let spSiteId = null;
@@ -2903,6 +2906,36 @@
             .catch(function(err) {
                 try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: false, error: err && err.message ? err.message : String(err), fileName: data.fileName }, '*'); } catch(e) {}
             });
+    });
+
+    // ===== FARDAS: carregar estado JSON guardado no SharePoint =====
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'fardasLoadState') return;
+        var cid = event.data.correlationId || null;
+        var driveId = getDriveId();
+        var path = SP_CONFIG.folders.fardas + '/fardas_state.json';
+        function reply(payload){ try { event.source.postMessage(Object.assign({ type:'fardasLoadStateResult', correlationId:cid }, payload), '*'); } catch(e){} }
+        if (!driveId) { reply({ success:false, error:'SharePoint não inicializado' }); return; }
+        getGraphToken().then(function(token){
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + path + ':/content', { headers: { 'Authorization': 'Bearer ' + token } });
+        }).then(function(resp){
+            if (resp.status === 404) { reply({ success:true, data:null }); return null; }
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            return resp.text().then(function(txt){ reply({ success:true, data:txt }); });
+        }).catch(function(err){ reply({ success:false, error: err && err.message ? err.message : String(err) }); });
+    });
+
+    // ===== FARDAS: listar ficheiros de uma pasta (termos/arquivo) =====
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'fardasListFiles') return;
+        var cid = event.data.correlationId || null;
+        function reply(payload){ try { event.source.postMessage(Object.assign({ type:'fardasListFilesResult', correlationId:cid }, payload), '*'); } catch(e){} }
+        listSharePointFiles(event.data.folderKey).then(function(res){
+            var items = (res && res.value ? res.value : []).map(function(f){
+                return { name:f.name, id:f.id, webUrl:f.webUrl, size:f.size, modified:f.lastModifiedDateTime, download:f['@microsoft.graph.downloadUrl'] || null };
+            });
+            reply({ success:true, files:items });
+        }).catch(function(err){ reply({ success:false, error: err && err.message ? err.message : String(err) }); });
     });
 
     // Listen for margem dashboard data from iframe
