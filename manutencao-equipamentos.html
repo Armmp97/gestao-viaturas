@@ -124,7 +124,7 @@
     <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px;">
       <div style="font-weight:700;font-size:12.5px;color:var(--navy2);margin-bottom:6px;">Adicionar documento</div>
       <div class="twocol">
-        <div><label class="fl">Tipo de documento</label><select id="docTipo"><option value="certificado">Certificado de verificação</option><option value="relatorio">Relatório de verificação</option></select></div>
+        <div><label class="fl">Tipo de documento</label><select id="docTipo"><option value="certificado">Certificado de verificação</option><option value="relatorio">Relatório de verificação</option><option value="fatura">Fatura</option></select></div>
         <div><label class="fl">Ficheiro (PDF)</label><input type="file" id="docFile" accept="application/pdf"></div>
       </div>
       <div class="twocol">
@@ -139,7 +139,7 @@
 
 <script>
 var OF={cacem:'Cacém',lisboa:'Lisboa',colisao:'Colisão',lisboa_cacem:'Lisboa / Cacém (móvel)',geral:'Geral'};
-var DOCT={certificado:'Certificado de verificação',relatorio:'Relatório de verificação'};
+var DOCT={certificado:'Certificado de verificação',relatorio:'Relatório de verificação',fatura:'Fatura'};
 var TIPOS={preventiva:'Manutenção preventiva',calibracao:'Calibração / Verificação',inspecao:'Inspeção de segurança'};
 var EST={emdia:{l:'Em dia',c:'#16a34a'},avencer:{l:'A vencer',c:'#b45309'},vencido:{l:'Vencido',c:'#dc2626'},sem:{l:'Por agendar',c:'#94a3b8'}};
 
