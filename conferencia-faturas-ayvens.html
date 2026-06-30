@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conferência de Faturas Ayvens vs OfficeGest</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+  h1{color:white;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center}
+  .sub{color:#94a3b8;font-size:14px;margin-bottom:28px;text-align:center;max-width:720px;line-height:1.6}
+  .card{background:white;border-radius:16px;padding:28px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:760px;width:100%}
+  .uprow{display:flex;gap:14px;flex-wrap:wrap}
+  .upbox{flex:1;min-width:215px;border:2px dashed #cbd5e1;border-radius:12px;padding:18px;text-align:center;position:relative}
+  .upbox h3{font-size:13px;color:#0f172a;font-weight:700;margin-bottom:4px}
+  .upbox p{font-size:11px;color:#94a3b8;margin-bottom:12px;line-height:1.5}
+  .upbox.done{border-color:#0d904f;background:#f0fdf4}
+  .file-wrap{position:relative;display:inline-block}
+  .file-wrap input[type="file"]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0}
+  .upload-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer}
+  .ustat{font-size:11px;font-weight:600;margin-top:8px;min-height:14px;word-break:break-all}
+  .ok{color:#059669}.err{color:#dc2626}
+  .run-btn{width:100%;margin-top:18px;padding:13px;background:#0d904f;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .run-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+  .results{margin-top:24px;width:100%;max-width:1180px;display:none}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+  .sumbox{background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  .sumbox .n{font-size:26px;font-weight:800}
+  .sumbox .l{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .sec{background:white;border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+  .sec-h{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .sec-d{font-size:12px;color:#64748b;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:7px 9px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap}
+  th{background:#f8fafc;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+  td:first-child,th:first-child,td.l,th.l{text-align:left}
+  .tbl-wrap{overflow-x:auto;max-height:520px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:10px}
+  .neg{color:#d93025;font-weight:700}
+  .diffcell{background:#fef2f2;color:#b91c1c;font-weight:700}
+  .badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;display:inline-block}
+  .b-ok{background:#dcfce7;color:#166534}
+  .b-val{background:#fee2e2;color:#991b1b}
+  .b-date{background:#fef3c7;color:#92400e}
+  .b-miss{background:#fce7f3;color:#9d174b}
+  .b-fmt{background:#e0e7ff;color:#3730a3}
+  .b-unit{background:#f3e8ff;color:#6b21a8}
+  .b-cac{background:#e0f2fe;color:#075985}
+  .b-lis{background:#ecfccb;color:#3f6212}
+  .empty{font-size:12.5px;color:#16a34a;padding:8px 2px;font-weight:600}
+  .hint{margin-top:6px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;color:#64748b;line-height:1.6}
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .fbtn{padding:5px 12px;border:1px solid #cbd5e1;background:white;border-radius:20px;font-size:11.5px;font-weight:600;color:#475569;cursor:pointer;font-family:inherit}
+  .fbtn.active{background:#0f172a;color:white;border-color:#0f172a}
+</style>
+</head>
+<body>
+
+<h1>📑 Conferência de Faturas Ayvens vs OfficeGest</h1>
+<p class="sub">Cruza as faturas exportadas do portal Ayvens (Cacém e Lisboa) com os documentos do OfficeGest. Confere a referência, as datas e os valores ao cêntimo (Total, Líquido e IVA), e deteta documentos em falta ou referências mal preenchidas.</p>
+
+<div class="card">
+  <div class="uprow">
+    <div class="upbox" id="boxCac">
+      <h3>1 · Ayvens — Cacém</h3>
+      <p>Ficheiro exportado do portal de faturas Ayvens, unidade Cacém (.csv ou .xlsx)</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileCac" accept=".csv,.xlsx,.xls"></div>
+      <div class="ustat" id="statCac"></div>
+    </div>
+    <div class="upbox" id="boxLis">
+      <h3>2 · Ayvens — Lisboa</h3>
+      <p>Ficheiro exportado do portal de faturas Ayvens, unidade Lisboa (.csv ou .xlsx)</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileLis" accept=".csv,.xlsx,.xls"></div>
+      <div class="ustat" id="statLis"></div>
+    </div>
+    <div class="upbox" id="boxOg">
+      <h3>3 · OfficeGest</h3>
+      <p>Ficheiro exportado do OfficeGest com a coluna <b>Referência</b> (.xlsx)</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileOg" accept=".xlsx,.xls,.csv"></div>
+      <div class="ustat" id="statOg"></div>
+    </div>
+  </div>
+  <button class="run-btn" id="runBtn" disabled onclick="conferir()">Conferir faturas</button>
+  <div class="hint" id="topHint">Carrega o OfficeGest e pelo menos um ficheiro Ayvens (Cacém e/ou Lisboa). A conferência só considera as unidades que carregares.</div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+/* ============ Estado dos ficheiros ============ */
+var DATA = { Cacem:null, Lisboa:null, Og:null };
+var SERIE_UNIT = { '261':'Cacem', '263':'Lisboa' };
+
+/* ============ Utilitários ============ */
+function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
+function parseNum(v){
+  if(v===null||v===undefined||v==='') return null;
+  if(typeof v==='number') return round2(v);
+  var s=String(v).trim();
+  if(s==='') return null;
+  if(s.indexOf(',')>=0){ s=s.replace(/\./g,'').replace(',','.'); }
+  var n=parseFloat(s);
+  return isNaN(n)?null:round2(n);
+}
+function pad2(x){ return String(x).padStart(2,'0'); }
+function toISO(v){
+  if(v===null||v===undefined||v==='') return '';
+  if(v instanceof Date && !isNaN(v)){ return v.getFullYear()+'-'+pad2(v.getMonth()+1)+'-'+pad2(v.getDate()); }
+  var s=String(v).trim();
+  var m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return m[1]+'-'+m[2]+'-'+m[3];
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return m[3]+'-'+pad2(m[2])+'-'+pad2(m[1]);
+  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/); if(m) return m[3]+'-'+pad2(m[2])+'-'+pad2(m[1]);
+  return s;
+}
+function isoToPt(iso){ var m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?m[3]+'/'+m[2]+'/'+m[1]:iso; }
+function normRef(r){ return String(r||'').trim().toUpperCase().replace(/\s+/g,''); }
+function eur(n){ return n===null||n===undefined?'—':n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ Leitura de ficheiros ============ */
+function readFile(file, kind, cb){
+  var ext=(file.name.split('.').pop()||'').toLowerCase();
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var rows;
+      if(ext==='csv'){ rows=parseCsv(new TextDecoder('windows-1252').decode(e.target.result)); }
+      else{
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+      }
+      cb(null, kind==='Og'?parseOffice(rows):parseAyvens(rows));
+    }catch(err){ cb(err); }
+  };
+  reader.onerror=function(){ cb(new Error('Falha ao ler o ficheiro')); };
+  reader.readAsArrayBuffer(file);
+}
+/* CSV ; com aspas opcionais -> matriz de linhas */
+function parseCsv(text){
+  text=text.replace(/^﻿/,'');
+  var rows=[],row=[],field='',q=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===';'){ row.push(field); field=''; }
+      else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else if(c==='\r'){ /* ignora */ }
+      else field+=c;
+    }
+  }
+  if(field!==''||row.length){ row.push(field); rows.push(row); }
+  return rows.filter(function(r){ return r.length>1 || (r.length===1 && r[0].trim()!==''); });
+}
+
+/* ============ Parsing Ayvens (agrega por fatura) ============ */
+function findHeader(rows, key){
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i]||[];
+    for(var j=0;j<r.length;j++){ if(String(r[j]||'').trim()===key) return i; }
+  }
+  return -1;
+}
+function colMap(headerRow){
+  var m={}; (headerRow||[]).forEach(function(h,idx){ m[String(h||'').trim()]=idx; }); return m;
+}
+function parseAyvens(rows){
+  var hi=findHeader(rows,'Nº Documento');
+  if(hi<0) throw new Error('Cabeçalho Ayvens não encontrado (coluna "Nº Documento")');
+  var c=colMap(rows[hi]);
+  var need=['Nº Documento','Tipo Documento','Data de Emissão','Total','Total Valor Líquido','Total de Iva','Matrícula'];
+  need.forEach(function(k){ if(!(k in c)) throw new Error('Coluna Ayvens em falta: "'+k+'"'); });
+  var inv={}, order=[];
+  for(var i=hi+1;i<rows.length;i++){
+    var r=rows[i]; if(!r) continue;
+    var doc=String(r[c['Nº Documento']]||'').trim(); if(!doc) continue;
+    var k=normRef(doc);
+    if(!inv[k]){
+      inv[k]={ ref:doc, refNorm:k, tipo:String(r[c['Tipo Documento']]||'').trim(),
+        dataISO:toISO(r[c['Data de Emissão']]), total:parseNum(r[c['Total']]),
+        liq:parseNum(r[c['Total Valor Líquido']]), iva:parseNum(r[c['Total de Iva']]),
+        matricula:String(r[c['Matrícula']]||'').trim(),
+        marca:'Marca do Veículo' in c?String(r[c['Marca do Veículo']]||'').trim():'',
+        modelo:'Modelo do Veículo' in c?String(r[c['Modelo do Veículo']]||'').trim():'', nLinhas:0 };
+      order.push(k);
+    }
+    inv[k].nLinhas++;
+  }
+  return { list:order.map(function(k){return inv[k];}), byRef:inv };
+}
+
+/* ============ Parsing OfficeGest ============ */
+function parseOffice(rows){
+  var hi=findHeader(rows,'Núm.');
+  if(hi<0) throw new Error('Cabeçalho OfficeGest não encontrado (coluna "Núm.")');
+  var c=colMap(rows[hi]);
+  var need=['Núm.','Data Doc.','Total','Referência','Total S/ IVA','Valor IVA'];
+  need.forEach(function(k){ if(!(k in c)) throw new Error('Coluna OfficeGest em falta: "'+k+'"'); });
+  var list=[];
+  for(var i=hi+1;i<rows.length;i++){
+    var r=rows[i]; if(!r) continue;
+    var num=String(r[c['Núm.']]||'').trim(); if(!num) continue;
+    var serie='Série' in c?String(r[c['Série']]||'').trim():'';
+    var refRaw=String(r[c['Referência']]||'').trim();
+    list.push({ num:num, dataISO:toISO(r[c['Data Doc.']]), total:parseNum(r[c['Total']]),
+      liq:parseNum(r[c['Total S/ IVA']]), iva:parseNum(r[c['Valor IVA']]),
+      serie:serie, unit:SERIE_UNIT[serie]||'', refRaw:refRaw, refNorm:normRef(refRaw),
+      estado:'Estado' in c?String(r[c['Estado']]||'').trim():'',
+      viatura:'Viatura' in c?String(r[c['Viatura']]||'').trim():'' });
+  }
+  return { list:list };
+}
+
+/* ============ Handlers de upload ============ */
+function bindUpload(inputId, kind, statId, boxId){
+  document.getElementById(inputId).addEventListener('change',function(ev){
+    var f=ev.target.files[0]; if(!f) return;
+    var st=document.getElementById(statId), box=document.getElementById(boxId);
+    st.textContent='A processar…'; st.className='ustat';
+    readFile(f, kind, function(err, parsed){
+      if(err){ DATA[kind]=null; box.classList.remove('done'); st.textContent='✕ '+err.message; st.className='ustat err'; refreshRun(); return; }
+      DATA[kind]=parsed;
+      var n=kind==='Og'?parsed.list.length:parsed.list.length;
+      box.classList.add('done');
+      st.textContent='✓ '+f.name+' — '+n+(kind==='Og'?' documentos':' faturas');
+      st.className='ustat ok';
+      refreshRun();
+    });
+  });
+}
+function refreshRun(){
+  var ok = DATA.Og && (DATA.Cacem || DATA.Lisboa);
+  document.getElementById('runBtn').disabled=!ok;
+}
+bindUpload('fileCac','Cacem','statCac','boxCac');
+bindUpload('fileLis','Lisboa','statLis','boxLis');
+bindUpload('fileOg','Og','statOg','boxOg');
+
+/* ============ Conferência ============ */
+function conferir(){
+  var loaded={}; // unidades carregadas
+  var ay={}; // refNorm -> {..., unit}
+  ['Cacem','Lisboa'].forEach(function(u){
+    if(DATA[u]){ loaded[u]=true; DATA[u].list.forEach(function(inv){
+      var e=Object.assign({unit:u},inv);
+      if(ay[inv.refNorm]){ /* duplicado entre ficheiros */ e._dup=true; }
+      ay[inv.refNorm]=e;
+    }); }
+  });
+  var og=DATA.Og.list;
+  var ogByRef={};
+  og.forEach(function(d){ if(d.refNorm){ (ogByRef[d.refNorm]=ogByRef[d.refNorm]||[]).push(d); } });
+
+  var matched=[], valDiff=[], dateDiff=[], fmtDiff=[], unitDiff=[];
+  var missOg=[];      // só na Ayvens (falta no OfficeGest)
+  var missAy=[];      // só no OfficeGest (falta na Ayvens)
+  var ogNoRef=[];     // OfficeGest sem referência
+  var dupRef=[];      // referência duplicada no OfficeGest
+
+  // Ayvens -> OfficeGest
+  Object.keys(ay).forEach(function(k){
+    var a=ay[k];
+    var matches=ogByRef[k];
+    if(!matches){ missOg.push(a); return; }
+    if(matches.length>1) dupRef.push({ref:a.ref, items:matches});
+    var o=matches[0];
+    var dv = (a.total!==o.total) || (a.liq!==o.liq) || (a.iva!==o.iva);
+    var dd = a.dataISO!==o.dataISO;
+    var df = a.ref!==o.refRaw;
+    var du = a.unit && o.unit && a.unit!==o.unit;
+    var rec={a:a,o:o,dv:dv,dd:dd,df:df,du:du};
+    matched.push(rec);
+    if(dv) valDiff.push(rec);
+    if(dd) dateDiff.push(rec);
+    if(df) fmtDiff.push(rec);
+    if(du) unitDiff.push(rec);
+  });
+  // OfficeGest -> Ayvens
+  og.forEach(function(d){
+    if(!d.refNorm){ ogNoRef.push(d); return; }
+    if(ay[d.refNorm]) return; // já correspondido
+    // só conta como "falta na Ayvens" se a unidade do doc foi carregada
+    if(d.unit && !loaded[d.unit]) return;
+    if(!d.unit){ // sem série conhecida: conta se houver alguma unidade carregada
+      missAy.push(d); return;
+    }
+    missAy.push(d);
+  });
+
+  render({ loaded:loaded, ay:ay, og:og, matched:matched, valDiff:valDiff, dateDiff:dateDiff,
+    fmtDiff:fmtDiff, unitDiff:unitDiff, missOg:missOg, missAy:missAy, ogNoRef:ogNoRef, dupRef:dupRef });
+}
+
+/* ============ Render ============ */
+function unitBadge(u){
+  if(u==='Cacem') return '<span class="badge b-cac">Cacém</span>';
+  if(u==='Lisboa') return '<span class="badge b-lis">Lisboa</span>';
+  return '<span class="badge" style="background:#e2e8f0;color:#475569">—</span>';
+}
+function valCell(av,ov){
+  var diff = av!==ov;
+  return '<td class="'+(diff?'diffcell':'')+'">'+eur(av)+'</td><td class="'+(diff?'diffcell':'')+'">'+eur(ov)+'</td>';
+}
+function render(R){
+  var nAy=Object.keys(R.ay).length, nOg=R.og.length;
+  var nProblem = R.valDiff.length + R.dateDiff.length + R.missOg.length + R.missAy.length + R.fmtDiff.length + R.ogNoRef.length + R.unitDiff.length;
+  var nOkClean = R.matched.filter(function(m){return !m.dv && !m.dd && !m.df && !m.du;}).length;
+
+  var h='';
+  h+='<div class="summary">';
+  h+=sumbox(nAy,'Faturas Ayvens','#0f172a');
+  h+=sumbox(nOg,'Docs OfficeGest','#0f172a');
+  h+=sumbox(nOkClean,'Conferem OK','#16a34a');
+  h+=sumbox(R.valDiff.length,'Dif. valor', R.valDiff.length?'#dc2626':'#16a34a');
+  h+=sumbox(R.dateDiff.length,'Dif. data', R.dateDiff.length?'#d97706':'#16a34a');
+  h+=sumbox(R.missOg.length+R.missAy.length,'Em falta', (R.missOg.length+R.missAy.length)?'#be185d':'#16a34a');
+  h+=sumbox(R.fmtDiff.length+R.ogNoRef.length,'Ref. problema', (R.fmtDiff.length+R.ogNoRef.length)?'#4338ca':'#16a34a');
+  h+='</div>';
+
+  if(nProblem===0){
+    h+='<div class="sec"><div class="sec-h">✅ Sem divergências</div><div class="sec-d">Todas as '+R.matched.length+' faturas correspondidas conferem em referência, datas e valores ao cêntimo.</div></div>';
+  }
+
+  // Documentos em falta
+  if(R.missOg.length || R.missAy.length || R.ogNoRef.length){
+    h+='<div class="sec"><div class="sec-h">⚠️ Documentos em falta / sem cruzamento</div>';
+    h+='<div class="sec-d">Faturas que existem só num dos sistemas, ou documentos OfficeGest sem referência que impede o cruzamento.</div>';
+    if(R.missOg.length){
+      h+='<div style="font-size:12.5px;font-weight:700;color:#9d174b;margin:10px 0 4px">Na Ayvens mas em falta no OfficeGest ('+R.missOg.length+')</div>';
+      h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Referência</th><th>Unidade</th><th>Data</th><th>Matrícula</th><th>Total</th><th>Líquido</th><th>IVA</th></tr></thead><tbody>';
+      R.missOg.forEach(function(a){ h+='<tr><td class="l">'+esc(a.ref)+'</td><td>'+unitBadge(a.unit)+'</td><td>'+isoToPt(a.dataISO)+'</td><td>'+esc(a.matricula)+'</td><td>'+eur(a.total)+'</td><td>'+eur(a.liq)+'</td><td>'+eur(a.iva)+'</td></tr>'; });
+      h+='</tbody></table></div>';
+    }
+    if(R.missAy.length){
+      h+='<div style="font-size:12.5px;font-weight:700;color:#9d174b;margin:14px 0 4px">No OfficeGest mas em falta na Ayvens ('+R.missAy.length+')</div>';
+      h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Referência</th><th class="l">Núm. OG</th><th>Unidade</th><th>Data</th><th>Total</th><th>Líquido</th><th>IVA</th></tr></thead><tbody>';
+      R.missAy.forEach(function(o){ h+='<tr><td class="l">'+esc(o.refRaw)+'</td><td class="l">'+esc(o.num)+'</td><td>'+unitBadge(o.unit)+'</td><td>'+isoToPt(o.dataISO)+'</td><td>'+eur(o.total)+'</td><td>'+eur(o.liq)+'</td><td>'+eur(o.iva)+'</td></tr>'; });
+      h+='</tbody></table></div>';
+    }
+    if(R.ogNoRef.length){
+      h+='<div style="font-size:12.5px;font-weight:700;color:#4338ca;margin:14px 0 4px">OfficeGest sem referência preenchida ('+R.ogNoRef.length+')</div>';
+      h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Núm. OG</th><th>Unidade</th><th>Data</th><th class="l">Viatura</th><th>Total</th></tr></thead><tbody>';
+      R.ogNoRef.forEach(function(o){ h+='<tr><td class="l">'+esc(o.num)+'</td><td>'+unitBadge(o.unit)+'</td><td>'+isoToPt(o.dataISO)+'</td><td class="l">'+esc(o.viatura)+'</td><td>'+eur(o.total)+'</td></tr>'; });
+      h+='</tbody></table></div>';
+    }
+    h+='</div>';
+  }
+
+  // Diferenças de valor
+  if(R.valDiff.length){
+    h+='<div class="sec"><div class="sec-h">💶 Diferenças de valor</div><div class="sec-d">Valores que não conferem ao cêntimo entre Ayvens e OfficeGest. Células a vermelho marcam o campo divergente.</div>';
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Referência</th><th>Unidade</th><th>Total Ayvens</th><th>Total OG</th><th>Líquido Ayvens</th><th>Líquido OG</th><th>IVA Ayvens</th><th>IVA OG</th></tr></thead><tbody>';
+    R.valDiff.forEach(function(m){
+      h+='<tr><td class="l">'+esc(m.a.ref)+'</td><td>'+unitBadge(m.a.unit)+'</td>'+valCell(m.a.total,m.o.total)+valCell(m.a.liq,m.o.liq)+valCell(m.a.iva,m.o.iva)+'</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+
+  // Diferenças de data
+  if(R.dateDiff.length){
+    h+='<div class="sec"><div class="sec-h">📅 Diferenças de data</div><div class="sec-d">Data de Emissão (Ayvens) diferente da Data Doc. (OfficeGest).</div>';
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Referência</th><th>Unidade</th><th>Data Ayvens</th><th>Data OfficeGest</th><th>Total</th></tr></thead><tbody>';
+    R.dateDiff.forEach(function(m){ h+='<tr><td class="l">'+esc(m.a.ref)+'</td><td>'+unitBadge(m.a.unit)+'</td><td class="diffcell">'+isoToPt(m.a.dataISO)+'</td><td class="diffcell">'+isoToPt(m.o.dataISO)+'</td><td>'+eur(m.a.total)+'</td></tr>'; });
+    h+='</tbody></table></div></div>';
+  }
+
+  // Referências mal formatadas
+  if(R.fmtDiff.length){
+    h+='<div class="sec"><div class="sec-h">🔤 Referências mal preenchidas</div><div class="sec-d">A referência cruza (mesmo número de fatura) mas está escrita de forma diferente no OfficeGest — corrigir para ficar idêntica à Ayvens.</div>';
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Ref. Ayvens (correta)</th><th class="l">Ref. OfficeGest</th><th class="l">Núm. OG</th><th>Unidade</th></tr></thead><tbody>';
+    R.fmtDiff.forEach(function(m){ h+='<tr><td class="l">'+esc(m.a.ref)+'</td><td class="l diffcell">'+esc(m.o.refRaw)+'</td><td class="l">'+esc(m.o.num)+'</td><td>'+unitBadge(m.a.unit)+'</td></tr>'; });
+    h+='</tbody></table></div></div>';
+  }
+
+  // Unidade divergente
+  if(R.unitDiff.length){
+    h+='<div class="sec"><div class="sec-h">🏢 Unidade divergente</div><div class="sec-d">A fatura foi carregada numa unidade diferente da série do OfficeGest (261 = Cacém, 263 = Lisboa).</div>';
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Referência</th><th>Carregada como</th><th>Série OG</th><th>Unidade OG</th></tr></thead><tbody>';
+    R.unitDiff.forEach(function(m){ h+='<tr><td class="l">'+esc(m.a.ref)+'</td><td>'+unitBadge(m.a.unit)+'</td><td>'+esc(m.o.serie)+'</td><td>'+unitBadge(m.o.unit)+'</td></tr>'; });
+    h+='</tbody></table></div></div>';
+  }
+
+  // Tabela completa (correspondidas) com filtros
+  h+='<div class="sec"><div class="sec-h">📋 Todas as faturas correspondidas ('+R.matched.length+')</div>';
+  h+='<div class="filterbar"><button class="fbtn active" data-f="all" onclick="filterTbl(this)">Todas</button><button class="fbtn" data-f="ok" onclick="filterTbl(this)">Só OK</button><button class="fbtn" data-f="prob" onclick="filterTbl(this)">Só com alertas</button></div>';
+  h+='<div class="tbl-wrap"><table id="fullTbl"><thead><tr><th class="l">Referência</th><th>Un.</th><th class="l">Núm. OG</th><th>Data Ay</th><th>Data OG</th><th>Total Ay</th><th>Total OG</th><th>Líq Ay</th><th>Líq OG</th><th>IVA Ay</th><th>IVA OG</th><th class="l">Estado</th></tr></thead><tbody>';
+  R.matched.forEach(function(m){
+    var prob = m.dv||m.dd||m.df||m.du;
+    var badges='';
+    if(!prob) badges='<span class="badge b-ok">OK</span>';
+    else{
+      if(m.dv) badges+='<span class="badge b-val">valor</span> ';
+      if(m.dd) badges+='<span class="badge b-date">data</span> ';
+      if(m.df) badges+='<span class="badge b-fmt">ref</span> ';
+      if(m.du) badges+='<span class="badge b-unit">unidade</span> ';
+    }
+    h+='<tr data-prob="'+(prob?'1':'0')+'"><td class="l">'+esc(m.a.ref)+'</td><td>'+unitBadge(m.a.unit)+'</td><td class="l">'+esc(m.o.num)+'</td>'+
+       '<td class="'+(m.dd?'diffcell':'')+'">'+isoToPt(m.a.dataISO)+'</td><td class="'+(m.dd?'diffcell':'')+'">'+isoToPt(m.o.dataISO)+'</td>'+
+       valCell(m.a.total,m.o.total)+valCell(m.a.liq,m.o.liq)+valCell(m.a.iva,m.o.iva)+
+       '<td class="l">'+badges+'</td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  h+='<div class="hint">Cruzamento feito pela referência da fatura (Ayvens «Nº Documento» ↔ OfficeGest «Referência»), ignorando espaços e maiúsculas. Unidades consideradas: '+Object.keys(R.loaded).map(function(u){return u==='Cacem'?'Cacém':u;}).join(', ')+'. Valores comparados ao cêntimo (Total, Líquido e IVA).</div>';
+
+  var res=document.getElementById('results');
+  res.innerHTML=h; res.style.display='block';
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function sumbox(n,l,color){ return '<div class="sumbox"><div class="n" style="color:'+color+'">'+n+'</div><div class="l">'+l+'</div></div>'; }
+function filterTbl(btn){
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  var f=btn.getAttribute('data-f');
+  document.querySelectorAll('#fullTbl tbody tr').forEach(function(tr){
+    var p=tr.getAttribute('data-prob')==='1';
+    tr.style.display=(f==='all'||(f==='ok'&&!p)||(f==='prob'&&p))?'':'none';
+  });
+}
+</script>
+</body>
+</html>
