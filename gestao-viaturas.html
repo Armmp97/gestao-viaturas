@@ -745,7 +745,7 @@
                     </div>
                     <div id="pk_condicoesFidelidade" style="display:none;font-size:13px;color:var(--gray-700);line-height:1.7;max-height:400px;overflow-y:auto;padding:12px;background:var(--gray-50);border-radius:var(--radius);border:1px solid var(--gray-200);">
                         <p style="text-align:center;font-weight:700;margin-bottom:12px;">DECLARAÇÃO</p>
-                        <p style="margin-bottom:10px;">Eu, __________ abaixo assinado, portador do (documento de identificação) nº __________, válido até __/__/____, com o nº de contribuinte __________, declaro que me foi cedido a título de empréstimo pela oficina __________ em nome da Companhia de Seguros __________, o veículo com a marca __________, modelo __________, com a matrícula nº __________, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ___-___-___, durante o período que durar a reparação decorrente do acidente de viação havido no dia __/__/____ e até à entrega da minha viatura reparada em __/__/____.</p>
+                        <p style="margin-bottom:10px;">Eu, __________ abaixo assinado, portador do (documento de identificação) nº __________, válido até __/__/____, com o nº de contribuinte __________, declaro que me foi cedido a título de empréstimo pela oficina __________ em nome da Companhia de Seguros __________, o veículo com a marca __________, modelo __________, com a matrícula nº __________, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ___-___-___, durante o período que durar a reparação decorrente do acidente de viação e até à entrega da minha viatura reparada em __/__/____.</p>
                         <p style="margin-bottom:10px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de __________ euros.</p>
                         <p style="margin-bottom:8px;font-weight:600;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>
                         <p style="margin-bottom:6px;"><em>Em caso de acidente com o veículo de cortesia:</em></p>
@@ -761,6 +761,16 @@
                         <p style="margin-bottom:10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de __________ euros (este valor inclui o seguro acima mencionado e IVA).</p>
                         <p style="margin-bottom:6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>
                         <p style="margin-bottom:6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>
+                        <p style="font-weight:600;margin:12px 0 8px;">O Utilizador compromete-se ainda a:</p>
+                        <p style="margin-bottom:8px;">1. Que este veículo só será conduzido por um possuidor de carta de condução válida, assim como, exclusivamente, pelo representado neste contrato;</p>
+                        <p style="margin-bottom:8px;">2. A restituir esta viatura em perfeito estado de manutenção no prazo solicitado pela entidade solicitante e a fazer respeitar perante terceiros os direitos de propriedade da Walkingarage Lda; Os danos não existentes na reserva e presentes na devolução, serão cobrados ao proprietário da mesma no momento da devolução da viatura;</p>
+                        <p style="margin-bottom:8px;">3. A utilizar o veículo em respeito pelo Código da Estrada e demais legislação em vigor;</p>
+                        <p style="margin-bottom:8px;">4. Na qualidade de exclusivo responsável pela posse e condução do veículo, a suportar todas as consequências, nomeadamente pecuniárias (multas), resultantes de infrações que possam ter ocorrido durante o período de cedência, que apenas serão cobradas aquando de notificação das entidades competentes.</p>
+                        <p style="margin-bottom:8px;">5. Na eventualidade de a Walkingarage Lda, vir a ser chamada para responder por qualquer ilícito, não poderá ser responsável pela apresentação de qualquer tipo de defesa, sendo que, na eventualidade de vir a ser condenada no pagamento de qualquer sanção/coima, poderá posteriormente reclamar tais quantias junto do Cessionário;</p>
+                        <p style="margin-bottom:8px;">6. No caso de roubo deve constar o comprovativo da participação efetuada junto das autoridades oficiais (Polícia).</p>
+                        <p style="margin-bottom:8px;">7. <strong>Existe um limite diário de 75 (setenta e cinco) quilómetros, acumuláveis pelos dias de reserva da viatura, se esse valor for ultrapassado, será custeado por via de pack km's adicionais de 75 (setenta e cinco) quilómetros, com um custo de 13.84€ C/IVA.</strong></p>
+                        <p style="margin-bottom:8px;">8. No ato do levantamento, a Walkingarage Lda retém registo fotográfico do estado geral da viatura, os quais ficam anexos ao presente contrato de cedência.</p>
+                        <p style="margin-bottom:8px;">9. A viatura possui identificador via verde ativo, a sua utilização não é permitida, pelo que qualquer uso será devidamente cobrado ao tomador do presente contrato.</p>
                         <hr style="border:none;border-top:1px solid var(--gray-300);margin:14px 0;">
                         <p style="font-weight:700;margin-bottom:10px;color:var(--gray-800);">Dados a preencher na Declaração (editáveis — saem no documento impresso):</p>
                         <div class="form-grid">
@@ -771,10 +781,6 @@
                             <div class="form-group">
                                 <label>Matrícula da viatura do cliente (em reparação)</label>
                                 <input type="text" id="fid_matriculaCliente" placeholder="00-AA-00">
-                            </div>
-                            <div class="form-group">
-                                <label>Data do acidente</label>
-                                <input type="date" id="fid_dataAcidente">
                             </div>
                             <div class="form-group">
                                 <label>Data prevista de entrega da viatura reparada</label>
@@ -2400,7 +2406,6 @@
             fidelidade: {
                 companhiaSeguros: (document.getElementById('fid_companhiaSeguros').value || '').trim(),
                 matriculaCliente: (document.getElementById('fid_matriculaCliente').value || '').trim(),
-                dataAcidente: document.getElementById('fid_dataAcidente').value || '',
                 dataReparacao: document.getElementById('fid_dataReparacao').value || '',
                 franquiaDanosProprios: (document.getElementById('fid_franquiaDanosProprios').value || '').trim(),
                 franquiaSinistro: (document.getElementById('fid_franquiaSinistro').value || '').trim(),
@@ -2601,7 +2606,7 @@
             var _fv = function(val, w) { return val ? '<strong>' + val + '</strong>' : _blank(w); };
             var _fvDate = function(val, w) { return val ? '<strong>' + formatDate(val) + '</strong>' : _blank(w); };
             var dcl = '<div style="font-size:11px;line-height:1.6;text-align:justify;">';
-            dcl += '<p style="margin:0 0 10px;">Eu, <strong>' + (lev.nomeCompleto || _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId || _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif || _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + b.localizacao + '</strong> em nome da Companhia de Seguros ' + _fv(f.companhiaSeguros, 130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo || _blank(130)) + '</strong>, com a matrícula nº <strong>' + b.matricula + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _fv(f.matriculaCliente, 90) + ', durante o período que durar a reparação decorrente do acidente de viação havido no dia ' + _fvDate(f.dataAcidente, 70) + ' e até à entrega da minha viatura reparada em ' + _fvDate(f.dataReparacao, 70) + '.</p>';
+            dcl += '<p style="margin:0 0 10px;">Eu, <strong>' + (lev.nomeCompleto || _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId || _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif || _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + b.localizacao + '</strong> em nome da Companhia de Seguros ' + _fv(f.companhiaSeguros, 130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo || _blank(130)) + '</strong>, com a matrícula nº <strong>' + b.matricula + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _fv(f.matriculaCliente, 90) + ', durante o período que durar a reparação decorrente do acidente de viação e até à entrega da minha viatura reparada em ' + _fvDate(f.dataReparacao, 70) + '.</p>';
             dcl += '<p style="margin:0 0 10px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de ' + _fv(f.franquiaDanosProprios, 70) + ' euros.</p>';
             dcl += '<p style="margin:0 0 6px;font-weight:700;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Em caso de acidente com o veículo de cortesia:</p>';
@@ -2617,6 +2622,16 @@
             dcl += '<p style="margin:0 0 10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de ' + _fv(f.diariaPerdaTotal || '30', 70) + ' euros (este valor inclui o seguro acima mencionado e IVA).</p>';
             dcl += '<p style="margin:0 0 6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>';
             dcl += '<p style="margin:0 0 6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>';
+            dcl += '<p style="margin:8px 0 6px;font-weight:700;">O Utilizador compromete-se ainda a:</p>';
+            dcl += '<p style="margin:0 0 6px;">1. Que este veículo só será conduzido por um possuidor de carta de condução válida, assim como, exclusivamente, pelo representado neste contrato;</p>';
+            dcl += '<p style="margin:0 0 6px;">2. A restituir esta viatura em perfeito estado de manutenção no prazo solicitado pela entidade solicitante e a fazer respeitar perante terceiros os direitos de propriedade da Walkingarage Lda; Os danos não existentes na reserva e presentes na devolução, serão cobrados ao proprietário da mesma no momento da devolução da viatura;</p>';
+            dcl += '<p style="margin:0 0 6px;">3. A utilizar o veículo em respeito pelo Código da Estrada e demais legislação em vigor;</p>';
+            dcl += '<p style="margin:0 0 6px;">4. Na qualidade de exclusivo responsável pela posse e condução do veículo, a suportar todas as consequências, nomeadamente pecuniárias (multas), resultantes de infrações que possam ter ocorrido durante o período de cedência, que apenas serão cobradas aquando de notificação das entidades competentes.</p>';
+            dcl += '<p style="margin:0 0 6px;">5. Na eventualidade de a Walkingarage Lda, vir a ser chamada para responder por qualquer ilícito, não poderá ser responsável pela apresentação de qualquer tipo de defesa, sendo que, na eventualidade de vir a ser condenada no pagamento de qualquer sanção/coima, poderá posteriormente reclamar tais quantias junto do Cessionário;</p>';
+            dcl += '<p style="margin:0 0 6px;">6. No caso de roubo deve constar o comprovativo da participação efetuada junto das autoridades oficiais (Polícia).</p>';
+            dcl += '<p style="margin:0 0 6px;">7. <strong>Existe um limite diário de 75 (setenta e cinco) quilómetros, acumuláveis pelos dias de reserva da viatura, se esse valor for ultrapassado, será custeado por via de pack km\'s adicionais de 75 (setenta e cinco) quilómetros, com um custo de 13.84€ C/IVA.</strong></p>';
+            dcl += '<p style="margin:0 0 6px;">8. No ato do levantamento, a Walkingarage Lda retém registo fotográfico do estado geral da viatura, os quais ficam anexos ao presente contrato de cedência.</p>';
+            dcl += '<p style="margin:0 0 6px;">9. A viatura possui identificador via verde ativo, a sua utilização não é permitida, pelo que qualquer uso será devidamente cobrado ao tomador do presente contrato.</p>';
             dcl += '</div>';
             printWin.document.write(dcl);
         } else {
