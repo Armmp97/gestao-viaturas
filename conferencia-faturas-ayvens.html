@@ -91,6 +91,7 @@
 /* ============ Estado dos ficheiros ============ */
 var DATA = { Cacem:null, Lisboa:null, Og:null };
 var SERIE_UNIT = { '261':'Cacem', '263':'Lisboa' };
+var LAST = null;
 
 /* ============ Utilitários ============ */
 function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
@@ -302,6 +303,7 @@ function unitBadge(u){
   if(u==='Lisboa') return '<span class="badge b-lis">Lisboa</span>';
   return '<span class="badge" style="background:#e2e8f0;color:#475569">—</span>';
 }
+function unitLabel(u){ return u==='Cacem'?'Cacém':(u==='Lisboa'?'Lisboa':'—'); }
 function valCell(av,ov){
   var diff = av!==ov;
   return '<td class="'+(diff?'diffcell':'')+'">'+eur(av)+'</td><td class="'+(diff?'diffcell':'')+'">'+eur(ov)+'</td>';
@@ -311,7 +313,9 @@ function render(R){
   var nProblem = R.valDiff.length + R.dateDiff.length + R.missOg.length + R.missAy.length + R.fmtDiff.length + R.ogNoRef.length + R.unitDiff.length;
   var nOkClean = R.matched.filter(function(m){return !m.dv && !m.dd && !m.df && !m.du;}).length;
 
+  LAST=R;
   var h='';
+  h+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px;"><button class="upload-btn" onclick="exportXlsx()" style="background:linear-gradient(135deg,#0d904f,#0a7a42)">⬇️ Exportar Excel</button></div>';
   h+='<div class="summary">';
   h+=sumbox(nAy,'Faturas Ayvens','#0f172a');
   h+=sumbox(nOg,'Docs OfficeGest','#0f172a');
@@ -421,6 +425,86 @@ function filterTbl(btn){
     var p=tr.getAttribute('data-prob')==='1';
     tr.style.display=(f==='all'||(f==='ok'&&!p)||(f==='prob'&&p))?'':'none';
   });
+}
+
+/* ============ Exportação Excel ============ */
+function exportXlsx(){
+  if(!LAST){ return; }
+  var R=LAST, wb=XLSX.utils.book_new();
+  function add(name, aoa){
+    if(aoa.length<=1) return; // só cabeçalho -> não cria folha
+    var ws=XLSX.utils.aoa_to_sheet(aoa);
+    XLSX.utils.book_append_sheet(wb, ws, name.substring(0,31));
+  }
+  var nOkClean=R.matched.filter(function(m){return !m.dv&&!m.dd&&!m.df&&!m.du;}).length;
+
+  // Resumo
+  var resumo=[
+    ['Conferência de Faturas Ayvens vs OfficeGest'],
+    ['Gerado em', new Date().toLocaleString('pt-PT')],
+    ['Unidades conferidas', Object.keys(R.loaded).map(unitLabel).join(', ')],
+    [],
+    ['Indicador','Quantidade'],
+    ['Faturas Ayvens', Object.keys(R.ay).length],
+    ['Documentos OfficeGest', R.og.length],
+    ['Correspondidas', R.matched.length],
+    ['Conferem OK', nOkClean],
+    ['Diferenças de valor', R.valDiff.length],
+    ['Diferenças de data', R.dateDiff.length],
+    ['Em falta no OfficeGest (só Ayvens)', R.missOg.length],
+    ['Em falta na Ayvens (só OfficeGest)', R.missAy.length],
+    ['Referências mal preenchidas', R.fmtDiff.length],
+    ['OfficeGest sem referência', R.ogNoRef.length],
+    ['Unidade divergente', R.unitDiff.length]
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumo), 'Resumo');
+
+  // Diferenças de valor
+  var av=[['Referência','Unidade','Total Ayvens','Total OfficeGest','Dif. Total','Líquido Ayvens','Líquido OfficeGest','Dif. Líquido','IVA Ayvens','IVA OfficeGest','Dif. IVA']];
+  R.valDiff.forEach(function(m){ av.push([m.a.ref,unitLabel(m.a.unit),m.a.total,m.o.total,round2((m.a.total||0)-(m.o.total||0)),m.a.liq,m.o.liq,round2((m.a.liq||0)-(m.o.liq||0)),m.a.iva,m.o.iva,round2((m.a.iva||0)-(m.o.iva||0))]); });
+  add('Diferenças Valor', av);
+
+  // Diferenças de data
+  var ad=[['Referência','Unidade','Data Ayvens','Data OfficeGest','Total']];
+  R.dateDiff.forEach(function(m){ ad.push([m.a.ref,unitLabel(m.a.unit),isoToPt(m.a.dataISO),isoToPt(m.o.dataISO),m.a.total]); });
+  add('Diferenças Data', ad);
+
+  // Referências mal preenchidas
+  var af=[['Ref. Ayvens (correta)','Ref. OfficeGest','Núm. OG','Unidade']];
+  R.fmtDiff.forEach(function(m){ af.push([m.a.ref,m.o.refRaw,m.o.num,unitLabel(m.a.unit)]); });
+  add('Ref Mal Preenchida', af);
+
+  // Falta no OfficeGest
+  var amo=[['Referência','Unidade','Data','Matrícula','Total','Líquido','IVA']];
+  R.missOg.forEach(function(a){ amo.push([a.ref,unitLabel(a.unit),isoToPt(a.dataISO),a.matricula,a.total,a.liq,a.iva]); });
+  add('Falta OfficeGest', amo);
+
+  // Falta na Ayvens
+  var ama=[['Referência','Núm. OG','Unidade','Data','Total','Líquido','IVA']];
+  R.missAy.forEach(function(o){ ama.push([o.refRaw,o.num,unitLabel(o.unit),isoToPt(o.dataISO),o.total,o.liq,o.iva]); });
+  add('Falta Ayvens', ama);
+
+  // OG sem referência
+  var anr=[['Núm. OG','Unidade','Data','Viatura','Total']];
+  R.ogNoRef.forEach(function(o){ anr.push([o.num,unitLabel(o.unit),isoToPt(o.dataISO),o.viatura,o.total]); });
+  add('OG Sem Referencia', anr);
+
+  // Unidade divergente
+  var au=[['Referência','Carregada como','Série OG','Unidade OG']];
+  R.unitDiff.forEach(function(m){ au.push([m.a.ref,unitLabel(m.a.unit),m.o.serie,unitLabel(m.o.unit)]); });
+  add('Unidade Divergente', au);
+
+  // Todas as correspondidas
+  var at=[['Referência','Unidade','Núm. OG','Data Ayvens','Data OG','Total Ayvens','Total OG','Líquido Ayvens','Líquido OG','IVA Ayvens','IVA OG','Estado']];
+  R.matched.forEach(function(m){
+    var est=[]; if(m.dv)est.push('valor'); if(m.dd)est.push('data'); if(m.df)est.push('ref'); if(m.du)est.push('unidade');
+    at.push([m.a.ref,unitLabel(m.a.unit),m.o.num,isoToPt(m.a.dataISO),isoToPt(m.o.dataISO),m.a.total,m.o.total,m.a.liq,m.o.liq,m.a.iva,m.o.iva, est.length?est.join(', '):'OK']);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(at), 'Todas');
+
+  var d=new Date();
+  var fname='Conferencia_Faturas_Ayvens_'+d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'.xlsx';
+  XLSX.writeFile(wb, fname);
 }
 </script>
 </body>
