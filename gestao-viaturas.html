@@ -750,7 +750,7 @@
                         <p style="margin-bottom:8px;font-weight:600;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>
                         <p style="margin-bottom:6px;"><em>Em caso de acidente com o veículo de cortesia:</em></p>
                         <p style="margin-bottom:6px;">1) Preenchimento da Declaração Amigável de Acidente Automóvel que se encontra junto dos documentos.</p>
-                        <p style="margin-bottom:10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de __________ euros (IVA incluído).</p>
+                        <p style="margin-bottom:10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de __________ euros (IVA incluído). Este valor ser-me-á devolvido após o apuramento de responsabilidades e a confirmação, por parte da Seguradora, da minha não culpa no sinistro.</p>
                         <p style="margin-bottom:6px;"><em>Combustível</em></p>
                         <p style="margin-bottom:10px;">A viatura de cortesia deverá ser devolvida obrigatoriamente com o mesmo nível de combustível com que foi entregue, de forma a evitar que me seja cobrado uma taxa adicional para atesto do depósito.</p>
                         <p style="margin-bottom:6px;"><em>Devolução da viatura de cortesia</em></p>
@@ -782,15 +782,18 @@
                             </div>
                             <div class="form-group">
                                 <label>Franquia de danos próprios (€)</label>
-                                <input type="text" id="fid_franquiaDanosProprios" placeholder="Ex: 500">
+                                <input type="text" id="fid_franquiaDanosProprios" placeholder="Ex: 696,80">
+                                <small style="display:block;margin-top:4px;font-size:11px;color:#6b7280;">Indicar o valor da franquia da viatura de cortesia a ceder (ver tabela de valores acima).</small>
                             </div>
                             <div class="form-group">
                                 <label>Franquia por sinistro — IVA incl. (€)</label>
-                                <input type="text" id="fid_franquiaSinistro" placeholder="Ex: 500">
+                                <input type="text" id="fid_franquiaSinistro" placeholder="Ex: 696,80">
+                                <small style="display:block;margin-top:4px;font-size:11px;color:#6b7280;">Indicar o valor da franquia da viatura de cortesia a ceder (ver tabela de valores acima).</small>
                             </div>
                             <div class="form-group">
                                 <label>Valor da diária (€)</label>
-                                <input type="text" id="fid_diaria" placeholder="Ex: 25">
+                                <input type="text" id="fid_diaria" value="30" readonly style="background:#f3f4f6;color:var(--gray-700);">
+                                <small style="display:block;margin-top:4px;font-size:11px;color:#6b7280;">Valor fixo: 30 € (não é necessário preencher).</small>
                             </div>
                             <div class="form-group">
                                 <label>Data estipulada para devolução</label>
@@ -798,7 +801,8 @@
                             </div>
                             <div class="form-group">
                                 <label>Valor da diária em Perda Total (€)</label>
-                                <input type="text" id="fid_diariaPerdaTotal" placeholder="Ex: 25">
+                                <input type="text" id="fid_diariaPerdaTotal" value="30" readonly style="background:#f3f4f6;color:var(--gray-700);">
+                                <small style="display:block;margin-top:4px;font-size:11px;color:#6b7280;">Valor fixo: 30 € (não é necessário preencher).</small>
                             </div>
                         </div>
                     </div>
@@ -2602,15 +2606,15 @@
             dcl += '<p style="margin:0 0 6px;font-weight:700;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Em caso de acidente com o veículo de cortesia:</p>';
             dcl += '<p style="margin:0 0 4px;">1) Preenchimento da Declaração Amigável de Acidente Automóvel que se encontra junto dos documentos.</p>';
-            dcl += '<p style="margin:0 0 10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de ' + _fv(f.franquiaSinistro, 70) + ' euros (IVA incluído).</p>';
+            dcl += '<p style="margin:0 0 10px;">2) Sempre que ocorra algum dano ou sinistro com o veículo de cortesia, deverei suportar uma franquia no valor de ' + _fv(f.franquiaSinistro, 70) + ' euros (IVA incluído). Este valor ser-me-á devolvido após o apuramento de responsabilidades e a confirmação, por parte da Seguradora, da minha não culpa no sinistro.</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Combustível</p>';
             dcl += '<p style="margin:0 0 10px;">A viatura de cortesia deverá ser devolvida obrigatoriamente com o mesmo nível de combustível com que foi entregue, de forma a evitar que me seja cobrado uma taxa adicional para atesto do depósito.</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Devolução da viatura de cortesia</p>';
-            dcl += '<p style="margin:0 0 4px;">Suportarei uma diária de ' + _fv(f.diaria, 70) + ' euros (este valor inclui o seguro acima mencionado e IVA) nos seguintes casos:</p>';
+            dcl += '<p style="margin:0 0 4px;">Suportarei uma diária de ' + _fv(f.diaria || '30', 70) + ' euros (este valor inclui o seguro acima mencionado e IVA) nos seguintes casos:</p>';
             dcl += '<p style="margin:0 0 4px;">1) Sempre que o veículo de cortesia não seja entregue na data estipulada pela Oficina – em ' + _fvDate(f.dataEstipulada || b.dataSaida, 70) + '</p>';
             dcl += '<p style="margin:0 0 10px;">2) Sempre que o veículo de cortesia não seja devolvido à Oficina por instruções expressas por parte da Seguradora.</p>';
             dcl += '<p style="margin:0 0 4px;font-style:italic;">Perda total</p>';
-            dcl += '<p style="margin:0 0 10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de ' + _fv(f.diariaPerdaTotal, 70) + ' euros (este valor inclui o seguro acima mencionado e IVA).</p>';
+            dcl += '<p style="margin:0 0 10px;">Nos casos de Perda Total obrigo-me a devolver o veículo de cortesia nos 5 dias úteis seguintes à data inicial de cedência (ou na data em que me for comunicado pela oficina ou Seguradora). No caso de permanecer na posse do veículo de cortesia para além do prazo indicado, ser-me-á debitado uma diária de ' + _fv(f.diariaPerdaTotal || '30', 70) + ' euros (este valor inclui o seguro acima mencionado e IVA).</p>';
             dcl += '<p style="margin:0 0 6px;">Verifiquei que o carro está equipado com triângulo, roda suplente, depósito de combustível cheio, bem como todas as remanescentes peças de equipamento exigidas na Lei.</p>';
             dcl += '<p style="margin:0 0 6px;">Declaro que o devolverei no mesmo estado em que o recebi, logo que para tal for informado pela oficina.</p>';
             dcl += '</div>';
