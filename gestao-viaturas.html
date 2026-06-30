@@ -393,6 +393,7 @@
                     <h1>Gestão de Viaturas</h1>
                     <p id="homeSubtitle">Selecione uma opção para começar</p>
                 </div>
+                <div id="pendingReturnsSummary" style="display:none;max-width:760px;margin:0 auto 16px;"></div>
                 <div class="home-buttons">
                     <div class="home-btn calendar" onclick="navigate('calendar')">
                         <div class="icon">&#128197;</div>
@@ -1771,7 +1772,7 @@
         // utilizador insistir em sair, o registo fica marcado como PENDENTE.
         if (window._signedDocGuard && page !== window._signedDocGuard.page) {
             var _g = window._signedDocGuard;
-            var _ok = confirm('⚠️ O DOCUMENTO ASSINADO ainda não foi carregado.\n\nSe sair agora, o registo fica marcado como PENDENTE até o documento ser carregado (aparece a vermelho no histórico).\n\nSair mesmo assim?');
+            var _ok = confirm('⚠️ ATENÇÃO — DEVOLUÇÃO POR CONCLUIR\n\nO DOCUMENTO ASSINADO ainda não foi carregado, por isso esta devolução continua em RASCUNHO (não está finalizada) e a viatura mantém-se ocupada.\n\nSe sair agora, fica a vermelho no Histórico de Devoluções, com aviso, até carregar o documento.\n\nQuer mesmo sair sem finalizar?');
             if (!_ok) return;
             try {
                 var _bk = bookings.find(function(x) { return x.id === _g.bookingId; });
@@ -1793,6 +1794,7 @@
         if (page === 'fleet') renderFleet();
         if (page === 'histPickup') renderHistPickups();
         if (page === 'histReturn') renderHistReturns();
+        try { updatePendingUI(); } catch(e) {}
     }
 
     /* ============================================
@@ -2757,9 +2759,10 @@
             jobsSig.push(function() { return mirrorToIntranet(mirrorFolderKey, buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedDocPreview'];
-        if (b && stageObj) { stageObj.documentoAssinado = true; stageObj.documentoAssinadoPendente = false; }
+        if (b && stageObj) { stageObj.documentoAssinado = true; stageObj.documentoAssinadoPendente = false; if (isDev) finalizarDevolucao(b); }
         window._signedDocGuard = null;
         saveData();
+        try { updatePendingUI(); } catch(e) {}
         showToast('A enviar documento assinado…', 'success');
         _runUploadBatch(jobsSig).then(function(report) {
             if (report.failed && report.failed.length > 0) {
@@ -2794,12 +2797,33 @@
     }
 
     function startReturnFromBooking(id) {
-        closeDayPanel(); navigate('return');
+        closeDayPanel();
         const b = bookings.find(x => x.id === id);
+        // Se já existe um rascunho de devolução, não abrir novo formulário:
+        // encaminhar diretamente para o upload do documento que a finaliza.
+        if (b && b.devolucao && b.devolucao.rascunho === true) {
+            navigate('return');
+            var sc = document.getElementById('returnSearchCard'); if (sc) sc.style.display = 'none';
+            var rf = document.getElementById('returnForm'); if (rf) rf.style.display = 'none';
+            showToast('Devolução em rascunho — carregue o documento assinado para finalizar.', 'warning');
+            try { showSignedDocUploadReturn(id); } catch(e) { console.warn(e); }
+            return;
+        }
+        navigate('return');
         if (b) selectBookingForReturn(b);
     }
 
     function selectBookingForReturn(b) {
+        // Se já há um rascunho de devolução, não reabrir o formulário (evita
+        // sobrepor o rascunho): encaminha para o upload que o finaliza.
+        if (b && b.devolucao && b.devolucao.rascunho === true) {
+            selectedReturnBooking = b;
+            var sc0 = document.getElementById('returnSearchCard'); if (sc0) sc0.style.display = 'none';
+            var rf0 = document.getElementById('returnForm'); if (rf0) rf0.style.display = 'none';
+            showToast('Esta devolução já está em rascunho — carregue o documento assinado para finalizar.', 'warning');
+            try { showSignedDocUploadReturn(b.id); } catch(e) { console.warn(e); }
+            return;
+        }
         selectedReturnBooking = b;
         document.getElementById('returnSearchCard').style.display = 'none';
         document.getElementById('returnForm').style.display = 'block';
@@ -2843,6 +2867,46 @@
             validateKms(b.matricula, parseInt(kmsField.value), 'return', b.id);
         };
         kmsField.onblur = function() { validateKms(b.matricula, parseInt(kmsField.value), 'return', b.id); };
+    }
+
+    // === Devoluções em RASCUNHO ===
+    // Uma devolução só fica FINAL quando o documento assinado é carregado.
+    // Em rascunho, a viatura mantém-se 'Levantado' (continua ocupada no calendário).
+    function countDevolucoesRascunho() {
+        return bookings.filter(function(b){ return b.devolucao && b.devolucao.rascunho === true; }).length;
+    }
+    function finalizarDevolucao(b) {
+        if (!b || !b.devolucao) return;
+        b.devolucao.rascunho = false;
+        b.devolucao.documentoAssinado = true;
+        b.devolucao.documentoAssinadoPendente = false;
+        b.estado = 'Devolvido';
+        var dd = b.devolucao.dataHora ? new Date(b.devolucao.dataHora) : new Date();
+        if (!isNaN(dd)) b.dataSaida = dd.toISOString().split('T')[0];
+        b.atualizadoEm = new Date().toISOString();
+        try { b.atualizadoPor = getUserStamp(); } catch(e) {}
+    }
+    function updatePendingUI() {
+        var n = countDevolucoesRascunho();
+        var btn = document.querySelector('.header-nav button[data-page="histReturn"]');
+        if (btn) {
+            var badge = document.getElementById('histReturnBadge');
+            if (n > 0) {
+                if (!badge) {
+                    badge = document.createElement('span'); badge.id = 'histReturnBadge';
+                    badge.style.cssText = 'display:inline-block;margin-left:6px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;';
+                    btn.appendChild(badge);
+                }
+                badge.textContent = n; badge.style.display = 'inline-block';
+            } else if (badge) { badge.style.display = 'none'; }
+        }
+        var sum = document.getElementById('pendingReturnsSummary');
+        if (sum) {
+            if (n > 0) {
+                sum.style.display = 'block';
+                sum.innerHTML = '<div style="padding:12px 16px;background:#fdecea;border:1px solid var(--danger);border-left:4px solid var(--danger);border-radius:8px;color:#a61b1b;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate(\'histReturn\')">&#9888;&#65039; ' + n + ' devolução(ões) em rascunho por concluir — falta carregar o documento assinado. Clique para ver.</div>';
+            } else { sum.style.display = 'none'; sum.innerHTML = ''; }
+        }
     }
 
     function saveReturn(e) {
@@ -2891,16 +2955,14 @@
             dataHora: new Date().toISOString(),
             registadoPor: getUserStamp()
         };
-        b.estado = 'Devolvido';
+        // RASCUNHO: a devolução NÃO fica final aqui. A viatura mantém-se 'Levantado'
+        // (continua ocupada no calendário) e a dataSaida só é ajustada quando o
+        // documento assinado for carregado (em finalizarDevolucao). Assim a devolução
+        // só conta como concluída depois de existir o documento final.
+        b.devolucao.rascunho = true;
+        b.devolucao.documentoAssinadoPendente = true;
         b.atualizadoPor = getUserStamp();
-        // Atualizar dataSaida para a data real de devolução (calendário em conformidade)
-        // Se devolução antecipada (antes da dataSaida prevista), encurtar o período no calendário
-        // Se devolução tardia (depois da dataSaida prevista), estender
-        var dataDevolucaoReal = new Date().toISOString().split('T')[0];
-        b.dataSaida = dataDevolucaoReal;
         b.atualizadoEm = new Date().toISOString();
-        // Documento assinado obrigatório: marca como pendente até ser carregado.
-        if (b.devolucao && !b.devolucao.documentoAssinado) b.devolucao.documentoAssinadoPendente = true;
         var uploadPromiseRet;
         try {
             uploadPromiseRet = saveUploadedFiles(id, 'devolucao');
@@ -2909,7 +2971,8 @@
             uploadPromiseRet = Promise.resolve({ totalAttempted: 0, failed: [], queued: [] });
         }
         try { saveData(); } catch(err) { console.warn('saveData error:', err); }
-        showToast('Devolução registada. A enviar ficheiros…', 'success');
+        try { updatePendingUI(); } catch(e) {}
+        showToast('Rascunho de devolução guardado — falta carregar o documento assinado para finalizar.', 'warning');
         if (uploadPromiseRet && typeof uploadPromiseRet.then === 'function') {
             uploadPromiseRet.then(function(report) {
                 if (!report || report.totalAttempted === 0) return;
@@ -3054,10 +3117,11 @@
             jobsSigDev.push(function() { return mirrorToIntranet('gv_docs_assinados_dev', buildFileName(new Date(), 'DocAssinado', mat, opId, ext), data); });
         });
         delete uploadedFiles['signedReturnDocPreview'];
-        if (b && b.devolucao) { b.devolucao.documentoAssinado = true; b.devolucao.documentoAssinadoPendente = false; }
+        if (b && b.devolucao) { finalizarDevolucao(b); }
         window._signedDocGuard = null;
         saveData();
-        showToast('A enviar documento de devolução assinado…', 'success');
+        try { updatePendingUI(); } catch(e) {}
+        showToast('Devolução finalizada — documento assinado guardado.', 'success');
         _runUploadBatch(jobsSigDev).then(function(report) {
             if (report.failed && report.failed.length > 0) {
                 console.error('[Upload-Report] DocAssinado Dev falhas:', report.failed);
@@ -3439,7 +3503,7 @@
     function renderHistReturns() {
         var query = (document.getElementById('histReturnSearch').value || '').toLowerCase().trim();
         var loc = getSelectedLocation();
-        var results = bookings.filter(function(b) { return b.devolucao && b.estado === 'Devolvido'; });
+        var results = bookings.filter(function(b) { return b.devolucao && (b.estado === 'Devolvido' || b.devolucao.rascunho === true); });
         if (loc) results = results.filter(function(b) { return b.localizacao === loc; });
         if (query) results = results.filter(function(b) { return b.matricula.toLowerCase().includes(query) || b.nomeCliente.toLowerCase().includes(query); });
         results.sort(function(a, c) { return new Date(c.devolucao.dataHora) - new Date(a.devolucao.dataHora); });
@@ -3450,9 +3514,10 @@
             var fc = (fileStore[b.id] && fileStore[b.id].devolucao && fileStore[b.id].devolucao.documentoAssinado) || [];
             return !(b.devolucao && b.devolucao.documentoAssinado === true) && fc.length === 0;
         }).length;
-        if (pendentesCount > 0) container.innerHTML = '<div style="padding:10px 14px;background:#fdecea;border-left:4px solid var(--danger);border-radius:4px;font-size:13px;color:#a61b1b;margin-bottom:14px;font-weight:700;">&#9888;&#65039; ' + pendentesCount + ' devolução(ões) sem documento assinado — carregue o documento em falta.</div>';
+        if (pendentesCount > 0) container.innerHTML = '<div style="padding:10px 14px;background:#fdecea;border-left:4px solid var(--danger);border-radius:4px;font-size:13px;color:#a61b1b;margin-bottom:14px;font-weight:700;">&#9888;&#65039; ' + pendentesCount + ' devolução(ões) em rascunho por concluir — carregue o documento assinado para finalizar.</div>';
         results.forEach(function(b) {
             var dev = b.devolucao;
+            var isRascunho = dev.rascunho === true;
             var files = fileStore[b.id] && fileStore[b.id].devolucao ? fileStore[b.id].devolucao : {};
             var hasSignedDoc = files.documentoAssinado && files.documentoAssinado.length > 0;
             var signedDone = hasSignedDoc || (dev && dev.documentoAssinado === true);
@@ -3460,13 +3525,14 @@
             var hasOrcamento = files.orcamento && files.orcamento.length > 0;
             var card = document.createElement('div');
             card.className = 'booking-card';
+            if (isRascunho) card.style.cssText = 'border:2px solid var(--danger);background:#fff8f7;';
             var filesHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">';
             if (hasPhotos) filesHtml += '<span style="background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128247; ' + files.fotos.length + ' Foto(s)</span>';
             if (hasOrcamento) filesHtml += '<span style="background:var(--warning-light);color:var(--warning);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Orçamento</span>';
             if (signedDone) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
             else filesHtml += '<span style="background:#fdecea;color:var(--danger);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">&#9888;&#65039; FALTA Doc. Assinado</span>';
             filesHtml += '</div>';
-            card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span class="booking-status devolvido">Devolvido</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>' + (dev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + dev.id + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(dev.dataHora) + '</span></div>' +
+            card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div>' + (isRascunho ? '<span class="booking-status" style="background:#fdecea;color:#a61b1b;border:1px solid var(--danger);font-weight:700;">&#9888;&#65039; RASCUNHO — POR CONCLUIR</span>' : '<span class="booking-status devolvido">Devolvido</span>') + ' <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>' + (dev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + dev.id + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(dev.dataHora) + '</span></div>' +
                 '<div class="booking-info"><strong>' + b.matricula + ' — ' + b.nomeCliente + '</strong>' +
                 '<span>' + (b.marcaModelo || '') + ' | Kms: ' + dev.kms + ' | Comb: ' + dev.combustivel + '%' + (dev.valor ? ' | Valor Danos: ' + dev.valor + '€' : '') + '</span>' +
                 (dev.excessKms > 0 ? '<span style="color:var(--danger);font-weight:600;">Kms extra: ' + dev.excessKms + ' km = ' + dev.extraCost.toFixed(2) + '€</span>' : '<span style="color:var(--success);">Kms dentro do limite</span>') +
