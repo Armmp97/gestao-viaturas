@@ -87,8 +87,11 @@ var OFICINAS={cacem:'DomusCar Cacém',lisboa:'DomusCar Lisboa',colisao:'DomusCar
 var MESN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var ultimoParse=null;
 
-(function(){ // refDate default = hoje
-  var d=new Date();
+(function(){ // refDate default = ÚLTIMO DIA DO MÊS ANTERIOR
+  // (as datas "há um mês" do Google referem-se, na prática, ao mês anterior;
+  //  usar hoje empurrava-as para o mês em curso e inflava a contagem)
+  var hoje=new Date();
+  var d=new Date(hoje.getFullYear(), hoje.getMonth(), 0);
   document.getElementById('refDate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 })();
 
@@ -134,7 +137,7 @@ function parse(text,now){
   var linhas=(text||'').split(/\r?\n/);
   var estr=[];
   linhas.forEach(function(ln){
-    var m=ln.match(/^\s*([1-5])\s*\|\|\|\s*([\s\S]*?)\s*\|\|\|\s*(h[áa]\s+.+|\d{1,2}\/\d{1,2}\/\d{4})\s*$/i);
+    var m=ln.match(/^\s*([1-5])\s*\|\|\|\s*([\s\S]*?)\s*\|\|\|\s*((?:editado\s+)?h[áa]\s+.+|\d{1,2}\/\d{1,2}\/\d{4})\s*$/i);
     if(m){ var d=parseData(m[3],now); if(d) estr.push({autor:(m[2]||'(sem nome)').trim(),stars:+m[1],date:d}); }
   });
   if(estr.length) return estr;
