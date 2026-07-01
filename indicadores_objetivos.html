@@ -1297,15 +1297,20 @@ body {
       }
     }
     if (state.unit) {
-      var u = UNITS.find(function(x) { return x.id === state.unit; });
       parts.push('<span class="sep">›</span>');
-      parts.push('<span>' + (u ? u.name : state.unit) + '</span>');
+      if (state.unit === 'comparacao') {
+        parts.push('<span>Comparação de Técnicos</span>');
+      } else {
+        var u = UNITS.find(function(x) { return x.id === state.unit; });
+        parts.push('<span>' + (u ? u.name : state.unit) + '</span>');
+      }
     }
     bc.innerHTML = parts.join('');
   }
 
   function render() {
     if (currentChart) { currentChart.destroy(); currentChart = null; }
+    if (window._compCharts) { window._compCharts.forEach(function(c){ try{c.destroy();}catch(e){} }); window._compCharts = []; }
 
     if (!state.category) return renderCategories();
     if (state.category === 'garantias') return renderGarantias();
@@ -1328,6 +1333,7 @@ body {
       }
     }
 
+    if (state.category === 'kpis' && state.unit === 'comparacao') return renderTecnicosComparacao();
     if (!state.unit) return renderUnits();
     return renderData();
   }
@@ -2072,6 +2078,12 @@ body {
         '<div><h4>' + u.name + '</h4><p>Dados ' + state.year + '</p></div>' +
       '</div>';
     });
+    if (state.category === 'kpis' && KPI_TECNICOS_DATA[state.year]) {
+      html += '<div class="unit-card" onclick="navigate(\'kpis\',' + state.year + ',\'comparacao\')" style="border:1px solid var(--accent);">' +
+        '<div class="unit-icon" style="background:rgba(0,123,192,.12);">📊</div>' +
+        '<div><h4>Comparação de Técnicos</h4><p>Rankings e gráficos ' + state.year + '</p></div>' +
+      '</div>';
+    }
     html += '</div>';
     document.getElementById('content').innerHTML = html;
   }
@@ -2313,6 +2325,179 @@ body {
 
     html += '</div>';
     return html;
+  }
+
+  // ══════ Comparação de Técnicos (KPIs) ══════
+  var UNIT_META = {
+    mecanica_lisboa: { name: 'Lisboa', color: '#007BC0' },
+    mecanica_cacem:  { name: 'Cacém',  color: '#059669' },
+    colisao:         { name: 'Colisão', color: '#D97706' }
+  };
+  var COMP_METRICS = {
+    eur:       { label: 'Total Faturado (€)',   mkey: 'total_faturado', kind: 'sum', fmt: function(v){ return formatEur(v); } },
+    ht:        { label: 'Horas Trabalhadas',    mkey: 'ht_mes',         kind: 'sum', fmt: function(v){ return v.toFixed(1) + ' h'; } },
+    hf:        { label: 'Horas Faturadas',      mkey: 'hf_mes',         kind: 'sum', fmt: function(v){ return v.toFixed(1) + ' h'; } },
+    ef_prod:   { label: 'Ef. Produtiva (méd.)', mkey: 'ef_prod',        kind: 'avg', fmt: function(v){ return v.toFixed(1) + '%'; } },
+    ef_global: { label: 'Ef. Global (méd.)',    mkey: 'ef_global',      kind: 'avg', fmt: function(v){ return v.toFixed(1) + '%'; } },
+    util:      { label: 'Utilização (méd.)',    mkey: 'utilizacao_mes', kind: 'avg', fmt: function(v){ return v.toFixed(1) + '%'; } }
+  };
+  var COMP_PALETTE = ['#007BC0','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#DB2777','#65A30D','#4B5563','#CA8A04'];
+  var compState = { unit: 'all', metric: 'eur', month: 'ano' };
+
+  function aggregateTecnicos(year, unitFilter, monthFilter) {
+    var units = unitFilter === 'all' ? ['mecanica_lisboa','mecanica_cacem','colisao'] : [unitFilter];
+    var map = {};
+    units.forEach(function(uid) {
+      var months = KPI_TECNICOS_DATA[year] && KPI_TECNICOS_DATA[year][uid];
+      if (!months) return;
+      for (var mi = 0; mi < 12; mi++) {
+        if (monthFilter !== 'ano' && mi !== monthFilter) continue;
+        var d = months[mi]; if (!d) continue;
+        (d.tecnicos || []).forEach(function(t) {
+          var key = uid + '|' + t.name;
+          if (!map[key]) {
+            map[key] = { name: t.name, unit: uid, unitName: UNIT_META[uid].name, color: UNIT_META[uid].color, n: 0, agg: {}, monthly: {} };
+            Object.keys(COMP_METRICS).forEach(function(mk) { map[key].agg[mk] = { sum: 0, cnt: 0 }; map[key].monthly[mk] = new Array(12).fill(null); });
+          }
+          var a = map[key]; a.n++;
+          Object.keys(COMP_METRICS).forEach(function(mk) {
+            var v = t[COMP_METRICS[mk].mkey];
+            if (v !== null && v !== undefined) { a.agg[mk].sum += v; a.agg[mk].cnt++; a.monthly[mk][mi] = v; }
+          });
+        });
+      }
+    });
+    return Object.keys(map).map(function(k) {
+      var a = map[k]; a.val = {};
+      Object.keys(COMP_METRICS).forEach(function(mk) {
+        var g = a.agg[mk];
+        a.val[mk] = COMP_METRICS[mk].kind === 'sum' ? g.sum : (g.cnt ? g.sum / g.cnt : 0);
+      });
+      return a;
+    });
+  }
+
+  function availableMonths(year) {
+    var set = {};
+    ['mecanica_lisboa','mecanica_cacem','colisao'].forEach(function(uid) {
+      var months = KPI_TECNICOS_DATA[year] && KPI_TECNICOS_DATA[year][uid];
+      if (!months) return;
+      for (var mi = 0; mi < 12; mi++) if (months[mi]) set[mi] = true;
+    });
+    return Object.keys(set).map(Number).sort(function(a,b){ return a - b; });
+  }
+
+  function setCompUnit(v){ compState.unit = v; renderTecnicosComparacao(); }
+  function setCompMetric(v){ compState.metric = v; renderTecnicosComparacao(); }
+  function setCompMonth(v){ compState.month = (v === 'ano' ? 'ano' : parseInt(v)); renderTecnicosComparacao(); }
+
+  function compSelect(label, handler, opts, sel) {
+    var h = '<div><label style="display:block;font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">' + label + '</label>';
+    h += '<select onchange="' + handler + '(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:.85rem;font-weight:600;color:var(--navy);background:#fff;min-width:150px;">';
+    opts.forEach(function(o){ h += '<option value="' + o[0] + '"' + (String(o[0]) === String(sel) ? ' selected' : '') + '>' + o[1] + '</option>'; });
+    return h + '</select></div>';
+  }
+  function compKpiCard(label, value, color) {
+    return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.05);">' +
+      '<div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">' + label + '</div>' +
+      '<div style="font-size:1.05rem;font-weight:800;color:' + color + ';line-height:1.2;">' + value + '</div></div>';
+  }
+
+  function renderTecnicosComparacao() {
+    var year = state.year;
+    var metric = COMP_METRICS[compState.metric];
+    var list = aggregateTecnicos(year, compState.unit, compState.month);
+    list.sort(function(a,b){ return b.val[compState.metric] - a.val[compState.metric]; });
+    var months = availableMonths(year);
+    var periodoLabel = compState.month === 'ano' ? ('Ano ' + year) : (MONTHS[compState.month] + ' ' + year);
+
+    var html = '<button class="btn-back" onclick="navigate(\'kpis\',' + year + ')">← Voltar</button>';
+    html += '<h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin:20px 0 4px;">📊 Comparação de Técnicos — ' + year + '</h2>';
+    html += '<p style="font-size:.9rem;color:var(--text-body);margin-bottom:16px;">Rankings e indicadores por técnico, a partir dos dados de coordenação já inseridos. Período: <strong>' + periodoLabel + '</strong>.</p>';
+
+    html += '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;align-items:flex-end;">';
+    html += compSelect('Unidade', 'setCompUnit', [['all','Todas'],['mecanica_lisboa','Mecânica Lisboa'],['mecanica_cacem','Mecânica Cacém'],['colisao','Colisão']], compState.unit);
+    html += compSelect('Métrica', 'setCompMetric', Object.keys(COMP_METRICS).map(function(k){ return [k, COMP_METRICS[k].label]; }), compState.metric);
+    var monthOpts = [['ano','Ano completo']].concat(months.map(function(mi){ return [String(mi), MONTHS[mi]]; }));
+    html += compSelect('Período', 'setCompMonth', monthOpts, String(compState.month));
+    html += '</div>';
+
+    if (list.length === 0) { html += '<div class="info-banner">Sem dados de técnicos para este filtro.</div>'; document.getElementById('content').innerHTML = html; return; }
+
+    var totalEur = list.reduce(function(s,a){ return s + a.val.eur; }, 0);
+    var avgEfProd = list.reduce(function(s,a){ return s + a.val.ef_prod; }, 0) / list.length;
+    var top = list[0];
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;">';
+    html += compKpiCard('Técnicos', String(list.length), 'var(--navy)');
+    html += compKpiCard('Total Faturado', formatEur(totalEur), 'var(--accent)');
+    html += compKpiCard('Ef. Produtiva Média', avgEfProd.toFixed(1) + '%', efColor(avgEfProd));
+    html += compKpiCard('1º em ' + metric.label, top.name + ' · ' + metric.fmt(top.val[compState.metric]), 'var(--green)');
+    html += '</div>';
+
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Ranking por ' + metric.label + ' — ' + periodoLabel + '</div>';
+    html += '<div style="position:relative;height:' + Math.max(240, list.length * 30) + 'px;"><canvas id="compBarChart"></canvas></div></div>';
+
+    if (compState.month === 'ano' && months.length > 1) {
+      html += '<div class="tec-subsection"><div class="tec-subsection-header">Evolução mensal — ' + metric.label + ' (top ' + Math.min(6, list.length) + ')</div>';
+      html += '<div style="position:relative;height:320px;"><canvas id="compLineChart"></canvas></div></div>';
+    }
+
+    html += '<div class="tec-subsection"><div class="tec-subsection-header">Tabela Comparativa (' + periodoLabel + ')</div>';
+    html += '<div style="overflow-x:auto"><table class="tec-kpi-table"><thead><tr>' +
+      '<th>#</th><th>Técnico</th><th>Unidade</th><th style="text-align:right">HT</th><th style="text-align:right">HF</th><th style="text-align:right">Total €</th><th style="text-align:right">Ef.Prod</th><th style="text-align:right">Ef.Global</th><th style="text-align:right">Util</th></tr></thead><tbody>';
+    list.forEach(function(a, i) {
+      html += '<tr><td>' + (i+1) + '</td>' +
+        '<td style="font-weight:600;">' + a.name + '</td>' +
+        '<td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + a.color + ';margin-right:5px;vertical-align:middle;"></span>' + a.unitName + '</td>' +
+        '<td style="text-align:right">' + a.val.ht.toFixed(1) + 'h</td>' +
+        '<td style="text-align:right">' + a.val.hf.toFixed(1) + 'h</td>' +
+        '<td style="text-align:right">' + formatEur(a.val.eur) + '</td>' +
+        '<td style="text-align:right;color:' + efColor(a.val.ef_prod) + ';font-weight:700;">' + a.val.ef_prod.toFixed(1) + '%</td>' +
+        '<td style="text-align:right;color:' + efColor(a.val.ef_global) + ';font-weight:700;">' + a.val.ef_global.toFixed(1) + '%</td>' +
+        '<td style="text-align:right;color:' + utColor(a.val.util) + ';font-weight:700;">' + a.val.util.toFixed(1) + '%</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    document.getElementById('content').innerHTML = html;
+    setTimeout(function(){ renderCompCharts(list, months); }, 60);
+  }
+
+  function renderCompCharts(list, months) {
+    if (window._compCharts) { window._compCharts.forEach(function(c){ try{c.destroy();}catch(e){} }); }
+    window._compCharts = [];
+    var metric = COMP_METRICS[compState.metric];
+
+    var bar = document.getElementById('compBarChart');
+    if (bar) {
+      var top = list.slice(0, 20);
+      window._compCharts.push(new Chart(bar.getContext('2d'), {
+        type: 'bar',
+        data: { labels: top.map(function(a){ return a.name; }),
+          datasets: [{ label: metric.label, data: top.map(function(a){ return Math.round(a.val[compState.metric] * 10) / 10; }),
+            backgroundColor: top.map(function(a){ return a.color; }), borderRadius: 4 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return metric.fmt(c.parsed.x); } } } },
+          scales: { x: { beginAtZero: true, ticks: { callback: function(v){ return compState.metric === 'eur' ? (Math.round(v/1000)) + 'k' : v; } } } } }
+      }));
+    }
+
+    var line = document.getElementById('compLineChart');
+    if (line) {
+      var topN = list.slice(0, 6);
+      window._compCharts.push(new Chart(line.getContext('2d'), {
+        type: 'line',
+        data: { labels: months.map(function(mi){ return MONTHS_SHORT[mi]; }),
+          datasets: topN.map(function(a, i) {
+            return { label: a.name, data: months.map(function(mi){ return a.monthly[compState.metric][mi]; }),
+              borderColor: COMP_PALETTE[i % COMP_PALETTE.length], backgroundColor: COMP_PALETTE[i % COMP_PALETTE.length],
+              tension: .3, spanGaps: true, borderWidth: 2, pointRadius: 3 };
+          }) },
+        options: { responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            tooltip: { callbacks: { label: function(c){ return c.dataset.label + ': ' + (c.parsed.y != null ? metric.fmt(c.parsed.y) : '—'); } } } },
+          scales: { y: { beginAtZero: true } } }
+      }));
+    }
   }
 
   // Formatter for tec-kpi-table cells
