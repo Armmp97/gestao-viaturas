@@ -3754,6 +3754,14 @@
         store[payload.oficina] = payload.dados; // substitui a oficina inteira
         try { localStorage.setItem('intranet_googleReviews', JSON.stringify(store)); } catch(e) { console.error('[GoogleReviews] save:', e); }
         saveDashboardToSP('google_reviews.json', store);
+        // registo incremental por crítica (id -> mês fixo) — permite contar só as novas
+        if (payload.registo) {
+            var reg = {};
+            try { var r = localStorage.getItem('intranet_googleReviews_registo'); if (r) reg = JSON.parse(r) || {}; } catch(e) {}
+            reg[payload.oficina] = payload.registo;
+            try { localStorage.setItem('intranet_googleReviews_registo', JSON.stringify(reg)); } catch(e) {}
+            saveDashboardToSP('google_reviews_registo.json', reg);
+        }
         console.log('[GoogleReviews] publicado:', payload.oficina);
         openModule('indicadores_obj', 'googlereviews');
     }
@@ -3763,6 +3771,11 @@
                 try { localStorage.setItem('intranet_googleReviews', JSON.stringify(data)); } catch(e) {}
             }
         }).catch(function(e) { console.warn('[GoogleReviews] SP load:', e && e.message); });
+        loadDashboardFromSP('google_reviews_registo.json').then(function(reg) {
+            if (reg && typeof reg === 'object') {
+                try { localStorage.setItem('intranet_googleReviews_registo', JSON.stringify(reg)); } catch(e) {}
+            }
+        }).catch(function(e) {});
     }
 
     // ======== QUESTIONÁRIO DE SATISFAÇÃO (questionario-satisfacao → Indicadores) ========

@@ -137,8 +137,8 @@ function parse(text,now){
   var linhas=(text||'').split(/\r?\n/);
   var estr=[];
   linhas.forEach(function(ln){
-    var m=ln.match(/^\s*([1-5])\s*\|\|\|\s*([\s\S]*?)\s*\|\|\|\s*((?:editado\s+)?h[áa]\s+.+|\d{1,2}\/\d{1,2}\/\d{4})\s*$/i);
-    if(m){ var d=parseData(m[3],now); if(d) estr.push({autor:(m[2]||'(sem nome)').trim(),stars:+m[1],date:d}); }
+    var m=ln.match(/^\s*([1-5])\s*\|\|\|\s*([\s\S]*?)\s*\|\|\|\s*((?:editado\s+)?h[áa]\s+[^|]+|\d{1,2}\/\d{1,2}\/\d{4})\s*(?:\|\|\|\s*(\S[\s\S]*?))?\s*$/i);
+    if(m){ var d=parseData(m[3],now); if(d) estr.push({autor:(m[2]||'(sem nome)').trim(),stars:+m[1],date:d,id:(m[4]||'').trim()||null}); }
   });
   if(estr.length) return estr;
 
@@ -162,15 +162,36 @@ function parse(text,now){
   return criticas;
 }
 
-// Agrega por ano/mês
-function agregar(criticas){
-  var by={};
+// ===== MODELO INCREMENTAL =====
+// Cada crítica é identificada pelo seu código único do Google (id). O "registo"
+// guarda, por crítica, o mês (ym) em que foi contada pela 1ª vez — e esse mês
+// NUNCA muda depois. Ao publicar: críticas já conhecidas mantêm o mês; as novas
+// são carimbadas pela data (precisa, porque são recentes); as que deixaram de
+// aparecer na extração (apagadas do Google) saem do registo.
+function carregarRegisto(oficina){
+  try { var s=JSON.parse(localStorage.getItem('intranet_googleReviews_registo')||'{}'); return (s&&s[oficina])||{}; }
+  catch(e){ return {}; }
+}
+function mergeIncremental(oficina, criticas){
+  var antigo=carregarRegisto(oficina);
+  var novo={}, nNovas=0;
   criticas.forEach(function(c){
-    var y=String(c.date.getFullYear()), m=String(c.date.getMonth()+1);
+    var id=c.id||('noid_'+c.autor+'_'+(c.date?c.date.getTime():''));
+    if(antigo[id]){ novo[id]={ym:antigo[id].ym, d:antigo[id].d, s:c.stars, n:c.autor}; } // mantém o mês
+    else { novo[id]={ym:c.date.getFullYear()+'-'+(c.date.getMonth()+1), d:c.date.toISOString().slice(0,10), s:c.stars, n:c.autor}; nNovas++; }
+  });
+  var nRemov=0; Object.keys(antigo).forEach(function(id){ if(!novo[id]) nRemov++; });
+  return { registo:novo, novas:nNovas, removidas:nRemov };
+}
+function agregarRegisto(reg){
+  var by={};
+  Object.keys(reg).forEach(function(id){
+    var r=reg[id]; if(!r||!r.ym) return;
+    var p=String(r.ym).split('-'), y=p[0], m=p[1];
     by[y]=by[y]||{};
     var b=by[y][m]=by[y][m]||{count:0,starsSum:0,neg:0,negList:[]};
-    b.count++; b.starsSum+=c.stars;
-    if(c.stars<=3){ b.neg++; b.negList.push({n:c.autor,d:c.date.toISOString().slice(0,10),s:c.stars}); }
+    b.count++; b.starsSum+=r.s;
+    if(r.s<=3){ b.neg++; b.negList.push({n:r.n, d:r.d, s:r.s}); }
   });
   return by;
 }
@@ -185,11 +206,14 @@ function analisar(){
     document.getElementById('resultado').innerHTML='';
     return;
   }
-  var by=agregar(criticas);
-  ultimoParse={oficina:document.getElementById('oficina').value,dados:by};
+  var oficina=document.getElementById('oficina').value;
+  var mg=mergeIncremental(oficina, criticas);
+  var by=agregarRegisto(mg.registo);
+  ultimoParse={oficina:oficina, dados:by, registo:mg.registo};
   document.getElementById('btnPub').disabled=false;
-  document.getElementById('status').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ '+criticas.length+' críticas analisadas. Confere abaixo e publica.</span>';
-  render(by,criticas.length);
+  var msg='✓ '+criticas.length+' críticas lidas · <b>'+mg.novas+' novas</b>'+(mg.removidas?' · '+mg.removidas+' removidas (apagadas do Google)':'')+'. Confere abaixo e publica.';
+  document.getElementById('status').innerHTML='<span style="color:#0d904f;font-weight:600;">'+msg+'</span>';
+  render(by, Object.keys(mg.registo).length);
 }
 
 function render(by,total){
@@ -227,6 +251,8 @@ function publicar(){
   if(!ultimoParse){ return; }
   ultimoParse.oficina=document.getElementById('oficina').value;
   if(window.parent&&window.parent!==window){
+    // guarda o registo localmente para o próximo merge (o parent também o persiste no SharePoint)
+    if(ultimoParse.registo){ try { var _s=JSON.parse(localStorage.getItem('intranet_googleReviews_registo')||'{}'); _s[ultimoParse.oficina]=ultimoParse.registo; localStorage.setItem('intranet_googleReviews_registo',JSON.stringify(_s)); } catch(e){} }
     window.parent.postMessage({type:'googleReviewsUpdate',payload:ultimoParse},'*');
     document.getElementById('status').innerHTML='<span style="color:#0d904f;font-weight:600;">✓ Publicado. A abrir Indicadores → Google Reviews...</span>';
   } else {
