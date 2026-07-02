@@ -84,6 +84,7 @@
 /* ============ Estado ============ */
 var DATA = { Os:null, Orc:null };
 var LAST = null;
+var SEL_OPERS = {};   // técnicos selecionados no filtro das OS sem orçamento (multi-seleção)
 
 /* ============ Utilitários ============ */
 function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -275,6 +276,7 @@ function conferir(){
 /* ============ Render ============ */
 function render(){
   var R=LAST, out=document.getElementById('results');
+  SEL_OPERS={};
   var cob = R.osConsid? (100*R.comOrc.length/R.osConsid):0;
   var cobColor = cob>=70?'#0d904f':(cob>=40?'#d97706':'#dc2626');
 
@@ -296,12 +298,13 @@ function render(){
 
   /* ---- OS SEM orçamento ---- */
   h+='<div class="sec"><div class="sec-h">🚨 OS sem orçamento <span class="badge b-no">'+R.semOrc.length+'</span></div>';
-  h+='<div class="sec-d">Ordens de serviço sem qualquer orçamento (não anulado) para a mesma matrícula no mês. Filtra por quem abriu a OS.</div>';
+  h+='<div class="sec-d">Ordens de serviço sem qualquer orçamento (não anulado) para a mesma matrícula no mês. Podes selecionar <b>vários técnicos</b> (clica em cada um) e depois <b>⬇️ Extrair Excel</b> para descarregar as OS desses técnicos.</div>';
   if(R.semOrc.length){
     var opers=uniqueSorted(R.semOrc.map(function(r){return r.oper||'(sem registo)';}));
-    h+='<div class="filterbar" id="fbSem"><button class="fbtn active" onclick="filterSem(this,\'__all\')">Todos ('+R.semOrc.length+')</button>';
+    h+='<div class="filterbar" id="fbSem"><button class="fbtn active" data-op="__all" onclick="filterSem(this,\'__all\')">Todos ('+R.semOrc.length+')</button>';
     opers.forEach(function(p){ var n=R.semOrc.filter(function(r){return (r.oper||'(sem registo)')===p;}).length;
-      h+='<button class="fbtn" onclick="filterSem(this,'+JSON.stringify(p).replace(/"/g,'&quot;')+')">'+esc(p)+' ('+n+')</button>'; });
+      h+='<button class="fbtn" data-op="'+esc(p)+'" onclick="filterSem(this,'+JSON.stringify(p).replace(/"/g,'&quot;')+')">'+esc(p)+' ('+n+')</button>'; });
+    h+='<button class="expbtn" style="margin-left:auto;padding:5px 14px;border:1px solid #0d904f;background:#0d904f;color:#fff;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit" onclick="exportSemOrc()">⬇️ Extrair Excel</button>';
     h+='</div>';
     h+='<div class="tbl-wrap"><table id="tblSem"><thead><tr>'+
        '<th class="l">OS</th><th class="l">Data</th><th class="l">Cliente</th><th class="l">Matrícula</th>'+
@@ -390,9 +393,50 @@ function box(n,l,color,small){ return '<div class="sumbox"><div class="n" style=
 function shorten(s,n){ s=String(s||'').replace(/\s+/g,' ').trim(); return s.length>n?s.slice(0,n-1)+'…':s; }
 function uniqueSorted(arr){ var seen={},o=[]; arr.forEach(function(x){ if(x&&!seen[x]){seen[x]=1;o.push(x);} }); return o.sort(function(a,b){return a.localeCompare(b,'pt');}); }
 function filterSem(btn, oper){
-  var bar=document.getElementById('fbSem'); Array.prototype.forEach.call(bar.querySelectorAll('.fbtn'),function(b){b.classList.remove('active');}); btn.classList.add('active');
+  if(oper==='__all'){ SEL_OPERS={}; }
+  else { if(SEL_OPERS[oper]) delete SEL_OPERS[oper]; else SEL_OPERS[oper]=1; }
+  var any=Object.keys(SEL_OPERS).length>0;
+  var bar=document.getElementById('fbSem');
+  Array.prototype.forEach.call(bar.querySelectorAll('.fbtn'),function(b){
+    var op=b.getAttribute('data-op'); if(op===null) return;
+    if(op==='__all') b.classList.toggle('active', !any);
+    else b.classList.toggle('active', !!SEL_OPERS[op]);
+  });
+  applySemFilter();
+}
+function applySemFilter(){
+  var any=Object.keys(SEL_OPERS).length>0;
   var rows=document.querySelectorAll('#tblSem tbody tr');
-  Array.prototype.forEach.call(rows,function(tr){ tr.style.display=(oper==='__all'||tr.getAttribute('data-oper')===oper)?'':'none'; });
+  Array.prototype.forEach.call(rows,function(tr){
+    var op=tr.getAttribute('data-oper');
+    tr.style.display=(!any||SEL_OPERS[op])?'':'none';
+  });
+}
+function exportSemOrc(){
+  if(!LAST||!LAST.semOrc) return;
+  var any=Object.keys(SEL_OPERS).length>0;
+  var rows=LAST.semOrc.filter(function(r){ return !any || SEL_OPERS[r.oper||'(sem registo)']; });
+  if(!rows.length){ alert('Não há OS sem orçamento para a seleção atual.'); return; }
+  // ordenar por técnico e depois por data
+  rows=rows.slice().sort(function(a,b){
+    var pa=(a.oper||'(sem registo)'), pb=(b.oper||'(sem registo)');
+    if(pa!==pb) return pa.localeCompare(pb,'pt');
+    return String(toISO(a.data)).localeCompare(String(toISO(b.data)));
+  });
+  var aoa=[['OS','Data','Cliente','Matrícula','Viatura','Intervenções','Estado OS','Aberta por']];
+  rows.forEach(function(r){
+    var vi=[r.marca,r.modelo].filter(Boolean).join(' ');
+    aoa.push([ r.num, isoToPt(toISO(r.data)), r.cli, r.mat, vi, String(r.interv||'').replace(/\s+/g,' ').trim(), r.estado, r.oper ]);
+  });
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:16},{wch:11},{wch:34},{wch:12},{wch:20},{wch:64},{wch:12},{wch:28}];
+  XLSX.utils.book_append_sheet(wb, ws, 'OS sem orçamento');
+  var who;
+  if(any){ who=Object.keys(SEL_OPERS).map(function(p){return p.replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,18);}).join('-'); }
+  else { who='Todos'; }
+  var fname='OS_sem_orcamento_'+(LAST.mes||'').replace('-','')+'_'+who+'.xlsx';
+  XLSX.writeFile(wb, fname);
 }
 </script>
 </body>
