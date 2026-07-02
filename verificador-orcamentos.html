@@ -214,10 +214,12 @@ function analisar(){
   // dados para Assessoria de Vendas (por rececionista)
   var em2 = EMAIL ? parseEmailsOrc(EMAIL) : null;
   var assess={};
-  quotes.forEach(function(q){ var rc=norm(q.emp).replace(/^\[\d+\]\s*/,'')||'(sem rececionista)';
+  quotes.forEach(function(q){ var es=deaccent(q.estado);
+    if(es==='anulado'||es==='caducado'||es==='substituido') return; // não contam para o total nem para a taxa de aprovação
+    var rc=norm(q.emp).replace(/^\[\d+\]\s*/,'')||'(sem rececionista)';
     if(avExcluidoAV(rc)) return;
     var a=assess[rc]=assess[rc]||{orcTotal:0,orcEmail:(em2?0:null),orcAprov:0};
-    a.orcTotal++; var es=deaccent(q.estado); if(es==='aprovado'||es==='faturado')a.orcAprov++;
+    a.orcTotal++; if(es==='aprovado'||es==='faturado')a.orcAprov++;
     if(em2&&em2.byNum[nmat(q.num)])a.orcEmail++;
   });
   var mc={},ac={}; quotes.forEach(function(q){ if(q.date){mc[q.date.getMonth()+1]=(mc[q.date.getMonth()+1]||0)+1;ac[q.date.getFullYear()]=(ac[q.date.getFullYear()]||0)+1;} });

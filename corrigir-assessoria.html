@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corrigir Assessoria Jan–Jun 2026</title>
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{background:#fff;border-radius:16px;max-width:560px;width:100%;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  h1{font-size:20px;color:#003B73;margin-bottom:8px;}
+  p{font-size:14px;color:#475569;line-height:1.6;margin-bottom:20px;}
+  ul{font-size:13px;color:#475569;line-height:1.7;margin:0 0 20px 18px;}
+  button{width:100%;padding:14px;background:#1d4ed8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;}
+  button:disabled{background:#94a3b8;cursor:not-allowed;}
+  #status{margin-top:18px;font-size:14px;line-height:1.6;min-height:20px;}
+  .ok{color:#0d904f;font-weight:600;} .err{color:#dc2626;font-weight:600;} .info{color:#64748b;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Corrigir Assessoria de Vendas — Jan–Jun 2026</h1>
+  <p>Esta página aplica, de uma só vez, as percentagens de <b>orçamentos</b> corrigidas (excluindo os estados <b>Anulado, Caducado e Substituído</b>) diretamente no SharePoint. Os dados de <b>Ordens de Serviço</b> ficam intactos.</p>
+  <ul>
+    <li>Abre esta página <b>depois</b> de teres entrado na intranet (para a sessão estar ativa).</li>
+    <li>Clica no botão. Se pedir login da Microsoft, autentica.</li>
+    <li>No fim, abre a intranet → Indicadores → Assessoria de Vendas e confere Jan a Jun.</li>
+    <li>Depois de confirmares, podes apagar este ficheiro do GitHub.</li>
+  </ul>
+  <button id="btn" onclick="aplicar()">Aplicar correção agora</button>
+  <div id="status"></div>
+</div>
+<script>
+var DADOS = {"2026":{"1":{"Tomás Tico Peixinho Figueiredo":{"orcTotal":122,"orcEmail":93,"orcAprov":116},"Rúben Filipe Castelar Nogueira":{"orcTotal":57,"orcEmail":32,"orcAprov":56},"Ricardo Valente Ferreira":{"orcTotal":40,"orcEmail":29,"orcAprov":37},"Pedro Luís Machado da Mota Pereira":{"orcTotal":37,"orcEmail":31,"orcAprov":35},"Valter Sousa Borges":{"orcTotal":10,"orcEmail":2,"orcAprov":6},"Paulo Jorge Serfaty Rodrigues":{"orcTotal":4,"orcEmail":1,"orcAprov":3}},"2":{"Tomás Tico Peixinho Figueiredo":{"orcTotal":104,"orcEmail":82,"orcAprov":102},"Valter Sousa Borges":{"orcTotal":13,"orcEmail":5,"orcAprov":5},"Pedro Luís Machado da Mota Pereira":{"orcTotal":43,"orcEmail":13,"orcAprov":43},"Ricardo Valente Ferreira":{"orcTotal":45,"orcEmail":27,"orcAprov":43},"Rúben Filipe Castelar Nogueira":{"orcTotal":40,"orcEmail":20,"orcAprov":39},"Paulo Jorge Serfaty Rodrigues":{"orcTotal":10,"orcEmail":1,"orcAprov":9}},"3":{"Pedro Luís Machado da Mota Pereira":{"orcTotal":38,"orcEmail":14,"orcAprov":38},"Ricardo Valente Ferreira":{"orcTotal":42,"orcEmail":14,"orcAprov":41},"Tomás Tico Peixinho Figueiredo":{"orcTotal":119,"orcEmail":97,"orcAprov":113},"Rúben Filipe Castelar Nogueira":{"orcTotal":39,"orcEmail":23,"orcAprov":39},"Valter Sousa Borges":{"orcTotal":28,"orcEmail":6,"orcAprov":20},"Paulo Jorge Serfaty Rodrigues":{"orcTotal":12,"orcEmail":3,"orcAprov":11}},"4":{"Tomás Tico Peixinho Figueiredo":{"orcTotal":88,"orcEmail":73,"orcAprov":81},"Rúben Filipe Castelar Nogueira":{"orcTotal":61,"orcEmail":37,"orcAprov":57},"Pedro Luís Machado da Mota Pereira":{"orcTotal":52,"orcEmail":12,"orcAprov":51},"Ricardo Valente Ferreira":{"orcTotal":55,"orcEmail":18,"orcAprov":54},"Valter Sousa Borges":{"orcTotal":15,"orcEmail":4,"orcAprov":10},"Paulo Jorge Serfaty Rodrigues":{"orcTotal":6,"orcEmail":4,"orcAprov":3}},"5":{"Valter Sousa Borges":{"orcTotal":17,"orcEmail":7,"orcAprov":10},"Pedro Luís Machado da Mota Pereira":{"orcTotal":46,"orcEmail":10,"orcAprov":46},"Tomás Tico Peixinho Figueiredo":{"orcTotal":119,"orcEmail":84,"orcAprov":114},"Rúben Filipe Castelar Nogueira":{"orcTotal":46,"orcEmail":18,"orcAprov":45},"Paulo Jorge Serfaty Rodrigues":{"orcTotal":7,"orcEmail":3,"orcAprov":6},"Ricardo Valente Ferreira":{"orcTotal":45,"orcEmail":21,"orcAprov":40}},"6":{"Tomás Tico Peixinho Figueiredo":{"orcTotal":106,"orcEmail":85,"orcAprov":91},"Rúben Filipe Castelar Nogueira":{"orcTotal":26,"orcEmail":15,"orcAprov":22},"Ricardo Valente Ferreira":{"orcTotal":16,"orcEmail":4,"orcAprov":14},"Pedro Luís Machado da Mota Pereira":{"orcTotal":61,"orcEmail":20,"orcAprov":57},"Valter Sousa Borges":{"orcTotal":6,"orcEmail":2,"orcAprov":4},"Paulo Jorge Serfaty Rodrigues":{"orcTotal":4,"orcEmail":1,"orcAprov":0}}}};
+var MSAL_CONFIG = { auth: { clientId:'09d343c1-e3ef-4a71-b50e-be14e7aed4c4', authority:'https://login.microsoftonline.com/17ce2502-f743-4288-86df-fb21fcc4b655', redirectUri: window.location.origin + '/intranet.html' }, cache:{ cacheLocation:'localStorage', storeAuthStateInCookie:true } };
+var DRIVE='b!mdw2oqB7DkCZ0NXnFleY4zS_Sr3beMpKpR9JO3oNOeOpAVO6L8U9TpkawXl-2TJn';
+var FILEURL='https://graph.microsoft.com/v1.0/drives/'+DRIVE+'/root:/Intranet/Dashboard_State/assessoria_vendas.json:/content';
+var SCOPES=['Files.ReadWrite.All','Sites.ReadWrite.All'];
+var pca=new msal.PublicClientApplication(MSAL_CONFIG);
+try{ pca.handleRedirectPromise(); }catch(e){}
+function st(msg,cls){ document.getElementById('status').innerHTML='<span class="'+(cls||'info')+'">'+msg+'</span>'; }
+function getToken(){
+  var accts=pca.getAllAccounts();
+  if(accts && accts.length){
+    return pca.acquireTokenSilent({scopes:SCOPES, account:accts[0]}).then(function(r){return r.accessToken;})
+      .catch(function(){ return pca.acquireTokenPopup({scopes:SCOPES}).then(function(r){return r.accessToken;}); });
+  }
+  return pca.loginPopup({scopes:SCOPES}).then(function(){ var a=pca.getAllAccounts(); return pca.acquireTokenSilent({scopes:SCOPES, account:a[0]}).then(function(r){return r.accessToken;}); });
+}
+function aplicar(){
+  var btn=document.getElementById('btn'); btn.disabled=true;
+  st('A autenticar…');
+  var TOKEN;
+  getToken().then(function(token){ TOKEN=token; st('A ler dados atuais do SharePoint…');
+    return fetch(FILEURL,{headers:{Authorization:'Bearer '+token}});
+  }).then(function(resp){ return resp.ok?resp.json():{}; })
+  .then(function(store){
+    if(!store||typeof store!=='object') store={};
+    var nM=0;
+    Object.keys(DADOS).forEach(function(y){ store[y]=store[y]||{};
+      Object.keys(DADOS[y]).forEach(function(m){ store[y][m]=store[y][m]||{}; nM++;
+        Object.keys(DADOS[y][m]).forEach(function(rec){ var cur=store[y][m][rec]=store[y][m][rec]||{}; var src=DADOS[y][m][rec]; Object.keys(src).forEach(function(k){cur[k]=src[k];}); });
+      });
+    });
+    try{ localStorage.setItem('intranet_assessoria', JSON.stringify(store)); }catch(e){}
+    st('A guardar no SharePoint… ('+nM+' meses)');
+    return fetch(FILEURL,{method:'PUT',headers:{Authorization:'Bearer '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify(store)}).then(function(put){
+      if(!put.ok) throw new Error('Falha ao guardar (HTTP '+put.status+')');
+      st('✓ Correção aplicada com sucesso! Abre a intranet → Indicadores → Assessoria de Vendas e confere Jan a Jun. Depois podes apagar este ficheiro do GitHub.','ok');
+    });
+  }).catch(function(e){ st('Erro: '+(e && e.message ? e.message : e)+'. Confirma que entraste primeiro na intranet e tenta de novo.','err'); btn.disabled=false; });
+}
+</script>
+</body>
+</html>
