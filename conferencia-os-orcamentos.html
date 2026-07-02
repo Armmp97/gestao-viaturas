@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conferência OS vs Orçamentos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#334155 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+  h1{color:white;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center}
+  .sub{color:#94a3b8;font-size:14px;margin-bottom:28px;text-align:center;max-width:760px;line-height:1.6}
+  .card{background:white;border-radius:16px;padding:28px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:760px;width:100%}
+  .uprow{display:flex;gap:14px;flex-wrap:wrap}
+  .upbox{flex:1;min-width:230px;border:2px dashed #cbd5e1;border-radius:12px;padding:18px;text-align:center;position:relative}
+  .upbox h3{font-size:13px;color:#0f172a;font-weight:700;margin-bottom:4px}
+  .upbox p{font-size:11px;color:#94a3b8;margin-bottom:12px;line-height:1.5}
+  .upbox.done{border-color:#0d904f;background:#f0fdf4}
+  .file-wrap{position:relative;display:inline-block}
+  .file-wrap input[type="file"]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0}
+  .upload-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer}
+  .ustat{font-size:11px;font-weight:600;margin-top:8px;min-height:14px;word-break:break-all}
+  .ok{color:#059669}.err{color:#dc2626}
+  .run-btn{width:100%;margin-top:18px;padding:13px;background:#0d904f;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .run-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+  .results{margin-top:24px;width:100%;max-width:1220px;display:none}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+  .sumbox{background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12)}
+  .sumbox .n{font-size:26px;font-weight:800}
+  .sumbox .l{font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .sec{background:white;border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+  .sec-h{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .sec-d{font-size:12px;color:#64748b;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:7px 9px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap}
+  th{background:#f8fafc;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0}
+  td:first-child,th:first-child,td.l,th.l{text-align:left}
+  td.wrap{white-space:normal;max-width:340px;font-size:11.5px;color:#475569}
+  .tbl-wrap{overflow-x:auto;max-height:560px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:10px}
+  .badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;display:inline-block}
+  .b-ok{background:#dcfce7;color:#166534}
+  .b-no{background:#fee2e2;color:#991b1b}
+  .b-n{background:#e0e7ff;color:#3730a3}
+  .b-st{background:#f1f5f9;color:#475569;margin:1px 2px}
+  .empty{font-size:12.5px;color:#16a34a;padding:8px 2px;font-weight:600}
+  .hint{margin-top:6px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12px;color:#64748b;line-height:1.6}
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .fbtn{padding:5px 12px;border:1px solid #cbd5e1;background:white;border-radius:20px;font-size:11.5px;font-weight:600;color:#475569;cursor:pointer;font-family:inherit}
+  .fbtn.active{background:#0f172a;color:white;border-color:#0f172a}
+  .toggle{cursor:pointer;user-select:none}
+  .toggle .arrow{font-size:11px;transition:transform .2s;display:inline-block}
+  .collapsed .arrow{transform:rotate(-90deg)}
+  .collapsed .tbl-wrap,.collapsed .filterbar{display:none}
+</style>
+</head>
+<body>
+
+<h1>🔍 Conferência OS vs Orçamentos</h1>
+<p class="sub">Cruza as Ordens de Serviço com os Orçamentos do mesmo mês (pela matrícula) para saber se foi feito orçamento a cada OS. Mostra quem abriu a OS e quem criou o orçamento, quantidades e taxa de cobertura. As OSV em estado <b>Anulado/Entregue</b> e os orçamentos <b>Anulados</b> são ignorados automaticamente.</p>
+
+<div class="card">
+  <div class="uprow">
+    <div class="upbox" id="boxOs">
+      <h3>1 · Ordens de Serviço</h3>
+      <p>Export do OfficeGest das OSV do mês (.xlsx)</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileOs" accept=".xlsx,.xls,.csv"></div>
+      <div class="ustat" id="statOs"></div>
+    </div>
+    <div class="upbox" id="boxOrc">
+      <h3>2 · Orçamentos [ORC]</h3>
+      <p>Export do OfficeGest dos orçamentos (.xlsx). Pode trazer vários meses — filtro pelo mês das OS.</p>
+      <div class="file-wrap"><button class="upload-btn">📁 Escolher</button><input type="file" id="fileOrc" accept=".xlsx,.xls,.csv"></div>
+      <div class="ustat" id="statOrc"></div>
+    </div>
+  </div>
+  <button class="run-btn" id="runBtn" disabled onclick="conferir()">Conferir OS vs Orçamentos</button>
+  <div class="hint" id="topHint">Carrega os dois ficheiros. O mês é detetado automaticamente a partir das Ordens de Serviço; os orçamentos são filtrados para esse mesmo mês.</div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+/* ============ Estado ============ */
+var DATA = { Os:null, Orc:null };
+var LAST = null;
+
+/* ============ Utilitários ============ */
+function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pad2(x){ return String(x).padStart(2,'0'); }
+function deac(s){ return String(s===null||s===undefined?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
+function nmat(x){ return String(x===null||x===undefined?'':x).toUpperCase().replace(/[^A-Z0-9]/g,''); }
+function cleanPerson(s){ return String(s===null||s===undefined?'':s).trim().replace(/^\[\d+\]\s*/,''); }
+function round2(n){ return Math.round((n+Number.EPSILON)*100)/100; }
+function parseNum(v){
+  if(v===null||v===undefined||v==='') return 0;
+  if(typeof v==='number') return v;
+  var s=String(v).trim(); if(s==='') return 0;
+  if(s.indexOf(',')>=0 && s.indexOf('.')>=0){ s=s.replace(/\./g,'').replace(',','.'); }
+  else if(s.indexOf(',')>=0){ s=s.replace(',','.'); }
+  var n=parseFloat(s); return isNaN(n)?0:n;
+}
+function eur(n){ return (n===null||n===undefined)?'—':Number(n).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+function toISO(v){
+  if(v===null||v===undefined||v==='') return '';
+  if(v instanceof Date && !isNaN(v)){ return v.getFullYear()+'-'+pad2(v.getMonth()+1)+'-'+pad2(v.getDate()); }
+  var s=String(v).trim(); var m;
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return m[1]+'-'+m[2]+'-'+m[3];
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return m[3]+'-'+pad2(m[2])+'-'+pad2(m[1]);
+  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/); if(m) return m[3]+'-'+pad2(m[2])+'-'+pad2(m[1]);
+  return '';
+}
+function ym(v){ var iso=toISO(v); return iso?iso.slice(0,7):''; }
+function isoToPt(iso){ var m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?m[3]+'/'+m[2]+'/'+m[1]:esc(iso); }
+var MESES=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function ymLabel(y){ var p=String(y).split('-'); return p.length===2?(MESES[parseInt(p[1],10)]+' de '+p[0]):y; }
+
+/* ============ Leitura de ficheiros ============ */
+function readFile(file, kind, cb){
+  var ext=(file.name.split('.').pop()||'').toLowerCase();
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var rows;
+      if(ext==='csv'){ rows=parseCsv(new TextDecoder('windows-1252').decode(e.target.result)); }
+      else{
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+      }
+      cb(null, parseSheet(rows));
+    }catch(err){ cb(err); }
+  };
+  reader.onerror=function(){ cb(new Error('Falha ao ler o ficheiro')); };
+  reader.readAsArrayBuffer(file);
+}
+function parseCsv(text){
+  text=text.replace(/^﻿/,'');
+  var rows=[],row=[],field='',q=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; } else field+=c; }
+    else{ if(c==='"') q=true; else if(c===';'||c===','){ row.push(field); field=''; }
+      else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else if(c==='\r'){} else field+=c; }
+  }
+  if(field!==''||row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+/* Deteta a linha de cabeçalho (a que tem "Núm.") e devolve {header, rows} */
+function parseSheet(rows){
+  var hr=-1;
+  for(var i=0;i<Math.min(rows.length,10);i++){
+    var r=rows[i]||[];
+    for(var j=0;j<r.length;j++){ if(String(r[j]||'').trim()==='Núm.'){ hr=i; break; } }
+    if(hr>=0) break;
+  }
+  if(hr<0) hr=0;
+  var header=(rows[hr]||[]).map(function(h){ return String(h===null||h===undefined?'':h).trim(); });
+  var data=[];
+  for(var k=hr+1;k<rows.length;k++){
+    var rr=rows[k]||[];
+    if(rr.some(function(c){ return c!==null&&c!==undefined&&String(c).trim()!==''; })) data.push(rr);
+  }
+  return { header:header, rows:data };
+}
+function colIdx(header, names){
+  for(var n=0;n<names.length;n++){
+    var want=deac(names[n]);
+    for(var i=0;i<header.length;i++){ if(deac(header[i])===want) return i; }
+  }
+  // fallback: contém
+  for(var n2=0;n2<names.length;n2++){
+    var w=deac(names[n2]);
+    for(var i2=0;i2<header.length;i2++){ if(deac(header[i2]).indexOf(w)>=0) return i2; }
+  }
+  return -1;
+}
+
+/* ============ Upload handlers ============ */
+function wire(id, box, stat, kind){
+  document.getElementById(id).addEventListener('change', function(ev){
+    var f=ev.target.files[0]; if(!f) return;
+    document.getElementById(stat).textContent='A ler…';
+    document.getElementById(stat).className='ustat';
+    readFile(f, kind, function(err, parsed){
+      if(err){ DATA[kind]=null; document.getElementById(stat).textContent='Erro: '+err.message; document.getElementById(stat).className='ustat err'; document.getElementById(box).classList.remove('done'); refreshRun(); return; }
+      DATA[kind]=parsed;
+      document.getElementById(stat).textContent='✓ '+parsed.rows.length+' linhas';
+      document.getElementById(stat).className='ustat ok';
+      document.getElementById(box).classList.add('done');
+      refreshRun();
+    });
+  });
+}
+function refreshRun(){ document.getElementById('runBtn').disabled=!(DATA.Os&&DATA.Orc); }
+wire('fileOs','boxOs','statOs','Os');
+wire('fileOrc','boxOrc','statOrc','Orc');
+
+/* ============ Conferência ============ */
+function conferir(){
+  var os=DATA.Os, orc=DATA.Orc;
+  // Colunas OS
+  var O={ num:colIdx(os.header,['Núm.']), data:colIdx(os.header,['Data']), cli:colIdx(os.header,['Cliente']),
+          mat:colIdx(os.header,['Viatura']), marca:colIdx(os.header,['Marca']), modelo:colIdx(os.header,['Modelo']),
+          interv:colIdx(os.header,['Intervenções']), estado:colIdx(os.header,['Estado']), oper:colIdx(os.header,['Oper Reg.','Oper Reg']) };
+  // Colunas ORC
+  var C={ num:colIdx(orc.header,['Núm.']), data:colIdx(orc.header,['Data Doc.','Data']), cli:colIdx(orc.header,['Cliente']),
+          mat:colIdx(orc.header,['Viatura']), emp:colIdx(orc.header,['Empregado']), estado:colIdx(orc.header,['Estado']),
+          total:colIdx(orc.header,['Total']) };
+  if(O.num<0||O.mat<0||O.estado<0){ alert('Não reconheci as colunas do ficheiro de Ordens de Serviço (Núm./Viatura/Estado).'); return; }
+  if(C.num<0||C.mat<0||C.estado<0){ alert('Não reconheci as colunas do ficheiro de Orçamentos (Núm./Viatura/Estado).'); return; }
+
+  // Mês alvo = mês mais frequente nas OS
+  var mc={};
+  os.rows.forEach(function(r){ var m=ym(r[O.data]); if(m){ mc[m]=(mc[m]||0)+1; } });
+  var mes=''; var best=-1; for(var k in mc){ if(mc[k]>best){ best=mc[k]; mes=k; } }
+
+  var OS_EXCL={'anulado':1,'entregue':1}, ORC_EXCL={'anulado':1};
+
+  // OS consideradas
+  var osConsid=[], osExcl=0;
+  os.rows.forEach(function(r){
+    if(ym(r[O.data])!==mes) return;
+    var st=deac(r[O.estado]);
+    if(OS_EXCL[st]){ osExcl++; return; }
+    osConsid.push(r);
+  });
+  // ORC considerados (mesmo mês)
+  var orcConsid=[], orcExcl=0, orcMesTotal=0;
+  orc.rows.forEach(function(r){
+    if(ym(r[C.data])!==mes) return;
+    orcMesTotal++;
+    if(ORC_EXCL[deac(r[C.estado])]){ orcExcl++; return; }
+    orcConsid.push(r);
+  });
+  // Mapa matrícula -> orçamentos
+  var orcMap={};
+  orcConsid.forEach(function(r){
+    var m=nmat(r[C.mat]); if(!m) return;
+    (orcMap[m]=orcMap[m]||[]).push({ num:r[C.num], emp:cleanPerson(r[C.emp]), estado:r[C.estado], data:r[C.data], total:parseNum(r[C.total]), mat:r[C.mat] });
+  });
+
+  // Classificar OS
+  var comOrc=[], semOrc=[];
+  var osMats={};
+  osConsid.forEach(function(r){
+    var m=nmat(r[O.mat]);
+    osMats[m]=1;
+    var rec={ num:r[O.num], data:r[O.data], cli:r[O.cli], mat:r[O.mat], marca:r[O.marca], modelo:O.modelo>=0?r[O.modelo]:'',
+              interv:O.interv>=0?r[O.interv]:'', estado:r[O.estado], oper:cleanPerson(r[O.oper]),
+              orcs:(m&&orcMap[m])?orcMap[m]:[] };
+    if(rec.orcs.length){ comOrc.push(rec); } else { semOrc.push(rec); }
+  });
+  // Orçamentos sem OS correspondente no mês
+  var orcSemOs=orcConsid.filter(function(r){ var m=nmat(r[C.mat]); return !osMats[m]; })
+    .map(function(r){ return { num:r[C.num], data:r[C.data], mat:r[C.mat], cli:r[C.cli], emp:cleanPerson(r[C.emp]), estado:r[C.estado], total:parseNum(r[C.total]) }; });
+
+  // Agregações por colaborador
+  var byOper={};
+  osConsid.forEach(function(r){
+    var p=cleanPerson(r[O.oper])||'(sem registo)';
+    var m=nmat(r[O.mat]);
+    var o=byOper[p]=byOper[p]||{abertas:0,com:0,sem:0};
+    o.abertas++; if(m&&orcMap[m]) o.com++; else o.sem++;
+  });
+  var byCriador={};
+  orcConsid.forEach(function(r){ var p=cleanPerson(r[C.emp])||'(sem registo)'; byCriador[p]=(byCriador[p]||0)+1; });
+
+  LAST={ mes:mes, osConsid:osConsid.length, osExcl:osExcl, orcMesTotal:orcMesTotal, orcExcl:orcExcl, orcConsid:orcConsid.length,
+         comOrc:comOrc, semOrc:semOrc, orcSemOs:orcSemOs, byOper:byOper, byCriador:byCriador };
+  render();
+}
+
+/* ============ Render ============ */
+function render(){
+  var R=LAST, out=document.getElementById('results');
+  var cob = R.osConsid? (100*R.comOrc.length/R.osConsid):0;
+  var cobColor = cob>=70?'#0d904f':(cob>=40?'#d97706':'#dc2626');
+
+  var h='';
+  h+='<div class="summary">';
+  h+=box(ymLabel(R.mes),'Mês analisado','#0f172a',true);
+  h+=box(R.osConsid,'OS consideradas','#0f172a');
+  h+=box(R.comOrc.length,'OS com orçamento','#0d904f');
+  h+=box(R.semOrc.length,'OS sem orçamento','#dc2626');
+  h+=box(cob.toFixed(1)+'%','Cobertura',cobColor);
+  h+=box(R.orcConsid,'Orçamentos no mês','#1d4ed8');
+  h+='</div>';
+
+  // Nota exclusões
+  h+='<div class="sec" style="padding:12px 18px"><div class="sec-d" style="margin:0">'+
+     'Foram ignoradas <b>'+R.osExcl+'</b> OSV em estado Anulado/Entregue e <b>'+R.orcExcl+'</b> orçamento(s) Anulado(s). '+
+     'Correspondência feita pela <b>matrícula</b>, dentro do mês de '+esc(ymLabel(R.mes))+'.'+
+     '</div></div>';
+
+  /* ---- OS SEM orçamento ---- */
+  h+='<div class="sec"><div class="sec-h">🚨 OS sem orçamento <span class="badge b-no">'+R.semOrc.length+'</span></div>';
+  h+='<div class="sec-d">Ordens de serviço sem qualquer orçamento (não anulado) para a mesma matrícula no mês. Filtra por quem abriu a OS.</div>';
+  if(R.semOrc.length){
+    var opers=uniqueSorted(R.semOrc.map(function(r){return r.oper||'(sem registo)';}));
+    h+='<div class="filterbar" id="fbSem"><button class="fbtn active" onclick="filterSem(this,\'__all\')">Todos ('+R.semOrc.length+')</button>';
+    opers.forEach(function(p){ var n=R.semOrc.filter(function(r){return (r.oper||'(sem registo)')===p;}).length;
+      h+='<button class="fbtn" onclick="filterSem(this,'+JSON.stringify(p).replace(/"/g,'&quot;')+')">'+esc(p)+' ('+n+')</button>'; });
+    h+='</div>';
+    h+='<div class="tbl-wrap"><table id="tblSem"><thead><tr>'+
+       '<th class="l">OS</th><th class="l">Data</th><th class="l">Cliente</th><th class="l">Matrícula</th>'+
+       '<th class="l">Viatura</th><th class="l">Intervenções</th><th class="l">Estado OS</th><th class="l">Aberta por</th>'+
+       '</tr></thead><tbody>';
+    R.semOrc.forEach(function(r){
+      var vi=[r.marca,r.modelo].filter(Boolean).join(' ');
+      h+='<tr data-oper="'+esc(r.oper||'(sem registo)')+'">'+
+         '<td class="l"><b>'+esc(r.num)+'</b></td>'+
+         '<td class="l">'+isoToPt(toISO(r.data))+'</td>'+
+         '<td class="l">'+esc(r.cli)+'</td>'+
+         '<td class="l"><b>'+esc(r.mat)+'</b></td>'+
+         '<td class="l">'+esc(vi)+'</td>'+
+         '<td class="wrap" title="'+esc(String(r.interv||'').replace(/\s+/g,' '))+'">'+esc(shorten(r.interv,90))+'</td>'+
+         '<td class="l">'+esc(r.estado)+'</td>'+
+         '<td class="l">'+esc(r.oper)+'</td>'+
+         '</tr>';
+    });
+    h+='</tbody></table></div>';
+  } else { h+='<div class="empty">✓ Todas as OS consideradas têm orçamento.</div>'; }
+  h+='</div>';
+
+  /* ---- OS COM orçamento ---- */
+  h+='<div class="sec"><div class="sec-h">✅ OS com orçamento <span class="badge b-ok">'+R.comOrc.length+'</span></div>';
+  h+='<div class="sec-d">Para cada OS, quantos orçamentos existem para a matrícula, os respetivos números, estados e quem os criou.</div>';
+  if(R.comOrc.length){
+    h+='<div class="tbl-wrap"><table><thead><tr>'+
+       '<th class="l">OS</th><th class="l">Data</th><th class="l">Matrícula</th><th class="l">Aberta por</th>'+
+       '<th>Nº orç.</th><th class="l">Orçamento(s)</th><th class="l">Criado por</th><th class="l">Estados</th><th>Valor</th>'+
+       '</tr></thead><tbody>';
+    R.comOrc.forEach(function(r){
+      var nums=r.orcs.map(function(o){return esc(o.num);}).join('<br>');
+      var crs=uniqueSorted(r.orcs.map(function(o){return o.emp;})).map(esc).join('<br>');
+      var sts=r.orcs.map(function(o){return '<span class="badge b-st">'+esc(o.estado)+'</span>';}).join(' ');
+      var tot=r.orcs.reduce(function(a,o){return a+o.total;},0);
+      h+='<tr>'+
+         '<td class="l"><b>'+esc(r.num)+'</b></td>'+
+         '<td class="l">'+isoToPt(toISO(r.data))+'</td>'+
+         '<td class="l"><b>'+esc(r.mat)+'</b></td>'+
+         '<td class="l">'+esc(r.oper)+'</td>'+
+         '<td><span class="badge b-n">'+r.orcs.length+'</span></td>'+
+         '<td class="l">'+nums+'</td>'+
+         '<td class="l">'+crs+'</td>'+
+         '<td class="l">'+sts+'</td>'+
+         '<td>'+eur(tot)+'</td>'+
+         '</tr>';
+    });
+    h+='</tbody></table></div>';
+  } else { h+='<div class="empty">Sem OS com orçamento.</div>'; }
+  h+='</div>';
+
+  /* ---- Resumo por colaborador ---- */
+  h+='<div class="sec"><div class="sec-h">👥 Resumo por colaborador</div>';
+  h+='<div class="sec-d">Quem abriu OS (e quantas ficaram sem orçamento) e quem criou orçamentos no mês.</div>';
+  h+='<div style="display:flex;gap:18px;flex-wrap:wrap">';
+  // abertura OS
+  var opRows=Object.keys(R.byOper).map(function(p){var o=R.byOper[p];return {p:p,a:o.abertas,c:o.com,s:o.sem};}).sort(function(a,b){return b.a-a.a;});
+  h+='<div style="flex:1;min-width:340px"><div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px">Abertura de OS</div>'+
+     '<div class="tbl-wrap"><table><thead><tr><th class="l">Colaborador</th><th>OS</th><th>c/ orç.</th><th>s/ orç.</th><th>%</th></tr></thead><tbody>';
+  opRows.forEach(function(r){ var pc=r.a?(100*r.c/r.a):0;
+    h+='<tr><td class="l">'+esc(r.p)+'</td><td>'+r.a+'</td><td style="color:#0d904f;font-weight:700">'+r.c+'</td><td style="color:#dc2626;font-weight:700">'+r.s+'</td><td>'+pc.toFixed(0)+'%</td></tr>'; });
+  h+='</tbody></table></div></div>';
+  // criador orçamentos
+  var crRows=Object.keys(R.byCriador).map(function(p){return {p:p,n:R.byCriador[p]};}).sort(function(a,b){return b.n-a.n;});
+  h+='<div style="flex:1;min-width:280px"><div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px">Criação de orçamentos</div>'+
+     '<div class="tbl-wrap"><table><thead><tr><th class="l">Colaborador</th><th>Orçamentos</th></tr></thead><tbody>';
+  crRows.forEach(function(r){ h+='<tr><td class="l">'+esc(r.p)+'</td><td><b>'+r.n+'</b></td></tr>'; });
+  h+='</tbody></table></div></div>';
+  h+='</div></div>';
+
+  /* ---- Orçamentos sem OS (secundário) ---- */
+  h+='<div class="sec collapsed" id="secOrcSemOs"><div class="sec-h toggle" onclick="document.getElementById(\'secOrcSemOs\').classList.toggle(\'collapsed\')">'+
+     '<span class="arrow">▼</span> ℹ️ Orçamentos sem OS correspondente <span class="badge b-n">'+R.orcSemOs.length+'</span></div>';
+  h+='<div class="sec-d">Orçamentos do mês cuja matrícula não aparece em nenhuma OS considerada (informativo — podem ser de viaturas com OS noutro mês ou sem OS aberta). Clica para expandir.</div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Orçamento</th><th class="l">Data</th><th class="l">Matrícula</th><th class="l">Cliente</th><th class="l">Criado por</th><th class="l">Estado</th><th>Valor</th></tr></thead><tbody>';
+  R.orcSemOs.forEach(function(r){
+    h+='<tr><td class="l"><b>'+esc(r.num)+'</b></td><td class="l">'+isoToPt(toISO(r.data))+'</td><td class="l"><b>'+esc(r.mat)+'</b></td><td class="l">'+esc(r.cli)+'</td><td class="l">'+esc(r.emp)+'</td><td class="l">'+esc(r.estado)+'</td><td>'+eur(r.total)+'</td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  out.innerHTML=h;
+  out.style.display='block';
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function box(n,l,color,small){ return '<div class="sumbox"><div class="n" style="color:'+color+';'+(small?'font-size:17px;line-height:1.2;padding-top:4px':'')+'">'+esc(n)+'</div><div class="l">'+esc(l)+'</div></div>'; }
+function shorten(s,n){ s=String(s||'').replace(/\s+/g,' ').trim(); return s.length>n?s.slice(0,n-1)+'…':s; }
+function uniqueSorted(arr){ var seen={},o=[]; arr.forEach(function(x){ if(x&&!seen[x]){seen[x]=1;o.push(x);} }); return o.sort(function(a,b){return a.localeCompare(b,'pt');}); }
+function filterSem(btn, oper){
+  var bar=document.getElementById('fbSem'); Array.prototype.forEach.call(bar.querySelectorAll('.fbtn'),function(b){b.classList.remove('active');}); btn.classList.add('active');
+  var rows=document.querySelectorAll('#tblSem tbody tr');
+  Array.prototype.forEach.call(rows,function(tr){ tr.style.display=(oper==='__all'||tr.getAttribute('data-oper')===oper)?'':'none'; });
+}
+</script>
+</body>
+</html>
