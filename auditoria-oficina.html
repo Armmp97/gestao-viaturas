@@ -50,7 +50,7 @@
 </head>
 <body>
 <h1>🔎 Auditoria Mensal da Oficina</h1>
-<p class="sub">Recolha 100% via API Officegest · universo = OS <b>faturadas no mês</b> + <b>fechadas/pendentes</b> (F/PED, fatura por validar) · séries 261 Cacém / 262 Colisão / 263 Lisboa · spec: <i>Spec_Auditoria_Mensal_Oficina.md</i></p>
+<p class="sub">Recolha 100% via API Officegest · Receção = OS <b>abertas no mês</b> · Mecânicos/Coordenação = OS <b>faturadas no mês</b> + <b>fechadas/pendentes</b> (F/PED, fatura por validar) · séries 261 Cacém / 262 Colisão / 263 Lisboa · spec: <i>Spec_Auditoria_Mensal_Oficina.md</i></p>
 
 <div class="card">
   <div class="row">
@@ -119,12 +119,12 @@ var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologi
 var MIN_ANEXOS=15;
 var CL={REC:17,MEC_C:18,MEC_R:19,QUAL:20};
 /* estados: FAC/ENT = faturadas (mês da fatura); F/PED = fechadas/pendentes (mês da alteração de estado, fatura por validar);
-   ESP/EXE e restantes abertos = pendentes de oficina (transitam); ANE ignorada. */
-var ST_FATURAVEL=['FAC','ENT'], ST_FECHADA=['F','PED'];
+   restantes abertos = em curso; ANE ignorada. */
+var ST_FECHADA=['F','PED'];
 
 /* ================= ESTADO ================= */
 var STOP=false, DATA=null, EMAILS=null, NOTES_CAPABLE=false;
-function storeKey(){ return 'audit2_'+document.getElementById('mes').value; } /* v2: força recolha nova */
+function storeKey(){ return 'audit3_'+document.getElementById('mes').value; } /* v3: receção por data de abertura */
 function saveData(){ try{ localStorage.setItem(storeKey(),JSON.stringify(DATA)); }catch(e){} }
 function loadData(){ try{ var d=JSON.parse(localStorage.getItem(storeKey())); if(d&&d.recs) return d; }catch(e){} return null; }
 
@@ -153,7 +153,6 @@ async function collect(mes){
   }
   setStat('A listar universo de OS…');
   if(!DATA.universe){
-    /* candidatas: alteradas desde o início do mês OU abertas no mês (para apanhar abertas paradas) */
     var lr=await api('v1','/workshop/os?filter[date_alter]='+first+'&operator=>=');
     var all=Object.values(lr.d&&lr.d.documents||{});
     DATA.universe=all.filter(function(o){ return [261,262,263].indexOf(o.serie)>=0 && o.state!=='ANE'; })
@@ -180,7 +179,7 @@ async function collect(mes){
     await sleep(pace);
   }
   DATA.done=true; DATA.notesCapable=NOTES_CAPABLE; saveData(); setBar(1);
-  setStat('Completa: '+Object.keys(DATA.recs).length+' faturadas + '+Object.keys(DATA.fech).length+' fechadas/pendentes + '+Object.keys(DATA.abertas).length+' abertas em '+mes+'.');
+  setStat('Completa: '+Object.keys(DATA.recs).length+' faturadas + '+Object.keys(DATA.fech).length+' fechadas/pendentes + '+Object.keys(DATA.abertas).length+' abertas + '+DATA.transitaOut.length+' transitantes em '+mes+'.');
   flash('ok','✔ Recolha completa. Carrega o Excel de emails (se quiseres) e gera o relatório.');
 }
 
@@ -210,7 +209,6 @@ async function enrich(rec){ /* checklists, anexos, picagens, cliente */
   rec.picN=ts.length;
   rec.picH=Math.round(ts.reduce(function(s,t){return s+(parseFloat(t.difference_hours)||0);},0)*100)/100;
   rec.mecs=[]; ts.forEach(function(t){ if(rec.mecs.indexOf(t.employee_name)<0) rec.mecs.push(t.employee_name); });
-  /* tempos: 1.ª e última picagem */
   var starts=ts.map(function(t){return t.start_time;}).filter(Boolean).sort();
   var ends=ts.map(function(t){return t.end_time||t.start_time;}).filter(Boolean).sort();
   rec.picFirst=starts[0]||null; rec.picLast=ends[ends.length-1]||null;
@@ -234,7 +232,6 @@ async function collectOne(u,mes){
     var det=(await api('v1','/workshop/os/'+u.n)).d;
     var d=det&&det.document; if(!d) return null;
     var rec=await baseRec(u,d);
-    /* fatura principal */
     if(rec.numdoc){
       var ft=(await api('v1','/sales/documents/FT/'+rec.numdoc)).d;
       if(ft&&ft.document){
@@ -246,12 +243,12 @@ async function collectOne(u,mes){
     var ftMes = rec.ftDate ? String(rec.ftDate).slice(0,7) : null;
     var openMes = String(rec.dtOpen||'').slice(0,7);
     var alterMes = String(rec.dtAlter||'').slice(0,7);
-    /* ---- buckets ---- */
-    if(ftMes===mes){ await enrich(rec); return {bucket:'mes',rec:rec}; }                       /* faturada no mês */
-    if(!ftMes && ST_FECHADA.indexOf(rec.state)>=0 && alterMes===mes){ await enrich(rec); rec.aguardaFatura=true; return {bucket:'fech',rec:rec}; } /* fechada/pendente no mês, sem fatura */
-    if(openMes===mes && !ftMes && ST_FECHADA.indexOf(rec.state)<0){ await enrich(rec); return {bucket:'aberta',rec:rec}; } /* aberta no mês, ainda em curso */
-    if(openMes===mes && ftMes && ftMes>mes){ return {bucket:'transita',rec:{n:rec.n,serie:rec.serie,state:rec.state,plate:rec.plate,dtOpen:rec.dtOpen,ftDate:rec.ftDate,operreg:rec.operreg}}; } /* faturada no mês seguinte */
-    return null; /* fora do âmbito deste mês */
+    /* ---- buckets (v3: receção = tudo o que abriu no mês; oficina = faturadas/fechadas no mês) ---- */
+    if(ftMes===mes){ await enrich(rec); rec._bk='mes'; return {bucket:'mes',rec:rec}; }
+    if(!ftMes && ST_FECHADA.indexOf(rec.state)>=0 && alterMes===mes){ await enrich(rec); rec.aguardaFatura=true; rec._bk='fech'; return {bucket:'fech',rec:rec}; }
+    if(openMes===mes && !ftMes && ST_FECHADA.indexOf(rec.state)<0){ await enrich(rec); rec._bk='aberta'; return {bucket:'aberta',rec:rec}; }
+    if(openMes===mes){ await enrich(rec); rec._bk='trans'; return {bucket:'transita',rec:rec}; }
+    return null;
   }catch(e){ return null; }
 }
 
@@ -295,14 +292,14 @@ function evalRec(rec){
   f.osDep      = !(rec.dep||rec.dep===0);
   f.osLoc      = !(rec.loc||rec.loc===0);
   f.osKms      = !(rec.kms>0) || (rec.kmsAnt>0 && (rec.kms-rec.kmsAnt)<=2);
-  f.osDtRec    = !(rec.dtRec&&String(rec.dtRec).trim());          /* basta estar preenchida */
-  f.osEntPrev  = !(rec.dtEntPrev&&String(rec.dtEntPrev).trim());  /* basta estar preenchida */
+  f.osDtRec    = !(rec.dtRec&&String(rec.dtRec).trim());
+  f.osEntPrev  = !(rec.dtEntPrev&&String(rec.dtEntPrev).trim());
   f.osSig      = !rec.sig;
   f.anexos     = (rec.att||0)<MIN_ANEXOS;
   f.clRec      = clOf(rec,CL.REC)===0;
   f.email      = EMAILS ? !EMAILS[osKey(rec.serie,rec.n)] : null;
   f.mecPic     = (rec.picN||0)===0;
-  f.mecHoras   = (rec.aguardaFatura||!(rec.ftMoH>0)||!(rec.picN>0)) ? null : rec.picH>rec.ftMoH; /* fechadas: aguarda fatura */
+  f.mecHoras   = (rec.aguardaFatura||!(rec.ftMoH>0)||!(rec.picN>0)) ? null : rec.picH>rec.ftMoH;
   f.mecCl      = clOf(rec,CL.MEC_C)===0 && clOf(rec,CL.MEC_R)===0;
   f.qual       = clOf(rec,CL.QUAL)===0;
   return f;
@@ -316,6 +313,26 @@ function pill(okN,totN){ if(!totN) return '<span class="pill pN">—</span>';
   return '<span class="pill '+c+'">'+Math.round(p*100)+'%</span>';
 }
 var FILT='all';
+var FP={rec:'all',mec:'all',coord:'all'}; /* filtros por colaborador */
+function selFiltro(key,options,current){
+  var h='<select onchange="FP.'+key+'=this.value;render()" style="margin:0 8px 0 0">';
+  h+='<option value="all"'+(current==='all'?' selected':'')+'>Todos</option>';
+  options.sort().forEach(function(o){ h+='<option value="'+esc(o)+'"'+(current===o?' selected':'')+'>'+esc(o)+'</option>'; });
+  return h+'</select>';
+}
+function exportPDF(divId,titulo){
+  var el=document.getElementById(divId); if(!el) return;
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+titulo+'</title><style>'+document.querySelector('style').innerHTML+
+    ' .tblwrap{max-height:none!important;overflow:visible!important} th{position:static!important} body{padding:16px} select,button{display:none} @media print{.tblwrap{border:none}}</style></head><body>'+
+    '<h1 style="font-size:18px">'+titulo+' — '+DATA.mes+'</h1>'+el.innerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(function(){ w.print(); },400);
+}
+function toolRow(key,options,current,divId,titulo){
+  return '<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><label style="margin:0">Colaborador:</label>'+selFiltro(key,options,current)+
+    '<button class="btn sec" style="padding:5px 12px;font-size:11.5px" onclick="exportPDF(\''+divId+'\',\''+titulo+'\')">📄 Exportar PDF</button></div>';
+}
 function moduleTable(evals,crits,keyFn){
   var by={};
   evals.forEach(function(e){ var k=keyFn(e); (by[k]=by[k]||[]).push(e); });
@@ -361,89 +378,111 @@ function detailTable(evalsIn,crits,cols,rowFn){
   return t+'</table></div>';
 }
 function fmtD(s){ return s?String(s).slice(0,16):'—'; }
+var BK_LBL={mes:'faturada',fech:'fechada s/fatura',aberta:'em curso',trans:'faturada mês seg.'};
+function bkBadge(r){ var b=r._bk||'mes'; var cls=b==='mes'?'pG':(b==='aberta'?'pN':'pA'); return '<span class="pill '+cls+'">'+BK_LBL[b]+'</span>'; }
 function render(){
   DATA=DATA||loadData();
-  if(!DATA||(!Object.keys(DATA.recs).length&&!Object.keys(DATA.fech||{}).length)){ flash('err','Sem dados recolhidos para este mês (nota: esta versão exige recolha nova).'); return; }
+  if(!DATA||(!Object.keys(DATA.recs).length&&!Object.keys(DATA.fech||{}).length&&!Object.keys(DATA.abertas||{}).length)){ flash('err','Sem dados recolhidos para este mês (nota: esta versão exige recolha nova).'); return; }
   var byF=function(r){ return FILT==='all'||String(r.serie)===FILT; };
   var fat=Object.values(DATA.recs).filter(byF);
   var fech=Object.values(DATA.fech||{}).filter(byF);
   var abertas=Object.values(DATA.abertas||{}).filter(byF);
   var tOut=(DATA.transitaOut||[]).filter(byF);
-  var universo=fat.concat(fech); /* faturadas + fechadas/pendentes = auditáveis */
-  var evals=universo.map(function(r){ return {r:r,f:evalRec(r)}; });
-  var evalsAb=abertas.map(function(r){ return {r:r,f:evalRec(r)}; });
+  var ofU=fat.concat(fech); /* universo OFICINA */
+  var recU=fat.concat(fech).concat(abertas).concat(tOut).filter(function(r){ return String(r.dtOpen).slice(0,7)===DATA.mes; }); /* universo RECEÇÃO */
+  var evals=ofU.map(function(r){ return {r:r,f:evalRec(r)}; });
+  var evalsRecAll=recU.map(function(r){ var f=evalRec(r); if(r._bk==='aberta'){ f.email=null; } return {r:r,f:f}; });
   var h='';
   h+='<div class="fbar">'+['all','261','262','263'].map(function(s){
     return '<button class="fbtn'+(FILT===s?' active':'')+'" onclick="FILT=\''+s+'\';render()">'+(s==='all'?'Todas':s+' '+SERIE[s])+'</button>';
   }).join('')+'</div>';
   var totFalhas=0; evals.forEach(function(e){ Object.values(e.f).forEach(function(v){ if(v===true) totFalhas++; }); });
-  var transitIn=universo.filter(function(r){return String(r.dtOpen).slice(0,7)!==DATA.mes;});
+  var transitIn=ofU.filter(function(r){return String(r.dtOpen).slice(0,7)!==DATA.mes;});
   h+='<div class="kpis">';
   h+='<div class="kpi"><b>'+fat.length+'</b><span>faturadas em '+DATA.mes+'</span></div>';
   h+='<div class="kpi"><b>'+fech.length+'</b><span>fechadas/pendentes (fatura por validar)</span></div>';
+  h+='<div class="kpi"><b>'+recU.length+'</b><span>abertas em '+DATA.mes+' (universo receção)</span></div>';
   h+='<div class="kpi"><b>'+transitIn.length+'</b><span>transitadas (abertas antes)</span></div>';
   h+='<div class="kpi"><b>'+(abertas.length+tOut.length)+'</b><span>transitam p/ mês seguinte</span></div>';
-  h+='<div class="kpi"><b>'+totFalhas+'</b><span>falhas totais</span></div>';
+  h+='<div class="kpi"><b>'+totFalhas+'</b><span>falhas totais (oficina)</span></div>';
   h+='</div>';
   if(!EMAILS) h+='<div class="badge-wait">⚠ Sem Excel de emails carregado — o critério "Email cliente" fica por avaliar.</div>';
   h+= DATA.notesCapable
     ? '<div class="msg ok" style="display:block">✔ A API já devolve notas de checklist — módulo Checklist→Orçamento ATIVO.</div>'
     : '<div class="badge-wait">⏸ Cruzamento Checklist→Orçamento: <b>aguarda API</b> (notas dos itens ainda não expostas pelo OfficeGest).</div>';
 
-  /* ---------- Receção (universo = faturadas + fechadas) ---------- */
-  h+='<h2>👥 Receção</h2>';
-  var evalsRec=evals.filter(function(e){ return isRececionista(DATA.emp[e.r.operreg]); });
-  var excluidas=evals.length-evalsRec.length;
-  h+=moduleTable(evalsRec,CRIT_REC,function(e){ return DATA.emp[e.r.operreg]||('Op. '+(e.r.operreg||'?')); });
+  /* ---------- Receção (universo = OS ABERTAS no mês) ---------- */
+  h+='<h2>👥 Receção — OS abertas em '+DATA.mes+'</h2>';
+  var evalsRec=evalsRecAll.filter(function(e){ return isRececionista(DATA.emp[e.r.operreg]); });
+  var nomesRec=[]; evalsRec.forEach(function(e){ var n=DATA.emp[e.r.operreg]; if(nomesRec.indexOf(n)<0) nomesRec.push(n); });
+  var evalsRecF = FP.rec==='all' ? evalsRec : evalsRec.filter(function(e){ return DATA.emp[e.r.operreg]===FP.rec; });
+  h+='<div id="dRec">';
+  h+=toolRow('rec',nomesRec,FP.rec,'dRec','Auditoria Receção');
+  h+=moduleTable(evalsRecF,CRIT_REC,function(e){ return DATA.emp[e.r.operreg]||('Op. '+(e.r.operreg||'?')); });
+  var excluidas=evalsRecAll.length-evalsRec.length;
   if(excluidas>0){
-    var outros={}; evals.forEach(function(e){ if(!isRececionista(DATA.emp[e.r.operreg])){ var n=DATA.emp[e.r.operreg]||('Op. '+e.r.operreg); outros[n]=(outros[n]||0)+1; } });
-    h+='<p class="note">'+excluidas+' OS registadas por não-rececionistas excluídas desta tabela: '+esc(Object.keys(outros).map(function(k){return k+' ('+outros[k]+')';}).join(', '))+'.</p>';
+    var outros={}; evalsRecAll.forEach(function(e){ if(!isRececionista(DATA.emp[e.r.operreg])){ var n=DATA.emp[e.r.operreg]||('Op. '+e.r.operreg); outros[n]=(outros[n]||0)+1; } });
+    h+='<p class="note">'+excluidas+' OS abertas por não-rececionistas excluídas: '+esc(Object.keys(outros).map(function(k){return k+' ('+outros[k]+')';}).join(', '))+'.</p>';
   }
   h+='<h3>Detalhe de falhas — Receção</h3>';
-  h+=detailTable(evalsRec,CRIT_REC,['OS','Matrícula','Operador','Falhas'],function(e,fails){
-    return '<tr><td>'+osLbl(e.r)+(e.r.aguardaFatura?' <span class="pill pA">s/fatura</span>':'')+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc(DATA.emp[e.r.operreg]||'—')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
+  h+=detailTable(evalsRecF,CRIT_REC,['OS','Estado','Matrícula','Operador','Falhas'],function(e,fails){
+    return '<tr><td>'+osLbl(e.r)+'</td><td>'+bkBadge(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc(DATA.emp[e.r.operreg]||'—')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
   });
+  h+='</div>';
 
-  /* ---------- Mecânicos ---------- */
-  h+='<h2>🔧 Mecânicos</h2>';
+  /* ---------- Mecânicos (universo = faturadas/fechadas no mês) ---------- */
+  h+='<h2>🔧 Mecânicos — OS faturadas/fechadas em '+DATA.mes+'</h2>';
   var evalsMec=[];
   evals.forEach(function(e){
     if(e.r.mecs&&e.r.mecs.length) e.r.mecs.forEach(function(m){ evalsMec.push({r:e.r,f:e.f,_mec:m}); });
     else evalsMec.push({r:e.r,f:e.f,_mec:'— OS sem picagens (falha de série) —'});
   });
-  h+=moduleTable(evalsMec,CRIT_MEC,function(e){ return e._mec; });
+  var nomesMec=[]; evalsMec.forEach(function(e){ if(nomesMec.indexOf(e._mec)<0) nomesMec.push(e._mec); });
+  var evalsMecF = FP.mec==='all' ? evalsMec : evalsMec.filter(function(e){ return e._mec===FP.mec; });
+  var evalsDetMec = FP.mec==='all' ? evals : evals.filter(function(e){ return (e.r.mecs||[]).indexOf(FP.mec)>=0 || (FP.mec.indexOf('sem picagens')>=0&&!(e.r.mecs&&e.r.mecs.length)); });
+  h+='<div id="dMec">';
+  h+=toolRow('mec',nomesMec,FP.mec,'dMec','Auditoria Mecânicos');
+  h+=moduleTable(evalsMecF,CRIT_MEC,function(e){ return e._mec; });
   h+='<p class="note">Nas fechadas/pendentes o critério "Picadas ≤ Faturadas" fica em espera até validares a fatura.</p>';
   h+='<h3>Detalhe de falhas — Mecânicos</h3>';
-  h+=detailTable(evals,CRIT_MEC,['OS','Matrícula','Mecânico(s)','Falhas'],function(e,fails){
+  h+=detailTable(evalsDetMec,CRIT_MEC,['OS','Matrícula','Mecânico(s)','Falhas'],function(e,fails){
     return '<tr><td>'+osLbl(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc((e.r.mecs||[]).join(', ')||'— sem picagens —')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
   });
+  h+='</div>';
 
   /* ---------- Coordenação ---------- */
   h+='<h2>📋 Coordenação — Checklist Controlo Qualidade</h2>';
+  var coordOpts=[COORD[261],COORD[262],COORD[263]];
+  var serieDoCoord=function(nome){ for(var s in COORD){ if(COORD[s]===nome) return +s; } return null; };
+  var evalsCoord = FP.coord==='all' ? evals : evals.filter(function(e){ return e.r.serie===serieDoCoord(FP.coord); });
+  h+='<div id="dCoord">';
+  h+=toolRow('coord',coordOpts,FP.coord,'dCoord','Auditoria Coordenação');
   h+='<div class="kpis">';
   [261,262,263].forEach(function(s){
+    if(FP.coord!=='all'&&COORD[s]!==FP.coord) return;
     var es=evals.filter(function(e){return e.r.serie===s;});
     var ok=es.filter(function(e){return !e.f.qual;}).length;
     h+='<div class="kpi"><b>'+ok+'/'+es.length+'</b><span>'+s+' '+SERIE[s]+' — '+esc(COORD[s])+' '+pill(ok,es.length)+'</span></div>';
   });
   h+='</div>';
   h+='<h3>Detalhe de falhas — Coordenação</h3>';
-  h+=detailTable(evals,[["qual","Chk Qualidade"]],['OS','Matrícula','Série','Coordenador'],function(e,fails){
+  h+=detailTable(evalsCoord,[["qual","Chk Qualidade"]],['OS','Matrícula','Série','Coordenador'],function(e,fails){
     return '<tr><td>'+osLbl(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+e.r.serie+' '+SERIE[e.r.serie]+'</td><td>'+esc(COORD[e.r.serie]||'—')+'</td></tr>';
   });
+  h+='</div>';
 
   /* ---------- Tempos ---------- */
   h+='<h2>⏱ Tempos (abertura → 1.ª picagem → última picagem → fecho)</h2>';
   h+='<div class="kpis">';
   [261,262,263].forEach(function(s){
-    var es=universo.filter(function(r){return r.serie===s&&r.picFirst;});
+    var es=ofU.filter(function(r){return r.serie===s&&r.picFirst;});
     var m1=es.map(function(r){return daysDiff(r.dtOpen,r.picFirst);}).filter(function(v){return v!==null;});
     var avg=m1.length?Math.round(m1.reduce(function(a,b){return a+b;},0)/m1.length*10)/10:null;
     h+='<div class="kpi"><b>'+(avg===null?'—':avg+' d')+'</b><span>'+s+' '+SERIE[s]+' — média abertura→1.ª picagem ('+m1.length+' OS)</span></div>';
   });
   h+='</div>';
   h+='<div class="tblwrap"><table><tr><th>OS</th><th>Matrícula</th><th>Abertura</th><th>1.ª picagem</th><th>Última picagem</th><th>Fecho (estado)</th><th>Abre→1.ª (d)</th><th>1.ª→Última (d)</th><th>Última→Fecho (d)</th></tr>';
-  universo.slice().sort(function(a,b){ return (daysDiff(b.dtOpen,b.picFirst)||0)-(daysDiff(a.dtOpen,a.picFirst)||0); }).forEach(function(r){
+  ofU.slice().sort(function(a,b){ return (daysDiff(b.dtOpen,b.picFirst)||0)-(daysDiff(a.dtOpen,a.picFirst)||0); }).forEach(function(r){
     var d1=daysDiff(r.dtOpen,r.picFirst), d2=daysDiff(r.picFirst,r.picLast), d3=daysDiff(r.picLast,r.dtAlter);
     h+='<tr><td>'+osLbl(r)+'</td><td>'+esc(r.plate)+'</td><td>'+fmtD(r.dtOpen).slice(0,10)+'</td><td>'+fmtD(r.picFirst)+'</td><td>'+fmtD(r.picLast)+'</td><td>'+fmtD(r.dtAlter)+'</td>'+
       '<td'+(d1!==null&&d1>3?' class="bad"':'')+'>'+(d1===null?'—':d1)+'</td><td>'+(d2===null?'—':d2)+'</td><td>'+(d3===null?'—':d3)+'</td></tr>';
@@ -476,20 +515,12 @@ function render(){
     h+='<tr><td>'+osLbl(r)+'</td><td>'+r.state+'</td><td>'+esc(r.plate)+'</td><td>'+fmtD(r.dtOpen).slice(0,10)+'</td><td>'+fmtD(r.picFirst)+'</td><td'+(semPic!==null&&semPic>3?' class="bad"':'')+'>'+(semPic===null?'—':Math.round(semPic))+'</td><td>'+esc(DATA.emp[r.operreg]||'—')+'</td></tr>';
   });
   tOut.forEach(function(r){
-    h+='<tr><td>'+osLbl(r)+'</td><td>'+r.state+' <span class="pill pN">faturada '+String(r.ftDate).slice(0,10)+'</span></td><td>'+esc(r.plate)+'</td><td>'+fmtD(r.dtOpen).slice(0,10)+'</td><td colspan="2">—</td><td>'+esc(DATA.emp[r.operreg]||'—')+'</td></tr>';
+    var semPic2=r.picFirst?null:daysDiff(r.dtOpen,new Date().toISOString());
+    h+='<tr><td>'+osLbl(r)+'</td><td>'+r.state+(r.ftDate?' <span class="pill pN">faturada '+String(r.ftDate).slice(0,10)+'</span>':'')+'</td><td>'+esc(r.plate)+'</td><td>'+fmtD(r.dtOpen).slice(0,10)+'</td><td>'+fmtD(r.picFirst)+'</td><td>'+(semPic2===null?'—':Math.round(semPic2))+'</td><td>'+esc(DATA.emp[r.operreg]||'—')+'</td></tr>';
   });
   h+='</table></div>';
 
-  /* ---------- Receção das abertas (avaliação antecipada) ---------- */
-  if(evalsAb.length){
-    h+='<h2>👥 Receção — OS abertas no mês (avaliação antecipada, não conta para os rácios)</h2>';
-    h+='<h3>Detalhe de falhas</h3>';
-    h+=detailTable(evalsAb,CRIT_REC.filter(function(c){return c[0]!=='osSig';}),['OS','Matrícula','Operador','Falhas'],function(e,fails){
-      return '<tr><td>'+osLbl(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc(DATA.emp[e.r.operreg]||'—')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
-    });
-  }
-
-  h+='<p class="note">Regras: universo = faturadas no mês (pela data da fatura principal) + fechadas/pendentes F/PED (pela data de alteração de estado, fatura por validar manualmente); data receção e entrega prevista = basta preenchidas; kms suspeitos = diff ≤2 km ou negativa; anexos mínimo '+MIN_ANEXOS+'; chk mecânica = Completo OU Rápido; picadas ≤ MO faturada (fatura principal). Multi-fatura: usa as listas de transição para validar casos de 2 faturas.</p>';
+  h+='<p class="note">Regras: Receção = OS abertas no mês (independentemente do estado); Mecânicos/Coordenação = faturadas no mês (data da fatura principal) + fechadas/pendentes F/PED (data de alteração de estado, fatura por validar); data receção e entrega prevista = basta preenchidas; kms suspeitos = diff ≤2 km ou negativa; anexos mínimo '+MIN_ANEXOS+'; chk mecânica = Completo OU Rápido; picadas ≤ MO faturada (fatura principal). Multi-fatura: usa as listas de transição para validar casos de 2 faturas.</p>';
   document.getElementById('report').innerHTML=h;
   document.getElementById('btnExport').disabled=false;
 }
@@ -501,7 +532,7 @@ function exportHTML(){
 }
 (function(){ var d=new Date(); d.setMonth(d.getMonth()-1);
   document.getElementById('mes').value=d.getFullYear()+'-'+pad2(d.getMonth()+1);
-  if(loadData()){ document.getElementById('btnGera').disabled=false; setStat('Já existem dados (v2) recolhidos para este mês — podes gerar o relatório diretamente.'); }
+  if(loadData()){ document.getElementById('btnGera').disabled=false; setStat('Já existem dados (v3) recolhidos para este mês — podes gerar o relatório diretamente.'); }
 })();
 </script>
 </body>
