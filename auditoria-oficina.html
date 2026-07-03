@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria Mensal da Oficina — Walkinggarage</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#0f172a;padding:24px;max-width:1500px;margin:0 auto}
+  h1{font-size:22px;margin-bottom:4px}
+  .sub{color:#64748b;font-size:13px;margin-bottom:18px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:16px}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+  label{font-size:11.5px;font-weight:700;color:#475569;display:block;margin-bottom:4px}
+  input,select{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .btn.sec{background:#0f172a}
+  .btn.warn{background:#b91c1c}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .msg{margin-top:10px;padding:10px 12px;border-radius:9px;font-size:12.5px;display:none}
+  .msg.ok{display:block;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .msg.err{display:block;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  .msg.info{display:block;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+  .prog{height:10px;border-radius:6px;background:#e2e8f0;overflow:hidden;margin-top:10px}
+  .prog>span{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#4338ca);width:0%;transition:width .3s}
+  .pstat{font-size:12px;color:#475569;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{background:#f8fafc;text-align:center;padding:7px 8px;border-bottom:2px solid #e2e8f0;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:#475569;position:sticky;top:0}
+  td{padding:6px 8px;border-bottom:1px solid #f1f5f9;text-align:center}
+  td.l,th.l{text-align:left}
+  .tblwrap{overflow:auto;max-height:520px;border:1px solid #e2e8f0;border-radius:10px}
+  .ok{color:#059669;font-weight:700}
+  .bad{color:#dc2626;font-weight:700}
+  .na{color:#94a3b8}
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+  .pG{background:#ecfdf5;color:#065f46}.pA{background:#fffbeb;color:#92400e}.pR{background:#fef2f2;color:#991b1b}.pN{background:#f1f5f9;color:#64748b}
+  h2{font-size:16px;margin:22px 0 10px}
+  h3{font-size:13.5px;margin:14px 0 8px;color:#334155}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+  .kpi{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px}
+  .kpi b{font-size:20px;display:block}
+  .kpi span{font-size:11px;color:#64748b}
+  .fbar{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+  .fbtn{padding:5px 12px;border:1px solid #cbd5e1;background:#fff;border-radius:99px;font-size:12px;cursor:pointer}
+  .fbtn.active{background:#0f172a;color:#fff;border-color:#0f172a}
+  .note{font-size:11.5px;color:#64748b;margin-top:6px;line-height:1.5}
+  .badge-wait{background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 12px;border-radius:9px;font-size:12.5px;margin:8px 0}
+  .upbox{border:1.5px dashed #cbd5e1;border-radius:10px;padding:12px;font-size:12px;color:#475569}
+</style>
+</head>
+<body>
+<h1>🔎 Auditoria Mensal da Oficina</h1>
+<p class="sub">Recolha 100% via API Officegest · universo = OS <b>faturadas no mês</b> (transitadas incluídas) · séries 261 Cacém / 262 Colisão / 263 Lisboa · spec: <i>Spec_Auditoria_Mensal_Oficina.md</i></p>
+
+<div class="card">
+  <div class="row">
+    <div><label>Mês a auditar</label><input type="month" id="mes"></div>
+    <div><label>Pausa entre OS (ms)</label><input type="number" id="pace" value="300" style="width:90px"></div>
+    <button class="btn" id="btnColeta" onclick="startCollect()">1 · Recolher dados</button>
+    <button class="btn warn" id="btnStop" onclick="STOP=true" disabled>Parar</button>
+    <div class="upbox">
+      <label>Excel "Emails enviados" (Officegest) — opcional mas recomendado</label>
+      <input type="file" id="fEmail" accept=".xlsx,.xls" onchange="loadEmails(this)">
+      <div id="emailStat" style="margin-top:4px"></div>
+    </div>
+    <button class="btn sec" id="btnGera" onclick="render()" disabled>2 · Gerar relatório</button>
+    <button class="btn sec" id="btnExport" onclick="exportHTML()" disabled>3 · Exportar HTML</button>
+  </div>
+  <div class="prog"><span id="pbar"></span></div>
+  <div class="pstat" id="pstat">Sem recolha ativa. Dados guardados localmente por mês — se já recolheste este mês, podes ir direto a "Gerar relatório".</div>
+  <div class="msg" id="topMsg"></div>
+</div>
+
+<div id="report"></div>
+
+<script>
+/* ================= CONFIG / AUTH (padrão officegest-api-explorer) ================= */
+var LSC="officegest_cfg_v1";
+function cfg(){ try{ var c=JSON.parse(localStorage.getItem(LSC)); if(c&&c.base&&c.hash) return c; }catch(e){} return null; }
+var V2TOK=null;
+function H1(){ var c=cfg(); return {"Accept":"application/json","Authorization":"Basic "+btoa(c.user+":"+c.hash)}; }
+async function loginV2(){ var c=cfg();
+  var r=await fetch(c.base+"/api/v2/auth/login",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({username:c.user,password:(c.v2pass||c.hash)})});
+  var d=await r.json(); V2TOK=(d.data&&(d.data.token||d.data.access_token))||d.token||d.access_token;
+  if(!V2TOK) throw new Error("Login V2 falhou");
+}
+async function api(ver,path){ var c=cfg();
+  if(ver==="v2"&&!V2TOK) await loginV2();
+  var h= ver==="v2" ? {"Accept":"application/json","Authorization":"Bearer "+V2TOK} : H1();
+  var r=await fetch(c.base+(ver==="v2"?"/api/v2":"/api")+path,{headers:h});
+  if(r.status===401&&ver==="v2"){ await loginV2(); return api(ver,path); }
+  if(r.status===429){ await sleep(30000); return api(ver,path); }
+  var d=await r.json().catch(function(){return null;});
+  /* backoff adaptativo pelo throttle */
+  var left = d&&(d.api_throttle_left!=null?d.api_throttle_left:(d.meta&&d.meta.throttle_remaining));
+  if(left!=null&&left<15){ setStat("throttle baixo ("+left+") — pausa 30s…"); await sleep(30000); }
+  return {s:r.status,d:d};
+}
+function sleep(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
+
+/* ================= HELPERS ================= */
+function pad2(x){return String(x).padStart(2,'0');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function nmat(x){return String(x==null?'':x).toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function deaccent(s){return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
+function norm(s){return String(s==null?'':s).replace(/\s+/g,' ').trim();}
+function minsDiff(a,b){ if(!a||!b) return null; var x=new Date(String(a).replace(' ','T')),y=new Date(String(b).replace(' ','T')); if(isNaN(x)||isNaN(y))return null; return Math.round((y-x)/60000); }
+function seqOf(num,serie){ var s=String(num),p=String(serie); return s.indexOf(p)===0?parseInt(s.slice(p.length),10):num; }
+function osKey(serie,num){ return 'OSVBF'+serie+seqOf(num,serie); }
+function setStat(t){ document.getElementById('pstat').textContent=t; }
+function setBar(p){ document.getElementById('pbar').style.width=(p*100).toFixed(1)+'%'; }
+function flash(cls,t){ var m=document.getElementById('topMsg'); m.className='msg '+cls; m.innerHTML=t; }
+var SERIE={261:'Cacém',262:'Colisão',263:'Lisboa'};
+var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologia|seguros|rent|leaseplan|lease plan|fleet|crl|sgps|servic|consult|invest|imobiliar|transportes|construc|grupo|group|automoveis|hospital|farma|clinica|restaura|imports?|trading|inspecao|agencia|camara|junta|ministerio|engenharia)\b/i;
+var TOL_REC_MIN=60;      /* receção vs gravação OS */
+var TOL_ENT_MIN=240;     /* entrega efetiva vs registo fatura — calibrar */
+var MIN_ANEXOS=15;
+var CL={REC:17,MEC_C:18,MEC_R:19,QUAL:20};
+
+/* ================= ESTADO ================= */
+var STOP=false, DATA=null, EMAILS=null, NOTES_CAPABLE=false;
+function storeKey(){ return 'audit_'+document.getElementById('mes').value; }
+function saveData(){ try{ localStorage.setItem(storeKey(),JSON.stringify(DATA)); }catch(e){ flash('err','⚠ localStorage cheio — os dados desta recolha não ficam guardados entre sessões (o relatório funciona na mesma).'); } }
+function loadData(){ try{ var d=JSON.parse(localStorage.getItem(storeKey())); if(d&&d.recs) return d; }catch(e){} return null; }
+
+/* ================= RECOLHA ================= */
+async function startCollect(){
+  var c=cfg();
+  if(!c){ flash('err','Sem credenciais. Define o API Hash no módulo <b>API Officegest (Consola)</b> (officegest-api-explorer) primeiro.'); return; }
+  var mes=document.getElementById('mes').value;
+  if(!mes){ flash('err','Escolhe o mês.'); return; }
+  STOP=false;
+  document.getElementById('btnColeta').disabled=true; document.getElementById('btnStop').disabled=false;
+  var prev=loadData();
+  DATA = prev || {mes:mes, recs:{}, semFatura:[], emp:{}, universe:null, done:false, notesCapable:false};
+  try{ await collect(mes); }catch(e){ flash('err','Erro na recolha: '+esc(e.message)); }
+  document.getElementById('btnColeta').disabled=false; document.getElementById('btnStop').disabled=true;
+  document.getElementById('btnGera').disabled=false;
+}
+
+async function collect(mes){
+  var pace=parseInt(document.getElementById('pace').value)||300;
+  var first=mes+'-01';
+  setStat('A carregar mapa de funcionários…');
+  if(!Object.keys(DATA.emp).length){
+    var er=await api('v1','/entities/employees');
+    var arr=er.d&&(er.d.employees||er.d.data)||{};
+    Object.values(arr).forEach(function(e){ DATA.emp[e.id]=e.name; });
+  }
+  setStat('A listar universo de OS (date_alter ≥ '+first+')…');
+  if(!DATA.universe){
+    var lr=await api('v1','/workshop/os?filter[date_alter]='+first+'&operator=>=');
+    var all=Object.values(lr.d&&lr.d.documents||{});
+    DATA.universe=all.filter(function(o){ return [261,262,263].indexOf(o.serie)>=0 && ['FAC','ENT','F'].indexOf(o.state)>=0; }).map(function(o){ return {n:o.number,serie:o.serie,state:o.state}; });
+    saveData();
+  }
+  var uni=DATA.universe, total=uni.length, t0=Date.now(), doneN=Object.keys(DATA.recs).length + DATA.semFatura.length;
+  for(var i=0;i<uni.length;i++){
+    if(STOP){ setStat('Parado. '+Object.keys(DATA.recs).length+' OS recolhidas — podes retomar.'); saveData(); return; }
+    var u=uni[i];
+    if(DATA.recs[u.n]||DATA.semFatura.indexOf(u.n)>=0){ continue; }
+    var rec=await collectOne(u,mes);
+    if(rec===null) DATA.semFatura.push(u.n); else if(rec!==false) DATA.recs[u.n]=rec;
+    doneN++;
+    if(doneN%15===0) saveData();
+    var frac=(i+1)/total; setBar(frac);
+    var eta=Math.round((Date.now()-t0)/(i+1)*(total-i-1)/60000);
+    setStat('OS '+(i+1)+'/'+total+' · guardadas '+Object.keys(DATA.recs).length+' do mês · ETA ~'+eta+' min');
+    await sleep(pace);
+  }
+  DATA.done=true; DATA.notesCapable=NOTES_CAPABLE; saveData(); setBar(1);
+  setStat('Recolha completa: '+Object.keys(DATA.recs).length+' OS faturadas em '+mes+' ('+DATA.semFatura.length+' candidatas descartadas/sem fatura no mês).');
+  flash('ok','✔ Recolha completa. Carrega o Excel de emails (se quiseres) e gera o relatório.');
+}
+
+async function collectOne(u,mes){
+  try{
+    var det=(await api('v1','/workshop/os/'+u.n)).d;
+    var d=det&&det.document; if(!d) return false;
+    var rec={n:u.n,serie:u.serie,state:d.state,plate:d.plate,idcli:d.idcustomer,operreg:d.operreg,
+      dep:d.departamento,loc:d.loc_warehouse_id,kms:+d.kms||0,kmsAnt:+d.contkmant_c||0,
+      dtReg:d.datareg||d.systementrydate,dtRec:d.data_recepcao,dtEntPrev:d.dataentregaprev,dtEntEf:d.data_entrega_efetiva,
+      sig:!!(d.signature_date&&String(d.signature_date).trim()),numdoc:d.numdoc,dtOpen:d.date};
+    /* fatura → decide se pertence ao mês */
+    if(rec.numdoc){
+      var ft=(await api('v1','/sales/documents/FT/'+rec.numdoc)).d;
+      if(ft&&ft.document){
+        rec.ftDate=ft.document.date; rec.ftReg=ft.document.datareg||ft.document.systementrydate;
+        var ls=Object.values(ft.lines||{});
+        rec.ftMoH=Math.round(ls.filter(function(l){return /^MO/i.test(String(l.idarticle));}).reduce(function(s,l){return s+(parseFloat(l.quantity)||0);},0)*100)/100;
+      }
+    }
+    if(!(rec.ftDate&&String(rec.ftDate).slice(0,7)===mes)) return null; /* não faturada neste mês */
+    /* checklists */
+    var cl=(await api('v2','/workshop/service-orders/'+u.n+'/checklists')).d;
+    rec.cl=(cl&&cl.data||[]).map(function(x){ return {id:x.checklist_id,c:x.checked_count,t:x.total_count}; });
+    if(cl&&cl.data&&cl.data[0]&&cl.data[0].items&&cl.data[0].items[0]){
+      var it=cl.data[0].items[0];
+      if('note' in it||'notes' in it||'observation' in it){ NOTES_CAPABLE=true; rec.clItems=cl.data.map(function(x){return {id:x.checklist_id,items:x.items};}); }
+    }
+    /* anexos com paginação */
+    var att=[],page=1,more=true;
+    while(more&&page<=10){
+      var ar=(await api('v2','/attachments?document_type=OS&document_number='+u.n+'&page='+page)).d;
+      att=att.concat(ar&&ar.data||[]); more=!!(ar&&ar.meta&&ar.meta.has_more); page++;
+    }
+    rec.att=att.length;
+    rec.attImg=att.filter(function(a){return /image/.test(a.file_type);}).length;
+    rec.attPdf=att.filter(function(a){return /pdf/.test(a.file_type);}).length;
+    /* picagens */
+    var tm=(await api('v2','/workshop/service-orders/'+u.n+'/times')).d;
+    var ts=tm&&tm.data||[];
+    rec.picN=ts.length;
+    rec.picH=Math.round(ts.reduce(function(s,t){return s+(parseFloat(t.difference_hours)||0);},0)*100)/100;
+    rec.mecs=[]; ts.forEach(function(t){ if(rec.mecs.indexOf(t.employee_name)<0) rec.mecs.push(t.employee_name); });
+    /* cliente (cache por recolha) */
+    if(rec.idcli){
+      if(!DATA._cliCache) DATA._cliCache={};
+      var cc=DATA._cliCache[rec.idcli];
+      if(!cc){
+        var cr=(await api('v1','/entities/customers/'+rec.idcli)).d;
+        var C=cr&&cr.customer;
+        cc=C?{nome:C.name,tipo:C.tipocliente,rgpd:+C.rgpd_allow||0,mail:+C.rgdp_allow_mailing||0,
+          sig:!!(C.rgdp_signature&&String(C.rgdp_signature).length>100),
+          mor:!!(C.address&&String(C.address).trim()),locld:!!(C.city&&String(C.city).trim()),cp:!!(C.zipcode&&String(C.zipcode).trim())}:null;
+        DATA._cliCache[rec.idcli]=cc;
+      }
+      rec.cli=cc;
+    }
+    return rec;
+  }catch(e){ return false; }
+}
+
+/* ================= EMAILS (Excel — padrão analisador-os) ================= */
+function loadEmails(inp){
+  var f=inp.files[0]; if(!f) return;
+  var rd=new FileReader();
+  rd.onload=function(e){
+    var wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+    var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false});
+    var hi=-1;
+    for(var i=0;i<Math.min(rows.length,15);i++){ var line=(rows[i]||[]).map(deaccent).join('|'); if(line.indexOf('assunto')>=0){ hi=i;break; } }
+    if(hi<0){ document.getElementById('emailStat').innerHTML='<span class="bad">Sem coluna "Assunto" — é o Excel certo?</span>'; return; }
+    var hdr=(rows[hi]||[]).map(deaccent);
+    function col(n){ return hdr.findIndex(function(h){return h.indexOf(n)>=0;}); }
+    var ci={ass:col('assunto'),autor:col('autor'),env:col('enviado')};
+    var pat=/OSV\s*[A-Z]{0,3}\s*\d{3}\/\d+/i, byKey={},n=0;
+    for(var r=hi+1;r<rows.length;r++){ var row=rows[r]; if(!row) continue;
+      var s=norm(row[ci.ass]); if(!s) continue;
+      if(deaccent(s).indexOf('ordem de servi')<0) continue;
+      var m=s.match(pat); if(!m) continue;
+      byKey[nmat(m[0])]={autor:norm(row[ci.autor]),env:norm(row[ci.env])}; n++;
+    }
+    EMAILS=byKey;
+    document.getElementById('emailStat').innerHTML='<span class="ok">✔ '+n+' emails de OS lidos</span>';
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* ================= AVALIAÇÃO ================= */
+function clOf(rec,id){ var x=(rec.cl||[]).find(function(c){return c.id===id;}); return x?x.c:0; }
+function evalRec(rec){
+  var f={}; /* true = falha */
+  var cli=rec.cli||{};
+  var isEmp = cli.nome && (COMPANY.test(cli.nome) || cli.tipo!=='P');
+  f.cliNomes   = !isEmp && cli.nome ? String(cli.nome).trim().split(/\s+/).length<3 : false;
+  f.cliRgpd    = cli.rgpd!==1;
+  f.cliSig     = !cli.sig;
+  f.cliMail    = cli.mail!==1;
+  f.cliMorada  = !(cli.mor&&cli.locld&&cli.cp);
+  f.cliTipo    = !cli.tipo;
+  f.osDep      = !(rec.dep||rec.dep===0);
+  f.osLoc      = !(rec.loc||rec.loc===0);
+  f.osKms      = !(rec.kms>0) || (rec.kmsAnt>0 && (rec.kms-rec.kmsAnt)<=2);
+  var dr=minsDiff(rec.dtRec,rec.dtReg);
+  f.osHoraRec  = !(rec.dtRec&&String(rec.dtRec).trim()) || (dr!==null&&Math.abs(dr)>TOL_REC_MIN);
+  var de=minsDiff(rec.dtEntEf,rec.ftReg);
+  f.osEntEf    = !(rec.dtEntEf&&String(rec.dtEntEf).trim()) || (de!==null&&Math.abs(de)>TOL_ENT_MIN);
+  f.osSig      = !rec.sig;
+  f.anexos     = (rec.att||0)<MIN_ANEXOS;
+  f.clRec      = clOf(rec,CL.REC)===0;
+  f.email      = EMAILS ? !EMAILS[osKey(rec.serie,rec.n)] : null;
+  f.mecPic     = (rec.picN||0)===0;
+  f.mecHoras   = rec.ftMoH>0 && rec.picN>0 ? rec.picH>rec.ftMoH : false;
+  f.mecCl      = clOf(rec,CL.MEC_C)===0 && clOf(rec,CL.MEC_R)===0;
+  f.qual       = clOf(rec,CL.QUAL)===0;
+  return f;
+}
+var CRIT_REC=[["cliNomes","≥3 nomes"],["cliTipo","Tipo cliente"],["cliRgpd","RGPD"],["cliSig","Assin. ficha"],["cliMail","Mailing"],["cliMorada","Morada"],["osDep","Departamento"],["osLoc","Local"],["osKms","Kms"],["osHoraRec","Hora receção"],["osEntEf","Entrega efetiva"],["osSig","Assin. OS"],["anexos","Anexos ≥"+15],["clRec","Chk Receção"],["email","Email cliente"]];
+var CRIT_MEC=[["mecPic","Tem picagens"],["mecHoras","Picadas ≤ Faturadas"],["mecCl","Chk Mecânica"],["anexos","Anexos ≥15"]];
+
+/* ================= RELATÓRIO ================= */
+function pill(okN,totN){ if(!totN) return '<span class="pill pN">—</span>';
+  var p=okN/totN; var c=p>=0.9?'pG':(p>=0.7?'pA':'pR');
+  return '<span class="pill '+c+'">'+Math.round(p*100)+'%</span>';
+}
+var FILT='all';
+function render(){
+  DATA=DATA||loadData();
+  if(!DATA||!Object.keys(DATA.recs).length){ flash('err','Sem dados recolhidos para este mês.'); return; }
+  var recs=Object.values(DATA.recs);
+  if(FILT!=='all') recs=recs.filter(function(r){return String(r.serie)===FILT;});
+  var evals=recs.map(function(r){ return {r:r,f:evalRec(r)}; });
+  var h='';
+  /* filtros */
+  h+='<div class="fbar">'+['all','261','262','263'].map(function(s){
+    return '<button class="fbtn'+(FILT===s?' active':'')+'" onclick="FILT=\''+s+'\';render()">'+(s==='all'?'Todas':s+' '+SERIE[s])+'</button>';
+  }).join('')+'</div>';
+  /* KPIs */
+  var totFalhas=0; evals.forEach(function(e){ Object.values(e.f).forEach(function(v){ if(v===true) totFalhas++; }); });
+  h+='<div class="kpis">';
+  h+='<div class="kpi"><b>'+recs.length+'</b><span>OS faturadas em '+DATA.mes+'</span></div>';
+  h+='<div class="kpi"><b>'+recs.filter(function(r){return String(r.dtOpen).slice(0,7)!==DATA.mes;}).length+'</b><span>transitadas (abertas antes)</span></div>';
+  h+='<div class="kpi"><b>'+totFalhas+'</b><span>falhas totais</span></div>';
+  h+='<div class="kpi"><b>'+(DATA.semFatura?DATA.semFatura.length:0)+'</b><span>candidatas fora do mês</span></div>';
+  h+='</div>';
+  if(!EMAILS) h+='<div class="badge-wait">⚠ Sem Excel de emails carregado — o critério "Email cliente" fica por avaliar.</div>';
+  h+= DATA.notesCapable
+    ? '<div class="msg ok" style="display:block">✔ A API já devolve notas de checklist — módulo Checklist→Orçamento ATIVO (exporta os casos para análise IA).</div>'
+    : '<div class="badge-wait">⏸ Cruzamento Checklist→Orçamento: <b>aguarda API</b> (notas dos itens ainda não expostas pelo OfficeGest).</div>';
+
+  /* --- Módulo Receção: por operador --- */
+  h+='<h2>👥 Receção</h2>';
+  h+=moduleTable(evals,CRIT_REC,function(e){ return DATA.emp[e.r.operreg]||('Op. '+(e.r.operreg||'?')); });
+  /* --- Módulo Mecânicos: avaliação individual (uma linha por mecânico; OS partilhadas contam para todos) --- */
+  h+='<h2>🔧 Mecânicos</h2>';
+  var evalsMec=[];
+  evals.forEach(function(e){
+    if(e.r.mecs&&e.r.mecs.length) e.r.mecs.forEach(function(m){ evalsMec.push({r:e.r,f:e.f,_mec:m}); });
+    else evalsMec.push({r:e.r,f:e.f,_mec:'— OS sem picagens (falha de série) —'});
+  });
+  h+=moduleTable(evalsMec,CRIT_MEC,function(e){ return e._mec; });
+  /* --- Coordenação --- */
+  h+='<h2>📋 Coordenação — Checklist Controlo Qualidade</h2>';
+  var qOk=evals.filter(function(e){return !e.f.qual;}).length;
+  h+='<div class="kpis"><div class="kpi"><b>'+qOk+'/'+evals.length+'</b><span>OS com checklist de qualidade preenchida '+pill(qOk,evals.length)+'</span></div></div>';
+
+  /* --- Drill-down por OS --- */
+  h+='<h2>🗂 Detalhe por OS (só falhas)</h2>';
+  var ALL=CRIT_REC.concat(CRIT_MEC.filter(function(c){return c[0]!=='anexos';})).concat([["qual","Chk Qualidade"]]);
+  h+='<div class="tblwrap"><table><tr><th>OS</th><th>Série</th><th>Matrícula</th><th>Operador</th><th>Mecânico(s)</th><th class="l">Falhas</th></tr>';
+  evals.forEach(function(e){
+    var fails=ALL.filter(function(c){return e.f[c[0]]===true;}).map(function(c){return c[1];});
+    if(!fails.length) return;
+    h+='<tr><td>BF'+e.r.serie+'/'+seqOf(e.r.n,e.r.serie)+'</td><td>'+e.r.serie+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc(DATA.emp[e.r.operreg]||e.r.operreg||'—')+'</td><td>'+esc((e.r.mecs||[]).join(', ')||'—')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
+  });
+  h+='</table></div>';
+  h+='<p class="note">Regras: kms suspeitos = diferença ≤2 km (ou negativa) face à OS anterior da matrícula; hora receção ±'+TOL_REC_MIN+' min da gravação; entrega efetiva obrigatória e ±'+(TOL_ENT_MIN/60)+'h do registo da fatura; anexos mínimo '+MIN_ANEXOS+'; checklist mecânica = Completo OU Rápido; picadas ≤ MO faturada. Multi-fatura: considerada apenas a fatura principal (numdoc) — regra em aberto na spec.</p>';
+  document.getElementById('report').innerHTML=h;
+  document.getElementById('btnExport').disabled=false;
+}
+function moduleTable(evals,crits,keyFn){
+  var by={};
+  evals.forEach(function(e){ var k=keyFn(e); (by[k]=by[k]||[]).push(e); });
+  var h='<div class="tblwrap"><table><tr><th class="l">Responsável</th><th>OS</th>';
+  crits.forEach(function(c){ h+='<th>'+c[1]+'</th>'; });
+  h+='<th>Global</th></tr>';
+  Object.keys(by).sort().forEach(function(k){
+    var es=by[k]; h+='<tr><td class="l"><b>'+esc(k)+'</b></td><td>'+es.length+'</td>';
+    var okT=0,nT=0;
+    crits.forEach(function(c){
+      var app=es.filter(function(e){return e.f[c[0]]!==null;});
+      var ok=app.filter(function(e){return e.f[c[0]]===false;}).length;
+      okT+=ok; nT+=app.length;
+      h+='<td>'+pill(ok,app.length)+'<div style="font-size:10px;color:#94a3b8">'+ok+'/'+app.length+'</div></td>';
+    });
+    h+='<td>'+pill(okT,nT)+'</td></tr>';
+  });
+  return h+'</table></div>';
+}
+function exportHTML(){
+  var html='<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title>Auditoria '+DATA.mes+'</title><style>'+document.querySelector('style').innerHTML+'</style></head><body><h1>🔎 Auditoria Mensal — '+DATA.mes+'</h1>'+document.getElementById('report').innerHTML+'</body></html>';
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='auditoria_'+DATA.mes+'.html'; a.click();
+}
+/* default: mês anterior */
+(function(){ var d=new Date(); d.setMonth(d.getMonth()-1);
+  document.getElementById('mes').value=d.getFullYear()+'-'+pad2(d.getMonth()+1);
+  if(loadData()){ document.getElementById('btnGera').disabled=false; setStat('Já existem dados recolhidos para este mês — podes gerar o relatório diretamente.'); }
+})();
+</script>
+</body>
+</html>
