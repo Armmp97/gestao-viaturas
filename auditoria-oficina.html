@@ -112,6 +112,10 @@ function setStat(t){ document.getElementById('pstat').textContent=t; }
 function setBar(p){ document.getElementById('pbar').style.width=(p*100).toFixed(1)+'%'; }
 function flash(cls,t){ var m=document.getElementById('topMsg'); m.className='msg '+cls; m.innerHTML=t; }
 var SERIE={261:'Cacém',262:'Colisão',263:'Lisboa'};
+var COORD={261:'José Rodriguez',262:'Mário Perez / Nuno Montes',263:'Fábio Ramalho'};
+/* rececionistas oficiais — correspondência por nome (sem acentos, contém) */
+var RECS_OFICIAIS=['ricardo valente ferreira','pedro luis machado','ruben filipe castelar','tomas tico peixinho','valter sousa borges','paulo jorge serfaty'];
+function isRececionista(nome){ var n=deaccent(nome||''); return RECS_OFICIAIS.some(function(r){ return n.indexOf(r)>=0; }); }
 var COMPANY=/\b(lda|l\.da|s\.?a\.?|unipessoal|sociedade|soc\.|comercio|tecnologia|seguros|rent|leaseplan|lease plan|fleet|crl|sgps|servic|consult|invest|imobiliar|transportes|construc|grupo|group|automoveis|hospital|farma|clinica|restaura|imports?|trading|inspecao|agencia|camara|junta|ministerio|engenharia)\b/i;
 var TOL_REC_MIN=60;      /* receção vs gravação OS */
 var TOL_ENT_MIN=240;     /* entrega efetiva vs registo fatura — calibrar */
@@ -320,10 +324,49 @@ function render(){
     ? '<div class="msg ok" style="display:block">✔ A API já devolve notas de checklist — módulo Checklist→Orçamento ATIVO (exporta os casos para análise IA).</div>'
     : '<div class="badge-wait">⏸ Cruzamento Checklist→Orçamento: <b>aguarda API</b> (notas dos itens ainda não expostas pelo OfficeGest).</div>';
 
-  /* --- Módulo Receção: por operador --- */
+  /* ---------- helpers de detalhe (com valores para validação) ---------- */
+  function osLbl(r){ return 'BF'+r.serie+'/'+seqOf(r.n,r.serie); }
+  function failDetail(e,key){
+    var r=e.r;
+    switch(key){
+      case 'osKms': return 'Kms ('+r.kms+' vs ant. '+r.kmsAnt+')';
+      case 'osHoraRec': { var d=minsDiff(r.dtRec,r.dtReg); return r.dtRec?('Hora receção ('+(d>0?'+':'')+d+' min vs gravação)'):'Hora receção (vazia)'; }
+      case 'osEntEf': { if(!(r.dtEntEf&&String(r.dtEntEf).trim())) return 'Entrega efetiva (vazia)'; var d2=minsDiff(r.dtEntEf,r.ftReg); return 'Entrega efetiva ('+(d2>0?'+':'')+d2+' min vs fatura)'; }
+      case 'anexos': return 'Anexos ('+(r.att||0)+' de '+MIN_ANEXOS+')';
+      case 'mecHoras': return 'Picadas '+r.picH+'h > Faturadas '+r.ftMoH+'h';
+      case 'cliNomes': return '≥3 nomes ("'+(r.cli&&r.cli.nome||'?')+'")';
+      default:
+        var all=CRIT_REC.concat(CRIT_MEC).concat([["qual","Chk Qualidade"]]);
+        var c=all.find(function(x){return x[0]===key;}); return c?c[1]:key;
+    }
+  }
+  function detailTable(evalsIn,crits,cols,rowFn){
+    var t='<div class="tblwrap" style="margin-top:8px"><table><tr>'+cols.map(function(c){return '<th'+(c==='Falhas'?' class="l"':'')+'>'+c+'</th>';}).join('')+'</tr>';
+    var any=false;
+    evalsIn.forEach(function(e){
+      var fails=crits.filter(function(c){return e.f[c[0]]===true;}).map(function(c){return failDetail(e,c[0]);});
+      if(!fails.length) return; any=true;
+      t+=rowFn(e,fails);
+    });
+    if(!any) t+='<tr><td colspan="'+cols.length+'" style="color:#059669">Sem falhas 🎉</td></tr>';
+    return t+'</table></div>';
+  }
+
+  /* ---------- Módulo Receção: só rececionistas oficiais ---------- */
   h+='<h2>👥 Receção</h2>';
-  h+=moduleTable(evals,CRIT_REC,function(e){ return DATA.emp[e.r.operreg]||('Op. '+(e.r.operreg||'?')); });
-  /* --- Módulo Mecânicos: avaliação individual (uma linha por mecânico; OS partilhadas contam para todos) --- */
+  var evalsRec=evals.filter(function(e){ return isRececionista(DATA.emp[e.r.operreg]); });
+  var excluidas=evals.length-evalsRec.length;
+  h+=moduleTable(evalsRec,CRIT_REC,function(e){ return DATA.emp[e.r.operreg]||('Op. '+(e.r.operreg||'?')); });
+  if(excluidas>0){
+    var outros={}; evals.forEach(function(e){ if(!isRececionista(DATA.emp[e.r.operreg])){ var n=DATA.emp[e.r.operreg]||('Op. '+e.r.operreg); outros[n]=(outros[n]||0)+1; } });
+    h+='<p class="note">'+excluidas+' OS registadas por não-rececionistas excluídas desta tabela: '+esc(Object.keys(outros).map(function(k){return k+' ('+outros[k]+')';}).join(', '))+'.</p>';
+  }
+  h+='<h3>Detalhe de falhas — Receção</h3>';
+  h+=detailTable(evalsRec,CRIT_REC,['OS','Matrícula','Operador','Falhas'],function(e,fails){
+    return '<tr><td>'+osLbl(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc(DATA.emp[e.r.operreg]||'—')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
+  });
+
+  /* ---------- Módulo Mecânicos: avaliação individual ---------- */
   h+='<h2>🔧 Mecânicos</h2>';
   var evalsMec=[];
   evals.forEach(function(e){
@@ -331,21 +374,24 @@ function render(){
     else evalsMec.push({r:e.r,f:e.f,_mec:'— OS sem picagens (falha de série) —'});
   });
   h+=moduleTable(evalsMec,CRIT_MEC,function(e){ return e._mec; });
-  /* --- Coordenação --- */
-  h+='<h2>📋 Coordenação — Checklist Controlo Qualidade</h2>';
-  var qOk=evals.filter(function(e){return !e.f.qual;}).length;
-  h+='<div class="kpis"><div class="kpi"><b>'+qOk+'/'+evals.length+'</b><span>OS com checklist de qualidade preenchida '+pill(qOk,evals.length)+'</span></div></div>';
-
-  /* --- Drill-down por OS --- */
-  h+='<h2>🗂 Detalhe por OS (só falhas)</h2>';
-  var ALL=CRIT_REC.concat(CRIT_MEC.filter(function(c){return c[0]!=='anexos';})).concat([["qual","Chk Qualidade"]]);
-  h+='<div class="tblwrap"><table><tr><th>OS</th><th>Série</th><th>Matrícula</th><th>Operador</th><th>Mecânico(s)</th><th class="l">Falhas</th></tr>';
-  evals.forEach(function(e){
-    var fails=ALL.filter(function(c){return e.f[c[0]]===true;}).map(function(c){return c[1];});
-    if(!fails.length) return;
-    h+='<tr><td>BF'+e.r.serie+'/'+seqOf(e.r.n,e.r.serie)+'</td><td>'+e.r.serie+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc(DATA.emp[e.r.operreg]||e.r.operreg||'—')+'</td><td>'+esc((e.r.mecs||[]).join(', ')||'—')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
+  h+='<h3>Detalhe de falhas — Mecânicos</h3>';
+  h+=detailTable(evals,CRIT_MEC,['OS','Matrícula','Mecânico(s)','Falhas'],function(e,fails){
+    return '<tr><td>'+osLbl(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+esc((e.r.mecs||[]).join(', ')||'— sem picagens —')+'</td><td class="l bad">'+fails.join(' · ')+'</td></tr>';
   });
-  h+='</table></div>';
+
+  /* ---------- Coordenação: por série/coordenador ---------- */
+  h+='<h2>📋 Coordenação — Checklist Controlo Qualidade</h2>';
+  h+='<div class="kpis">';
+  [261,262,263].forEach(function(s){
+    var es=evals.filter(function(e){return e.r.serie===s;});
+    var ok=es.filter(function(e){return !e.f.qual;}).length;
+    h+='<div class="kpi"><b>'+ok+'/'+es.length+'</b><span>'+s+' '+SERIE[s]+' — '+esc(COORD[s])+' '+pill(ok,es.length)+'</span></div>';
+  });
+  h+='</div>';
+  h+='<h3>Detalhe de falhas — Coordenação</h3>';
+  h+=detailTable(evals,[["qual","Chk Qualidade"]],['OS','Matrícula','Série','Coordenador'],function(e,fails){
+    return '<tr><td>'+osLbl(e.r)+'</td><td>'+esc(e.r.plate)+'</td><td>'+e.r.serie+' '+SERIE[e.r.serie]+'</td><td>'+esc(COORD[e.r.serie]||'—')+'</td></tr>';
+  });
   h+='<p class="note">Regras: kms suspeitos = diferença ≤2 km (ou negativa) face à OS anterior da matrícula; hora receção ±'+TOL_REC_MIN+' min da gravação; entrega efetiva obrigatória e ±'+(TOL_ENT_MIN/60)+'h do registo da fatura; anexos mínimo '+MIN_ANEXOS+'; checklist mecânica = Completo OU Rápido; picadas ≤ MO faturada. Multi-fatura: considerada apenas a fatura principal (numdoc) — regra em aberto na spec.</p>';
   document.getElementById('report').innerHTML=h;
   document.getElementById('btnExport').disabled=false;
