@@ -335,15 +335,26 @@ function resolveOwner(fileName){
   return hit?hit.nome:null;
 }
 function filesFor(nome){ return ARCHIVE_FILES.filter(f=>resolveOwner(f.name)===nome); }
+function viewerUrl(u){
+  try{
+    if(!u)return null;
+    var d=u; try{ d=decodeURI(u); }catch(e){}
+    var m=d.match(/^(https:\/\/[^\/]+)(\/sites\/[^\/]+)\/([^\/]+)\/(.+)$/);
+    if(!m)return u;
+    var id=m[2]+"/"+m[3]+"/"+m[4];
+    var parent=id.slice(0,id.lastIndexOf("/"));
+    return m[1]+m[2]+"/"+encodeURI(m[3])+"/Forms/AllItems.aspx?id="+encodeURIComponent(id)+"&parent="+encodeURIComponent(parent);
+  }catch(e){ return u; }
+}
 function docsBlock(p){
   const fs=filesFor(p.nome);
   if(!fs.length) return '<div class="small" style="margin-top:8px;">📄 Sem documentos no SharePoint para este colaborador.</div>';
   let h='<div style="margin-top:10px;"><div style="font-size:11.5px;font-weight:700;color:var(--navy2);margin-bottom:4px;">📎 Documentos assinados</div>';
-  fs.forEach(f=>{ const dl=f.webUrl||f.download||"#"; h+='<div class="filerow" style="border:1px solid var(--line);border-radius:6px;margin:3px 0;">📄 <a href="'+esc(dl)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a></div>'; });
+  fs.forEach(f=>{ const dl=viewerUrl(f.webUrl)||f.download||"#"; h+='<div class="filerow" style="border:1px solid var(--line);border-radius:6px;margin:3px 0;">📄 <a href="'+esc(dl)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a></div>'; });
   return h+'</div>';
 }
 function fileRow(f){
-  const dl=f.webUrl||f.download||"#", dt=f.modified?new Date(f.modified).toLocaleDateString("pt-PT"):"", kb=f.size?Math.round(f.size/1024)+" KB":"";
+  const dl=viewerUrl(f.webUrl)||f.download||"#", dt=f.modified?new Date(f.modified).toLocaleDateString("pt-PT"):"", kb=f.size?Math.round(f.size/1024)+" KB":"";
   const owner=resolveOwner(f.name);
   const tag=owner?'<span class="pchip" style="margin-left:6px;">'+esc(owner)+'</span>':'<span class="pchip" style="background:#fee2e2;color:#b91c1c;margin-left:6px;">não associado</span>';
   return '<div class="filerow">📄 <a href="'+esc(dl)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a>'+tag+'<span class="fmeta">'+dt+(kb?" · "+kb:"")+'</span></div>';
