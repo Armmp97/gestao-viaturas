@@ -339,11 +339,11 @@ function docsBlock(p){
   const fs=filesFor(p.nome);
   if(!fs.length) return '<div class="small" style="margin-top:8px;">📄 Sem documentos no SharePoint para este colaborador.</div>';
   let h='<div style="margin-top:10px;"><div style="font-size:11.5px;font-weight:700;color:var(--navy2);margin-bottom:4px;">📎 Documentos assinados</div>';
-  fs.forEach(f=>{ const dl=f.download||f.webUrl||"#"; h+='<div class="filerow" style="border:1px solid var(--line);border-radius:6px;margin:3px 0;">📄 <a href="'+esc(dl)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a></div>'; });
+  fs.forEach(f=>{ const dl=f.webUrl||f.download||"#"; h+='<div class="filerow" style="border:1px solid var(--line);border-radius:6px;margin:3px 0;">📄 <a href="'+esc(dl)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a></div>'; });
   return h+'</div>';
 }
 function fileRow(f){
-  const dl=f.download||f.webUrl||"#", dt=f.modified?new Date(f.modified).toLocaleDateString("pt-PT"):"", kb=f.size?Math.round(f.size/1024)+" KB":"";
+  const dl=f.webUrl||f.download||"#", dt=f.modified?new Date(f.modified).toLocaleDateString("pt-PT"):"", kb=f.size?Math.round(f.size/1024)+" KB":"";
   const owner=resolveOwner(f.name);
   const tag=owner?'<span class="pchip" style="margin-left:6px;">'+esc(owner)+'</span>':'<span class="pchip" style="background:#fee2e2;color:#b91c1c;margin-left:6px;">não associado</span>';
   return '<div class="filerow">📄 <a href="'+esc(dl)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a>'+tag+'<span class="fmeta">'+dt+(kb?" · "+kb:"")+'</span></div>';
