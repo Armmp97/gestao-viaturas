@@ -1036,7 +1036,8 @@
                 'Emanuel Antonio de Oliveira Alves Gonçalves': 'Emanuel Gonçalves',
                 'Jorge Miguel Alves Silva': 'Jorge Silva',
                 'Sérgio Fernando Migueis Pereira': 'Sérgio Pereira',
-                'Xavier Oliveira Jorge': 'Xavier Jorge'
+                'Xavier Oliveira Jorge': 'Xavier Jorge',
+                'Rafael Gonçalves Janeiro': 'Rafael Janeiro'
             },
             ca: {
                 'Arnaldo José Carvalho Brites da Cruz': 'Arnaldo Cruz',
@@ -1244,6 +1245,7 @@
             const TECH_DISPLAY = {
                 'Emanuel': 'Emanuel Gonçalves', 'Jorge': 'Jorge Silva',
                 'Sérgio': 'Sérgio Pereira', 'Xavier': 'Xavier Jorge',
+                'Rafael': 'Rafael Janeiro',
                 'Arnaldo': 'Arnaldo Cruz', 'Edmilson': 'Edmilson Fernandes',
                 'Filipe': 'Filipe Bonifácio', 'Gonçalo': 'Gonçalo Matos'
             };
@@ -1252,8 +1254,10 @@
                 return cell && typeof cell === 'string' && cell.indexOf('HT ') === 0 && cell.indexOf('=') === -1 && cell.indexOf('P/ Prod') === -1 && cell.indexOf('P/Prod') === -1;
             }
 
-            // Percorre linhas a partir da 22 (depois dos KPIs gerais e legendas)
-            for (let r = 21; r < arr.length; r++) {
+            // Percorre linhas a partir da 12 (depois do bloco de KPIs gerais).
+            // Layouts antigos tinham legendas ("HT = ...") nas linhas 12-21 — são ignoradas
+            // pelo isHTCellLX (contêm '='), por isso é seguro começar na 12 para ambos os layouts.
+            for (let r = 11; r < arr.length; r++) {
                 const cell = arr[r] && arr[r][1]; // Column B
                 if (!isHTCellLX(cell)) continue;
 
@@ -1303,82 +1307,47 @@
             data[type].chapa = {generalKPIs: {}};
             data[type].global = {generalKPIs: {}};
 
-            // Parse Prep + Pint (columns B-H)
+            // ====== DETEÇÃO DINÂMICA DAS COLUNAS DOS BLOCOS (linha 2) ======
+            // O layout varia entre meses: Chapa já esteve na coluna I e está na J;
+            // Geral já esteve na V e está na R. Detetar sempre pela linha 2, nunca fixar.
+            const hdr = arr[1] || [];
+            function findBase(keyword, fallback) {
+                for (let c = 0; c < hdr.length; c++) {
+                    const v = hdr[c];
+                    if (v && typeof v === 'string' && v.toUpperCase().indexOf(keyword) > -1) return c;
+                }
+                return fallback;
+            }
+            const prepBase = findBase('PREP', 1);    // ex.: B (índice 1)
+            const chapaBase = findBase('CHAPA', 9);  // ex.: J (índice 9)
+            const geralBase = findBase('GERAL', 21); // ex.: R (índice 17) ou V (índice 21)
+
+            // Bloco genérico de KPIs gerais: semanas em base+1..base+5, Mês em base+6
+            function parseGeneralBlock(base, target) {
+                const wk = [base + 1, base + 2, base + 3, base + 4, base + 5];
+                const mo = base + 6;
+                target.items = [];
+                for (let i = 0; i < 5; i++) {
+                    const row = arr[i + 2];
+                    if (!row) continue;
+                    target.items.push({
+                        label: prepLabels[i],
+                        weeks: wk.map(c => row[c]),
+                        monthly: row[mo]
+                    });
+                }
+                if (arr[8]) {
+                    target.efficiency = { weeks: wk.map(c => arr[8][c]), monthly: arr[8][mo] };
+                }
+                if (arr[9]) {
+                    target.utilization = { weeks: wk.map(c => arr[9][c]), monthly: arr[9][mo] };
+                }
+            }
+
             const prepLabels = ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponiveis', 'Horas Faltas', 'Horas Férias'];
-            data[type].prepPint.generalKPIs.items = [];
-
-            for (let i = 0; i < 5; i++) {
-                const row = arr[i + 2];
-                if (!row) continue;
-                data[type].prepPint.generalKPIs.items.push({
-                    label: prepLabels[i],
-                    weeks: [row[2], row[3], row[4], row[5], row[6]],
-                    monthly: row[7]
-                });
-            }
-
-            if (arr[8]) {
-                data[type].prepPint.generalKPIs.efficiency = {
-                    weeks: [arr[8][2], arr[8][3], arr[8][4], arr[8][5], arr[8][6]],
-                    monthly: arr[8][7]
-                };
-            }
-            if (arr[9]) {
-                data[type].prepPint.generalKPIs.utilization = {
-                    weeks: [arr[9][2], arr[9][3], arr[9][4], arr[9][5], arr[9][6]],
-                    monthly: arr[9][7]
-                };
-            }
-
-            // Parse Chapa (columns J-P)
-            data[type].chapa.generalKPIs.items = [];
-
-            for (let i = 0; i < 5; i++) {
-                const row = arr[i + 2];
-                if (!row) continue;
-                data[type].chapa.generalKPIs.items.push({
-                    label: prepLabels[i],
-                    weeks: [row[10], row[11], row[12], row[13], row[14]],
-                    monthly: row[15]
-                });
-            }
-
-            if (arr[8]) {
-                data[type].chapa.generalKPIs.efficiency = {
-                    weeks: [arr[8][10], arr[8][11], arr[8][12], arr[8][13], arr[8][14]],
-                    monthly: arr[8][15]
-                };
-            }
-            if (arr[9]) {
-                data[type].chapa.generalKPIs.utilization = {
-                    weeks: [arr[9][10], arr[9][11], arr[9][12], arr[9][13], arr[9][14]],
-                    monthly: arr[9][15]
-                };
-            }
-
-            // Parse CO | Geral (columns V-AB = indices 21-27) — leitura direta do Excel
-            data[type].global.generalKPIs.items = [];
-            for (let i = 0; i < 5; i++) {
-                const row = arr[i + 2];
-                if (!row) continue;
-                data[type].global.generalKPIs.items.push({
-                    label: prepLabels[i],
-                    weeks: [row[22], row[23], row[24], row[25], row[26]],
-                    monthly: row[27]
-                });
-            }
-            if (arr[8]) {
-                data[type].global.generalKPIs.efficiency = {
-                    weeks: [arr[8][22], arr[8][23], arr[8][24], arr[8][25], arr[8][26]],
-                    monthly: arr[8][27]
-                };
-            }
-            if (arr[9]) {
-                data[type].global.generalKPIs.utilization = {
-                    weeks: [arr[9][22], arr[9][23], arr[9][24], arr[9][25], arr[9][26]],
-                    monthly: arr[9][27]
-                };
-            }
+            parseGeneralBlock(prepBase, data[type].prepPint.generalKPIs);   // CO | Prep + Pint
+            parseGeneralBlock(chapaBase, data[type].chapa.generalKPIs);     // CO | Chapa
+            parseGeneralBlock(geralBase, data[type].global.generalKPIs);    // CO | Geral
 
             // ====== DETEÇÃO DINÂMICA DE TÉCNICOS ======
             // Deteta automaticamente os blocos de técnicos pelo padrão "HT [Nome]" na coluna B (prep/mix) e J (chapa)
@@ -1411,8 +1380,9 @@
                 };
             }
 
-            // Zona de legendas (entre prep/chapa e mix) — tipicamente linhas 33-41
-            let legendEndRow = 11;
+            // Zona de legendas (entre prep/chapa e mix) — só existe em layouts antigos.
+            // Se não existir, legendEndRow = -1 e todos os técnicos da col. B são 'prep'.
+            let legendEndRow = -1;
             for (let r = 11; r < Math.min(arr.length, 50); r++) {
                 const cell = arr[r] && arr[r][1];
                 if (cell && typeof cell === 'string' && (cell.indexOf('HT =') > -1 || cell.indexOf('HD =') > -1)) {
@@ -1425,34 +1395,37 @@
                     break;
                 }
             }
+            const prepEnd = legendEndRow > -1 ? legendEndRow : arr.length;
 
-            // Prep techs: col B (index 1), linhas 12+ até à zona de legendas
-            for (let r = 11; r < legendEndRow; r++) {
-                const cell = arr[r] && arr[r][1];
+            // Prep techs: coluna do bloco Prep (tipicamente B), linhas 12+ até à zona de legendas (se existir)
+            for (let r = 11; r < prepEnd; r++) {
+                const cell = arr[r] && arr[r][prepBase];
                 if (isHTCell(cell)) {
                     const name = extractName(cell);
-                    const vals = parseTechBlock(r, 1);
+                    const vals = parseTechBlock(r, prepBase);
                     data[type].technicians.push(Object.assign({ name: name, section: 'prep' }, vals));
                 }
             }
 
-            // Chapa techs: col J (index 9), linhas 12+ até à zona de legendas
-            for (let r = 11; r < legendEndRow; r++) {
-                const cell = arr[r] && arr[r][9];
+            // Chapa techs: coluna do bloco Chapa (J, ou I em meses antigos), linhas 12+ até à zona de legendas (se existir)
+            for (let r = 11; r < prepEnd; r++) {
+                const cell = arr[r] && arr[r][chapaBase];
                 if (isHTCell(cell)) {
                     const name = extractName(cell);
-                    const vals = parseTechBlock(r, 9);
+                    const vals = parseTechBlock(r, chapaBase);
                     data[type].technicians.push(Object.assign({ name: name, section: 'chapa' }, vals));
                 }
             }
 
-            // Mix techs: col B (index 1), depois da zona de legendas
-            for (let r = legendEndRow; r < arr.length; r++) {
-                const cell = arr[r] && arr[r][1];
-                if (isHTCell(cell)) {
-                    const name = extractName(cell);
-                    const vals = parseTechBlock(r, 1);
-                    data[type].technicians.push(Object.assign({ name: name, section: 'mix' }, vals));
+            // Mix techs: col. Prep depois da zona de legendas (só em layouts antigos com secção mista)
+            if (legendEndRow > -1) {
+                for (let r = legendEndRow; r < arr.length; r++) {
+                    const cell = arr[r] && arr[r][prepBase];
+                    if (isHTCell(cell)) {
+                        const name = extractName(cell);
+                        const vals = parseTechBlock(r, prepBase);
+                        data[type].technicians.push(Object.assign({ name: name, section: 'mix' }, vals));
+                    }
                 }
             }
         }
@@ -1693,9 +1666,11 @@
             const chapaTechs = d.technicians.filter(t => t.section === 'chapa');
             html += renderTechCardsGrid(chapaTechs, color);
 
-            html += `<div class="section-header" style="border-left-color: ${color};">Técnicos — Prep + Pint e Chapa</div>`;
             const mixTechs = d.technicians.filter(t => t.section === 'mix');
-            html += renderTechCardsGrid(mixTechs, color);
+            if (mixTechs.length > 0) {
+                html += `<div class="section-header" style="border-left-color: ${color};">Técnicos — Prep + Pint e Chapa</div>`;
+                html += renderTechCardsGrid(mixTechs, color);
+            }
 
             // Append Horas Picadas section
             html += renderHorasPicadasInline('coHoras', 'co', color);
