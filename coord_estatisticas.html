@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Estatísticas de Picagens — Colaboradores</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI",Arial,sans-serif;background:#f0f2f5;color:#333;padding:20px}
+.container{max-width:1250px;margin:0 auto}
+.hdr{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:18px 24px;border-radius:10px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.hdr h1{font-size:1.25em;font-weight:800}
+.hdr .sub{opacity:0.72;font-size:0.82em;margin-top:4px}
+.btn-upd{padding:10px 18px;background:#2980b9;color:white;border:none;border-radius:8px;font-size:0.9em;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-upd:hover{background:#2471a3}
+.btn-upd:disabled{background:#7f8c8d;cursor:wait}
+#updStatus{font-size:0.8em;margin-top:6px;opacity:0.9}
+.gate{background:white;border-radius:10px;padding:40px;text-align:center;color:#666;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+.filters{display:flex;gap:12px;flex-wrap:wrap;background:white;border-radius:10px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,0.07);margin-bottom:16px;align-items:flex-end}
+.filters .fg label{display:block;font-size:0.72em;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.filters select{padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:0.9em;min-width:170px;font-family:inherit;background:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px}
+.card{background:white;border-radius:10px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+.card .lbl{font-size:0.68em;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.card .val{font-size:1.35em;font-weight:800;margin-top:4px}
+.card .det{font-size:0.75em;color:#999;margin-top:2px}
+.green{color:#27ae60}.red{color:#e74c3c}.blue{color:#2980b9}.orange{color:#e67e22}.purple{color:#8e44ad}
+.section{background:white;border-radius:10px;padding:18px;box-shadow:0 2px 6px rgba(0,0,0,0.07);margin-bottom:16px}
+.section h2{font-size:1em;color:#1a1a2e;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #eee}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.charts{grid-template-columns:1fr}}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+table{width:100%;border-collapse:collapse;font-size:0.8em}
+th{background:#1a1a2e;color:white;padding:7px 8px;text-align:left;font-weight:500;position:sticky;top:0;white-space:nowrap;font-size:0.92em;line-height:1.3}
+td{padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap}
+tr:nth-child(even) td{background:#fafafa}
+tr.colab-row{cursor:pointer}
+tr.colab-row:hover td{background:#eef4fb}
+.mesgrp td{background:#f0f3f7!important;font-weight:700;color:#1a1a2e;font-size:1.02em}
+.tbl-wrap{max-height:560px;overflow:auto;border:1px solid #eee;border-radius:8px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.9em;font-weight:600}
+.b-red{background:#f8d7da;color:#721c24}.b-green{background:#d4edda;color:#155724}.b-warn{background:#fff3cd;color:#856404}.b-info{background:#d1ecf1;color:#0c5460}
+.legend{display:flex;gap:16px;font-size:0.75em;color:#666;margin-top:8px;flex-wrap:wrap}
+.legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+#detail{display:none}
+#detail .close{float:right;cursor:pointer;color:#e74c3c;font-weight:700;font-size:0.85em}
+.note{font-size:0.75em;color:#999;margin-top:14px;line-height:1.5}
+</style></head>
+<body><div class="container">
+<div class="hdr">
+<div>
+<h1>📈 Estatísticas de Picagens — Colaboradores</h1>
+<div class="sub">Fonte: relatórios de divergências respondidos pelos coordenadores · <span id="stampTxt">a carregar…</span></div>
+</div>
+<div id="adminBar" style="display:none;flex-direction:column;align-items:flex-end">
+<button class="btn-upd" id="btnUpd" onclick="atualizarDias()">🔄 Atualizar dias em falta</button>
+<div id="updStatus"></div>
+</div>
+</div>
+<div class="gate" id="gate" style="display:none"></div>
+<div id="app" style="display:none">
+<div class="filters">
+<div class="fg"><label>Local</label><select id="fLocal"><option value="">Todos</option></select></div>
+<div class="fg"><label>Mês</label><select id="fMes"><option value="">Todos</option></select></div>
+<div class="fg"><label>Colaborador</label><select id="fColab"><option value="">Todos</option></select></div>
+</div>
+<div class="cards" id="cards"></div>
+<div class="charts">
+<div class="section"><h2>Horas extras por mês — pagas vs não pagas</h2><div id="chExtras"></div>
+<div class="legend"><span><span class="sw" style="background:#27ae60"></span>Pagas (valor escrito pelo coordenador)</span><span><span class="sw" style="background:#e74c3c"></span>Não pagas (não validadas / sem decisão / diferença)</span></div></div>
+<div class="section">
+<h2>Presença média em oficina por mês <span style="font-weight:400;color:#999;font-size:0.85em">(horas por dia trabalhado)</span></h2><div id="chPres"></div>
+<h2 style="margin-top:14px">Tempo morto médio por mês <span style="font-weight:400;color:#999;font-size:0.85em">(minutos por dia trabalhado)</span></h2><div id="chMorto"></div>
+</div>
+</div>
+<div class="section" id="detail"><span class="close" onclick="closeDetail()">✕ fechar</span><h2 id="detTitle"></h2><div class="tbl-wrap"><table id="detTbl"></table></div></div>
+<div class="section"><h2>Detalhe por colaborador e mês <span style="font-weight:400;color:#999;font-size:0.85em">(clicar numa linha para ver os dias)</span></h2>
+<div class="tbl-wrap"><table id="tbl"></table></div>
+<div class="note">
+<strong>Definições:</strong> <em>Horas extras pagas</em> = valor escrito pelo coordenador na justificação da validação (ex.: "1 hora", "8h sábado"); quando validou sem escrever valor, assume-se as extras do dia arredondadas à hora mais próxima. <em>Horas extras não pagas</em> = extras trabalhadas além das 8h que não foram validadas, ficaram sem decisão, ou excedem o valor pago. <em>Presença</em> = tempo 2Smart em oficina (média nos dias trabalhados). <em>Tempo morto</em> = tempo presente sem intervenção aberta no Officegest. <em>Faltas de picagem</em> = dias sem registo 2Smart + dias com picagens incompletas (nº ímpar / sem picagem de almoço). O histórico da "Colisão" antiga (até 16/05/2026) é distribuído por Bela Vista e Tagus Park segundo o local atual de cada colaborador (Nuno Montês → Tagus Park). Dados guardados em SharePoint (Dashboard_State/estatisticas_picagens.json); o botão "Atualizar dias em falta" (administradores) lê os novos relatórios respondidos e atualiza automaticamente.
+</div></div>
+</div>
+<script>
+// ================= ESTADO =================
+var DS = { updatedAt: null, files: {}, rows: [] };   // dataset (SharePoint)
+var D = [];                                          // linhas colaborador-dia
+var IS_ADMIN = false;
+
+var MESES = {"2026-04":"Abril 2026","2026-05":"Maio 2026","2026-06":"Junho 2026","2026-07":"Julho 2026"};
+function mesLabel(m){ if(MESES[m])return MESES[m]; var p=m.split("-"); var n=["","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]; return (n[+p[1]]||p[1])+" "+p[0]; }
+var LOCAIS = {"ColisaoBelaVista":"Colisão Bela Vista","ColisaoTagusPark":"Colisão Tagus Park","MecanicaCacem":"Mecânica Cacém","MecanicaLisboa":"Mecânica Lisboa"};
+var UNIT_LOCAL = {"colisao_belavista":"ColisaoBelaVista","colisao_taguspark":"ColisaoTagusPark","mecanica_lisboa":"MecanicaLisboa","mecanica_cacem":"MecanicaCacem"};
+var LEGACY_BV = {"Carlos Miguel Fernandes Gonçalves Antunes":1,"Gyanu Pujara":1,"João Paulo São Pedro Bizarro":1,"Vitor Manuel Vilarinho Soutilha":1};
+
+function hmm(min){ if(min==null) return "—"; var s=min<0?"-":""; min=Math.abs(Math.round(min)); return s+Math.floor(min/60)+"h"+String(min%60).padStart(2,"0"); }
+
+var fLocal,fMes,fColab;
+
+function buildFilters(){
+  fLocal=document.getElementById("fLocal"); fMes=document.getElementById("fMes"); fColab=document.getElementById("fColab");
+  var curL=fLocal.value, curM=fMes.value;
+  fLocal.innerHTML='<option value="">Todos</option>';
+  Object.keys(LOCAIS).forEach(function(l){ fLocal.add(new Option(LOCAIS[l],l)); });
+  fLocal.value=curL;
+  fMes.innerHTML='<option value="">Todos</option>';
+  var ms=[]; D.forEach(function(r){ if(ms.indexOf(r.mes)<0)ms.push(r.mes); }); ms.sort();
+  ms.forEach(function(m){ fMes.add(new Option(mesLabel(m),m)); });
+  fMes.value=Array.prototype.some.call(fMes.options,function(o){return o.value===curM;})?curM:"";
+  refreshColabs();
+  fLocal.onchange=function(){refreshColabs();render();};
+  fMes.onchange=render; fColab.onchange=render;
+}
+
+function refreshColabs(){
+  var cur=fColab.value;
+  var set=[]; D.forEach(function(r){ if((!fLocal.value||r.l===fLocal.value)&&set.indexOf(r.n)<0)set.push(r.n); }); set.sort();
+  fColab.innerHTML='<option value="">Todos</option>';
+  set.forEach(function(n){ fColab.add(new Option(n,n)); });
+  if(set.indexOf(cur)>=0) fColab.value=cur;
+}
+
+function filtered(){
+  return D.filter(function(r){ return (!fLocal.value||r.l===fLocal.value)&&(!fMes.value||r.mes===fMes.value)&&(!fColab.value||r.n===fColab.value); });
+}
+
+function aggr(rows){
+  var a={diasTrab:0,pres:0,og:0,xv:0,xvN:0,xn:0,xnN:0,morto:0,mortoDias30:0,dias8:0,semReg:0,ferias:0,baixa:0,falta:0,picIncomp:0,aExc:0};
+  rows.forEach(function(r){
+    if(r.t==="ferias")a.ferias++;
+    else if(r.t==="baixa")a.baixa++;
+    else if(r.t==="falta")a.falta++;
+    else if(r.t==="sem_registo")a.semReg++;
+    if(r.p!=null){a.diasTrab++;a.pres+=r.p;if(r.p<480)a.dias8++;}
+    if(r.og!=null)a.og+=r.og;
+    if(r.x>0){
+      if(r.xp>0){a.xv+=r.xp;a.xvN++;}
+      var np=(r.xv==="Validado")?Math.max(0,r.x-r.xp):r.x;
+      if(np>0){a.xn+=np;a.xnN++;}
+    }
+    a.morto+=r.m||0; if((r.m||0)>30)a.mortoDias30++;
+    if(r.asp)a.picIncomp++;
+    a.aExc+=r.ae||0;
+  });
+  return a;
+}
+
+function renderCards(rows){
+  var a=aggr(rows);
+  var presMed=a.diasTrab?a.pres/a.diasTrab:null, mortoMed=a.diasTrab?a.morto/a.diasTrab:null;
+  document.getElementById("cards").innerHTML=
+  '<div class="card"><div class="lbl">Horas extras pagas</div><div class="val green">'+hmm(a.xv)+'</div><div class="det">'+a.xvN+' dia(s) · valor escrito pelo coordenador</div></div>'+
+  '<div class="card"><div class="lbl">Horas extras não pagas</div><div class="val red">'+hmm(a.xn)+'</div><div class="det">'+a.xnN+' dia(s) · além das 8h sem pagamento</div></div>'+
+  '<div class="card"><div class="lbl">Presença média/dia</div><div class="val blue">'+hmm(presMed)+'</div><div class="det">'+a.diasTrab+' dias trabalhados · '+a.dias8+' dias &lt;8h</div></div>'+
+  '<div class="card"><div class="lbl">Tempo morto</div><div class="val orange">'+hmm(a.morto)+'</div><div class="det">média '+hmm(mortoMed)+'/dia · '+a.mortoDias30+' dias &gt;30m</div></div>'+
+  '<div class="card"><div class="lbl">Faltas de picagem</div><div class="val purple">'+(a.semReg+a.picIncomp)+'</div><div class="det">'+a.semReg+' sem registo · '+a.picIncomp+' incompletas</div></div>'+
+  '<div class="card"><div class="lbl">Ausências</div><div class="val">'+(a.ferias+a.baixa+a.falta)+'</div><div class="det">'+a.ferias+' férias · '+a.baixa+' baixa · '+a.falta+' falta</div></div>';
+}
+
+function barChart(el, meses, series, fmt, H){
+  H=H||260;
+  var W=560,pl=52,pb=30,pt=14;
+  var all=[]; series.forEach(function(se){all=all.concat(se.vals);});
+  var maxV=Math.max.apply(null,[1].concat(all));
+  var iw=(W-pl-14)/meses.length;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%">';
+  for(var g=0;g<=4;g++){var y=pt+(H-pt-pb)*g/4, v=maxV*(4-g)/4;
+    s+='<line x1="'+pl+'" y1="'+y+'" x2="'+(W-8)+'" y2="'+y+'" stroke="#eee"/><text x="'+(pl-6)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="#999">'+fmt(v)+'</text>';}
+  meses.forEach(function(m,i){
+    var x0=pl+i*iw, bw=Math.min(38,(iw-18)/series.length);
+    series.forEach(function(se,j){
+      var v=se.vals[i], h=(H-pt-pb)*v/maxV, x=x0+iw/2-(bw*series.length)/2+j*bw;
+      s+='<rect x="'+x+'" y="'+(H-pb-h)+'" width="'+(bw-3)+'" height="'+h+'" rx="2" fill="'+se.color+'"><title>'+mesLabel(m)+': '+fmt(v)+'</title></rect>';
+      if(v>0)s+='<text x="'+(x+(bw-3)/2)+'" y="'+(H-pb-h-4)+'" text-anchor="middle" font-size="10" font-weight="600" fill="#444">'+fmt(v)+'</text>';
+    });
+    s+='<text x="'+(x0+iw/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="10.5" fill="#555">'+mesLabel(m).replace(" 2026","")+'</text>';
+  });
+  el.innerHTML=s+"</svg>";
+}
+
+function renderCharts(rows){
+  var meses=[]; rows.forEach(function(r){ if(meses.indexOf(r.mes)<0)meses.push(r.mes); }); meses.sort();
+  var byMes=meses.map(function(m){ return aggr(rows.filter(function(r){return r.mes===m;})); });
+  barChart(document.getElementById("chExtras"),meses,[
+    {color:"#27ae60",vals:byMes.map(function(a){return +(a.xv/60).toFixed(1);})},
+    {color:"#e74c3c",vals:byMes.map(function(a){return +(a.xn/60).toFixed(1);})}],function(v){return (+(+v).toFixed(1))+"h";});
+  barChart(document.getElementById("chPres"),meses,[
+    {color:"#2980b9",vals:byMes.map(function(a){return a.diasTrab?Math.round(a.pres/a.diasTrab):0;})}],
+    function(v){return hmm(v);},118);
+  barChart(document.getElementById("chMorto"),meses,[
+    {color:"#e67e22",vals:byMes.map(function(a){return a.diasTrab?Math.round(a.morto/a.diasTrab):0;})}],
+    function(v){return Math.round(v)+"m";},118);
+}
+function renderTable(rows){
+  var meses=[]; rows.forEach(function(r){ if(meses.indexOf(r.mes)<0)meses.push(r.mes); }); meses.sort();
+  var h='<tr>'+
+  '<th>Colaborador</th>'+
+  '<th>Local</th>'+
+  '<th title="Dias com presença registada no 2Smart">Dias<br>trabalhados</th>'+
+  '<th title="Média da presença 2Smart nos dias trabalhados">Presença média<br>por dia (2Smart)</th>'+
+  '<th title="Nº de dias em que a presença ficou abaixo das 8 horas">Dias com<br>presença &lt;8h</th>'+
+  '<th title="Horas a pagar escritas pelo coordenador na validação">Horas extras<br>pagas</th>'+
+  '<th title="Nº de dias com horas extras pagas">Dias c/<br>extras pagas</th>'+
+  '<th title="Horas além das 8h não validadas, sem decisão, ou diferença entre o trabalhado e o valor pago">Horas extras<br>não pagas</th>'+
+  '<th title="Nº de dias com horas extras não pagas">Dias c/ extras<br>não pagas</th>'+
+  '<th title="Tempo presente em oficina sem intervenção aberta no Officegest">Tempo morto<br>total (sem OG)</th>'+
+  '<th title="Nº de dias com mais de 30 minutos de tempo morto">Dias c/ tempo<br>morto &gt;30m</th>'+
+  '<th title="Dias sem registo 2Smart + dias com picagens incompletas (nº ímpar / sem picagem de almoço)">Faltas de<br>picagem</th>'+
+  '<th title="Férias (F), Baixa (B) e Faltas (Ft) registadas nos relatórios">Ausências<br>(Férias/Baixa/Falta)</th></tr>';
+  meses.forEach(function(m){
+    h+='<tr class="mesgrp"><td colspan="13">'+mesLabel(m)+'</td></tr>';
+    var sub=rows.filter(function(r){return r.mes===m;});
+    var colabs=[]; sub.forEach(function(r){ if(colabs.indexOf(r.n)<0)colabs.push(r.n); }); colabs.sort();
+    colabs.forEach(function(n){
+      var rs=sub.filter(function(r){return r.n===n;}), a=aggr(rs);
+      var locs=[]; rs.forEach(function(r){ var L=LOCAIS[r.l]||r.l; if(locs.indexOf(L)<0)locs.push(L); });
+      var presMed=a.diasTrab?hmm(a.pres/a.diasTrab):"—";
+      h+='<tr class="colab-row" onclick="showDetail(\''+n.replace(/'/g,"\\'")+'\',\''+m+'\')">'+
+      '<td>'+n+'</td><td>'+locs.join(", ")+'</td><td>'+a.diasTrab+'</td><td>'+presMed+'</td>'+
+      '<td>'+(a.dias8>0?'<span class="badge b-warn">'+a.dias8+'</span>':"0")+'</td>'+
+      '<td class="green"><strong>'+hmm(a.xv)+'</strong></td><td>'+a.xvN+'</td>'+
+      '<td class="red"><strong>'+hmm(a.xn)+'</strong></td><td>'+a.xnN+'</td>'+
+      '<td>'+hmm(a.morto)+'</td><td>'+(a.mortoDias30>0?'<span class="badge b-warn">'+a.mortoDias30+'</span>':"0")+'</td>'+
+      '<td>'+((a.semReg+a.picIncomp)>0?'<span class="badge b-red">'+(a.semReg+a.picIncomp)+'</span>':"0")+'</td>'+
+      '<td>'+((a.ferias+a.baixa+a.falta)>0?(a.ferias+a.baixa+a.falta)+' ('+a.ferias+'F/'+a.baixa+'B/'+a.falta+'Ft)':"0")+'</td></tr>';
+    });
+  });
+  document.getElementById("tbl").innerHTML=h;
+}
+
+function showDetail(nome,mes){
+  var rows=D.filter(function(r){return r.n===nome&&r.mes===mes&&(!fLocal.value||r.l===fLocal.value);}).sort(function(a,b){return a.d<b.d?-1:1;});
+  document.getElementById("detTitle").textContent=nome+" — "+mesLabel(mes);
+  var h='<tr><th>Data</th><th>Tipo de dia</th><th>Presença 2Smart</th><th>Tempo em intervenções (OG)</th><th>Extras apuradas</th><th>Extras pagas</th><th>Decisão do coordenador</th><th>Justificação escrita</th><th>Tempo morto</th><th>Picagens</th><th>Caso especial</th></tr>';
+  rows.forEach(function(r){
+    var dec=r.x>0?(r.xv==="Validado"?'<span class="badge b-green">Validado</span>':(r.xv==="Não validado"?'<span class="badge b-red">Não validado</span>':'<span class="badge b-warn">Sem decisão</span>')):"—";
+    var pic=r.t==="sem_registo"?'<span class="badge b-red">Sem registo</span>':(r.asp?'<span class="badge b-warn">Incompleta</span>':"OK");
+    h+='<tr><td>'+r.d.slice(8)+'/'+r.d.slice(5,7)+'</td><td>'+r.t+'</td><td>'+hmm(r.p)+'</td><td>'+hmm(r.og)+'</td><td>'+(r.x>0?hmm(r.x):"—")+'</td><td>'+(r.xp>0?'<strong class="green">'+hmm(r.xp)+'</strong>':"—")+'</td><td>'+dec+'</td><td>'+(r.xo||"")+'</td><td>'+(r.m>0?hmm(r.m):"—")+'</td><td>'+pic+'</td><td>'+(r.esp||"")+'</td></tr>';
+  });
+  document.getElementById("detTbl").innerHTML=h;
+  var d=document.getElementById("detail"); d.style.display="block"; d.scrollIntoView({behavior:"smooth"});
+}
+function closeDetail(){document.getElementById("detail").style.display="none";}
+
+function render(){
+  var rows=filtered();
+  renderCards(rows); renderCharts(rows); renderTable(rows); closeDetail();
+}
+
+function applyDataset(ds){
+  DS=ds||DS;
+  if(!DS.files)DS.files={};
+  D=DS.rows||[];
+  D.forEach(function(r){ r.mes=r.d.slice(0,7); });
+  var st=document.getElementById("stampTxt");
+  st.textContent = DS.updatedAt ? ("Atualizado em "+new Date(DS.updatedAt).toLocaleString("pt-PT")+" · "+D.length+" registos") : "sem dados ainda";
+  if(D.length){ document.getElementById("app").style.display="block"; document.getElementById("gate").style.display="none"; buildFilters(); render(); }
+  else { document.getElementById("gate").style.display="block";
+    document.getElementById("gate").innerHTML = IS_ADMIN
+      ? 'Ainda não existem dados guardados.<br><br>Clique em <strong>"🔄 Atualizar dias em falta"</strong> (canto superior direito) para ler todos os relatórios respondidos e gerar as estatísticas.'
+      : 'Ainda não existem dados guardados. Peça a um administrador para gerar as estatísticas.'; }
+}
+// ================= PARSER DOS RELATÓRIOS RESPONDIDOS =================
+function toMin(txt){ var m=/(\d+)h\s*(\d{1,2})m/.exec(txt||""); return m?(+m[1])*60+(+m[2]):null; }
+
+function parsePago(obs, extrasMin){
+  if(obs){
+    var t=obs.toLowerCase().replace(/,/g,".");
+    var m=/(\d+)\s*h(?:oras?)?\s*(\d{1,2})(?!\d)/.exec(t);
+    if(m) return (+m[1])*60+(+m[2]);
+    m=/(\d+)\s*h(?:oras?)?(?![\d:])/.exec(t);
+    if(m) return (+m[1])*60;
+  }
+  return Math.round(extrasMin/60)*60; // validado sem valor escrito -> hora mais próxima
+}
+
+function classifyEspecial(txt){
+  if(!txt) return "outro";
+  if(/sem registo|sem movimentos/i.test(txt)) return "sem_registo";
+  if(/f[ée]rias/i.test(txt)) return "ferias";
+  if(/baixa/i.test(txt)) return "baixa";
+  if(/falta/i.test(txt)) return "falta";
+  return "outro";
+}
+
+function localsOf(unit){
+  if(unit==="colisao_legacy") return ["ColisaoBelaVista","ColisaoTagusPark"];
+  return [UNIT_LOCAL[unit]];
+}
+function localFor(unit,nome){
+  if(unit==="colisao_legacy") return LEGACY_BV[nome]?"ColisaoBelaVista":"ColisaoTagusPark";
+  return UNIT_LOCAL[unit];
+}
+
+function parseReport(html, unit, dateISO){
+  var doc=new DOMParser().parseFromString(html,"text/html");
+  var rows=[], byName={};
+  // Casos Especiais
+  Array.prototype.forEach.call(doc.querySelectorAll(".special"),function(sp){
+    var st=sp.querySelector("strong"); if(!st) return;
+    var nome=st.textContent.trim();
+    var topTxt="";
+    Array.prototype.forEach.call(sp.childNodes,function(nd){ if(nd.nodeType===3) topTxt+=nd.textContent; });
+    var esp=topTxt.replace(/^[\s—-]+/,"").trim()||"Caso especial";
+    var hr=null;
+    Array.prototype.forEach.call(sp.querySelectorAll("input"),function(inp){ var v=inp.getAttribute("value"); if(v&&v.trim())hr=v.trim(); });
+    byName[nome]={esp:esp,hr:hr};
+  });
+  // Análise por colaborador
+  Array.prototype.forEach.call(doc.querySelectorAll(".cb"),function(cb){
+    var nmEl=cb.querySelector(".ch .name"); if(!nmEl) return;
+    var nome=nmEl.textContent.trim();
+    var body=cb.querySelector(".cbody")||cb;
+    var r={l:localFor(unit,nome),d:dateISO,n:nome,t:"normal",p:null,og:null,x:0,xv:null,xo:null,m:0,mp:0,asp:false,ae:0,esp:null,xp:0};
+    Array.prototype.forEach.call(body.querySelectorAll(".alert"),function(al){
+      var t=al.textContent;
+      if(/Presença 2Smart:/.test(t)) r.p=toMin(t);
+      else if(/Tempo em intervenções:/.test(t)) r.og=toMin(t);
+      else if(/Almoço superior/.test(t)){ var e=/excesso\s+(\d+h\s*\d{1,2}m)/.exec(t); r.ae=e?toMin(e[1]):(toMin(t)||0); }
+      else if(/Sem picagem de almoço|Imparidade/i.test(t)) r.asp=true;
+      else if(/Horas extras:/.test(t)) r.x=toMin(t)||0;
+      else if(/Tempo morto:/.test(t)){ var tm=/Total:\s*(\d+)h\s*(\d{1,2})m/.exec(t); r.m=tm?(+tm[1])*60+(+tm[2]):(toMin(t)||0); r.mp=(t.match(/→/g)||[]).length; }
+    });
+    var sel=body.querySelector('select[data-field="horas_extras"]');
+    if(sel){ var opt=sel.querySelector("option[selected]"); r.xv=opt?opt.getAttribute("value"):""; }
+    var obsIn=body.querySelector('input[data-field="horas_extras_obs"]');
+    if(obsIn){ var ov=obsIn.getAttribute("value"); if(ov&&ov.trim()) r.xo=ov.trim(); }
+    if(byName[nome]){ r.esp=byName[nome].esp; r.t=classifyEspecial(byName[nome].esp); delete byName[nome]; }
+    if(r.x>0 && r.xv==="Validado") r.xp=parsePago(r.xo,r.x);
+    rows.push(r);
+  });
+  // Especiais sem análise associada
+  Object.keys(byName).forEach(function(nome){
+    rows.push({l:localFor(unit,nome),d:dateISO,n:nome,t:classifyEspecial(byName[nome].esp),p:null,og:null,x:0,xv:null,xo:null,m:0,mp:0,asp:false,ae:0,esp:byName[nome].esp,xp:0});
+  });
+  return rows;
+}
+
+// ================= ATUALIZAR DIAS EM FALTA (admin) =================
+function updStatus(msg,color){ var el=document.getElementById("updStatus"); el.textContent=msg; el.style.color=color||"#fff"; }
+
+function atualizarDias(){
+  var P=window.parent;
+  var btn=document.getElementById("btnUpd");
+  var coordMap;
+  try{ coordMap=P.getDivCoordMap(); }catch(e){ updStatus("Erro: sem ligação à intranet","#ffb3b3"); return; }
+  var folders=Object.keys(coordMap).map(function(u){ return {unit:u,key:coordMap[u].respondido}; });
+  folders.push({unit:"colisao_legacy",key:"div_colisao_respondido"});
+  btn.disabled=true; updStatus("A listar pastas de respondidos…");
+  Promise.all(folders.map(function(f){
+    return P.listDivCoordFiles(f.key).then(function(d){ return {f:f,files:(d&&d.value)||[]}; })
+      .catch(function(){ return {f:f,files:[]}; });
+  })).then(function(lists){
+    var cand={}, absorbed=0;
+    lists.forEach(function(L){
+      L.files.forEach(function(file){
+        if(!/\.html$/i.test(file.name)) return;
+        var m=/Ref_(\d{2})(\d{2})(\d{4})/.exec(file.name); if(!m) return;
+        var dISO=m[3]+"-"+m[2]+"-"+m[1];
+        if(DS.files[file.id]) return;
+        var locs=localsOf(L.f.unit);
+        var hasRows=D.some(function(r){ return r.d===dISO && locs.indexOf(r.l)>=0; });
+        if(hasRows){ DS.files[file.id]=true; absorbed++; return; }
+        var k=L.f.unit+"|"+dISO;
+        if(!cand[k] || (file.lastModifiedDateTime||"") > (cand[k].mod||"")){
+          if(cand[k]) DS.files[cand[k].id]=true; // geração antiga absorvida
+          cand[k]={unit:L.f.unit,id:file.id,name:file.name,d:dISO,mod:file.lastModifiedDateTime};
+        } else { DS.files[file.id]=true; }
+      });
+    });
+    var todo=Object.keys(cand).map(function(k){return cand[k];}).sort(function(a,b){return a.d<b.d?-1:1;});
+    if(!todo.length){
+      updStatus("Tudo em dia — nenhum relatório novo ("+absorbed+" já contabilizados).","#b8f5c8");
+      btn.disabled=false;
+      if(absorbed>0) saveDS(false);
+      return;
+    }
+    updStatus("0/"+todo.length+" relatórios novos…");
+    var done=0, errs=[], idx=0, CONC=4;
+    function next(){
+      if(idx>=todo.length) return Promise.resolve();
+      var item=todo[idx++];
+      return P.downloadDivCoordFile(item.id).then(function(html){
+        var newRows=parseReport(html,item.unit,item.d);
+        var locs=localsOf(item.unit);
+        D=D.filter(function(r){ return !(r.d===item.d && locs.indexOf(r.l)>=0); });
+        newRows.forEach(function(r){ r.mes=r.d.slice(0,7); D.push(r); });
+        DS.files[item.id]=true;
+      }).catch(function(e){ errs.push(item.name+": "+(e.message||e)); })
+      .then(function(){ done++; updStatus(done+"/"+todo.length+" relatórios processados…"); return next(); });
+    }
+    var lanes=[]; for(var i=0;i<CONC;i++) lanes.push(next());
+    Promise.all(lanes).then(function(){
+      DS.rows=D; DS.updatedAt=new Date().toISOString();
+      saveDS(true, todo.length, errs);
+    });
+  }).catch(function(e){ updStatus("Erro: "+(e.message||e),"#ffb3b3"); btn.disabled=false; });
+}
+
+function saveDS(rerender, nNew, errs){
+  var P=window.parent;
+  DS.rows=D; if(!DS.updatedAt) DS.updatedAt=new Date().toISOString();
+  P.statsSaveDataset(DS).then(function(){
+    var msg="✅ Guardado. "+(nNew?nNew+" relatório(s) novo(s) processado(s).":"");
+    if(errs&&errs.length) msg+=" ⚠ "+errs.length+" erro(s): "+errs.slice(0,3).join("; ");
+    updStatus(msg, errs&&errs.length?"#ffe3a3":"#b8f5c8");
+  }).catch(function(e){ updStatus("Erro ao guardar no SharePoint: "+(e.message||e),"#ffb3b3"); })
+  .then(function(){ document.getElementById("btnUpd").disabled=false; if(rerender) applyDataset(DS); });
+}
+
+// ================= INIT =================
+(function init(){
+  var perms=null;
+  try{ perms=window.parent.getCurrentUserPermissions(); }catch(e){}
+  if(!perms || !perms.role){
+    document.getElementById("gate").style.display="block";
+    document.getElementById("gate").textContent="Este módulo só funciona dentro da Intranet DomusCar (sessão autenticada).";
+    return;
+  }
+  if(perms.role!=="admin" && perms.role!=="coordenador"){
+    document.getElementById("gate").style.display="block";
+    document.getElementById("gate").textContent="Sem permissão — módulo disponível apenas para administradores e coordenadores.";
+    return;
+  }
+  IS_ADMIN=(perms.role==="admin");
+  if(IS_ADMIN) document.getElementById("adminBar").style.display="flex";
+  try{
+    window.parent.statsLoadDataset().then(function(ds){ applyDataset(ds&&ds.rows?ds:null); })
+      .catch(function(){ applyDataset(null); });
+  }catch(e){ applyDataset(null); }
+})();
+</script>
+</div></body></html>

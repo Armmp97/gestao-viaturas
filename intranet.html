@@ -1023,6 +1023,7 @@
         <div class="sidebar-section" id="coordSection" style="display: none;">Coordenação</div>
         <ul class="sidebar-nav" id="coordNav" style="display: none;">
             <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
+            <li><a onclick="openModule('coord_estatisticas')" id="navCoord_estatisticas"><span class="nav-icon">📈</span> Estatísticas Picagens</a></li>
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
             <li>
                 <a onclick="toggleDropdown('prepAuditoriasSubmenu','prepAuditoriasArrow')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span><span class="nav-icon">📋</span> Preparação Auditorias</span><span id="prepAuditoriasArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
@@ -2087,27 +2088,27 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'mario.perez@domuscar.com': {
             role: 'coordenador', name: 'Mário Perez (Colisão Bela Vista)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'nuno.montes@domuscar.com': {
             role: 'coordenador', name: 'Nuno Montes (Colisão Tagus Park)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
         },
         'diogolj009@gmail.com': {
             role: 'colaborador', name: 'Diogo Henrique Gomes Fernandes',
@@ -3200,6 +3201,32 @@
     window.getCurrentUserPermissions = function() {
         return currentUserPermissions;
     };
+
+    // ==== Estatísticas Picagens (coord_estatisticas.html) ====
+    // Dataset agregado guardado em Dashboard_State/estatisticas_picagens.json
+    window.statsLoadDataset = function() {
+        return loadDashboardFromSP('estatisticas_picagens.json');
+    };
+    window.statsSaveDataset = function(data) {
+        // Escrita restrita a administradores (o botão "Atualizar dias em falta" é admin-only)
+        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
+            return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        }
+        var driveId = getDriveId();
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' +
+                  SP_CONFIG.folders.dashboard_state + '/estatisticas_picagens.json:/content';
+        return getGraphToken().then(function(token) {
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }).then(function(r) {
+            if (!r.ok) throw new Error('SP save falhou: ' + r.status);
+            console.log('[Stats] Dataset estatisticas_picagens.json guardado no SP');
+            return true;
+        });
+    };
     window.deleteDivCoordFile = function(fileId) {
         // deleteSharePointFile já tem _requireAdminForDelete embutido, mas duplicamos aqui
         // para que a verificação aconteça MESMO se a função for chamada do iframe coord.
@@ -3333,6 +3360,7 @@
             questionario_satisfacao: { title: 'Questionário de Satisfação', url: 'questionario-satisfacao.html' },
             formulario_nc: { title: 'Formulário de Não-Conformidade', url: 'formulario_nao_conformidade.html' },
             coord_divergencias: { title: 'Divergências Picagens', url: 'coord_divergencias.html' },
+            coord_estatisticas: { title: 'Estatísticas Picagens', url: 'coord_estatisticas.html' },
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
             equipamentos: { title: 'Manutenção de Equipamentos', url: 'manutencao-equipamentos.html' },
             coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' },
