@@ -104,16 +104,15 @@ h1{color:#1a1a2e;font-size:1.6em;margin-bottom:5px;text-align:center}
 // CONFIGURAÇÃO (idêntica ao script Python)
 // ============================================================
 const MY_EMAIL = "recursoshumanos@domuscar.com";
-const CC_EMAILS = "andre.pereira@domuscar.com,vanessa.borges@domuscar.com,recursoshumanos@domuscar.com";
 const COORDINATORS = {
-    "Colisão Bela Vista": {nome: "Mário Perez", email: "mario.perez@domuscar.com"},
-    "Colisão Tagus Park": {nome: "Nuno Montes", email: "nuno.montes@domuscar.com"},
+    "Colisão Bela Vista": {nome: "Nuno Montes", email: "nuno.montes@domuscar.com"},
+    "Colisão Tagus Park": {nome: "Mário Perez", email: "mario.perez@domuscar.com"},
     "Mecânica Cacém": {nome: "José Rodriguez", email: "jose.rodriguez@domuscar.com"},
     "Mecânica Lisboa": {nome: "Fábio Ramalho", email: "fabio.ramalho@domuscar.com"},
 };
 const COORDINATOR_EMAILS = {
-    "Colisão Bela Vista": "mario.perez@domuscar.com",
-    "Colisão Tagus Park": "nuno.montes@domuscar.com",
+    "Colisão Bela Vista": "nuno.montes@domuscar.com",
+    "Colisão Tagus Park": "mario.perez@domuscar.com",
     "Mecânica Cacém": "jose.rodriguez@domuscar.com",
     "Mecânica Lisboa": "fabio.ramalho@domuscar.com"
 };
@@ -939,9 +938,9 @@ function generateUnitHTML(unitName, smart2, ogData) {
     h += '    navigator.clipboard.writeText(body).then(function() {\n';
     h += '        var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);\n';
     h += '        if (isMobile) {\n';
-    h += '            window.location.href = "ms-outlook://compose?to='+MY_EMAIL+'&cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '            window.location.href = "ms-outlook://compose?to='+MY_EMAIL+'&subject=" + subject;\n';
     h += '        } else {\n';
-    h += '            var mailtoUri = "mailto:'+MY_EMAIL+'?cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '            var mailtoUri = "mailto:'+MY_EMAIL+'?subject=" + subject;\n';
     h += '            var outlookUrl = "https://outlook.office365.com/mail/deeplink/compose?mailtouri=" + encodeURIComponent(mailtoUri);\n';
     h += '            window.open(outlookUrl, "_blank");\n';
     h += '        }\n';
@@ -951,9 +950,9 @@ function generateUnitHTML(unitName, smart2, ogData) {
     h += '        var ta = document.createElement("textarea"); ta.value = body; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);\n';
     h += '        var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);\n';
     h += '        if (isMobile) {\n';
-    h += '            window.location.href = "ms-outlook://compose?to='+MY_EMAIL+'&cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '            window.location.href = "ms-outlook://compose?to='+MY_EMAIL+'&subject=" + subject;\n';
     h += '        } else {\n';
-    h += '            var mailtoUri = "mailto:'+MY_EMAIL+'?cc='+CC_EMAILS+'&subject=" + subject;\n';
+    h += '            var mailtoUri = "mailto:'+MY_EMAIL+'?subject=" + subject;\n';
     h += '            var outlookUrl = "https://outlook.office365.com/mail/deeplink/compose?mailtouri=" + encodeURIComponent(mailtoUri);\n';
     h += '            window.open(outlookUrl, "_blank");\n';
     h += '        }\n';
