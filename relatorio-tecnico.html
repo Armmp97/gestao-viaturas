@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gerador de Relatórios Técnicos</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
@@ -47,6 +48,13 @@
   #status{text-align:center;margin-top:14px;font-size:13px;font-weight:600;min-height:20px}
   .ok{color:#34d399}.err{color:#f87171}.info{color:#93c5fd}
   .prio-URGENTE{color:#dc2626;font-weight:800}.prio-ALTA{color:#ea580c;font-weight:800}.prio-MÉDIA{color:#059669;font-weight:800}.prio-BAIXA{color:#475569;font-weight:800}
+  .anexo-drop{border:2px dashed #cbd5e1;border-radius:12px;padding:22px;text-align:center;color:#64748b;font-size:13px;cursor:pointer;transition:all .15s;background:#f8fafc}
+  .anexo-drop:hover,.anexo-drop.drag{border-color:#2563eb;background:#eff6ff;color:#2563eb}
+  .anexo-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e2e8f0;border-radius:9px;margin-top:8px;background:white;font-size:13px}
+  .anexo-row .nome{flex:1;font-weight:600;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .anexo-row .tam{color:#94a3b8;font-size:11.5px;white-space:nowrap}
+  #resultBox{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  #resultBox a{text-decoration:none}
 </style>
 </head>
 <body>
@@ -146,11 +154,23 @@
     <textarea id="fObs" placeholder="Ex: O veículo apresenta diversas anomalias que requerem atenção imediata…"></textarea>
   </div>
 
+  <!-- 6. Anexos -->
+  <div class="card">
+    <h2>📎 6. Anexos</h2>
+    <p class="desc">Junta relatórios de avarias, diagnósticos ou fotos (PDF, JPG, PNG). As páginas são adicionadas no fim do relatório, num único ficheiro completo.</p>
+    <div class="anexo-drop" id="anexoDrop" onclick="document.getElementById('anexoInput').click()">
+      📎 Clica para escolher ficheiros ou arrasta-os para aqui<br><span style="font-size:11.5px">PDF · JPG · PNG</span>
+    </div>
+    <input type="file" id="anexoInput" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple style="display:none" onchange="addAnexos(this.files);this.value=''">
+    <div id="anexoList"></div>
+  </div>
+
   <div class="actions">
     <button class="btn" id="btnGerar" onclick="gerarPDF()">📄 Gerar Relatório PDF</button>
     <button class="btn btn-sec" onclick="limparTudo()" style="padding:12px 20px">🗑️ Limpar Formulário</button>
   </div>
   <div id="status"></div>
+  <div id="resultBox"></div>
 
 </div>
 
@@ -349,6 +369,8 @@ function limparTudo() {
   document.getElementById('fData').value = new Date().toISOString().slice(0,10);
   renderOkList(OK_DEFAULT.map(t => ({texto:t, checked:true})));
   addSection(); addTrabalho();
+  anexos = []; renderAnexos();
+  document.getElementById('resultBox').innerHTML = '';
   setStatus('', '');
 }
 
@@ -538,6 +560,13 @@ function makePdf(d) {
     doc.text(obsLines, M_L, y);
     y += obsLines.length * 5 + 8;
   }
+  if (d.anexoNames && d.anexoNames.length) {
+    doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(0,0,0);
+    const anexLines = doc.splitTextToSize('Em anexo (' + d.anexoNames.length + '): ' + d.anexoNames.join('; '), CONT_W);
+    ensure(anexLines.length * 5 + 4);
+    doc.text(anexLines, M_L, y);
+    y += anexLines.length * 5 + 6;
+  }
   ensure(34);
   doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(0,0,0);
   doc.text('Data: ______ de ______________ de ________  ( ____ / ____ / ________ )', M_L, y + 6);
@@ -572,29 +601,129 @@ function saveToSP(fileName, dataUrl) {
   });
 }
 
+// ===================== ANEXOS =====================
+let anexos = []; // { name, type, bytes (ArrayBuffer) }
+
+function addAnexos(fileList) {
+  Array.from(fileList).forEach(function(f) {
+    const ok = /\.(pdf|png|jpe?g)$/i.test(f.name) || /pdf|png|jpeg/.test(f.type);
+    if (!ok) { setStatus('⚠️ "' + f.name + '" ignorado — só PDF, JPG ou PNG.', 'err'); return; }
+    if (f.size > 25 * 1024 * 1024) { setStatus('⚠️ "' + f.name + '" ignorado — máximo 25 MB por ficheiro.', 'err'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      anexos.push({ name: f.name, type: f.type || (/\.pdf$/i.test(f.name) ? 'application/pdf' : 'image/*'), bytes: e.target.result });
+      renderAnexos();
+    };
+    reader.readAsArrayBuffer(f);
+  });
+}
+
+function renderAnexos() {
+  const box = document.getElementById('anexoList');
+  box.innerHTML = '';
+  anexos.forEach(function(a, i) {
+    const row = document.createElement('div');
+    row.className = 'anexo-row';
+    const icon = /pdf/i.test(a.type) || /\.pdf$/i.test(a.name) ? '📄' : '🖼️';
+    row.innerHTML = '<span>' + icon + '</span><span class="nome">' + esc(a.name) + '</span>' +
+      '<span class="tam">' + (a.bytes.byteLength / 1024 < 1024 ? Math.round(a.bytes.byteLength/1024) + ' KB' : (a.bytes.byteLength/1048576).toFixed(1) + ' MB') + '</span>' +
+      '<button class="btn-danger" title="Remover" onclick="anexos.splice(' + i + ',1);renderAnexos()">✕</button>';
+    box.appendChild(row);
+  });
+}
+
+(function() {
+  const drop = document.getElementById('anexoDrop');
+  ['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', function(e){ if (e.dataTransfer && e.dataTransfer.files) addAnexos(e.dataTransfer.files); });
+})();
+
+// Funde o relatório jsPDF com os anexos num único PDF (pdf-lib)
+async function mergeComAnexos(reportBytes) {
+  const PDFLib = window.PDFLib;
+  const finalDoc = await PDFLib.PDFDocument.load(reportBytes);
+  for (const a of anexos) {
+    try {
+      if (/pdf/i.test(a.type) || /\.pdf$/i.test(a.name)) {
+        const src = await PDFLib.PDFDocument.load(a.bytes, { ignoreEncryption: true });
+        const pages = await finalDoc.copyPages(src, src.getPageIndices());
+        pages.forEach(p => finalDoc.addPage(p));
+      } else {
+        const isPng = /png/i.test(a.type) || /\.png$/i.test(a.name);
+        const img = isPng ? await finalDoc.embedPng(a.bytes) : await finalDoc.embedJpg(a.bytes);
+        const page = finalDoc.addPage([595.28, 841.89]); // A4 em pontos
+        const margin = 40;
+        const maxW = 595.28 - margin * 2, maxH = 841.89 - margin * 2 - 20;
+        const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+        const w = img.width * scale, h = img.height * scale;
+        page.drawImage(img, { x: (595.28 - w) / 2, y: (841.89 - h) / 2, width: w, height: h });
+        page.drawText(a.name, { x: margin, y: 20, size: 8, color: PDFLib.rgb(0.4, 0.45, 0.5) });
+      }
+    } catch (e) {
+      console.error('Anexo falhou:', a.name, e);
+      throw new Error('Não foi possível anexar "' + a.name + '" (ficheiro danificado ou protegido).');
+    }
+  }
+  return await finalDoc.save();
+}
+
 // ===================== GERAR =====================
 function setStatus(msg, cls) {
   const el = document.getElementById('status');
   el.textContent = msg; el.className = cls || '';
 }
 
-function gerarPDF() {
+let lastBlobUrl = null;
+
+function mostrarResultado(blob, fileName) {
+  if (lastBlobUrl) { try { URL.revokeObjectURL(lastBlobUrl); } catch(e) {} }
+  const url = URL.createObjectURL(blob);
+  lastBlobUrl = url;
+  // tentativa de download automático
+  try {
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch(e) { console.warn('Download automático bloqueado:', e); }
+  // botões de fallback (funcionam sempre)
+  document.getElementById('resultBox').innerHTML =
+    '<a class="btn" href="' + url + '" download="' + esc(fileName) + '">⬇️ Descarregar PDF</a>' +
+    '<a class="btn btn-sec" href="' + url + '" target="_blank" style="padding:12px 20px">👁️ Abrir / Imprimir</a>';
+}
+
+function bytesToDataUrl(bytes) {
+  let bin = '';
+  const u8 = new Uint8Array(bytes);
+  const chunk = 0x8000;
+  for (let i = 0; i < u8.length; i += chunk) bin += String.fromCharCode.apply(null, u8.subarray(i, i + chunk));
+  return 'data:application/pdf;base64,' + btoa(bin);
+}
+
+async function gerarPDF() {
   const d = collectData();
   if (!d.marca && !d.matricula) { setStatus('⚠️ Preenche pelo menos a marca/modelo ou a matrícula.', 'err'); return; }
   const btn = document.getElementById('btnGerar');
   btn.disabled = true;
+  document.getElementById('resultBox').innerHTML = '';
   setStatus('A gerar PDF…', 'info');
   try {
+    d.anexoNames = anexos.map(a => a.name);
     const doc = makePdf(d);
+    let bytes = doc.output('arraybuffer');
+    if (anexos.length) {
+      setStatus('A juntar ' + anexos.length + ' anexo(s)…', 'info');
+      bytes = await mergeComAnexos(bytes);
+    }
     const matSafe = (d.matricula || 'SEM-MATRICULA').replace(/[^A-Za-z0-9\-]/g, '');
     const fileName = 'Relatorio_Tecnico_' + matSafe + '_' + (d.data || new Date().toISOString().slice(0,10)) + '.pdf';
-    doc.save(fileName);
-    setStatus('✅ PDF gerado e descarregado.' + (IN_IFRAME ? ' A guardar no SharePoint…' : ''), 'ok');
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    mostrarResultado(blob, fileName);
+    setStatus('✅ PDF gerado.' + (IN_IFRAME ? ' A guardar no SharePoint…' : ''), 'ok');
     if (IN_IFRAME) {
-      const dataUrl = doc.output('datauristring');
-      saveToSP(fileName, dataUrl)
-        .then(function(){ setStatus('✅ PDF descarregado e guardado no SharePoint (Relatorios_Tecnicos/Gerados).', 'ok'); })
-        .catch(function(err){ setStatus('✅ PDF descarregado. ⚠️ Não foi possível guardar no SharePoint: ' + err.message, 'err'); });
+      saveToSP(fileName, bytesToDataUrl(bytes))
+        .then(function(){ setStatus('✅ PDF gerado e guardado no SharePoint (Relatorios_Tecnicos/Gerados). Usa os botões abaixo se o download não iniciou.', 'ok'); })
+        .catch(function(err){ setStatus('✅ PDF gerado. ⚠️ Não foi possível guardar no SharePoint: ' + err.message, 'err'); });
     }
   } catch(e) {
     console.error(e);
