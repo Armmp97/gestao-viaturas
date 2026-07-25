@@ -3209,6 +3209,39 @@
         return currentUserPermissions;
     };
 
+    // ==== Auditorias Carrinhos de Ferramenta (auditoria-carrinhos-ferramentas.html) ====
+    // Índice do histórico em Dashboard_State/auditorias_carrinhos_index.json
+    // Leitura: qualquer utilizador com acesso ao módulo. Escrita: admins e coordenadores.
+    window.acfUploadReport = function(fileName, htmlContent) {
+        return uploadToSharePoint('auditorias_carrinhos', fileName, htmlContent, 'text/html');
+    };
+    window.acfLoadIndex = function() {
+        return loadDashboardFromSP('auditorias_carrinhos_index.json').then(function(data) {
+            return data || { updatedAt: null, rows: [] };
+        });
+    };
+    window.acfSaveIndex = function(data) {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin' && role !== 'coordenador') {
+            return Promise.reject(new Error('Sem permissão (apenas administradores e coordenadores)'));
+        }
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject(new Error('SharePoint não inicializado'));
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' +
+                  SP_CONFIG.folders.dashboard_state + '/auditorias_carrinhos_index.json:/content';
+        return getGraphToken().then(function(token) {
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }).then(function(r) {
+            if (!r.ok) throw new Error('SP save falhou: ' + r.status);
+            console.log('[ACF] auditorias_carrinhos_index.json guardado no SP (' + ((data.rows || []).length) + ' registos)');
+            return true;
+        });
+    };
+
     // ==== Estatísticas Picagens (coord_estatisticas.html) ====
     // Dataset agregado guardado em Dashboard_State/estatisticas_picagens.json
     window.statsLoadDataset = function() {

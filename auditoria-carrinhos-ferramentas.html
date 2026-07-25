@@ -17,12 +17,12 @@
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.7; }
-.page { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+.page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
 
 .doc-header {
   background: linear-gradient(135deg, var(--navy-deep), var(--navy));
-  color: var(--white); border-radius: var(--radius); padding: 32px 36px;
-  margin-bottom: 24px; position: relative; overflow: hidden;
+  color: var(--white); border-radius: var(--radius); padding: 30px 34px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
 }
 .doc-header::after {
   content: ''; position: absolute; top: -30%; right: -5%;
@@ -30,127 +30,154 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
   background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
   border-radius: 50%;
 }
-.doc-header h1 { font-size: 1.5rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 { font-size: 1.45rem; font-weight: 800; position: relative; z-index: 2; }
 .doc-header h1 em { font-style: normal; color: var(--accent-light); }
-.doc-header p { font-size: .85rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
-.doc-header .doc-ref { font-size: .7rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 10px; position: relative; z-index: 2; }
+.doc-header p { font-size: .84rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+.doc-header .doc-ref { font-size: .69rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 10px; position: relative; z-index: 2; }
+
+/* Tabs */
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab {
+  padding: 11px 22px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200);
+  background: var(--white); cursor: pointer; font-family: inherit; font-size: .87rem;
+  font-weight: 700; color: var(--gray-600); transition: all .15s; display: inline-flex; align-items: center; gap: 8px;
+}
+.tab:hover { border-color: var(--accent-light); }
+.tab.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.tab .pill {
+  background: var(--danger); color: #fff; border-radius: 50px; font-size: .68rem;
+  font-weight: 800; padding: 1px 8px; min-width: 20px; text-align: center;
+}
+.tab.active .pill { background: var(--danger); }
+.view { display: none; }
+.view.active { display: block; }
 
 /* Meta */
 .meta-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
 .meta-chip {
   background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
-  padding: 12px 16px; flex: 1; min-width: 190px;
+  padding: 12px 16px; flex: 1; min-width: 195px;
 }
-.meta-chip .ml { font-size: .68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.meta-chip .ml { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
 .meta-chip input, .meta-chip select {
   width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
   font-family: inherit; font-size: .9rem; padding: 4px 0; color: var(--text-dark);
   background: transparent; outline: none;
 }
 .meta-chip input:focus, .meta-chip select:focus { border-bottom-color: var(--accent); }
-.meta-chip.required-missing { border-color: var(--danger); }
+.hint { font-size: .77rem; color: var(--gray-600); margin-bottom: 18px; padding-left: 4px; }
 
-.hint { font-size: .78rem; color: var(--gray-600); margin-bottom: 20px; padding-left: 4px; }
+/* Banner */
+.banner {
+  border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 18px;
+  font-size: .85rem; display: flex; gap: 12px; align-items: flex-start;
+}
+.banner.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+.banner.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.banner.ok { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+.banner .bi { font-size: 1.1rem; line-height: 1.4; }
+.banner strong { font-weight: 800; }
+.banner ul { margin: 6px 0 0 18px; }
 
-/* Bulk actions */
+/* Bulk */
 .bulk-bar {
   display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
   background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
   padding: 12px 16px; margin-bottom: 16px;
 }
-.bulk-bar span.bl { font-size: .72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); }
+.bulk-bar span.bl { font-size: .71rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); }
 
-/* Table */
+/* Tools table */
 .tools-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
 .tools-card-head {
-  padding: 16px 24px; background: var(--navy); color: var(--white);
-  font-size: .9rem; font-weight: 700; display: flex; align-items: center; gap: 10px;
+  padding: 15px 22px; background: var(--navy); color: var(--white);
+  font-size: .89rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 .tools-card-head .badge {
-  margin-left: auto; font-size: .72rem; font-weight: 700; padding: 3px 10px;
+  margin-left: auto; font-size: .71rem; font-weight: 700; padding: 3px 10px;
   border-radius: 50px; background: rgba(255,255,255,.15);
 }
 table.tools { width: 100%; border-collapse: collapse; }
 table.tools thead th {
-  font-size: .66rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
-  color: var(--gray-600); text-align: left; padding: 10px 14px;
+  font-size: .65rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--gray-600); text-align: left; padding: 10px 13px;
   background: var(--gray-100); border-bottom: 1px solid var(--gray-200); white-space: nowrap;
 }
-table.tools tbody td { padding: 10px 14px; border-bottom: 1px solid var(--gray-100); font-size: .84rem; vertical-align: middle; }
-table.tools tbody tr:last-child td { border-bottom: none; }
+table.tools tbody td { padding: 9px 13px; border-bottom: 1px solid var(--gray-100); font-size: .83rem; vertical-align: middle; }
 table.tools tbody tr.st-ok { background: rgba(5,150,105,.04); }
 table.tools tbody tr.st-nok { background: rgba(220,38,38,.05); }
-.t-idx { color: var(--gray-400); font-weight: 700; font-size: .74rem; width: 34px; }
-.t-desc { color: var(--text-dark); font-weight: 500; min-width: 240px; }
-.t-ref { font-size: .76rem; color: var(--gray-600); white-space: nowrap; }
+.t-idx { color: var(--gray-400); font-weight: 700; font-size: .73rem; width: 32px; }
+.t-desc { color: var(--text-dark); font-weight: 500; min-width: 230px; }
+.t-ref { font-size: .75rem; color: var(--gray-600); white-space: nowrap; }
 .t-val { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-dark); white-space: nowrap; text-align: right; }
 .t-obs input {
-  width: 100%; min-width: 200px; border: 1px solid var(--gray-200); border-radius: 8px;
-  padding: 7px 10px; font-family: inherit; font-size: .8rem; color: var(--text-body); outline: none; background: var(--white);
+  width: 100%; min-width: 190px; border: 1px solid var(--gray-200); border-radius: 8px;
+  padding: 7px 10px; font-family: inherit; font-size: .79rem; color: var(--text-body); outline: none; background: var(--white);
 }
 .t-obs input:focus { border-color: var(--accent); }
 .t-obs input.flag { border-color: var(--warn); background: #FFFBEB; }
+.empty-state { padding: 40px 24px; text-align: center; color: var(--gray-400); font-size: .88rem; }
 
 .qcheck-toggle { display: flex; gap: 4px; }
 .toggle-btn {
   padding: 4px 12px; border-radius: 6px; border: 1.5px solid var(--gray-200);
   background: var(--white); cursor: pointer; font-family: inherit;
-  font-size: .72rem; font-weight: 700; color: var(--gray-600); transition: all .15s;
+  font-size: .71rem; font-weight: 700; color: var(--gray-600); transition: all .15s;
 }
 .toggle-btn:hover { border-color: var(--gray-400); }
 .toggle-btn.ok-active { background: var(--success); border-color: var(--success); color: white; }
 .toggle-btn.nok-active { background: var(--danger); border-color: var(--danger); color: white; }
 
 tfoot td {
-  padding: 14px; font-size: .86rem; font-weight: 700; color: var(--navy);
+  padding: 13px; font-size: .85rem; font-weight: 700; color: var(--navy);
   background: var(--gray-100); border-top: 2px solid var(--gray-200);
 }
-tfoot td.t-val { font-size: .95rem; font-weight: 800; }
+tfoot td.t-val { font-size: .94rem; font-weight: 800; }
 
 /* Summary */
 .summary-strip {
   display: flex; gap: 16px; flex-wrap: wrap;
-  padding: 20px 28px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius);
+  padding: 18px 26px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius);
   margin-bottom: 20px;
 }
 .ss-item { text-align: center; flex: 1; min-width: 90px; }
-.ss-item .num { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
-.ss-item .lbl { font-size: .66rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); }
+.ss-item .num { font-size: 1.45rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+.ss-item .lbl { font-size: .65rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); }
 .ss-item.ok .num { color: var(--success); }
 .ss-item.nok .num { color: var(--danger); }
 .ss-item.pend .num { color: var(--gray-400); }
-.ss-item.val .num { color: var(--warn); font-size: 1.3rem; }
+.ss-item.val .num { color: var(--warn); font-size: 1.25rem; }
 
-/* Obs */
-.obs-box { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
-.obs-box h3 { font-size: .95rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.obs-box { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; margin-bottom: 20px; }
+.obs-box h3 { font-size: .94rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
 .obs-box textarea {
-  width: 100%; min-height: 90px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
-  padding: 12px 14px; font-family: inherit; font-size: .88rem; color: var(--text-body); resize: vertical; outline: none;
+  width: 100%; min-height: 88px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-family: inherit; font-size: .87rem; color: var(--text-body); resize: vertical; outline: none;
 }
 .obs-box textarea:focus { border-color: var(--accent); }
 
-/* Closing line */
-.closing-box { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+/* Closing + assinaturas */
+.closing-box { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; margin-bottom: 20px; }
+.closing-box h3 { font-size: .94rem; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
 .closing-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
-.closing-field { flex: 1; min-width: 170px; }
-.closing-field .ml { font-size: .68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
-.closing-field input {
+.closing-field { flex: 1; min-width: 180px; }
+.closing-field .ml { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.closing-field input, .closing-field select {
   width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
   font-family: inherit; font-size: .9rem; padding: 4px 0; color: var(--text-dark); background: transparent; outline: none;
 }
-.closing-field input:focus { border-bottom-color: var(--accent); }
-.closing-preview { margin-top: 14px; font-size: .9rem; color: var(--text-dark); font-weight: 500; }
+.closing-field input:focus, .closing-field select:focus { border-bottom-color: var(--accent); }
+.closing-preview { margin-top: 16px; font-size: .9rem; color: var(--text-dark); font-weight: 500; }
+.sync-note { font-size: .74rem; color: var(--gray-600); margin-top: 10px; }
 
-/* Signatures */
 .sig-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
-.sig-cell { flex: 1; min-width: 280px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px; }
-.sig-cell .sl { font-size: .68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
-.sig-cell input.signame {
-  width: 100%; border: none; border-bottom: 2px solid var(--gray-200); font-family: inherit;
-  font-size: .88rem; padding: 4px 0; margin-bottom: 12px; color: var(--text-dark); background: transparent; outline: none;
+.sig-cell { flex: 1; min-width: 285px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px; }
+.sig-cell .sl { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.sig-cell .signame-view {
+  font-size: .92rem; color: var(--text-dark); font-weight: 600; padding: 4px 0 12px;
+  border-bottom: 2px solid var(--gray-200); margin-bottom: 12px; min-height: 30px;
 }
-.sig-cell input.signame:focus { border-bottom-color: var(--accent); }
+.sig-cell .signame-view.vazio { color: var(--gray-400); font-weight: 400; font-style: italic; }
 .sig-pad-wrap { position: relative; }
 .sig-pad {
   width: 100%; height: 140px; border: 2px dashed var(--gray-200); border-radius: var(--radius-sm);
@@ -159,39 +186,113 @@ tfoot td.t-val { font-size: .95rem; font-weight: 800; }
 .sig-pad.signed { border-style: solid; border-color: var(--success); background: var(--white); }
 .sig-placeholder {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: .78rem; color: var(--gray-400); pointer-events: none;
+  font-size: .77rem; color: var(--gray-400); pointer-events: none;
 }
 .sig-pad.signed + .sig-placeholder { display: none; }
 .sig-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .sig-tools .st { font-size: .72rem; color: var(--gray-600); }
-.sig-tools button {
-  background: none; border: none; color: var(--danger); font-family: inherit;
-  font-size: .74rem; font-weight: 700; cursor: pointer; padding: 4px 6px;
-}
+.sig-tools button { background: none; border: none; color: var(--danger); font-family: inherit; font-size: .73rem; font-weight: 700; cursor: pointer; padding: 4px 6px; }
 
 /* Actions */
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
-  padding: 12px 24px; border-radius: var(--radius-sm); border: none;
-  font-family: inherit; font-size: .88rem; font-weight: 700; cursor: pointer;
+  padding: 12px 22px; border-radius: var(--radius-sm); border: none;
+  font-family: inherit; font-size: .87rem; font-weight: 700; cursor: pointer;
   transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
 }
 .btn-primary { background: var(--accent); color: var(--white); }
 .btn-primary:hover { background: var(--navy); }
 .btn-outline { background: var(--white); color: var(--navy); border: 2px solid var(--gray-200); }
 .btn-outline:hover { border-color: var(--navy); }
+.btn-sm { padding: 8px 14px; font-size: .78rem; }
 .btn svg { width: 16px; height: 16px; }
+.draft-note { font-size: .73rem; color: var(--gray-600); margin-top: 10px; }
+
+/* ===== Histórico ===== */
+.hist-controls {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
+  background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 14px 18px; margin-bottom: 18px;
+}
+.hist-controls .hf { min-width: 160px; }
+.hist-controls .hf .ml { font-size: .66rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.hist-controls select {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200); font-family: inherit;
+  font-size: .88rem; padding: 4px 0; color: var(--text-dark); background: transparent; outline: none;
+}
+.hist-controls .spacer { flex: 1; }
+
+.unit-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.unit-card { flex: 1; min-width: 250px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 22px; }
+.unit-card h4 { font-size: .95rem; color: var(--navy); font-weight: 800; margin-bottom: 10px; }
+.unit-stat { display: flex; justify-content: space-between; font-size: .84rem; padding: 4px 0; }
+.unit-stat .v { font-weight: 800; font-variant-numeric: tabular-nums; }
+.unit-stat .v.bad { color: var(--danger); }
+.unit-stat .v.good { color: var(--success); }
+.unit-card .cbar { height: 8px; border-radius: 50px; background: var(--gray-100); overflow: hidden; margin-top: 10px; display: flex; }
+.unit-card .cbar i { display: block; height: 100%; }
+.unit-card .cbar i.g { background: var(--success); }
+.unit-card .cbar i.r { background: var(--danger); }
+
+.matrix-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+.matrix-head { padding: 14px 22px; background: var(--navy); color: var(--white); font-size: .88rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.matrix-scroll { overflow-x: auto; }
+table.matrix { width: 100%; border-collapse: collapse; min-width: 720px; }
+table.matrix th {
+  font-size: .64rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  color: var(--gray-600); padding: 9px 6px; background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200); text-align: center;
+}
+table.matrix th.tec { text-align: left; padding-left: 20px; min-width: 175px; position: sticky; left: 0; background: var(--gray-100); z-index: 2; }
+table.matrix td { padding: 7px 6px; border-bottom: 1px solid var(--gray-100); text-align: center; font-size: .8rem; }
+table.matrix td.tec {
+  text-align: left; padding-left: 20px; color: var(--text-dark); font-weight: 600;
+  position: sticky; left: 0; background: var(--white); z-index: 1; white-space: nowrap;
+}
+table.matrix tr:hover td.tec { background: var(--gray-100); }
+table.matrix td.tec small { display: block; font-weight: 400; color: var(--gray-400); font-size: .68rem; }
+.cell {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px; font-size: .8rem; font-weight: 800;
+  text-decoration: none; cursor: default;
+}
+.cell.done { background: #D1FAE5; color: #047857; }
+.cell.done.clickable { cursor: pointer; }
+.cell.done.clickable:hover { background: #A7F3D0; }
+.cell.done.nok { background: #FEF3C7; color: #B45309; }
+.cell.miss { background: #FEE2E2; color: #B91C1C; }
+.cell.na { background: var(--gray-100); color: var(--gray-400); font-weight: 400; }
+.cell.cur { background: #DBEAFE; color: #1D4ED8; font-size: .68rem; }
+
+.legend { display: flex; gap: 18px; flex-wrap: wrap; padding: 14px 22px; font-size: .76rem; color: var(--gray-600); border-top: 1px solid var(--gray-100); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+
+.reg-list { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
+.reg-list-head { padding: 14px 22px; background: var(--navy); color: var(--white); font-size: .88rem; font-weight: 700; }
+table.regs { width: 100%; border-collapse: collapse; }
+table.regs thead th {
+  font-size: .64rem; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
+  color: var(--gray-600); text-align: left; padding: 9px 14px; background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200); white-space: nowrap;
+}
+table.regs tbody td { padding: 9px 14px; border-bottom: 1px solid var(--gray-100); font-size: .81rem; vertical-align: top; }
+table.regs .src { font-size: .72rem; color: var(--gray-600); word-break: break-all; }
+table.regs .tag { font-size: .66rem; font-weight: 800; padding: 2px 8px; border-radius: 50px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+table.regs .tag.intranet { background: #DBEAFE; color: #1D4ED8; }
+table.regs .tag.historico { background: var(--gray-100); color: var(--gray-600); }
+table.regs .nota { font-size: .73rem; color: #92400E; margin-top: 3px; }
+table.regs a { color: var(--accent); font-weight: 600; text-decoration: none; }
+table.regs a:hover { text-decoration: underline; }
 
 .toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(140%);
   background: var(--navy-deep); color: var(--white); padding: 14px 24px; border-radius: 50px;
-  font-size: .86rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.2);
-  transition: transform .3s; z-index: 999; max-width: 90vw; text-align: center;
+  font-size: .85rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  transition: transform .3s; z-index: 999; max-width: 92vw; text-align: center;
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 .toast.err { background: var(--danger); }
-
-.draft-note { font-size: .74rem; color: var(--gray-600); margin-top: 10px; }
 
 @media (max-width: 720px) {
   table.tools thead { display: none; }
@@ -201,8 +302,8 @@ tfoot td.t-val { font-size: .95rem; font-weight: 800; }
 }
 @media print {
   body { background: white; }
-  .page { padding: 12px; max-width: none; }
-  .actions, .bulk-bar, .hint, .draft-note, .sig-tools button { display: none; }
+  .page { padding: 10px; max-width: none; }
+  .actions, .bulk-bar, .hint, .draft-note, .sig-tools button, .tabs { display: none; }
   .tools-card, .sig-cell { break-inside: avoid; }
 }
 </style>
@@ -216,184 +317,435 @@ tfoot td.t-val { font-size: .95rem; font-weight: 800; }
     <div class="doc-ref">QS-ACF-001 · Walkingarage, Lda. — Bosch Car Service</div>
   </div>
 
-  <div class="meta-strip">
-    <div class="meta-chip" id="chipLocal">
-      <div class="ml">Local</div>
-      <select id="fLocal" onchange="onLocalChange()">
-        <option value="">— Selecionar —</option>
-        <option value="Mecânica Cacém">Mecânica Cacém</option>
-        <option value="Mecânica Lisboa">Mecânica Lisboa</option>
-      </select>
-    </div>
-    <div class="meta-chip" id="chipTecnico">
-      <div class="ml">Técnico auditado</div>
-      <select id="fTecnico" onchange="onTecnicoChange()">
-        <option value="">— Selecionar local primeiro —</option>
-      </select>
-    </div>
-    <div class="meta-chip" id="chipTecnicoOutro" style="display:none;">
-      <div class="ml">Nome do técnico</div>
-      <input type="text" id="fTecnicoOutro" placeholder="Nome completo" oninput="markDirty()">
-    </div>
-    <div class="meta-chip">
-      <div class="ml">Nº / Identificação do carrinho</div>
-      <input type="text" id="fCarrinho" placeholder="Ex: Carrinho 1" oninput="markDirty()">
-    </div>
-    <div class="meta-chip" id="chipData">
-      <div class="ml">Data da auditoria</div>
-      <input type="date" id="fData" onchange="onDataChange()">
-    </div>
-    <div class="meta-chip">
-      <div class="ml">Coordenador / Auditor</div>
-      <input type="text" id="fCoordenador" placeholder="Nome" oninput="syncSigNames()">
-    </div>
-  </div>
-  <div class="hint">A lista de técnicos segue o organigrama da empresa (Técnicos de Mecânica — Cacém e Lisboa). O ficheiro é nomeado automaticamente pelo técnico, data e local.</div>
-
-  <div class="bulk-bar">
-    <span class="bl">Preenchimento rápido</span>
-    <button class="toggle-btn" onclick="setAll('ok')">Marcar tudo OK</button>
-    <button class="toggle-btn" onclick="setAll('nok')">Marcar tudo NOK</button>
-    <button class="toggle-btn" onclick="setAll(null)">Limpar estados</button>
+  <div class="tabs">
+    <button class="tab active" id="tabNova" onclick="showView('nova')">🧰 Nova Auditoria</button>
+    <button class="tab" id="tabHist" onclick="showView('hist')">📚 Histórico <span class="pill" id="histPill" style="display:none;">0</span></button>
   </div>
 
-  <div class="tools-card">
-    <div class="tools-card-head">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-      Equipamento do carrinho
-      <span class="badge" id="fillBadge">0 / 23</span>
-    </div>
-    <table class="tools">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Equipamento</th>
-          <th>Marca / Referência</th>
-          <th style="text-align:right;">Valor s/ IVA</th>
-          <th>Estado</th>
-          <th>Dano / perda a reportar</th>
-        </tr>
-      </thead>
-      <tbody id="toolsBody"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3" style="text-align:right;">Valor Total »</td>
-          <td class="t-val">3010.34€ + IVA</td>
-          <td colspan="2" style="font-weight:600;color:var(--warn);" id="footNok">Valor em NOK: 0.00€</td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-
-  <div class="summary-strip">
-    <div class="ss-item ok"><div class="num" id="sOk">0</div><div class="lbl">OK</div></div>
-    <div class="ss-item nok"><div class="num" id="sNok">0</div><div class="lbl">NOK</div></div>
-    <div class="ss-item pend"><div class="num" id="sPend">23</div><div class="lbl">Pendente</div></div>
-    <div class="ss-item val"><div class="num" id="sVal">0.00€</div><div class="lbl">Valor em falta / danificado</div></div>
-  </div>
-
-  <div class="obs-box">
-    <h3>Observações gerais / Ações a tomar</h3>
-    <textarea id="fObs" placeholder="Registar contexto, reposições a encomendar, prazos acordados com o técnico..." oninput="markDirty()"></textarea>
-  </div>
-
-  <div class="closing-box">
-    <div class="closing-row">
-      <div class="closing-field">
-        <div class="ml">Localidade do fecho</div>
-        <input type="text" id="fLocalidade" placeholder="Lisboa" oninput="renderClosing()">
+  <!-- ============ VIEW: NOVA AUDITORIA ============ -->
+  <div class="view active" id="viewNova">
+    <div class="meta-strip">
+      <div class="meta-chip">
+        <div class="ml">Local</div>
+        <select id="fLocal" onchange="onLocalChange()">
+          <option value="">— Selecionar —</option>
+          <option value="Mecânica Cacém">Mecânica Cacém</option>
+          <option value="Mecânica Lisboa">Mecânica Lisboa</option>
+        </select>
       </div>
-      <div class="closing-field">
-        <div class="ml">Data do fecho / assinatura</div>
-        <input type="date" id="fDataFecho" onchange="renderClosing()">
+      <div class="meta-chip">
+        <div class="ml">Técnico auditado</div>
+        <select id="fTecnico" onchange="onTecnicoChange()">
+          <option value="">— Selecionar local primeiro —</option>
+        </select>
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Mês auditado</div>
+        <input type="month" id="fMes" onchange="onMesChange()">
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Data da auditoria</div>
+        <input type="date" id="fData" onchange="onDataChange()">
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Coordenador / Auditor</div>
+        <select id="fCoordenador" onchange="onCoordChange()">
+          <option value="">— Selecionar —</option>
+        </select>
       </div>
     </div>
-    <div class="closing-preview" id="closingPreview">—</div>
+    <div class="hint">A lista de artigos muda conforme o local (Cacém 23 artigos · Lisboa 31) e os técnicos seguem o organigrama. O <strong>mês auditado</strong> é o que conta para o histórico e para os alertas — a ata é normalmente assinada no início do mês seguinte.</div>
+
+    <div class="bulk-bar">
+      <span class="bl">Preenchimento rápido</span>
+      <button class="toggle-btn" onclick="setAll('ok')">Marcar tudo OK</button>
+      <button class="toggle-btn" onclick="setAll('nok')">Marcar tudo NOK</button>
+      <button class="toggle-btn" onclick="setAll(null)">Limpar estados</button>
+    </div>
+
+    <div class="tools-card">
+      <div class="tools-card-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        <span id="toolsTitle">Equipamento do carrinho</span>
+        <span class="badge" id="fillBadge">0 / 0</span>
+      </div>
+      <table class="tools">
+        <thead id="toolsHead" style="display:none;">
+          <tr>
+            <th>#</th><th>Equipamento</th><th>Marca / Referência</th>
+            <th style="text-align:right;">Valor s/ IVA</th><th>Estado</th><th>Dano / perda a reportar</th>
+          </tr>
+        </thead>
+        <tbody id="toolsBody"></tbody>
+        <tfoot id="toolsFoot" style="display:none;">
+          <tr>
+            <td colspan="3" style="text-align:right;">Valor Total »</td>
+            <td class="t-val" id="footTotal">—</td>
+            <td colspan="2" style="font-weight:600;color:var(--warn);" id="footNok">Valor em NOK: 0.00€</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="empty-state" id="toolsEmpty">Selecione o <strong>Local</strong> para carregar a lista de ferramentas dessa unidade.</div>
+    </div>
+
+    <div class="summary-strip">
+      <div class="ss-item ok"><div class="num" id="sOk">0</div><div class="lbl">OK</div></div>
+      <div class="ss-item nok"><div class="num" id="sNok">0</div><div class="lbl">NOK</div></div>
+      <div class="ss-item pend"><div class="num" id="sPend">0</div><div class="lbl">Pendente</div></div>
+      <div class="ss-item val"><div class="num" id="sVal">0.00€</div><div class="lbl">Valor em falta / danificado</div></div>
+    </div>
+
+    <div class="obs-box">
+      <h3>Observações gerais / Ações a tomar</h3>
+      <textarea id="fObs" placeholder="Registar contexto, reposições a encomendar, prazos acordados com o técnico..." oninput="markDirty()"></textarea>
+    </div>
+
+    <div class="closing-box">
+      <h3>Fecho e responsáveis</h3>
+      <div class="closing-row">
+        <div class="closing-field">
+          <div class="ml">Coordenador (auditor)</div>
+          <select id="fCoordBaixo" onchange="onCoordBaixoChange()">
+            <option value="">— Selecionar —</option>
+          </select>
+        </div>
+        <div class="closing-field">
+          <div class="ml">Colaborador (técnico)</div>
+          <select id="fTecBaixo" onchange="onTecBaixoChange()">
+            <option value="">— Selecionar local primeiro —</option>
+          </select>
+        </div>
+        <div class="closing-field">
+          <div class="ml">Localidade do fecho</div>
+          <input type="text" id="fLocalidade" placeholder="Lisboa" oninput="renderClosing()">
+        </div>
+        <div class="closing-field">
+          <div class="ml">Data do fecho / assinatura</div>
+          <input type="date" id="fDataFecho" onchange="renderClosing()">
+        </div>
+      </div>
+      <div class="closing-preview" id="closingPreview">—</div>
+      <div class="sync-note">Estes dois campos estão ligados aos de cima: alterar o local, o técnico ou o coordenador no topo atualiza-os automaticamente. Pode ainda assim corrigi-los aqui.</div>
+    </div>
+
+    <div class="sig-row">
+      <div class="sig-cell">
+        <div class="sl">O Auditor — Coordenador</div>
+        <div class="signame-view vazio" id="sigNameCoord">— sem coordenador selecionado —</div>
+        <div class="sig-pad-wrap">
+          <canvas class="sig-pad" id="padCoord"></canvas>
+          <div class="sig-placeholder">Assine aqui com o dedo ou o rato</div>
+        </div>
+        <div class="sig-tools"><span class="st" id="stCoord">Sem assinatura</span><button onclick="clearPad('coord')">Limpar</button></div>
+      </div>
+      <div class="sig-cell">
+        <div class="sl">O Colaborador — Técnico auditado</div>
+        <div class="signame-view vazio" id="sigNameTec">— sem técnico selecionado —</div>
+        <div class="sig-pad-wrap">
+          <canvas class="sig-pad" id="padTec"></canvas>
+          <div class="sig-placeholder">Assine aqui com o dedo ou o rato</div>
+        </div>
+        <div class="sig-tools"><span class="st" id="stTec">Sem assinatura</span><button onclick="clearPad('tec')">Limpar</button></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="saveAuditoria()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar e arquivar no SharePoint
+      </button>
+      <button class="btn btn-outline" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+      <button class="btn btn-outline" onclick="resetAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Limpar tudo
+      </button>
+    </div>
+    <div class="draft-note" id="draftNote">Rascunho guardado automaticamente neste dispositivo.</div>
   </div>
 
-  <div class="sig-row">
-    <div class="sig-cell">
-      <div class="sl">O Auditor — Coordenador</div>
-      <input type="text" class="signame" id="sigNameCoord" placeholder="Nome do coordenador">
-      <div class="sig-pad-wrap">
-        <canvas class="sig-pad" id="padCoord"></canvas>
-        <div class="sig-placeholder">Assine aqui com o dedo ou o rato</div>
-      </div>
-      <div class="sig-tools"><span class="st" id="stCoord">Sem assinatura</span><button onclick="clearPad('coord')">Limpar</button></div>
-    </div>
-    <div class="sig-cell">
-      <div class="sl">O Colaborador — Técnico auditado</div>
-      <input type="text" class="signame" id="sigNameTec" placeholder="Nome do técnico">
-      <div class="sig-pad-wrap">
-        <canvas class="sig-pad" id="padTec"></canvas>
-        <div class="sig-placeholder">Assine aqui com o dedo ou o rato</div>
-      </div>
-      <div class="sig-tools"><span class="st" id="stTec">Sem assinatura</span><button onclick="clearPad('tec')">Limpar</button></div>
-    </div>
-  </div>
+  <!-- ============ VIEW: HISTÓRICO ============ -->
+  <div class="view" id="viewHist">
+    <div id="alertZone"></div>
 
-  <div class="actions">
-    <button class="btn btn-primary" onclick="saveAuditoria()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      Guardar e arquivar no SharePoint
-    </button>
-    <button class="btn btn-outline" onclick="window.print()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Imprimir
-    </button>
-    <button class="btn btn-outline" onclick="resetAll()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-      Limpar tudo
-    </button>
+    <div class="hist-controls">
+      <div class="hf">
+        <div class="ml">Ano</div>
+        <select id="hAno" onchange="renderHist()"></select>
+      </div>
+      <div class="hf">
+        <div class="ml">Unidade</div>
+        <select id="hLocal" onchange="renderHist()">
+          <option value="">Todas</option>
+          <option value="Mecânica Cacém">Mecânica Cacém</option>
+          <option value="Mecânica Lisboa">Mecânica Lisboa</option>
+        </select>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-outline btn-sm" onclick="reloadIndex(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Sincronizar
+      </button>
+    </div>
+
+    <div class="unit-cards" id="unitCards"></div>
+    <div id="matrixZone"></div>
+    <div class="reg-list">
+      <div class="reg-list-head">Registos <span id="regCount" style="opacity:.7;font-weight:400;"></span></div>
+      <div style="overflow-x:auto;">
+        <table class="regs">
+          <thead>
+            <tr><th>Mês auditado</th><th>Unidade</th><th>Técnico</th><th>Assinada</th><th>Resultado</th><th>Origem</th><th>Ficheiro</th></tr>
+          </thead>
+          <tbody id="regsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:14px;">Os registos marcados como <strong>Histórico</strong> correspondem às atas em papel digitalizadas que estão no OneDrive (Administração › Fardamento_EPI'S › TermosAssinados_CarrinhosFerramenta › Auditorias Carrinhos Ferramentas). Os marcados como <strong>Intranet</strong> foram feitos neste módulo e o HTML está no SharePoint.</div>
   </div>
-  <div class="draft-note" id="draftNote">Rascunho guardado automaticamente neste dispositivo.</div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ====== Dados fixos — artigos, descrições, referências e preços do documento original (INALTERADOS) ====== */
-var TOOLS = [
-  { d: 'Aparafusadora BACS-1 12 V, 2,0 e 6,0 Ah, BC+ 12 V', r: 'Berner / 351949', v: 183.55 },
-  { d: 'Busca polos para teste auto em metal', r: 'Berner / 13560', v: 27.29 },
-  { d: 'Rabo de força 1/2"', r: 'Berner / 215414', v: 38.57 },
-  { d: 'Pistola de ar, 100 mm Blue Star 2', r: 'Berner / 244882', v: 25.00 },
-  { d: 'Espelho de inspeção com LED', r: 'Berner / 129352', v: 49.50 },
-  { d: 'Fita métrica autostop', r: 'Berner / 370493', v: 14.68 },
-  { d: 'Jogo de chaves boca luneta', r: 'Berner / 34582', v: 172.67 },
-  { d: 'Chave de bujões de óleo 8 em 1 universal', r: 'Berner / 153197', v: 58.34 },
-  { d: 'Conjunto de bits, 1/4 ", MIX, 51 PEÇ,', r: 'Berner / 156540', v: 78.70 },
-  { d: 'Alicate de pontas Premium 270 mm, para abraçadeira de mola', r: 'Berner / 405656', v: 111.12 },
-  { d: 'Chave de cinta para filtro de óleo', r: 'Berner / 245237', v: 40.11 },
-  { d: 'Conjunto de 6 adaptadores/redutores', r: 'Berner / 369076', v: 57.98 },
-  { d: 'Conjunto de 3 chaves de impacto Premium', r: 'Berner / 245246', v: 89.44 },
-  { d: 'Alavancas "Non Slip" aço', r: 'Berner / 111697', v: 30.08 },
-  { d: 'Jogo de 5 extratores de molas de friso', r: 'Berner / 216502', v: 123.81 },
-  { d: 'Conjunto de bits 1/2" + 3/8" 47 peças', r: 'Berner / 134663', v: 229.34 },
-  { d: 'Carro de ferramenta com 7 gavetas Evolution II', r: 'Berner / 157609', v: 785.71 },
-  { d: 'Conjunto de 132 chaves 1/4-3/8-1/2', r: 'Berner / 399216', v: 615.87 },
-  { d: 'Conjunto de chaves de punho em molde de espuma 2K TX', r: 'Berner / 240293', v: 51.57 },
-  { d: 'Conjunto de chaves de punho em molde de espuma 2K Premium, Fenda - PH', r: 'Berner / 240288', v: 53.47 },
-  { d: 'Molde de espuma com alicate 3K e alicate para bomba de água MX', r: 'Berner / 341013', v: 80.35 },
-  { d: 'Alicate de abraçadeira de mangueira - abraçadeiras caillau e cobra', r: 'Berner / 33542', v: 34.77 },
-  { d: 'Conjunto de alicates retos para freios, 5 peças', r: 'Berner / 4436', v: 58.42 }
-];
-var TOTAL_LABEL = '3010.34€ + IVA';
-
-/* Técnicos de Mecânica por unidade — organigrama DomusCar (estrutura_organizacional.html) */
-var TECNICOS = {
-  'Mecânica Cacém':  ['Arnaldo Cruz', 'Edmilson Fernandes', 'Filipe Bonifácio', 'Gonçalo Matos'],
-  'Mecânica Lisboa': ['Sérgio Pereira', 'Jorge Silva', 'Emanuel Gonçalves', 'Rafael Janeiro']
+/* ==================================================================
+   DADOS FIXOS — Auditoria Carrinhos de Ferramenta
+   Listas por unidade, transcritas literalmente das atas oficiais.
+   NÃO ALTERAR descrições, referências nem preços.
+     Cacém  — "Ata Auditoria Carrinho Ferramenta - Cacém.docx"  (23 artigos, 3010.34€ + IVA)
+     Lisboa — "Ata Auditoria Carrinho Ferramenta - Lisboa.docx" (31 artigos, 3628.40€ + IVA)
+   Atenção: referências iguais têm preços diferentes entre unidades (ex. 240288, 33542, 4436).
+   ================================================================== */
+var TOOLSETS = {
+  'Mecânica Cacém': {
+    total: '3010.34€ + IVA',
+    itens: [
+      { d: 'Aparafusadora BACS-1 12 V, 2,0 e 6,0 Ah, BC+ 12 V', r: 'Berner / 351949', v: 183.55 },
+      { d: 'Busca polos para teste auto em metal', r: 'Berner / 13560', v: 27.29 },
+      { d: 'Rabo de força 1/2"', r: 'Berner / 215414', v: 38.57 },
+      { d: 'Pistola de ar, 100 mm Blue Star 2', r: 'Berner / 244882', v: 25.00 },
+      { d: 'Espelho de inspeção com LED', r: 'Berner / 129352', v: 49.50 },
+      { d: 'Fita métrica autostop', r: 'Berner / 370493', v: 14.68 },
+      { d: 'Jogo de chaves boca luneta', r: 'Berner / 34582', v: 172.67 },
+      { d: 'Chave de bujões de óleo 8 em 1 universal', r: 'Berner / 153197', v: 58.34 },
+      { d: 'Conjunto de bits, 1/4 ", MIX, 51 PEÇ,', r: 'Berner / 156540', v: 78.70 },
+      { d: 'Alicate de pontas Premium 270 mm, para abraçadeira de mola', r: 'Berner / 405656', v: 111.12 },
+      { d: 'Chave de cinta para filtro de óleo', r: 'Berner / 245237', v: 40.11 },
+      { d: 'Conjunto de 6 adaptadores/redutores', r: 'Berner / 369076', v: 57.98 },
+      { d: 'Conjunto de 3 chaves de impacto Premium', r: 'Berner / 245246', v: 89.44 },
+      { d: 'Alavancas "Non Slip" aço', r: 'Berner / 111697', v: 30.08 },
+      { d: 'Jogo de 5 extratores de molas de friso', r: 'Berner / 216502', v: 123.81 },
+      { d: 'Conjunto de bits 1/2" + 3/8" 47 peças', r: 'Berner / 134663', v: 229.34 },
+      { d: 'Carro de ferramenta com 7 gavetas Evolution II', r: 'Berner / 157609', v: 785.71 },
+      { d: 'Conjunto de 132 chaves 1/4-3/8-1/2', r: 'Berner / 399216', v: 615.87 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K TX', r: 'Berner / 240293', v: 51.57 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K Premium, Fenda - PH', r: 'Berner / 240288', v: 53.47 },
+      { d: 'Molde de espuma com alicate 3K e alicate para bomba de água MX', r: 'Berner / 341013', v: 80.35 },
+      { d: 'Alicate de abraçadeira de mangueira - abraçadeiras caillau e cobra', r: 'Berner / 33542', v: 34.77 },
+      { d: 'Conjunto de alicates retos para freios, 5 peças', r: 'Berner / 4436', v: 58.42 }
+    ]
+  },
+  'Mecânica Lisboa': {
+    total: '3628.40€ + IVA',
+    itens: [
+      { d: 'Aparafusadora BACS-1 12 V, 2,0 e 6,0 Ah, BC+ 12 V', r: 'Berner / 351949', v: 183.55 },
+      { d: 'Busca polos para teste auto em metal', r: 'Berner / 13560', v: 27.29 },
+      { d: 'Rabo de força 1/2"', r: 'Berner / 215414', v: 38.57 },
+      { d: 'Pistola de ar, 100 mm Blue Star 2', r: 'Berner / 244882', v: 25.00 },
+      { d: 'Espelho de inspeção com LED', r: 'Berner / 129352', v: 49.50 },
+      { d: 'Fita métrica autostop', r: 'Berner / 370493', v: 14.68 },
+      { d: 'Jogo de chaves boca luneta', r: 'Berner / 34582', v: 172.67 },
+      { d: 'Chave de bujões de óleo 8 em 1 universal', r: 'Berner / 153197', v: 58.34 },
+      { d: 'Conjunto de bits, 1/4 ", MIX , 51 PEÇ,', r: 'Berner / 156540', v: 78.70 },
+      { d: 'Alicate de pontas Premium270 mm, para abraçadeira de mola', r: 'Berner / 405656', v: 111.12 },
+      { d: 'Chave de cinta para filtro de óleo', r: 'Berner / 245237', v: 40.11 },
+      { d: 'Conjunto de 6 adaptadores/redutores', r: 'Berner / 369076', v: 57.98 },
+      { d: 'Conjunto de 3 chaves de impacto Premium', r: 'Berner / 245246', v: 89.44 },
+      { d: 'Alavancas "Non Slip"aço', r: 'Berner / 111697', v: 30.08 },
+      { d: 'Jogo de 5 extratores de molas de friso', r: 'Berner / 216502', v: 123.81 },
+      { d: 'Conjunto de bits 1/2" + 3/8" 47 peças', r: 'Berner / 134663', v: 229.34 },
+      { d: 'Carro de ferramenta com 7 gavetas Evolution II', r: 'Berner / 157609', v: 785.71 },
+      { d: 'Conjunto de 132 chaves 1/4-3/8-1/2', r: 'Berner / 399216', v: 615.87 },
+      { d: 'Jogo bits 10mm 75 peças', r: 'Sr. Ferramentas / 01736145', v: 49.00 },
+      { d: 'Teste óleo de travões', r: 'Sr. Ferramentas / 006767241', v: 18.00 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K Premium, Fenda', r: 'Berner / 240288', v: 80.20 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K TX', r: 'Berner / 240293', v: 77.35 },
+      { d: 'Alicate de abraçadeira de mangueira – abraçadeiras caillau e cobra', r: 'Berner / 33542', v: 48.68 },
+      { d: 'Conjunto de alicates retos para freios, 5 peças', r: 'Berner / 4436', v: 87.62 },
+      { d: 'Molde de espuma com alicate 3K e alicate para bomba de água', r: 'Berner / 341013', v: 120.52 },
+      { d: 'Moldes de espuma', r: 'Berner / 121184', v: 22.51 },
+      { d: 'Mini Retificadora Pneumática', r: 'Berner / 201144', v: 105.64 },
+      { d: 'Jogo punções/martelos c/ mld esp', r: 'Berner 39716', v: 101.37 },
+      { d: 'Alicate grifos', r: 'Berner /  406480', v: 27.37 },
+      { d: 'Jogo chaves bocas c/ mld esp', r: 'Berner / 34581', v: 65.96 },
+      { d: 'Jogo chaves luneta c/ mld esp', r: 'Berner / 34580', v: 92.42 }
+    ]
+  }
 };
+
+/* Coordenadores/auditores elegíveis */
+var COORDENADORES = ['Fábio Ramalho', 'José Rodriguez'];
 var COORD_POR_LOCAL = { 'Mecânica Cacém': 'José Rodriguez', 'Mecânica Lisboa': 'Fábio Ramalho' };
 var LOCALIDADE_POR_LOCAL = { 'Mecânica Cacém': 'Cacém', 'Mecânica Lisboa': 'Lisboa' };
 
-var DRAFT_KEY = 'acf_draft_v1';
-var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+/* Técnicos de Mecânica por unidade — organigrama DomusCar.
+   'desde'/'ate' em YYYY-MM controlam a partir/até quando o técnico é cobrado no alerta. */
+var TECNICOS = {
+  'Mecânica Cacém': [
+    { n: 'Arnaldo Cruz',         desde: '2025-11' },
+    { n: 'Edmilson Fernandes',   desde: '2025-11' },
+    { n: 'Filipe Bonifácio',     desde: '2026-04' },
+    { n: 'Gonçalo Matos',        desde: '2025-11' },
+    { n: 'Robson',               desde: '2025-11', ate: '2026-02', inativo: true }
+  ],
+  'Mecânica Lisboa': [
+    { n: 'Sérgio Pereira',       desde: '2026-01' },
+    { n: 'Jorge Silva',          desde: '2026-01' },
+    { n: 'Emanuel Gonçalves',    desde: '2026-01' },
+    { n: 'Rafael Janeiro',       desde: '2026-01' }
+  ]
+};
 
-/* ====== Render da tabela ====== */
+/* Mês a partir do qual o alerta cobra atas em falta (YYYY-MM) */
+var ALERT_START = '2026-06';
+
+/* ==================================================================
+   HISTÓRICO SEMEADO — atas em papel/PDF já existentes (Nov/2025 a Mai/2026).
+   Compilado a partir da pasta OneDrive:
+     Administração\Fardamento_EPI`S\TermosAssinados_CarrinhosFerramenta\Auditorias Carrinhos Ferramentas
+   'mes' = mês auditado (pasta). 'assinada' = data que consta na ata (normalmente mês+1).
+   Os PDFs mantêm-se no OneDrive; 'ficheiro' é o caminho relativo dentro daquela pasta.
+   ================================================================== */
+var HIST_SEED = [
+  // ---- CACÉM 2025 ----
+  { local: 'Mecânica Cacém', mes: '2025-11', tecnico: 'Arnaldo Cruz',       assinada: '', ficheiro: 'Cacém/2025/Novembro/Arnaldo.pdf' },
+  { local: 'Mecânica Cacém', mes: '2025-11', tecnico: 'Edmilson Fernandes', assinada: '', ficheiro: 'Cacém/2025/Novembro/Edmilson.pdf' },
+  { local: 'Mecânica Cacém', mes: '2025-11', tecnico: 'Gonçalo Matos',      assinada: '', ficheiro: 'Cacém/2025/Novembro/Gonçalo.pdf' },
+  { local: 'Mecânica Cacém', mes: '2025-11', tecnico: 'Robson',             assinada: '', ficheiro: 'Cacém/2025/Novembro/Robson.pdf' },
+  { local: 'Mecânica Cacém', mes: '2025-12', tecnico: 'Arnaldo Cruz',       assinada: '', ficheiro: 'Cacém/2025/Dezembro/Arnaldo_Edmilson_Gonçalo.pdf' },
+  { local: 'Mecânica Cacém', mes: '2025-12', tecnico: 'Edmilson Fernandes', assinada: '', ficheiro: 'Cacém/2025/Dezembro/Arnaldo_Edmilson_Gonçalo.pdf' },
+  { local: 'Mecânica Cacém', mes: '2025-12', tecnico: 'Gonçalo Matos',      assinada: '', ficheiro: 'Cacém/2025/Dezembro/Arnaldo_Edmilson_Gonçalo.pdf' },
+
+  // ---- CACÉM 2026 ----
+  { local: 'Mecânica Cacém', mes: '2026-01', tecnico: 'Edmilson Fernandes', assinada: '2026-02-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Janeiro/Document_260202_094055.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-01', tecnico: 'Gonçalo Matos',      assinada: '2026-02-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Janeiro/Document_260202_094055.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-01', tecnico: 'Arnaldo Cruz',       assinada: '2026-02-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Janeiro/Document_260202_094055.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-01', tecnico: 'Robson',             assinada: '2026-02-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Janeiro/Document_260202_094055.pdf', nok: 1, nota: 'NOK registado: "1x5: HG +40H Não Garantia"' },
+
+  { local: 'Mecânica Cacém', mes: '2026-02', tecnico: 'Gonçalo Matos',      assinada: '2026-03-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Fevereiro/Document_260302_111356.pdf', nok: 1, nota: 'NOK registado: Conjunto de bits 1/2"+3/8" 47 peças — 30H+50H comprida ajustada/não anexo' },
+  { local: 'Mecânica Cacém', mes: '2026-02', tecnico: 'Arnaldo Cruz',       assinada: '2026-03-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Fevereiro/Document_260302_111356.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-02', tecnico: 'Edmilson Fernandes', assinada: '2026-03-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Fevereiro/Document_260302_111356.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-02', tecnico: 'Robson',             assinada: '2026-03-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Fevereiro/Document_260302_111356.pdf' },
+
+  { local: 'Mecânica Cacém', mes: '2026-03', tecnico: 'Arnaldo Cruz',       assinada: '2026-04-01', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Março/Arnaldo_Edmilson_Gonçalo.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-03', tecnico: 'Edmilson Fernandes', assinada: '2026-04-01', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Março/Arnaldo_Edmilson_Gonçalo.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-03', tecnico: 'Gonçalo Matos',      assinada: '2026-04-01', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Março/Arnaldo_Edmilson_Gonçalo.pdf', nota: 'Existe também "DOC010426-01042026130837.pdf" na mesma pasta — duplicado do mesmo scan (tamanho idêntico)' },
+  { local: 'Mecânica Cacém', mes: '2026-03', tecnico: 'Carrinho livre',     assinada: '2026-04-01', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Março/Carrinho livre.pdf', semTecnico: true, nota: 'Carrinho sobressalente, sem técnico atribuído' },
+
+  { local: 'Mecânica Cacém', mes: '2026-04', tecnico: 'Gonçalo Matos',      assinada: '2026-05-04', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Abril/DOC040526-04052026104138.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-04', tecnico: 'Arnaldo Cruz',       assinada: '2026-05-04', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Abril/DOC040526-04052026104138.pdf', nok: 1, nota: 'NOK registado: Conjunto de 132 chaves — chave caixa 17mm gasta/em falta' },
+  { local: 'Mecânica Cacém', mes: '2026-04', tecnico: 'Filipe Bonifácio',   assinada: '2026-05-04', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Abril/DOC040526-04052026104138.pdf' },
+
+  { local: 'Mecânica Cacém', mes: '2026-05', tecnico: 'Filipe Bonifácio',   assinada: '2026-06-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Maio/auditoria carrinhos ferramenta junho 2026.pdf' },
+  { local: 'Mecânica Cacém', mes: '2026-05', tecnico: 'Gonçalo Matos',      assinada: '2026-06-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Maio/auditoria carrinhos ferramenta junho 2026.pdf', nok: 1, nota: 'NOK registado: "+30H curto / +40H comprido"' },
+  { local: 'Mecânica Cacém', mes: '2026-05', tecnico: 'Edmilson Fernandes', assinada: '2026-06-02', auditor: 'José Rodriguez', ficheiro: 'Cacém/2026/Maio/auditoria carrinhos ferramenta junho 2026.pdf', nota: 'Ficheiro chama-se "junho 2026" mas é a auditoria de maio, assinada a 02/06' },
+
+  // ---- LISBOA 2026 ----
+  { local: 'Mecânica Lisboa', mes: '2026-01', tecnico: 'Emanuel Gonçalves', assinada: '', ficheiro: 'Lisboa/2026/Janeiro/Emanuel Auditoria Carrinho.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-01', tecnico: 'Jorge Silva',       assinada: '', ficheiro: 'Lisboa/2026/Janeiro/Jorge Auditoria Carrinho.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-01', tecnico: 'Sérgio Pereira',    assinada: '', ficheiro: 'Lisboa/2026/Janeiro/Sergio Auditoria Carrinho.pdf' },
+
+  { local: 'Mecânica Lisboa', mes: '2026-02', tecnico: 'Emanuel Gonçalves', assinada: '', ficheiro: 'Lisboa/2026/Fevereiro/Emanuel Gonçalves.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-02', tecnico: 'Jorge Silva',       assinada: '', ficheiro: 'Lisboa/2026/Fevereiro/Jorge Silva.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-02', tecnico: 'Sérgio Pereira',    assinada: '', ficheiro: 'Lisboa/2026/Fevereiro/Sérgio Pereira.pdf' },
+
+  { local: 'Mecânica Lisboa', mes: '2026-03', tecnico: 'Emanuel Gonçalves', assinada: '', ficheiro: 'Lisboa/2026/Março/Auditoria Emanuel.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-03', tecnico: 'Jorge Silva',       assinada: '', ficheiro: 'Lisboa/2026/Março/Auditoria Jorge.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-03', tecnico: 'Sérgio Pereira',    assinada: '', ficheiro: 'Lisboa/2026/Março/Auditoria Sérgio.pdf' },
+
+  { local: 'Mecânica Lisboa', mes: '2026-04', tecnico: 'Sérgio Pereira',    assinada: '2026-05-04', auditor: 'Fábio Ramalho', ficheiro: 'Lisboa/2026/Abril/Aud BABA.pdf', nok: 0, nota: 'Ficheiro "Aud BABA" — BABA = Sérgio Pereira (assinatura confirmada). Todos os itens OK' },
+  { local: 'Mecânica Lisboa', mes: '2026-04', tecnico: 'Emanuel Gonçalves', assinada: '2026-05-04', auditor: 'Fábio Ramalho', ficheiro: 'Lisboa/2026/Abril/Aud Ima.pdf', nok: 0, nota: 'Ficheiro "Aud Ima" — Ima = Emanuel Gonçalves (assinatura confirmada). Todos os itens OK' },
+  { local: 'Mecânica Lisboa', mes: '2026-04', tecnico: 'Jorge Silva',       assinada: '2026-05-04', auditor: 'Fábio Ramalho', ficheiro: 'Lisboa/2026/Abril/Aud Jorge.pdf' },
+
+  { local: 'Mecânica Lisboa', mes: '2026-05', tecnico: 'Emanuel Gonçalves', assinada: '2026-06-08', auditor: 'Fábio Ramalho', ficheiro: 'Lisboa/2026/Maio/AUD IMA MAIO.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-05', tecnico: 'Jorge Silva',       assinada: '2026-06-08', auditor: 'Fábio Ramalho', ficheiro: 'Lisboa/2026/Maio/AUD JOR MAIO.pdf' },
+  { local: 'Mecânica Lisboa', mes: '2026-05', tecnico: 'Sérgio Pereira',    assinada: '2026-06-08', auditor: 'Fábio Ramalho', ficheiro: 'Lisboa/2026/Maio/AUD SÉRGIO MAIO.pdf' }
+];
+
+
+/* ================= Estado ================= */
+var DRAFT_KEY = 'acf_draft_v2';
+var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+var MES_ABR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+var TOOLS = [];            // lista ativa (depende do local)
+var TOTAL_LABEL = '—';
+var states = [];
+var pads = {};
+var INDEX_ROWS = [];       // histórico consolidado (seed + SharePoint)
+var spIndexLoaded = false;
+
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function slug(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'SemNome';
+}
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(function() { t.className = 'toast' + (isErr ? ' err' : ''); }, 5200);
+}
+function mesLabel(ym) {
+  if (!ym) return '—';
+  var p = ym.split('-');
+  return MES_ABR[parseInt(p[1], 10) - 1] + ' ' + p[0];
+}
+function nowYM() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function prevYM(ym) {
+  var p = ym.split('-'); var y = +p[0], m = +p[1] - 1;
+  if (m < 1) { m = 12; y--; }
+  return y + '-' + String(m).padStart(2, '0');
+}
+function ymLE(a, b) { return a <= b; }   // strings YYYY-MM comparam lexicograficamente
+
+/* ================= Tabs ================= */
+function showView(v) {
+  document.getElementById('viewNova').classList.toggle('active', v === 'nova');
+  document.getElementById('viewHist').classList.toggle('active', v === 'hist');
+  document.getElementById('tabNova').classList.toggle('active', v === 'nova');
+  document.getElementById('tabHist').classList.toggle('active', v === 'hist');
+  if (v === 'hist') renderHist();
+}
+
+/* ================= Tabela de ferramentas ================= */
+function loadToolset(local) {
+  var ts = TOOLSETS[local];
+  TOOLS = ts ? ts.itens : [];
+  TOTAL_LABEL = ts ? ts.total : '—';
+  states = new Array(TOOLS.length).fill(null);
+  buildTable();
+  updateSummary();
+}
 function buildTable() {
   var tb = document.getElementById('toolsBody');
+  var has = TOOLS.length > 0;
+  document.getElementById('toolsHead').style.display = has ? '' : 'none';
+  document.getElementById('toolsFoot').style.display = has ? '' : 'none';
+  document.getElementById('toolsEmpty').style.display = has ? 'none' : '';
+  document.getElementById('footTotal').textContent = TOTAL_LABEL;
+  var local = document.getElementById('fLocal').value;
+  document.getElementById('toolsTitle').textContent = has
+    ? 'Equipamento do carrinho — ' + local + ' (' + TOOLS.length + ' artigos)'
+    : 'Equipamento do carrinho';
+  if (!has) { tb.innerHTML = ''; return; }
   var html = '';
   TOOLS.forEach(function(t, i) {
     html += '<tr data-i="' + i + '">' +
@@ -410,17 +762,9 @@ function buildTable() {
   });
   tb.innerHTML = html;
 }
-function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-var states = new Array(TOOLS.length).fill(null);
-
 function setState(i, st) {
   states[i] = (states[i] === st) ? null : st;
-  paintRow(i);
-  updateSummary();
-  markDirty();
+  paintRow(i); updateSummary(); markDirty();
 }
 function paintRow(i) {
   var tr = document.querySelector('tr[data-i="' + i + '"]');
@@ -431,71 +775,100 @@ function paintRow(i) {
   if (states[i] === 'ok')  { okB.classList.add('ok-active');  tr.classList.add('st-ok'); }
   if (states[i] === 'nok') { nokB.classList.add('nok-active'); tr.classList.add('st-nok'); }
   var inp = document.getElementById('obs' + i);
-  if (inp) {
-    if (states[i] === 'nok' && !inp.value.trim()) inp.classList.add('flag');
-    else inp.classList.remove('flag');
-  }
+  if (inp) inp.classList.toggle('flag', states[i] === 'nok' && !inp.value.trim());
 }
 function onObsInput(i) { paintRow(i); markDirty(); }
 function setAll(st) {
+  if (!TOOLS.length) { toast('Selecione o local primeiro.', true); return; }
   for (var i = 0; i < states.length; i++) { states[i] = st; paintRow(i); }
   updateSummary(); markDirty();
 }
-
 function updateSummary() {
   var ok = 0, nok = 0, val = 0;
   states.forEach(function(s, i) {
     if (s === 'ok') ok++;
     else if (s === 'nok') { nok++; val += TOOLS[i].v; }
   });
-  var pend = TOOLS.length - ok - nok;
   document.getElementById('sOk').textContent = ok;
   document.getElementById('sNok').textContent = nok;
-  document.getElementById('sPend').textContent = pend;
+  document.getElementById('sPend').textContent = TOOLS.length - ok - nok;
   document.getElementById('sVal').textContent = val.toFixed(2) + '€';
   document.getElementById('fillBadge').textContent = (ok + nok) + ' / ' + TOOLS.length;
   document.getElementById('footNok').textContent = 'Valor em NOK: ' + val.toFixed(2) + '€';
 }
 
-/* ====== Cabeçalho ====== */
+/* ================= Cabeçalho e sincronização ================= */
+function tecnicosDe(local) {
+  return (TECNICOS[local] || []).filter(function(t) { return !t.inativo; }).map(function(t) { return t.n; });
+}
+function fillTecSelects(local) {
+  var opts = '<option value="">— Selecionar —</option>';
+  tecnicosDe(local).forEach(function(n) { opts += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
+  if (!local) opts = '<option value="">— Selecionar local primeiro —</option>';
+  var a = document.getElementById('fTecnico'), b = document.getElementById('fTecBaixo');
+  var prev = a.value;
+  a.innerHTML = opts; b.innerHTML = opts;
+  if (prev && tecnicosDe(local).indexOf(prev) >= 0) { a.value = prev; b.value = prev; }
+}
+function fillCoordSelects() {
+  var opts = '<option value="">— Selecionar —</option>';
+  COORDENADORES.forEach(function(n) { opts += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
+  document.getElementById('fCoordenador').innerHTML = opts;
+  document.getElementById('fCoordBaixo').innerHTML = opts;
+}
+
 function onLocalChange() {
   var local = document.getElementById('fLocal').value;
-  var sel = document.getElementById('fTecnico');
-  sel.innerHTML = '<option value="">— Selecionar —</option>';
-  (TECNICOS[local] || []).forEach(function(n) {
-    sel.innerHTML += '<option value="' + esc(n) + '">' + esc(n) + '</option>';
-  });
-  sel.innerHTML += '<option value="__outro__">Outro (escrever)</option>';
-  document.getElementById('chipTecnicoOutro').style.display = 'none';
-  var coordF = document.getElementById('fCoordenador');
-  if (!coordF.value.trim() && COORD_POR_LOCAL[local]) coordF.value = COORD_POR_LOCAL[local];
-  var locF = document.getElementById('fLocalidade');
-  if (LOCALIDADE_POR_LOCAL[local]) locF.value = LOCALIDADE_POR_LOCAL[local];
-  syncSigNames(); renderClosing(); markDirty();
+  var preenchido = states.some(function(s) { return s; });
+  if (preenchido && !confirm('Mudar de unidade substitui a lista de ferramentas e limpa os estados já marcados. Continuar?')) {
+    return; // reverter não é trivial num select; avisamos e seguimos só com confirmação
+  }
+  loadToolset(local);
+  fillTecSelects(local);
+  if (COORD_POR_LOCAL[local]) {
+    document.getElementById('fCoordenador').value = COORD_POR_LOCAL[local];
+    document.getElementById('fCoordBaixo').value = COORD_POR_LOCAL[local];
+  }
+  if (LOCALIDADE_POR_LOCAL[local]) document.getElementById('fLocalidade').value = LOCALIDADE_POR_LOCAL[local];
+  syncNames(); renderClosing(); markDirty();
 }
 function onTecnicoChange() {
-  var v = document.getElementById('fTecnico').value;
-  document.getElementById('chipTecnicoOutro').style.display = (v === '__outro__') ? 'block' : 'none';
-  syncSigNames(); markDirty();
+  document.getElementById('fTecBaixo').value = document.getElementById('fTecnico').value;
+  syncNames(); markDirty();
+}
+function onTecBaixoChange() {
+  document.getElementById('fTecnico').value = document.getElementById('fTecBaixo').value;
+  syncNames(); markDirty();
+}
+function onCoordChange() {
+  document.getElementById('fCoordBaixo').value = document.getElementById('fCoordenador').value;
+  syncNames(); markDirty();
+}
+function onCoordBaixoChange() {
+  document.getElementById('fCoordenador').value = document.getElementById('fCoordBaixo').value;
+  syncNames(); markDirty();
 }
 function onDataChange() {
   var d = document.getElementById('fData').value;
   var f = document.getElementById('fDataFecho');
   if (d && !f.value) f.value = d;
+  // sugerir mês auditado = mês anterior à data da auditoria
+  var m = document.getElementById('fMes');
+  if (d && !m.dataset.touched) m.value = prevYM(d.slice(0, 7));
   renderClosing(); markDirty();
 }
-function getTecnicoName() {
-  var v = document.getElementById('fTecnico').value;
-  if (v === '__outro__') return document.getElementById('fTecnicoOutro').value.trim();
-  return v;
-}
-function syncSigNames() {
-  var c = document.getElementById('fCoordenador').value.trim();
-  var t = getTecnicoName();
-  var sc = document.getElementById('sigNameCoord'), st = document.getElementById('sigNameTec');
-  if (c) sc.value = c;
-  if (t) st.value = t;
+function onMesChange() {
+  document.getElementById('fMes').dataset.touched = '1';
   markDirty();
+}
+function syncNames() {
+  var c = document.getElementById('fCoordenador').value;
+  var t = document.getElementById('fTecnico').value;
+  var ec = document.getElementById('sigNameCoord'), et = document.getElementById('sigNameTec');
+  ec.textContent = c || '— sem coordenador selecionado —';
+  ec.classList.toggle('vazio', !c);
+  et.textContent = t || '— sem técnico selecionado —';
+  et.classList.toggle('vazio', !t);
 }
 function renderClosing() {
   var loc = document.getElementById('fLocalidade').value.trim();
@@ -503,34 +876,26 @@ function renderClosing() {
   var out = '—';
   if (d) {
     var p = d.split('-');
-    var txt = parseInt(p[2], 10) + ' de ' + MESES[parseInt(p[1], 10) - 1] + ' de ' + p[0];
-    out = (loc ? loc + ', ' : '') + txt + '.';
-  } else if (loc) { out = loc + ', ______________.'; }
+    out = (loc ? loc + ', ' : '') + parseInt(p[2], 10) + ' de ' + MESES[parseInt(p[1], 10) - 1] + ' de ' + p[0] + '.';
+  } else if (loc) out = loc + ', ______________.';
   document.getElementById('closingPreview').textContent = out;
   markDirty();
 }
 
-/* ====== Assinaturas (canvas) ====== */
-var pads = {};
+/* ================= Assinaturas ================= */
 function initPad(key, canvasId, statusId) {
-  var c = document.getElementById(canvasId);
-  var ctx = c.getContext('2d');
+  var c = document.getElementById(canvasId), ctx = c.getContext('2d');
   var drawing = false, dirty = false, last = null;
-
   function resize() {
     var img = dirty ? c.toDataURL() : null;
-    var rect = c.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
-    c.width = Math.max(1, Math.round(rect.width * dpr));
-    c.height = Math.max(1, Math.round(rect.height * dpr));
+    var rect = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    if (!rect.width) return;
+    c.width = Math.round(rect.width * dpr); c.height = Math.round(rect.height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1A2A3A';
     if (img) { var im = new Image(); im.onload = function() { ctx.drawImage(im, 0, 0, rect.width, rect.height); }; im.src = img; }
   }
-  function pos(e) {
-    var r = c.getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
-  }
+  function pos(e) { var r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
   c.addEventListener('pointerdown', function(e) {
     e.preventDefault(); c.setPointerCapture(e.pointerId);
     drawing = true; last = pos(e);
@@ -539,18 +904,14 @@ function initPad(key, canvasId, statusId) {
   });
   c.addEventListener('pointermove', function(e) {
     if (!drawing) return;
-    e.preventDefault();
-    var p = pos(e);
-    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-    last = p;
+    e.preventDefault(); var p = pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p;
   });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) {
     c.addEventListener(ev, function() { drawing = false; });
   });
-
   function setSigned(v) {
-    dirty = v;
-    c.classList.toggle('signed', v);
+    dirty = v; c.classList.toggle('signed', v);
     document.getElementById(statusId).textContent = v ? 'Assinado ✓' : 'Sem assinatura';
     if (v) markDirty();
   }
@@ -558,46 +919,33 @@ function initPad(key, canvasId, statusId) {
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.restore();
     setSigned(false); markDirty();
   }
-  function isSigned() { return dirty; }
-  function toDataURL() { return dirty ? c.toDataURL('image/png') : ''; }
   function restore(url) {
     if (!url) return;
     var im = new Image();
-    im.onload = function() {
-      var r = c.getBoundingClientRect();
-      ctx.drawImage(im, 0, 0, r.width, r.height);
-      setSigned(true);
-    };
+    im.onload = function() { var r = c.getBoundingClientRect(); ctx.drawImage(im, 0, 0, r.width, r.height); setSigned(true); };
     im.src = url;
   }
-
   resize();
-  window.addEventListener('resize', function() { setTimeout(resize, 100); });
-  pads[key] = { clear: clear, isSigned: isSigned, toDataURL: toDataURL, restore: restore, resize: resize };
+  window.addEventListener('resize', function() { setTimeout(resize, 120); });
+  pads[key] = { clear: clear, isSigned: function() { return dirty; }, toDataURL: function() { return dirty ? c.toDataURL('image/png') : ''; }, restore: restore, resize: resize };
 }
 function clearPad(k) { if (pads[k]) pads[k].clear(); }
 
-/* ====== Rascunho local ====== */
+/* ================= Rascunho ================= */
 var draftTimer = null;
-function markDirty() {
-  clearTimeout(draftTimer);
-  draftTimer = setTimeout(saveDraft, 700);
-}
+function markDirty() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 700); }
 function collect() {
   return {
     local: document.getElementById('fLocal').value,
-    tecnicoSel: document.getElementById('fTecnico').value,
-    tecnicoOutro: document.getElementById('fTecnicoOutro').value,
-    carrinho: document.getElementById('fCarrinho').value,
+    tecnico: document.getElementById('fTecnico').value,
+    mes: document.getElementById('fMes').value,
     data: document.getElementById('fData').value,
     coordenador: document.getElementById('fCoordenador').value,
     obs: document.getElementById('fObs').value,
     localidade: document.getElementById('fLocalidade').value,
     dataFecho: document.getElementById('fDataFecho').value,
-    sigNameCoord: document.getElementById('sigNameCoord').value,
-    sigNameTec: document.getElementById('sigNameTec').value,
     states: states.slice(),
-    obsItens: TOOLS.map(function(_, i) { return document.getElementById('obs' + i).value; }),
+    obsItens: TOOLS.map(function(_, i) { var e = document.getElementById('obs' + i); return e ? e.value : ''; }),
     sigCoord: pads.coord ? pads.coord.toDataURL() : '',
     sigTec: pads.tec ? pads.tec.toDataURL() : ''
   };
@@ -605,79 +953,68 @@ function collect() {
 function saveDraft() {
   try {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(collect()));
-    var n = document.getElementById('draftNote');
-    n.textContent = 'Rascunho guardado localmente às ' + new Date().toLocaleTimeString('pt-PT');
-  } catch (e) { /* quota / modo privado */ }
+    document.getElementById('draftNote').textContent = 'Rascunho guardado localmente às ' + new Date().toLocaleTimeString('pt-PT');
+  } catch (e) {}
 }
 function loadDraft() {
   var raw = null;
   try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) { return; }
   if (!raw) return;
-  var d;
-  try { d = JSON.parse(raw); } catch (e) { return; }
-  document.getElementById('fLocal').value = d.local || '';
-  if (d.local) onLocalChange();
-  document.getElementById('fTecnico').value = d.tecnicoSel || '';
-  onTecnicoChange();
-  document.getElementById('fTecnicoOutro').value = d.tecnicoOutro || '';
-  document.getElementById('fCarrinho').value = d.carrinho || '';
-  document.getElementById('fData').value = d.data || '';
+  var d; try { d = JSON.parse(raw); } catch (e) { return; }
+  if (d.local) {
+    document.getElementById('fLocal').value = d.local;
+    loadToolset(d.local); fillTecSelects(d.local);
+  }
+  document.getElementById('fTecnico').value = d.tecnico || '';
+  document.getElementById('fTecBaixo').value = d.tecnico || '';
   document.getElementById('fCoordenador').value = d.coordenador || '';
+  document.getElementById('fCoordBaixo').value = d.coordenador || '';
+  if (d.mes) { document.getElementById('fMes').value = d.mes; document.getElementById('fMes').dataset.touched = '1'; }
+  if (d.data) document.getElementById('fData').value = d.data;
+  if (d.dataFecho) document.getElementById('fDataFecho').value = d.dataFecho;
   document.getElementById('fObs').value = d.obs || '';
-  document.getElementById('fLocalidade').value = d.localidade || '';
-  document.getElementById('fDataFecho').value = d.dataFecho || '';
-  document.getElementById('sigNameCoord').value = d.sigNameCoord || '';
-  document.getElementById('sigNameTec').value = d.sigNameTec || '';
-  if (Array.isArray(d.states)) {
-    for (var i = 0; i < states.length; i++) { states[i] = d.states[i] || null; paintRow(i); }
-  }
-  if (Array.isArray(d.obsItens)) {
-    d.obsItens.forEach(function(v, i) { var el = document.getElementById('obs' + i); if (el) el.value = v || ''; paintRow(i); });
-  }
+  if (d.localidade) document.getElementById('fLocalidade').value = d.localidade;
+  if (Array.isArray(d.states)) for (var i = 0; i < states.length; i++) { states[i] = d.states[i] || null; paintRow(i); }
+  if (Array.isArray(d.obsItens)) d.obsItens.forEach(function(v, i) {
+    var el = document.getElementById('obs' + i); if (el) { el.value = v || ''; paintRow(i); }
+  });
   setTimeout(function() {
     if (d.sigCoord && pads.coord) pads.coord.restore(d.sigCoord);
     if (d.sigTec && pads.tec) pads.tec.restore(d.sigTec);
-  }, 150);
-  updateSummary(); renderClosing();
+  }, 160);
+  updateSummary(); syncNames(); renderClosing();
 }
 function resetAll() {
   if (!confirm('Limpar toda a auditoria (incluindo assinaturas e rascunho guardado)?')) return;
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-  states = new Array(TOOLS.length).fill(null);
-  buildTable();
-  document.querySelectorAll('input[type=text], input[type=date], textarea').forEach(function(i) { i.value = ''; });
   document.getElementById('fLocal').value = '';
-  document.getElementById('fTecnico').innerHTML = '<option value="">— Selecionar local primeiro —</option>';
-  document.getElementById('chipTecnicoOutro').style.display = 'none';
+  loadToolset(''); fillTecSelects('');
+  document.getElementById('fCoordenador').value = '';
+  document.getElementById('fCoordBaixo').value = '';
+  document.getElementById('fObs').value = '';
+  document.getElementById('fLocalidade').value = '';
+  document.getElementById('fMes').removeAttribute('data-touched');
   if (pads.coord) pads.coord.clear();
   if (pads.tec) pads.tec.clear();
-  setToday();
-  updateSummary(); renderClosing();
+  setDefaults(); syncNames(); renderClosing();
   document.getElementById('draftNote').textContent = 'Rascunho limpo.';
 }
 
-/* ====== Guardar ====== */
-function slug(s) {
-  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'SemNome';
-}
-function toast(msg, isErr) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (isErr ? ' err' : '');
-  setTimeout(function() { t.className = 'toast' + (isErr ? ' err' : ''); }, 5000);
-}
-
+/* ================= Guardar ================= */
 function saveAuditoria() {
   var d = collect();
-  var tecnico = (d.tecnicoSel === '__outro__') ? d.tecnicoOutro.trim() : d.tecnicoSel;
-
-  // Validações mínimas
   var faltas = [];
   if (!d.local) faltas.push('Local');
-  if (!tecnico) faltas.push('Técnico auditado');
+  if (!d.tecnico) faltas.push('Técnico auditado');
+  if (!d.mes) faltas.push('Mês auditado');
   if (!d.data) faltas.push('Data da auditoria');
+  if (!d.coordenador) faltas.push('Coordenador / Auditor');
   if (faltas.length) { toast('Preencha: ' + faltas.join(', '), true); return; }
+
+  var dup = INDEX_ROWS.filter(function(r) {
+    return r.local === d.local && r.mes === d.mes && r.tecnico === d.tecnico;
+  });
+  if (dup.length && !confirm('Já existe um registo de ' + d.tecnico + ' para ' + mesLabel(d.mes) + ' (' + d.local + ').\nGuardar mesmo assim (fica um segundo registo)?')) return;
 
   var pend = states.filter(function(s) { return !s; }).length;
   if (pend > 0 && !confirm('Há ' + pend + ' artigo(s) sem estado marcado. Guardar assim mesmo?')) return;
@@ -694,51 +1031,61 @@ function saveAuditoria() {
   });
   var comObs = d.obsItens.filter(function(v) { return v && v.trim(); }).length;
 
-  var html = buildReport(d, tecnico, okCount, nokItens, valNok);
-
+  var html = buildReport(d, okCount, nokItens, valNok, pend);
   var dp = d.data.split('-');
-  var dataFile = dp[2] + '-' + dp[1] + '-' + dp[0];
-  var filename = 'Auditoria_Carrinho_' + slug(tecnico) + '_' + dataFile + '_' + slug(d.local) + '.html';
+  var filename = 'Auditoria_Carrinho_' + slug(d.tecnico) + '_' + dp[2] + '-' + dp[1] + '-' + dp[0] + '_' + slug(d.local) + '.html';
+
+  var record = {
+    local: d.local, mes: d.mes, tecnico: d.tecnico, assinada: d.dataFecho || d.data,
+    dataAuditoria: d.data, auditor: d.coordenador, ficheiro: filename,
+    ok: okCount, nok: nokItens.length, pend: pend, valNok: +valNok.toFixed(2),
+    origem: 'intranet', criadoEm: new Date().toISOString()
+  };
 
   var parentOk = false;
-  try { parentOk = !!(window.parent && window.parent !== window && window.parent.uploadToSharePoint); } catch (e) { parentOk = false; }
+  try { parentOk = !!(window.parent && window.parent !== window && window.parent.acfUploadReport); } catch (e) { parentOk = false; }
 
-  if (parentOk) {
-    try {
-      window.parent.uploadToSharePoint('auditorias_carrinhos', filename, html, 'text/html');
-
-      // Notificação apenas quando há NOK ou observações reportadas
-      if ((nokItens.length > 0 || comObs > 0) && window.parent.sendNotification) {
-        var subject = '🧰 Auditoria Carrinho Ferramenta com ocorrências — ' + tecnico + ' (' + d.local + ')';
-        var body = '<p><strong>Técnico:</strong> ' + esc(tecnico) + '</p>' +
-          '<p><strong>Local:</strong> ' + esc(d.local) + '</p>' +
-          '<p><strong>Carrinho:</strong> ' + esc(d.carrinho || 'N/A') + '</p>' +
-          '<p><strong>Data:</strong> ' + dataFile + '</p>' +
-          '<p><strong>Coordenador:</strong> ' + esc(d.coordenador || 'N/A') + '</p>' +
-          '<p><strong>Resultado:</strong> OK ' + okCount + ' · NOK ' + nokItens.length + ' · Pendente ' + pend + '</p>' +
-          '<p><strong>Valor em falta / danificado:</strong> ' + valNok.toFixed(2) + '€ s/ IVA</p>';
-        if (nokItens.length) {
-          body += '<p><strong>Artigos NOK:</strong></p><ul>';
-          nokItens.forEach(function(n) {
-            body += '<li>' + esc(TOOLS[n.i].d) + ' (' + esc(TOOLS[n.i].r) + ') — ' + TOOLS[n.i].v.toFixed(2) + '€' +
-                    (n.obs ? ' — <em>' + esc(n.obs) + '</em>' : '') + '</li>';
-          });
-          body += '</ul>';
-        }
-        body += '<p style="color:#888;font-size:12px;">Ficheiro: ' + esc(filename) +
-                ' — consultar em Intranet &gt; Definições &gt; Gestão de Ficheiros &gt; Auditorias Carrinhos.</p>';
-        window.parent.sendNotification('auditorias_carrinhos', subject, body);
-      }
-      toast('Auditoria arquivada no SharePoint: ' + filename);
-      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-    } catch (err) {
-      toast('Erro ao guardar: ' + err.message, true);
-      download(filename, html);
-    }
-  } else {
+  if (!parentOk) {
     download(filename, html);
     toast('Fora da intranet — ficheiro descarregado: ' + filename);
+    return;
   }
+
+  window.parent.acfUploadReport(filename, html).then(function() {
+    return appendToIndex(record);
+  }).then(function() {
+    if ((nokItens.length > 0 || comObs > 0) && window.parent.sendNotification) {
+      notify(d, record, nokItens, filename);
+    }
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    toast('Auditoria arquivada e registada no histórico: ' + filename);
+    renderHist(); updateHistPill();
+  }).catch(function(err) {
+    toast('Erro ao guardar: ' + (err && err.message ? err.message : err), true);
+    download(filename, html);
+  });
+}
+
+function notify(d, record, nokItens, filename) {
+  var subject = '🧰 Auditoria Carrinho Ferramenta com ocorrências — ' + d.tecnico + ' (' + d.local + ', ' + mesLabel(d.mes) + ')';
+  var body = '<p><strong>Técnico:</strong> ' + esc(d.tecnico) + '</p>' +
+    '<p><strong>Unidade:</strong> ' + esc(d.local) + '</p>' +
+    '<p><strong>Mês auditado:</strong> ' + mesLabel(d.mes) + '</p>' +
+    '<p><strong>Data da auditoria:</strong> ' + esc(d.data) + '</p>' +
+    '<p><strong>Coordenador:</strong> ' + esc(d.coordenador) + '</p>' +
+    '<p><strong>Resultado:</strong> OK ' + record.ok + ' · NOK ' + record.nok + ' · Pendente ' + record.pend + '</p>' +
+    '<p><strong>Valor em falta / danificado:</strong> ' + record.valNok.toFixed(2) + '€ s/ IVA</p>';
+  if (nokItens.length) {
+    body += '<p><strong>Artigos NOK:</strong></p><ul>';
+    nokItens.forEach(function(n) {
+      body += '<li>' + esc(TOOLS[n.i].d) + ' (' + esc(TOOLS[n.i].r) + ') — ' + TOOLS[n.i].v.toFixed(2) + '€' +
+              (n.obs ? ' — <em>' + esc(n.obs) + '</em>' : '') + '</li>';
+    });
+    body += '</ul>';
+  }
+  body += '<p style="color:#888;font-size:12px;">Ficheiro: ' + esc(filename) +
+          ' — histórico em Intranet &gt; Coordenação &gt; Auditorias Carrinhos Ferramentas &gt; Histórico.</p>';
+  window.parent.sendNotification('auditorias_carrinhos', subject, body);
 }
 
 function download(filename, html) {
@@ -750,8 +1097,8 @@ function download(filename, html) {
   setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
 }
 
-function buildReport(d, tecnico, okCount, nokItens, valNok) {
-  var pend = states.filter(function(s) { return !s; }).length;
+/* ================= Relatório HTML arquivado ================= */
+function buildReport(d, okCount, nokItens, valNok, pend) {
   var closing = document.getElementById('closingPreview').textContent;
   var stamp = new Date().toLocaleString('pt-PT');
   var submitter = '';
@@ -768,129 +1115,373 @@ function buildReport(d, tecnico, okCount, nokItens, valNok) {
     var lbl = s === 'ok' ? 'OK' : (s === 'nok' ? 'NOK' : 'Pendente');
     var cls = s === 'ok' ? 'ok' : (s === 'nok' ? 'nok' : 'pend');
     var obs = (d.obsItens[i] || '').trim();
-    rows += '<tr class="r-' + cls + '">' +
-      '<td class="idx">' + (i + 1) + '</td>' +
-      '<td>' + esc(t.d) + '</td>' +
-      '<td class="ref">' + esc(t.r) + '</td>' +
-      '<td class="val">' + t.v.toFixed(2) + '€</td>' +
+    rows += '<tr class="r-' + cls + '"><td class="idx">' + (i + 1) + '</td><td>' + esc(t.d) + '</td>' +
+      '<td class="ref">' + esc(t.r) + '</td><td class="val">' + t.v.toFixed(2) + '€</td>' +
       '<td><span class="st ' + cls + '">' + lbl + '</span></td>' +
-      '<td class="obs">' + (obs ? esc(obs) : '<span class="muted">—</span>') + '</td>' +
-    '</tr>';
+      '<td class="obs">' + (obs ? esc(obs) : '<span class="muted">—</span>') + '</td></tr>';
   });
 
-  var sigCoordImg = d.sigCoord ? '<img src="' + d.sigCoord + '" alt="Assinatura do coordenador">' : '<div class="noSig">Sem assinatura</div>';
-  var sigTecImg = d.sigTec ? '<img src="' + d.sigTec + '" alt="Assinatura do técnico">' : '<div class="noSig">Sem assinatura</div>';
+  var sigC = d.sigCoord ? '<img src="' + d.sigCoord + '" alt="Assinatura do coordenador">' : '<div class="noSig">Sem assinatura</div>';
+  var sigT = d.sigTec ? '<img src="' + d.sigTec + '" alt="Assinatura do técnico">' : '<div class="noSig">Sem assinatura</div>';
 
-  var out = '';
-  out += '<!DOCTYPE html>\n<html lang="pt">\n<head>\n<meta charset="UTF-8">\n';
-  out += '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
-  out += '<title>Auditoria Carrinho Ferramenta — ' + esc(tecnico) + ' — ' + esc(d.data) + '</title>\n';
-  out += '<style>\n';
-  out += 'body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;background:#f5f5f5;color:#333;margin:0;line-height:1.6}';
-  out += '.container{max-width:980px;margin:0 auto;padding:28px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1)}';
-  out += 'h1{color:#003B73;border-bottom:2px solid #007BC0;padding-bottom:10px;font-size:1.35rem;margin:0 0 6px}';
-  out += '.docref{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:18px}';
-  out += 'h2{color:#007BC0;margin:26px 0 10px;font-size:1.05rem}';
-  out += '.meta{background:#f9f9f9;padding:16px;border-radius:8px;margin:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px}';
-  out += '.meta-item{min-width:200px}';
-  out += '.meta-label{font-weight:700;color:#003B73;display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}';
-  out += '.summary{display:flex;gap:14px;margin:18px 0;flex-wrap:wrap}';
-  out += '.summary-item{padding:14px;background:#f0f0f0;border-radius:8px;text-align:center;flex:1;min-width:110px}';
-  out += '.summary-item .num{font-size:1.7rem;font-weight:800}';
-  out += '.summary-item.ok .num{color:#059669}.summary-item.nok .num{color:#DC2626}';
-  out += '.summary-item.pend .num{color:#9CA3AF}.summary-item.val .num{color:#D97706;font-size:1.35rem}';
-  out += '.summary-item .lbl{font-size:.7rem;color:#666;text-transform:uppercase;letter-spacing:.5px}';
-  out += 'table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}';
-  out += 'thead th{background:#003B73;color:#fff;text-align:left;padding:9px 11px;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}';
-  out += 'tbody td{padding:9px 11px;border-bottom:1px solid #eee;vertical-align:middle}';
-  out += 'tbody tr.r-ok{background:rgba(5,150,105,.05)}tbody tr.r-nok{background:rgba(220,38,38,.06)}';
-  out += '.idx{color:#aaa;font-weight:700;width:30px}.ref{color:#666;white-space:nowrap;font-size:.78rem}';
-  out += '.val{text-align:right;font-weight:600;white-space:nowrap}';
-  out += '.st{font-weight:700;padding:3px 9px;border-radius:4px;font-size:.75rem;white-space:nowrap}';
-  out += '.st.ok{background:#d1fae5;color:#059669}.st.nok{background:#fee2e2;color:#DC2626}.st.pend{background:#f3f4f6;color:#9CA3AF}';
-  out += '.obs{color:#7c2d12}.muted{color:#ccc}';
-  out += 'tfoot td{background:#f0f0f0;font-weight:800;color:#003B73;padding:12px 11px;border-top:2px solid #ddd}';
-  out += '.notes{background:#eff6ff;padding:14px 16px;border-left:4px solid #007BC0;border-radius:4px;margin:16px 0;white-space:pre-wrap}';
-  out += '.notes-title{font-weight:700;color:#003B73;margin-bottom:6px}';
-  out += '.closing{margin:28px 0 10px;font-size:.95rem}';
-  out += '.sigs{display:flex;gap:24px;flex-wrap:wrap;margin-top:14px}';
-  out += '.sig{flex:1;min-width:250px;text-align:center;border:1px solid #ddd;border-radius:8px;padding:14px}';
-  out += '.sig img{max-width:100%;height:120px;object-fit:contain;display:block;margin:0 auto}';
-  out += '.sig .noSig{height:120px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:.8rem}';
-  out += '.sig .line{border-top:1px solid #999;margin:6px 20px 8px}';
-  out += '.sig .role{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:700}';
-  out += '.sig .nm{font-size:.88rem;color:#003B73;font-weight:600}';
-  out += '.footer{text-align:center;margin-top:30px;font-size:.78rem;color:#666;border-top:1px solid #ddd;padding-top:14px}';
-  out += '@media print{body{background:#fff}.container{box-shadow:none;padding:10px}table{font-size:.78rem}}';
-  out += '\n</style>\n</head>\n<body>\n<div class="container">\n';
-  out += '<h1>Ata de Auditoria — Carrinho de Ferramenta</h1>\n';
-  out += '<div class="docref">QS-ACF-001 · Auditoria Mensal · Walkingarage, Lda. — Bosch Car Service</div>\n';
+  var o = '';
+  o += '<!DOCTYPE html>\n<html lang="pt">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
+  o += '<title>Auditoria Carrinho Ferramenta — ' + esc(d.tecnico) + ' — ' + mesLabel(d.mes) + '</title>\n<style>\n';
+  o += 'body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;background:#f5f5f5;color:#333;margin:0;line-height:1.6}';
+  o += '.container{max-width:980px;margin:0 auto;padding:28px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1)}';
+  o += 'h1{color:#003B73;border-bottom:2px solid #007BC0;padding-bottom:10px;font-size:1.35rem;margin:0 0 6px}';
+  o += '.docref{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:18px}';
+  o += 'h2{color:#007BC0;margin:26px 0 10px;font-size:1.05rem}';
+  o += '.meta{background:#f9f9f9;padding:16px;border-radius:8px;margin:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px}';
+  o += '.meta-item{min-width:190px}.meta-label{font-weight:700;color:#003B73;display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}';
+  o += '.summary{display:flex;gap:14px;margin:18px 0;flex-wrap:wrap}';
+  o += '.summary-item{padding:14px;background:#f0f0f0;border-radius:8px;text-align:center;flex:1;min-width:110px}';
+  o += '.summary-item .num{font-size:1.7rem;font-weight:800}';
+  o += '.summary-item.ok .num{color:#059669}.summary-item.nok .num{color:#DC2626}';
+  o += '.summary-item.pend .num{color:#9CA3AF}.summary-item.val .num{color:#D97706;font-size:1.35rem}';
+  o += '.summary-item .lbl{font-size:.7rem;color:#666;text-transform:uppercase;letter-spacing:.5px}';
+  o += 'table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}';
+  o += 'thead th{background:#003B73;color:#fff;text-align:left;padding:9px 11px;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}';
+  o += 'tbody td{padding:9px 11px;border-bottom:1px solid #eee;vertical-align:middle}';
+  o += 'tbody tr.r-ok{background:rgba(5,150,105,.05)}tbody tr.r-nok{background:rgba(220,38,38,.06)}';
+  o += '.idx{color:#aaa;font-weight:700;width:30px}.ref{color:#666;white-space:nowrap;font-size:.78rem}';
+  o += '.val{text-align:right;font-weight:600;white-space:nowrap}';
+  o += '.st{font-weight:700;padding:3px 9px;border-radius:4px;font-size:.75rem;white-space:nowrap}';
+  o += '.st.ok{background:#d1fae5;color:#059669}.st.nok{background:#fee2e2;color:#DC2626}.st.pend{background:#f3f4f6;color:#9CA3AF}';
+  o += '.obs{color:#7c2d12}.muted{color:#ccc}';
+  o += 'tfoot td{background:#f0f0f0;font-weight:800;color:#003B73;padding:12px 11px;border-top:2px solid #ddd}';
+  o += '.notes{background:#eff6ff;padding:14px 16px;border-left:4px solid #007BC0;border-radius:4px;margin:16px 0;white-space:pre-wrap}';
+  o += '.notes-title{font-weight:700;color:#003B73;margin-bottom:6px}';
+  o += '.closing{margin:28px 0 10px;font-size:.95rem}';
+  o += '.sigs{display:flex;gap:24px;flex-wrap:wrap;margin-top:14px}';
+  o += '.sig{flex:1;min-width:250px;text-align:center;border:1px solid #ddd;border-radius:8px;padding:14px}';
+  o += '.sig img{max-width:100%;height:120px;object-fit:contain;display:block;margin:0 auto}';
+  o += '.sig .noSig{height:120px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:.8rem}';
+  o += '.sig .line{border-top:1px solid #999;margin:6px 20px 8px}';
+  o += '.sig .role{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:700}';
+  o += '.sig .nm{font-size:.88rem;color:#003B73;font-weight:600}';
+  o += '.footer{text-align:center;margin-top:30px;font-size:.78rem;color:#666;border-top:1px solid #ddd;padding-top:14px}';
+  o += '@media print{body{background:#fff}.container{box-shadow:none;padding:10px}table{font-size:.78rem}}';
+  o += '\n</style>\n</head>\n<body>\n<div class="container">\n';
+  o += '<h1>Ata de Auditoria — Carrinho de Ferramenta</h1>\n';
+  o += '<div class="docref">QS-ACF-001 · Auditoria Mensal · Walkingarage, Lda. — Bosch Car Service</div>\n';
+  o += '<div class="meta">';
+  o += '<div class="meta-item"><span class="meta-label">Técnico auditado</span>' + esc(d.tecnico) + '</div>';
+  o += '<div class="meta-item"><span class="meta-label">Unidade</span>' + esc(d.local) + '</div>';
+  o += '<div class="meta-item"><span class="meta-label">Mês auditado</span>' + mesLabel(d.mes) + '</div>';
+  o += '<div class="meta-item"><span class="meta-label">Data da auditoria</span>' + esc(d.data) + '</div>';
+  o += '<div class="meta-item"><span class="meta-label">Coordenador / Auditor</span>' + esc(d.coordenador) + '</div>';
+  o += '</div>\n';
+  o += '<div class="summary">';
+  o += '<div class="summary-item ok"><div class="num">' + okCount + '</div><div class="lbl">OK</div></div>';
+  o += '<div class="summary-item nok"><div class="num">' + nokItens.length + '</div><div class="lbl">NOK</div></div>';
+  o += '<div class="summary-item pend"><div class="num">' + pend + '</div><div class="lbl">Pendente</div></div>';
+  o += '<div class="summary-item val"><div class="num">' + valNok.toFixed(2) + '€</div><div class="lbl">Valor em falta / danificado</div></div>';
+  o += '</div>\n';
+  o += '<h2>Equipamento do carrinho — ' + esc(d.local) + ' (' + TOOLS.length + ' artigos)</h2>\n<table>\n<thead><tr>';
+  o += '<th>#</th><th>Equipamento</th><th>Marca / Referência</th><th style="text-align:right">Valor s/ IVA</th><th>Estado</th><th>Dano / perda reportada</th>';
+  o += '</tr></thead>\n<tbody>\n' + rows + '</tbody>\n';
+  o += '<tfoot><tr><td colspan="3" style="text-align:right">Valor Total »</td><td class="val">' + TOTAL_LABEL + '</td>';
+  o += '<td colspan="2" style="color:#D97706">Valor em NOK: ' + valNok.toFixed(2) + '€</td></tr></tfoot>\n</table>\n';
+  if (d.obs && d.obs.trim()) o += '<div class="notes"><div class="notes-title">Observações gerais / Ações a tomar</div>' + esc(d.obs.trim()) + '</div>\n';
+  o += '<div class="closing">' + esc(closing) + '</div>\n<div class="sigs">\n';
+  o += '<div class="sig">' + sigC + '<div class="line"></div><div class="role">O Auditor — Coordenador</div><div class="nm">' + esc(d.coordenador) + '</div></div>\n';
+  o += '<div class="sig">' + sigT + '<div class="line"></div><div class="role">O Colaborador — Técnico</div><div class="nm">' + esc(d.tecnico) + '</div></div>\n';
+  o += '</div>\n<div class="footer">Registo gerado na Intranet DomusCar em ' + stamp;
+  if (submitter) o += ' por ' + submitter;
+  o += '<br>Ata de Auditoria de Carrinho de Ferramenta — QS-ACF-001</div>\n</div>\n</body>\n</html>';
+  return o;
+}
 
-  out += '<div class="meta">';
-  out += '<div class="meta-item"><span class="meta-label">Técnico auditado</span>' + esc(tecnico) + '</div>';
-  out += '<div class="meta-item"><span class="meta-label">Local</span>' + esc(d.local) + '</div>';
-  out += '<div class="meta-item"><span class="meta-label">Carrinho</span>' + esc(d.carrinho || '—') + '</div>';
-  out += '<div class="meta-item"><span class="meta-label">Data da auditoria</span>' + esc(d.data) + '</div>';
-  out += '<div class="meta-item"><span class="meta-label">Coordenador / Auditor</span>' + esc(d.coordenador || '—') + '</div>';
-  out += '</div>\n';
+/* ================= Histórico: dados ================= */
+function seedRows() {
+  return HIST_SEED.map(function(r) {
+    var c = {};
+    for (var k in r) c[k] = r[k];
+    c.origem = 'historico';
+    return c;
+  });
+}
+function rowKey(r) { return [r.local, r.mes, r.tecnico].join('||'); }
 
-  out += '<div class="summary">';
-  out += '<div class="summary-item ok"><div class="num">' + okCount + '</div><div class="lbl">OK</div></div>';
-  out += '<div class="summary-item nok"><div class="num">' + nokItens.length + '</div><div class="lbl">NOK</div></div>';
-  out += '<div class="summary-item pend"><div class="num">' + pend + '</div><div class="lbl">Pendente</div></div>';
-  out += '<div class="summary-item val"><div class="num">' + valNok.toFixed(2) + '€</div><div class="lbl">Valor em falta / danificado</div></div>';
-  out += '</div>\n';
-
-  out += '<h2>Equipamento do carrinho</h2>\n<table>\n<thead><tr>';
-  out += '<th>#</th><th>Equipamento</th><th>Marca / Referência</th><th style="text-align:right">Valor s/ IVA</th><th>Estado</th><th>Dano / perda reportada</th>';
-  out += '</tr></thead>\n<tbody>\n' + rows + '</tbody>\n';
-  out += '<tfoot><tr><td colspan="3" style="text-align:right">Valor Total »</td><td class="val">' + TOTAL_LABEL + '</td>';
-  out += '<td colspan="2" style="color:#D97706">Valor em NOK: ' + valNok.toFixed(2) + '€</td></tr></tfoot>\n</table>\n';
-
-  if (d.obs && d.obs.trim()) {
-    out += '<div class="notes"><div class="notes-title">Observações gerais / Ações a tomar</div>' + esc(d.obs.trim()) + '</div>\n';
-  }
-
-  out += '<div class="closing">' + esc(closing) + '</div>\n';
-  out += '<div class="sigs">\n';
-  out += '<div class="sig">' + sigCoordImg + '<div class="line"></div><div class="role">O Auditor — Coordenador</div><div class="nm">' + esc(d.sigNameCoord || d.coordenador || '') + '</div></div>\n';
-  out += '<div class="sig">' + sigTecImg + '<div class="line"></div><div class="role">O Colaborador — Técnico</div><div class="nm">' + esc(d.sigNameTec || tecnico) + '</div></div>\n';
-  out += '</div>\n';
-
-  out += '<div class="footer">Registo gerado na Intranet DomusCar em ' + stamp;
-  if (submitter) out += ' por ' + submitter;
-  out += '<br>Ata de Auditoria de Carrinho de Ferramenta — QS-ACF-001</div>\n';
-  out += '</div>\n</body>\n</html>';
+function mergeRows(seed, sp) {
+  var out = seed.slice();
+  var seen = {};
+  out.forEach(function(r) { seen[rowKey(r)] = true; });
+  (sp || []).forEach(function(r) {
+    if (!r || !r.local || !r.mes || !r.tecnico) return;
+    var k = rowKey(r);
+    if (seen[k]) {
+      // registo da intranet prevalece sobre o semeado
+      for (var i = 0; i < out.length; i++) if (rowKey(out[i]) === k) { out[i] = r; break; }
+    } else { out.push(r); seen[k] = true; }
+  });
   return out;
 }
 
-/* ====== Arranque ====== */
-function setToday() {
+function reloadIndex(showMsg) {
+  var loader = null;
+  try { if (window.parent && window.parent !== window && window.parent.acfLoadIndex) loader = window.parent.acfLoadIndex; } catch (e) {}
+  if (!loader) {
+    INDEX_ROWS = seedRows();
+    spIndexLoaded = false;
+    renderHist(); updateHistPill();
+    if (showMsg) toast('Fora da intranet — a mostrar apenas o histórico semeado.');
+    return Promise.resolve();
+  }
+  return loader().then(function(data) {
+    INDEX_ROWS = mergeRows(seedRows(), (data && data.rows) || []);
+    spIndexLoaded = true;
+    renderHist(); updateHistPill();
+    if (showMsg) toast('Histórico sincronizado (' + INDEX_ROWS.length + ' registos).');
+  }).catch(function(e) {
+    INDEX_ROWS = seedRows();
+    spIndexLoaded = false;
+    renderHist(); updateHistPill();
+    if (showMsg) toast('Não foi possível ler o SharePoint — a mostrar o histórico semeado.', true);
+  });
+}
+
+function appendToIndex(record) {
+  var saver = null, loader = null;
+  try {
+    saver = window.parent.acfSaveIndex;
+    loader = window.parent.acfLoadIndex;
+  } catch (e) {}
+  if (!saver) return Promise.reject(new Error('Sem acesso de escrita ao histórico'));
+  var base = loader ? loader().catch(function() { return null; }) : Promise.resolve(null);
+  return base.then(function(data) {
+    var rows = (data && data.rows) || [];
+    rows = rows.filter(function(r) {
+      return !(r.local === record.local && r.mes === record.mes && r.tecnico === record.tecnico && r.ficheiro === record.ficheiro);
+    });
+    rows.push(record);
+    return saver({ updatedAt: new Date().toISOString(), rows: rows });
+  }).then(function() {
+    INDEX_ROWS = mergeRows(seedRows(), INDEX_ROWS.filter(function(r) { return r.origem === 'intranet'; }).concat([record]));
+    return true;
+  });
+}
+
+/* ================= Histórico: cálculo de faltas ================= */
+function mesesEmFalta() {
+  var cur = nowYM();
+  var fim = prevYM(cur);              // o mês corrente ainda está a decorrer
+  var res = [];
+  Object.keys(TECNICOS).forEach(function(local) {
+    TECNICOS[local].forEach(function(t) {
+      var m = ALERT_START;
+      if (t.desde && t.desde > m) m = t.desde;
+      while (ymLE(m, fim)) {
+        if (!t.ate || ymLE(m, t.ate)) {
+          var tem = INDEX_ROWS.some(function(r) { return r.local === local && r.mes === m && r.tecnico === t.n; });
+          if (!tem && !t.inativo) res.push({ local: local, mes: m, tecnico: t.n });
+        }
+        m = nextYM(m);
+      }
+    });
+  });
+  return res;
+}
+function nextYM(ym) {
+  var p = ym.split('-'); var y = +p[0], m = +p[1] + 1;
+  if (m > 12) { m = 1; y++; }
+  return y + '-' + String(m).padStart(2, '0');
+}
+function updateHistPill() {
+  var f = mesesEmFalta();
+  var pill = document.getElementById('histPill');
+  if (f.length) { pill.textContent = f.length; pill.style.display = ''; }
+  else pill.style.display = 'none';
+  renderAlerts(f);
+}
+function renderAlerts(faltas) {
+  var z = document.getElementById('alertZone');
+  if (!z) return;
+  if (!faltas.length) {
+    z.innerHTML = '<div class="banner ok"><span class="bi">✅</span><div>Sem atas em falta desde ' + mesLabel(ALERT_START) +
+      '. Todos os técnicos ativos de Cacém e Lisboa têm auditoria registada em cada mês fechado.</div></div>';
+    return;
+  }
+  // agrupar por mês -> unidade
+  var porMes = {};
+  faltas.forEach(function(f) {
+    porMes[f.mes] = porMes[f.mes] || {};
+    porMes[f.mes][f.local] = porMes[f.mes][f.local] || [];
+    porMes[f.mes][f.local].push(f.tecnico);
+  });
+  var meses = Object.keys(porMes).sort();
+  var html = '<div class="banner warn"><span class="bi">⚠️</span><div><strong>' + faltas.length +
+             ' ata(s) em falta</strong> (contagem desde ' + mesLabel(ALERT_START) + '; o mês corrente não é cobrado)<ul>';
+  meses.forEach(function(m) {
+    var partes = [];
+    Object.keys(porMes[m]).forEach(function(l) {
+      partes.push('<strong>' + esc(l.replace('Mecânica ', '')) + '</strong> (' + porMes[m][l].length + '): ' + porMes[m][l].map(esc).join(', '));
+    });
+    html += '<li><strong>' + mesLabel(m) + '</strong> — ' + partes.join(' · ') + '</li>';
+  });
+  html += '</ul></div></div>';
+  if (!spIndexLoaded) {
+    html += '<div class="banner info"><span class="bi">ℹ️</span><div>A mostrar o histórico semeado no módulo. ' +
+            'Os registos feitos na intranet aparecem depois de sincronizar com o SharePoint.</div></div>';
+  }
+  z.innerHTML = html;
+}
+
+/* ================= Histórico: render ================= */
+function anosDisponiveis() {
+  var s = {};
+  INDEX_ROWS.forEach(function(r) { if (r.mes) s[r.mes.slice(0, 4)] = true; });
+  s[nowYM().slice(0, 4)] = true;
+  return Object.keys(s).sort().reverse();
+}
+function renderHist() {
+  var selAno = document.getElementById('hAno');
+  if (!selAno.options.length) {
+    anosDisponiveis().forEach(function(a) { selAno.innerHTML += '<option value="' + a + '">' + a + '</option>'; });
+    selAno.value = nowYM().slice(0, 4);
+  }
+  var ano = selAno.value || nowYM().slice(0, 4);
+  var localFiltro = document.getElementById('hLocal').value;
+  var locais = localFiltro ? [localFiltro] : Object.keys(TECNICOS);
+  var faltas = mesesEmFalta();
+
+  renderUnitCards(ano, locais, faltas);
+  renderMatrix(ano, locais, faltas);
+  renderRegs(ano, localFiltro);
+}
+
+function renderUnitCards(ano, locais, faltas) {
+  var cur = nowYM(), fim = prevYM(cur), html = '';
+  locais.forEach(function(local) {
+    var tecs = TECNICOS[local].filter(function(t) { return !t.inativo; });
+    var esperadas = 0, feitas = 0, mesesIncompletos = {};
+    tecs.forEach(function(t) {
+      var m = ALERT_START;
+      if (t.desde && t.desde > m) m = t.desde;
+      while (ymLE(m, fim)) {
+        if (m.slice(0, 4) === ano) {
+          esperadas++;
+          var tem = INDEX_ROWS.some(function(r) { return r.local === local && r.mes === m && r.tecnico === t.n; });
+          if (tem) feitas++; else mesesIncompletos[m] = true;
+        }
+        m = nextYM(m);
+      }
+    });
+    var registos = INDEX_ROWS.filter(function(r) { return r.local === local && r.mes.slice(0, 4) === ano; }).length;
+    var faltaN = esperadas - feitas;
+    var pctG = esperadas ? Math.round(feitas / esperadas * 100) : 100;
+    html += '<div class="unit-card"><h4>' + esc(local) + ' — ' + ano + '</h4>' +
+      '<div class="unit-stat"><span>Registos no ano</span><span class="v">' + registos + '</span></div>' +
+      '<div class="unit-stat"><span>Cobradas desde ' + mesLabel(ALERT_START) + '</span><span class="v">' + feitas + ' / ' + esperadas + '</span></div>' +
+      '<div class="unit-stat"><span>Atas em falta</span><span class="v ' + (faltaN ? 'bad' : 'good') + '">' + faltaN + '</span></div>' +
+      '<div class="unit-stat"><span>Meses incompletos</span><span class="v ' + (Object.keys(mesesIncompletos).length ? 'bad' : 'good') + '">' +
+        (Object.keys(mesesIncompletos).length ? Object.keys(mesesIncompletos).sort().map(mesLabel).join(', ') : '—') + '</span></div>' +
+      '<div class="cbar"><i class="g" style="width:' + pctG + '%"></i><i class="r" style="width:' + (100 - pctG) + '%"></i></div>' +
+      '</div>';
+  });
+  document.getElementById('unitCards').innerHTML = html;
+}
+
+function renderMatrix(ano, locais, faltas) {
+  var cur = nowYM(), fim = prevYM(cur), out = '';
+  locais.forEach(function(local) {
+    var tecs = TECNICOS[local];
+    var head = '<tr><th class="tec">Técnico</th>';
+    for (var i = 1; i <= 12; i++) head += '<th>' + MES_ABR[i - 1] + '</th>';
+    head += '</tr>';
+    var body = '';
+    tecs.forEach(function(t) {
+      var extra = t.inativo ? '<small>inativo — histórico apenas</small>' : (t.desde && t.desde > ALERT_START ? '<small>desde ' + mesLabel(t.desde) + '</small>' : '');
+      body += '<tr><td class="tec">' + esc(t.n) + extra + '</td>';
+      for (var mm = 1; mm <= 12; mm++) {
+        var ym = ano + '-' + String(mm).padStart(2, '0');
+        var reg = INDEX_ROWS.filter(function(r) { return r.local === local && r.mes === ym && r.tecnico === t.n; })[0];
+        if (reg) {
+          var cls = 'cell done' + (reg.nok ? ' nok' : '');
+          var tip = t.n + ' · ' + mesLabel(ym) + (reg.nok ? ' · ' + reg.nok + ' NOK' : '') + (reg.ficheiro ? ' · ' + reg.ficheiro : '');
+          body += '<td><span class="' + cls + '" title="' + esc(tip) + '">' + (reg.nok ? '!' : '✓') + '</span></td>';
+        } else if (ym === cur && !t.inativo) {
+          body += '<td><span class="cell cur" title="Mês em curso — ainda não é cobrado">curso</span></td>';
+        } else {
+          var cobra = ymLE(ALERT_START, ym) && ymLE(ym, fim) && !t.inativo &&
+                      (!t.desde || ymLE(t.desde, ym)) && (!t.ate || ymLE(ym, t.ate));
+          if (cobra) body += '<td><span class="cell miss" title="Ata em falta">✕</span></td>';
+          else body += '<td><span class="cell na" title="Fora do âmbito do alerta">–</span></td>';
+        }
+      }
+      body += '</tr>';
+    });
+    out += '<div class="matrix-card"><div class="matrix-head">📋 ' + esc(local) + ' — ' + ano + '</div>' +
+      '<div class="matrix-scroll"><table class="matrix"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
+      '<div class="legend">' +
+        '<span><i style="background:#D1FAE5"></i> Ata registada</span>' +
+        '<span><i style="background:#FEF3C7"></i> Registada com NOK</span>' +
+        '<span><i style="background:#FEE2E2"></i> Em falta</span>' +
+        '<span><i style="background:#DBEAFE"></i> Mês em curso</span>' +
+        '<span><i style="background:#EEF1F5"></i> Fora do âmbito</span>' +
+      '</div></div>';
+  });
+  document.getElementById('matrixZone').innerHTML = out;
+}
+
+function renderRegs(ano, localFiltro) {
+  var rows = INDEX_ROWS.filter(function(r) {
+    return r.mes && r.mes.slice(0, 4) === ano && (!localFiltro || r.local === localFiltro);
+  }).sort(function(a, b) {
+    if (a.mes !== b.mes) return a.mes < b.mes ? 1 : -1;
+    if (a.local !== b.local) return a.local < b.local ? -1 : 1;
+    return a.tecnico < b.tecnico ? -1 : 1;
+  });
+  document.getElementById('regCount').textContent = '(' + rows.length + ' em ' + ano + ')';
+  if (!rows.length) {
+    document.getElementById('regsBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9CA3AF;padding:26px;">Sem registos para este ano/unidade.</td></tr>';
+    return;
+  }
+  var html = '';
+  rows.forEach(function(r) {
+    var partes = [];
+    if (typeof r.ok === 'number') partes.push('<span style="color:#059669;font-weight:700">' + r.ok + ' OK</span>');
+    if (typeof r.nok === 'number' && r.nok > 0) partes.push('<span style="color:#DC2626;font-weight:700">' + r.nok + ' NOK</span>');
+    if (typeof r.nok === 'number' && r.nok === 0 && typeof r.ok !== 'number') partes.push('<span style="color:#059669;font-weight:700">tudo OK</span>');
+    var res = partes.length ? partes.join(' · ') : '<span style="color:#ccc">—</span>';
+    if (r.valNok) res += '<div class="src">' + r.valNok.toFixed(2) + '€ em falta</div>';
+    var fich = r.ficheiro ? '<div class="src">' + esc(r.ficheiro) + '</div>' : '<span style="color:#ccc">—</span>';
+    html += '<tr>' +
+      '<td><strong>' + mesLabel(r.mes) + '</strong></td>' +
+      '<td>' + esc(r.local.replace('Mecânica ', '')) + '</td>' +
+      '<td>' + esc(r.tecnico) + (r.semTecnico ? ' <span class="src">(sem técnico)</span>' : '') + '</td>' +
+      '<td>' + (r.assinada ? esc(r.assinada) : '<span style="color:#ccc">—</span>') + '</td>' +
+      '<td>' + res + '</td>' +
+      '<td><span class="tag ' + (r.origem === 'intranet' ? 'intranet' : 'historico') + '">' + (r.origem === 'intranet' ? 'Intranet' : 'Histórico') + '</span></td>' +
+      '<td>' + fich + (r.nota ? '<div class="nota">' + esc(r.nota) + '</div>' : '') + '</td>' +
+    '</tr>';
+  });
+  document.getElementById('regsBody').innerHTML = html;
+}
+
+/* ================= Arranque ================= */
+function setDefaults() {
   var t = new Date();
   var iso = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
   document.getElementById('fData').value = iso;
   document.getElementById('fDataFecho').value = iso;
+  if (!document.getElementById('fMes').dataset.touched) document.getElementById('fMes').value = prevYM(iso.slice(0, 7));
 }
 
-buildTable();
+fillCoordSelects();
+fillTecSelects('');
+loadToolset('');
 initPad('coord', 'padCoord', 'stCoord');
 initPad('tec', 'padTec', 'stTec');
-setToday();
-
-// Pré-preencher o coordenador com o utilizador autenticado na intranet
-try {
-  if (window.parent && window.parent !== window) {
-    var perm = window.parent.currentUserPermissions;
-    var mu = window.parent.currentMsalUser;
-    var nm = (perm && perm.name) || (mu && mu.name) || '';
-    if (nm) document.getElementById('fCoordenador').value = nm;
-  }
-} catch (e) {}
-
+setDefaults();
 loadDraft();
-updateSummary();
+syncNames();
 renderClosing();
-syncSigNames();
+INDEX_ROWS = seedRows();
+renderHist();
+updateHistPill();
+reloadIndex(false);
 </script>
 
 </body>
