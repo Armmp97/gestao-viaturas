@@ -163,7 +163,9 @@ var SEED=[
   {id:'s16',nome:'Banco de Medição / Reparação de Chapa',of:'colisao',tipo:'calibracao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s17',nome:'Elevador de tesoura',of:'colisao',tipo:'inspecao',per:12,ultima:'',resp:'',custo:'',notas:'',hist:[]},
   {id:'s20',nome:'Analisador de Gases de Escape',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]},
-  {id:'s21',nome:'Opacímetro',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]}
+  {id:'s21',nome:'Opacímetro',of:'lisboa_cacem',tipo:'calibracao',per:12,ultima:'',validade:'',resp:'',custo:'',notas:'Equipamento móvel (Lisboa/Cacém). Sujeito a verificação metrológica periódica.',hist:[],docs:[]},
+  {id:'s22',nome:'Separador de hidrocarbonetos — limpeza e manutenção',of:'cacem',tipo:'preventiva',per:12,ultima:'',resp:'',custo:'',notas:'Limpeza/esvaziamento por operador licenciado, com verificação dos níveis de lamas e de óleo, do filtro coalescente e de obstruções. Anexar a guia de resíduos (e-GAR) e a fatura em 📎 Docs.',hist:[],docs:[]},
+  {id:'s23',nome:'Separador de hidrocarbonetos — limpeza e manutenção',of:'lisboa',tipo:'preventiva',per:12,ultima:'',resp:'',custo:'',notas:'Limpeza/esvaziamento por operador licenciado, com verificação dos níveis de lamas e de óleo, do filtro coalescente e de obstruções. Anexar a guia de resíduos (e-GAR) e a fatura em 📎 Docs.',hist:[],docs:[]}
 ];
 
 var EQUIP;
@@ -171,7 +173,7 @@ var EQUIP;
   var st=null; try{ st=JSON.parse(localStorage.getItem('intranet_equipamentos')); }catch(e){}
   EQUIP=(Array.isArray(st)&&st.length)?st:SEED.map(function(x){return Object.assign({},x);});
   // garantir que os equipamentos móveis novos aparecem mesmo com inventário já guardado
-  ['s20','s21'].forEach(function(nid){
+  ['s20','s21','s22','s23'].forEach(function(nid){
     if(!EQUIP.some(function(e){return e.id===nid;})){
       var seed=SEED.filter(function(x){return x.id===nid;})[0];
       if(seed) EQUIP.push(Object.assign({},seed));
