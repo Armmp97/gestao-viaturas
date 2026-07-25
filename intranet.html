@@ -2563,6 +2563,7 @@
             inspecoes_diarias: 'Intranet/Inspecoes_Diarias',
             auditorias_internas: 'Intranet/Auditorias_Internas',
             auditorias_carrinhos: 'Intranet/Auditorias_Carrinhos_Ferramentas',
+            auditorias_carrinhos_fotos: 'Intranet/Auditorias_Carrinhos_Ferramentas/Fotos',
             rh_justificacoes_faltas: 'Intranet/RH/Justificacoes_Faltas',
             rh_justificacoes_anexos: 'Intranet/RH/Justificacoes_Faltas_Anexos',
             rh_pedidos_formacao: 'Intranet/RH/Pedidos_Formacao',
@@ -3214,6 +3215,23 @@
     // Leitura: qualquer utilizador com acesso ao módulo. Escrita: admins e coordenadores.
     window.acfUploadReport = function(fileName, htmlContent) {
         return uploadToSharePoint('auditorias_carrinhos', fileName, htmlContent, 'text/html');
+    };
+    // Upload de fotos: Intranet/Auditorias_Carrinhos_Ferramentas/Fotos/<subPasta>/<ficheiro>
+    window.acfUploadPhoto = function(subFolder, fileName, blob, contentType) {
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject(new Error('SharePoint nao inicializado'));
+        var base = SP_CONFIG.folders.auditorias_carrinhos_fotos;
+        var folderPath = base + (subFolder ? '/' + subFolder : '');
+        return createFolderPath(folderPath).catch(function() { /* provavelmente ja existe */ }).then(function() {
+            var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' +
+                      folderPath.split('/').map(encodeURIComponent).join('/') + '/' +
+                      encodeURIComponent(fileName) + ':/content';
+            return graphRequest(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': contentType || 'image/jpeg' },
+                body: blob
+            });
+        });
     };
     window.acfLoadIndex = function() {
         return loadDashboardFromSP('auditorias_carrinhos_index.json').then(function(data) {

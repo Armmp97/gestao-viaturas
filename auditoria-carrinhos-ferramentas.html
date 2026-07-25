@@ -118,6 +118,34 @@ table.tools tbody tr.st-nok { background: rgba(220,38,38,.05); }
 .t-obs input.flag { border-color: var(--warn); background: #FFFBEB; }
 .empty-state { padding: 40px 24px; text-align: center; color: var(--gray-400); font-size: .88rem; }
 
+/* Fotos por artigo */
+.photo-cell { min-width: 118px; }
+.photo-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+  border-radius: 8px; border: 1.5px solid var(--gray-200); background: var(--white);
+  cursor: pointer; font-family: inherit; font-size: .72rem; font-weight: 700; color: var(--gray-600);
+  transition: all .15s; white-space: nowrap;
+}
+.photo-btn:hover { border-color: var(--accent); color: var(--accent); }
+.photo-btn.has { border-color: var(--accent); background: #EFF6FF; color: var(--accent); }
+.photo-btn svg { width: 14px; height: 14px; }
+.photo-btn.busy { opacity: .55; pointer-events: none; }
+.thumbs { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+.thumb { position: relative; width: 46px; height: 46px; border-radius: 7px; overflow: hidden; border: 1px solid var(--gray-200); background: var(--gray-100); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
+.thumb button {
+  position: absolute; top: 1px; right: 1px; width: 15px; height: 15px; border-radius: 50%;
+  border: none; background: rgba(220,38,38,.92); color: #fff; font-size: .58rem; font-weight: 800;
+  cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.photo-hint { font-size: .74rem; color: var(--gray-600); margin-top: 4px; }
+.lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,.86); display: none;
+  align-items: center; justify-content: center; z-index: 1000; padding: 24px; cursor: zoom-out;
+}
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
 .qcheck-toggle { display: flex; gap: 4px; }
 .toggle-btn {
   padding: 4px 12px; border-radius: 6px; border: 1.5px solid var(--gray-200);
@@ -362,6 +390,7 @@ table.regs a:hover { text-decoration: underline; }
       <button class="toggle-btn" onclick="setAll('nok')">Marcar tudo NOK</button>
       <button class="toggle-btn" onclick="setAll(null)">Limpar estados</button>
     </div>
+    <div class="hint" style="margin-top:-6px;">📷 O botão de foto em cada linha abre a câmara ou a galeria (no telemóvel/tablet o próprio sistema pergunta qual). Até 6 fotos por artigo — são comprimidas no dispositivo e enviadas para uma subpasta desta auditoria no SharePoint.</div>
 
     <div class="tools-card">
       <div class="tools-card-head">
@@ -373,7 +402,7 @@ table.regs a:hover { text-decoration: underline; }
         <thead id="toolsHead" style="display:none;">
           <tr>
             <th>#</th><th>Equipamento</th><th>Marca / Referência</th>
-            <th style="text-align:right;">Valor s/ IVA</th><th>Estado</th><th>Dano / perda a reportar</th>
+            <th style="text-align:right;">Valor s/ IVA</th><th>Estado</th><th>Dano / perda a reportar</th><th>Fotos</th>
           </tr>
         </thead>
         <tbody id="toolsBody"></tbody>
@@ -381,7 +410,7 @@ table.regs a:hover { text-decoration: underline; }
           <tr>
             <td colspan="3" style="text-align:right;">Valor Total »</td>
             <td class="t-val" id="footTotal">—</td>
-            <td colspan="2" style="font-weight:600;color:var(--warn);" id="footNok">Valor em NOK: 0.00€</td>
+            <td colspan="3" style="font-weight:600;color:var(--warn);" id="footNok">Valor em NOK: 0.00€</td>
           </tr>
         </tfoot>
       </table>
@@ -508,6 +537,7 @@ table.regs a:hover { text-decoration: underline; }
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" alt="Foto"></div>
 
 <script>
 /* ==================================================================
@@ -680,6 +710,10 @@ var DRAFT_KEY = 'acf_draft_v2';
 var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 var MES_ABR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 var TOOLS = [];            // lista ativa (depende do local)
+var photos = [];           // photos[i] = [{name, thumb, blob, bytes}]
+var PHOTO_MAX_DIM = 1600;  // lado maior enviado para o SharePoint
+var PHOTO_THUMB_DIM = 900; // lado maior embebido na ata
+var PHOTO_MAX_POR_ARTIGO = 6;
 var TOTAL_LABEL = '—';
 var states = [];
 var pads = {};
@@ -731,6 +765,8 @@ function loadToolset(local) {
   TOOLS = ts ? ts.itens : [];
   TOTAL_LABEL = ts ? ts.total : '—';
   states = new Array(TOOLS.length).fill(null);
+  photos = [];
+  for (var pi = 0; pi < TOOLS.length; pi++) photos.push([]);
   buildTable();
   updateSummary();
 }
@@ -758,6 +794,14 @@ function buildTable() {
         '<button class="toggle-btn nok-btn" onclick="setState(' + i + ',\'nok\')">NOK</button>' +
       '</div></td>' +
       '<td class="t-obs"><input type="text" id="obs' + i + '" placeholder="Dano, perda, desgaste, em falta..." oninput="onObsInput(' + i + ')"></td>' +
+      '<td class="photo-cell">' +
+        '<input type="file" id="file' + i + '" accept="image/*" multiple style="display:none" onchange="onPickPhotos(' + i + ', this)">' +
+        '<button type="button" class="photo-btn" id="pbtn' + i + '" onclick="document.getElementById(\'file' + i + '\').click()">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+          '<span id="pcount' + i + '">Foto</span>' +
+        '</button>' +
+        '<div class="thumbs" id="thumbs' + i + '"></div>' +
+      '</td>' +
     '</tr>';
   });
   tb.innerHTML = html;
@@ -778,6 +822,87 @@ function paintRow(i) {
   if (inp) inp.classList.toggle('flag', states[i] === 'nok' && !inp.value.trim());
 }
 function onObsInput(i) { paintRow(i); markDirty(); }
+
+/* ---------- Fotos por artigo ---------- */
+function compressImage(file, maxDim, quality) {
+  return new Promise(function(resolve, reject) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function() {
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var sc = Math.min(1, maxDim / Math.max(w, h));
+      var cw = Math.max(1, Math.round(w * sc)), ch = Math.max(1, Math.round(h * sc));
+      var cv = document.createElement('canvas');
+      cv.width = cw; cv.height = ch;
+      var cx = cv.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, cw, ch);
+      cx.drawImage(img, 0, 0, cw, ch);
+      URL.revokeObjectURL(url);
+      cv.toBlob(function(blob) {
+        if (!blob) { reject(new Error('Falha a comprimir a imagem')); return; }
+        resolve({ blob: blob, dataUrl: cv.toDataURL('image/jpeg', quality), w: cw, h: ch });
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Ficheiro nao e uma imagem valida')); };
+    img.src = url;
+  });
+}
+
+function onPickPhotos(i, input) {
+  var files = Array.prototype.slice.call(input.files || []);
+  input.value = '';
+  if (!files.length) return;
+  var livres = PHOTO_MAX_POR_ARTIGO - photos[i].length;
+  if (livres <= 0) { toast('Máximo de ' + PHOTO_MAX_POR_ARTIGO + ' fotos por artigo.', true); return; }
+  if (files.length > livres) { toast('Só cabem mais ' + livres + ' foto(s) neste artigo — as restantes foram ignoradas.', true); files = files.slice(0, livres); }
+
+  var btn = document.getElementById('pbtn' + i);
+  if (btn) btn.classList.add('busy');
+  var chain = Promise.resolve();
+  files.forEach(function(f) {
+    chain = chain.then(function() {
+      if (!/^image\//.test(f.type)) { toast('"' + f.name + '" não é uma imagem — ignorado.', true); return; }
+      return Promise.all([
+        compressImage(f, PHOTO_MAX_DIM, 0.85),
+        compressImage(f, PHOTO_THUMB_DIM, 0.7)
+      ]).then(function(r) {
+        photos[i].push({ name: f.name || 'foto.jpg', blob: r[0].blob, bytes: r[0].blob.size, thumb: r[1].dataUrl });
+      }).catch(function(e) { toast('Erro em "' + f.name + '": ' + e.message, true); });
+    });
+  });
+  chain.then(function() {
+    if (btn) btn.classList.remove('busy');
+    renderThumbs(i); markDirty();
+  });
+}
+
+function renderThumbs(i) {
+  var box = document.getElementById('thumbs' + i);
+  var cnt = document.getElementById('pcount' + i);
+  var btn = document.getElementById('pbtn' + i);
+  if (!box) return;
+  var n = photos[i].length;
+  if (cnt) cnt.textContent = n ? String(n) : 'Foto';
+  if (btn) btn.classList.toggle('has', n > 0);
+  var html = '';
+  photos[i].forEach(function(ph, k) {
+    html += '<div class="thumb"><img src="' + ph.thumb + '" alt="' + esc(ph.name) + '" title="' + esc(ph.name) + '" onclick="openLightbox(' + i + ',' + k + ')">' +
+            '<button type="button" title="Remover" onclick="removePhoto(' + i + ',' + k + ')">✕</button></div>';
+  });
+  box.innerHTML = html;
+}
+function removePhoto(i, k) {
+  photos[i].splice(k, 1);
+  renderThumbs(i); markDirty();
+}
+function totalFotos() { return photos.reduce(function(a, arr) { return a + arr.length; }, 0); }
+function openLightbox(i, k) {
+  var ph = photos[i] && photos[i][k];
+  if (!ph) return;
+  document.getElementById('lightboxImg').src = ph.thumb;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 function setAll(st) {
   if (!TOOLS.length) { toast('Selecione o local primeiro.', true); return; }
   for (var i = 0; i < states.length; i++) { states[i] = st; paintRow(i); }
@@ -946,15 +1071,31 @@ function collect() {
     dataFecho: document.getElementById('fDataFecho').value,
     states: states.slice(),
     obsItens: TOOLS.map(function(_, i) { var e = document.getElementById('obs' + i); return e ? e.value : ''; }),
+    fotos: photos.map(function(arr) { return arr.map(function(ph) { return { name: ph.name, thumb: ph.thumb, bytes: ph.bytes }; }); }),
     sigCoord: pads.coord ? pads.coord.toDataURL() : '',
     sigTec: pads.tec ? pads.tec.toDataURL() : ''
   };
 }
 function saveDraft() {
+  var d = collect();
+  var nota = document.getElementById('draftNote');
+  var hora = new Date().toLocaleTimeString('pt-PT');
   try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(collect()));
-    document.getElementById('draftNote').textContent = 'Rascunho guardado localmente às ' + new Date().toLocaleTimeString('pt-PT');
-  } catch (e) {}
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    nota.textContent = 'Rascunho guardado localmente às ' + hora +
+      (totalFotos() ? ' (inclui ' + totalFotos() + ' foto(s))' : '');
+    return;
+  } catch (e) { /* quota — tentar sem as fotos */ }
+  try {
+    var leve = JSON.parse(JSON.stringify(d));
+    leve.fotos = d.fotos.map(function(arr) { return arr.map(function(f) { return { name: f.name, thumb: '', bytes: f.bytes }; }); });
+    leve.semFotos = true;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(leve));
+    nota.textContent = 'Rascunho guardado às ' + hora + ' — as fotos são demasiadas para o rascunho local, ' +
+      'por isso não sobrevivem a fechar a página. Grave a auditoria antes de sair.';
+  } catch (e2) {
+    nota.textContent = 'Não foi possível guardar o rascunho neste dispositivo (espaço esgotado). Grave a auditoria antes de sair.';
+  }
 }
 function loadDraft() {
   var raw = null;
@@ -978,6 +1119,14 @@ function loadDraft() {
   if (Array.isArray(d.obsItens)) d.obsItens.forEach(function(v, i) {
     var el = document.getElementById('obs' + i); if (el) { el.value = v || ''; paintRow(i); }
   });
+  if (Array.isArray(d.fotos)) {
+    d.fotos.forEach(function(arr, i) {
+      if (!photos[i] || !arr) return;
+      arr.forEach(function(f) { if (f && f.thumb) photos[i].push({ name: f.name, thumb: f.thumb, blob: null, bytes: f.bytes || 0, soThumb: true }); });
+      renderThumbs(i);
+    });
+    if (d.semFotos) toast('O rascunho foi recuperado sem as fotos (eram demasiadas para guardar localmente).');
+  }
   setTimeout(function() {
     if (d.sigCoord && pads.coord) pads.coord.restore(d.sigCoord);
     if (d.sigTec && pads.tec) pads.tec.restore(d.sigTec);
@@ -988,6 +1137,7 @@ function resetAll() {
   if (!confirm('Limpar toda a auditoria (incluindo assinaturas e rascunho guardado)?')) return;
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   document.getElementById('fLocal').value = '';
+  photos = [];
   loadToolset(''); fillTecSelects('');
   document.getElementById('fCoordenador').value = '';
   document.getElementById('fCoordBaixo').value = '';
@@ -1039,6 +1189,7 @@ function saveAuditoria() {
     local: d.local, mes: d.mes, tecnico: d.tecnico, assinada: d.dataFecho || d.data,
     dataAuditoria: d.data, auditor: d.coordenador, ficheiro: filename,
     ok: okCount, nok: nokItens.length, pend: pend, valNok: +valNok.toFixed(2),
+    fotos: totalFotos(), pastaFotos: totalFotos() ? filename.replace(/\.html$/, '') : '',
     origem: 'intranet', criadoEm: new Date().toISOString()
   };
 
@@ -1051,14 +1202,21 @@ function saveAuditoria() {
     return;
   }
 
+  var totF = totalFotos();
+  if (totF) toast('A enviar a ata e ' + totF + ' foto(s) para o SharePoint...');
+
   window.parent.acfUploadReport(filename, html).then(function() {
+    return uploadPhotos(filename);
+  }).then(function(falhas) {
+    record.fotosFalhadas = falhas.length ? falhas.length : undefined;
+    if (falhas.length) toast(falhas.length + ' foto(s) não foram enviadas: ' + falhas.join(', '), true);
     return appendToIndex(record);
   }).then(function() {
     if ((nokItens.length > 0 || comObs > 0) && window.parent.sendNotification) {
       notify(d, record, nokItens, filename);
     }
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-    toast('Auditoria arquivada e registada no histórico: ' + filename);
+    toast('Auditoria arquivada' + (totF ? ' com ' + totF + ' foto(s)' : '') + ' e registada no histórico: ' + filename);
     renderHist(); updateHistPill();
   }).catch(function(err) {
     toast('Erro ao guardar: ' + (err && err.message ? err.message : err), true);
@@ -1088,6 +1246,32 @@ function notify(d, record, nokItens, filename) {
   window.parent.sendNotification('auditorias_carrinhos', subject, body);
 }
 
+/* Envia as fotos para Fotos/<nome-da-auditoria>/ no SharePoint. Resolve com a lista de falhas. */
+function uploadPhotos(filename) {
+  var up = null;
+  try { up = window.parent.acfUploadPhoto; } catch (e) {}
+  if (!up || !totalFotos()) return Promise.resolve([]);
+  var pasta = filename.replace(/\.html$/, '');
+  var falhas = [];
+  var chain = Promise.resolve();
+  photos.forEach(function(arr, i) {
+    arr.forEach(function(ph, k) {
+      chain = chain.then(function() {
+        var nome = pasta + '_item' + String(i + 1).padStart(2, '0') + '_' + (k + 1) + '.jpg';
+        var corpo = ph.blob
+          ? Promise.resolve(ph.blob)
+          : fetch(ph.thumb).then(function(r) { return r.blob(); }); // recuperado do rascunho: só há miniatura
+        return corpo.then(function(blob) { return up(pasta, nome, blob, 'image/jpeg'); })
+          .catch(function(e) {
+            falhas.push('artigo ' + (i + 1) + ' foto ' + (k + 1));
+            console.error('[ACF] falha no upload da foto', nome, e);
+          });
+      });
+    });
+  });
+  return chain.then(function() { return falhas; });
+}
+
 function download(filename, html) {
   var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   var url = URL.createObjectURL(blob);
@@ -1115,10 +1299,12 @@ function buildReport(d, okCount, nokItens, valNok, pend) {
     var lbl = s === 'ok' ? 'OK' : (s === 'nok' ? 'NOK' : 'Pendente');
     var cls = s === 'ok' ? 'ok' : (s === 'nok' ? 'nok' : 'pend');
     var obs = (d.obsItens[i] || '').trim();
+    var nf = (photos[i] || []).length;
     rows += '<tr class="r-' + cls + '"><td class="idx">' + (i + 1) + '</td><td>' + esc(t.d) + '</td>' +
       '<td class="ref">' + esc(t.r) + '</td><td class="val">' + t.v.toFixed(2) + '€</td>' +
       '<td><span class="st ' + cls + '">' + lbl + '</span></td>' +
-      '<td class="obs">' + (obs ? esc(obs) : '<span class="muted">—</span>') + '</td></tr>';
+      '<td class="obs">' + (obs ? esc(obs) : '<span class="muted">—</span>') + '</td>' +
+      '<td class="fot">' + (nf ? '<a href="#foto' + (i + 1) + '">' + nf + ' foto' + (nf > 1 ? 's' : '') + '</a>' : '<span class="muted">—</span>') + '</td></tr>';
   });
 
   var sigC = d.sigCoord ? '<img src="' + d.sigCoord + '" alt="Assinatura do coordenador">' : '<div class="noSig">Sem assinatura</div>';
@@ -1148,7 +1334,15 @@ function buildReport(d, okCount, nokItens, valNok, pend) {
   o += '.val{text-align:right;font-weight:600;white-space:nowrap}';
   o += '.st{font-weight:700;padding:3px 9px;border-radius:4px;font-size:.75rem;white-space:nowrap}';
   o += '.st.ok{background:#d1fae5;color:#059669}.st.nok{background:#fee2e2;color:#DC2626}.st.pend{background:#f3f4f6;color:#9CA3AF}';
-  o += '.obs{color:#7c2d12}.muted{color:#ccc}';
+  o += '.obs{color:#7c2d12}.muted{color:#ccc}.fot{white-space:nowrap}.fot a{color:#007BC0;font-weight:600;text-decoration:none}';
+  o += '.fotos-sec{margin-top:26px}.foto-grupo{border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:14px;break-inside:avoid}';
+  o += '.foto-grupo h3{font-size:.9rem;color:#003B73;margin:0 0 4px}';
+  o += '.foto-grupo .fg-meta{font-size:.76rem;color:#666;margin-bottom:10px}';
+  o += '.foto-grupo .fg-obs{font-size:.8rem;color:#7c2d12;margin-bottom:10px}';
+  o += '.foto-grid{display:flex;gap:10px;flex-wrap:wrap}';
+  o += '.foto-grid figure{margin:0;width:210px}';
+  o += '.foto-grid img{width:100%;border-radius:6px;border:1px solid #ddd;display:block}';
+  o += '.foto-grid figcaption{font-size:.68rem;color:#888;margin-top:4px;word-break:break-all}';
   o += 'tfoot td{background:#f0f0f0;font-weight:800;color:#003B73;padding:12px 11px;border-top:2px solid #ddd}';
   o += '.notes{background:#eff6ff;padding:14px 16px;border-left:4px solid #007BC0;border-radius:4px;margin:16px 0;white-space:pre-wrap}';
   o += '.notes-title{font-weight:700;color:#003B73;margin-bottom:6px}';
@@ -1179,11 +1373,36 @@ function buildReport(d, okCount, nokItens, valNok, pend) {
   o += '<div class="summary-item val"><div class="num">' + valNok.toFixed(2) + '€</div><div class="lbl">Valor em falta / danificado</div></div>';
   o += '</div>\n';
   o += '<h2>Equipamento do carrinho — ' + esc(d.local) + ' (' + TOOLS.length + ' artigos)</h2>\n<table>\n<thead><tr>';
-  o += '<th>#</th><th>Equipamento</th><th>Marca / Referência</th><th style="text-align:right">Valor s/ IVA</th><th>Estado</th><th>Dano / perda reportada</th>';
+  o += '<th>#</th><th>Equipamento</th><th>Marca / Referência</th><th style="text-align:right">Valor s/ IVA</th><th>Estado</th><th>Dano / perda reportada</th><th>Fotos</th>';
   o += '</tr></thead>\n<tbody>\n' + rows + '</tbody>\n';
   o += '<tfoot><tr><td colspan="3" style="text-align:right">Valor Total »</td><td class="val">' + TOTAL_LABEL + '</td>';
-  o += '<td colspan="2" style="color:#D97706">Valor em NOK: ' + valNok.toFixed(2) + '€</td></tr></tfoot>\n</table>\n';
+  o += '<td colspan="3" style="color:#D97706">Valor em NOK: ' + valNok.toFixed(2) + '€</td></tr></tfoot>\n</table>\n';
   if (d.obs && d.obs.trim()) o += '<div class="notes"><div class="notes-title">Observações gerais / Ações a tomar</div>' + esc(d.obs.trim()) + '</div>\n';
+
+  var pastaFotos = null;
+  if (totalFotos()) {
+    pastaFotos = ('Auditoria_Carrinho_' + slug(d.tecnico) + '_' + d.data.split('-').reverse().join('-') + '_' + slug(d.local));
+    o += '<div class="fotos-sec"><h2>Fotografias (' + totalFotos() + ')</h2>';
+    photos.forEach(function(arr, i) {
+      if (!arr.length) return;
+      var st = states[i] === 'ok' ? 'OK' : (states[i] === 'nok' ? 'NOK' : 'Pendente');
+      var obsI = (d.obsItens[i] || '').trim();
+      o += '<div class="foto-grupo" id="foto' + (i + 1) + '">';
+      o += '<h3>' + (i + 1) + '. ' + esc(TOOLS[i].d) + '</h3>';
+      o += '<div class="fg-meta">' + esc(TOOLS[i].r) + ' · ' + TOOLS[i].v.toFixed(2) + '€ · Estado: <strong>' + st + '</strong></div>';
+      if (obsI) o += '<div class="fg-obs">' + esc(obsI) + '</div>';
+      o += '<div class="foto-grid">';
+      arr.forEach(function(ph, k) {
+        var nome = pastaFotos + '_item' + String(i + 1).padStart(2, '0') + '_' + (k + 1) + '.jpg';
+        o += '<figure><img src="' + ph.thumb + '" alt="Foto ' + (k + 1) + ' do artigo ' + (i + 1) + '">' +
+             '<figcaption>' + esc(nome) + '</figcaption></figure>';
+      });
+      o += '</div></div>';
+    });
+    o += '<p style="font-size:.78rem;color:#666">As imagens acima estão embebidas nesta ata em versão reduzida. ' +
+         'Os originais estão no SharePoint em <strong>Intranet/Auditorias_Carrinhos_Ferramentas/Fotos/' + esc(pastaFotos) + '/</strong></p>';
+    o += '</div>\n';
+  }
   o += '<div class="closing">' + esc(closing) + '</div>\n<div class="sigs">\n';
   o += '<div class="sig">' + sigC + '<div class="line"></div><div class="role">O Auditor — Coordenador</div><div class="nm">' + esc(d.coordenador) + '</div></div>\n';
   o += '<div class="sig">' + sigT + '<div class="line"></div><div class="role">O Colaborador — Técnico</div><div class="nm">' + esc(d.tecnico) + '</div></div>\n';
@@ -1447,6 +1666,9 @@ function renderRegs(ano, localFiltro) {
     var res = partes.length ? partes.join(' · ') : '<span style="color:#ccc">—</span>';
     if (r.valNok) res += '<div class="src">' + r.valNok.toFixed(2) + '€ em falta</div>';
     var fich = r.ficheiro ? '<div class="src">' + esc(r.ficheiro) + '</div>' : '<span style="color:#ccc">—</span>';
+    if (r.fotos) fich += '<div class="src" style="color:#007BC0;font-weight:600">📷 ' + r.fotos + ' foto' + (r.fotos > 1 ? 's' : '') +
+      (r.pastaFotos ? ' — Fotos/' + esc(r.pastaFotos) + '/' : '') +
+      (r.fotosFalhadas ? ' <span style="color:#DC2626">(' + r.fotosFalhadas + ' falhou)</span>' : '') + '</div>';
     html += '<tr>' +
       '<td><strong>' + mesLabel(r.mes) + '</strong></td>' +
       '<td>' + esc(r.local.replace('Mecânica ', '')) + '</td>' +
