@@ -8,26 +8,26 @@
 <style>
 :root{
   --navy:#003B73;--navy2:#1e3a5f;--blue:#007BC0;--bg:#f5f7fa;--line:#e2e8f0;
-  --text:#0f172a;--muted:#64748b;--green:#16a34a;--amber:#b45309;--red:#dc2626;
-  --radius:12px;
+  --text:#0f172a;--muted:#64748b;--green:#16a34a;--amber:#b45309;--red:#dc2626;--radius:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);}
 .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 70px;}
 h1{font-size:1.35rem;color:var(--navy);margin:0 0 3px;}
-.sub{color:var(--muted);font-size:.87rem;margin:0 0 18px;max-width:900px;}
+.sub{color:var(--muted);font-size:.87rem;margin:0 0 18px;max-width:920px;}
 
 .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;}
+.card.hide{display:none;}
 .card h2{font-size:.98rem;color:var(--navy);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
-.card h2 .step{background:var(--navy);color:#fff;width:22px;height:22px;border-radius:50%;font-size:.72rem;display:inline-flex;align-items:center;justify-content:center;font-weight:800;}
+.card h2 .step{background:var(--navy);color:#fff;min-width:22px;height:22px;border-radius:50%;font-size:.72rem;display:inline-flex;align-items:center;justify-content:center;font-weight:800;}
 label.fl{display:block;font-size:11.5px;font-weight:700;color:#334155;margin:0 0 4px;text-transform:uppercase;letter-spacing:.4px;}
-input[type=text],input[type=date],select,textarea{
+input[type=text],input[type=number],input[type=date],select,textarea{
   width:100%;padding:9px 11px;border:1px solid #cbd5e1;border-radius:9px;
   font-family:inherit;font-size:13.5px;color:var(--text);background:#fff;
 }
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);}
 .grid{display:flex;gap:12px;flex-wrap:wrap;}
-.grid>div{flex:1;min-width:190px;}
+.grid>div{flex:1;min-width:180px;}
 .hintline{font-size:11.5px;color:var(--muted);margin-top:5px;}
 
 .btn{padding:10px 17px;border:none;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;font-size:13.5px;display:inline-flex;align-items:center;gap:7px;transition:all .15s;}
@@ -37,24 +37,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);}
 .btn svg{width:15px;height:15px;}
 .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 
-/* catálogo */
 .cat{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
-.cat button{
-  padding:6px 12px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;
-  font-family:inherit;font-size:12px;font-weight:600;color:#334155;transition:all .15s;
-}
+.cat button{padding:6px 12px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#334155;transition:all .15s;}
 .cat button:hover{border-color:var(--blue);color:var(--blue);background:#f0f9ff;}
 
 table.eq{width:100%;border-collapse:collapse;font-size:13px;}
 table.eq th{background:var(--navy2);color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;font-weight:600;}
 table.eq td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
-table.eq td input{padding:7px 9px;font-size:13px;}
+table.eq td input,table.eq td select{padding:7px 9px;font-size:13px;}
 table.eq .delrow{background:#fee2e2;color:#b91c1c;border:none;border-radius:7px;padding:6px 9px;cursor:pointer;font-weight:800;font-size:12px;}
 table.eq .rn{color:#94a3b8;font-weight:700;font-size:12px;width:26px;text-align:center;}
 .eq-empty{padding:16px;text-align:center;color:var(--muted);font-size:13px;}
 
-/* assinatura */
-.sigbox{max-width:460px;}
+.sigrow{display:flex;gap:20px;flex-wrap:wrap;}
+.sigbox{flex:1;min-width:300px;}
 .sig-pad{width:100%;height:150px;border:2px dashed #cbd5e1;border-radius:10px;background:#fdfdfe;touch-action:none;cursor:crosshair;display:block;}
 .sig-pad.signed{border-style:solid;border-color:var(--green);background:#fff;}
 .sig-wrap{position:relative;}
@@ -66,6 +62,7 @@ table.eq .rn{color:#94a3b8;font-weight:700;font-size:12px;width:26px;text-align:
 
 .warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:10px;padding:12px 15px;font-size:12.8px;margin-bottom:14px;}
 .warn strong{font-weight:800;}
+.info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;border-radius:10px;padding:12px 15px;font-size:12.8px;margin-bottom:14px;}
 
 /* ===== Documento A4 ===== */
 .docbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 12px;}
@@ -74,10 +71,10 @@ table.eq .rn{color:#94a3b8;font-weight:700;font-size:12px;width:26px;text-align:
 .paper{background:#e5e9ef;padding:20px;border-radius:var(--radius);overflow-x:auto;}
 .folha{
   width:210mm;min-height:297mm;background:#fff;margin:0 auto 20px;padding:24mm 21mm 20mm;
-  box-shadow:0 3px 14px rgba(0,0,0,.13);position:relative;
-  font-size:11.6pt;line-height:1.72;color:#000;
+  box-shadow:0 3px 14px rgba(0,0,0,.13);position:relative;font-size:11.6pt;line-height:1.72;color:#000;
 }
 .folha:last-child{margin-bottom:0;}
+.folha.flow{min-height:0;padding-bottom:24mm;}
 .dtitle{text-align:center;font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:12pt;line-height:1.35;margin-bottom:9mm;}
 .dsans{font-family:Inter,Calibri,Carlito,sans-serif;text-align:justify;}
 .dserif{font-family:Cambria,Georgia,'Times New Roman',serif;text-align:justify;}
@@ -88,6 +85,9 @@ table.dq{width:100%;border-collapse:collapse;margin:7mm 0 8mm;font-family:Inter,
 table.dq th{border:1px solid #000;background:#d9d9d9;text-align:center;font-weight:700;font-size:10.5pt;padding:2.6mm 2mm;letter-spacing:.3px;}
 table.dq td{border:1px solid #000;padding:3.2mm 2.5mm;font-size:11pt;font-weight:700;vertical-align:top;}
 table.dq td.c{text-align:center;white-space:nowrap;}
+table.dq.compact{margin:6mm 0 6mm;}
+table.dq.compact th{font-size:9.5pt;padding:1.9mm 1.6mm;}
+table.dq.compact td{padding:1.7mm 2mm;font-size:9.5pt;}
 .rubrica{position:absolute;right:21mm;bottom:14mm;display:flex;gap:6mm;align-items:flex-end;}
 .rubrica img{height:11mm;object-fit:contain;}
 .fecho{font-family:Inter,Calibri,Carlito,sans-serif;margin:9mm 0 0;}
@@ -95,13 +95,23 @@ table.dq td.c{text-align:center;white-space:nowrap;}
 .assbloco img{height:17mm;object-fit:contain;display:block;margin:0 auto -1mm;}
 .assbloco .linha{border-top:1px solid #000;}
 .assbloco .nm{font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:11.5pt;margin-top:1.5mm;}
+.assbloco .rl{font-family:Inter,Calibri,Carlito,sans-serif;font-size:11pt;margin-top:1.5mm;letter-spacing:.5px;}
 .assbloco .vazio{height:17mm;}
+/* cabeçalho de documentos com bloco de título (EPI / farda) */
+.dhead{margin-bottom:8mm;}
+.dhead .t{font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:14pt;color:#1F3864;margin-bottom:3mm;}
+.dhead .e{font-family:Inter,Calibri,Carlito,sans-serif;font-size:11pt;}
+.sec{font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:11.8pt;margin:7mm 0 3.5mm;}
+.sec2{font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:11.2pt;margin:5.5mm 0 3mm;}
+ul.dl{margin:0 0 4.6mm 9mm;font-family:Inter,Calibri,Carlito,sans-serif;}
+ul.dl li{margin-bottom:1.4mm;}
+.sigline{font-family:Inter,Calibri,Carlito,sans-serif;margin-top:6mm;display:flex;align-items:flex-end;gap:3mm;}
+.sigline .lb{white-space:nowrap;}
+.sigline .vl{flex:1;border-bottom:1px solid #000;min-height:6mm;position:relative;}
+.sigline .vl img{height:14mm;object-fit:contain;position:absolute;bottom:0;left:6mm;}
+.sigline .vl span{padding-left:3mm;}
 
-.toast{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(150%);
-  background:#002B55;color:#fff;padding:13px 22px;border-radius:40px;font-size:13px;font-weight:600;
-  box-shadow:0 10px 30px rgba(0,0,0,.22);transition:transform .3s;z-index:900;max-width:92vw;text-align:center;
-}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(150%);background:#002B55;color:#fff;padding:13px 22px;border-radius:40px;font-size:13px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.22);transition:transform .3s;z-index:900;max-width:92vw;text-align:center;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.err{background:var(--red);}
 
@@ -110,9 +120,14 @@ table.dq td.c{text-align:center;white-space:nowrap;}
   .wrap{padding:0;max-width:none;}
   .noprint{display:none !important;}
   .paper{background:#fff;padding:0;border-radius:0;overflow:visible;}
-  .folha{box-shadow:none;margin:0;padding:20mm 20mm 16mm;width:auto;min-height:0;page-break-after:always;}
+  /* o @page trata das margens; cada folha e um bloco que termina em quebra de pagina */
+  .folha{box-shadow:none;margin:0;padding:0;width:auto;min-height:0;page-break-after:always;}
   .folha:last-child{page-break-after:auto;}
-  @page{size:A4;margin:0;}
+  .cl,.sec,.sec2{page-break-after:avoid;}
+  .sigline,.assbloco,table.dq tr{page-break-inside:avoid;}
+  table.dq thead{display:table-header-group;}
+  .rubrica{position:static;justify-content:flex-end;margin-top:8mm;}
+  @page{size:A4;margin:20mm 20mm 16mm;}
 }
 </style>
 </head>
@@ -121,47 +136,75 @@ table.dq td.c{text-align:center;white-space:nowrap;}
 <div class="wrap">
   <div class="noprint">
     <h1>📄 Termos de Responsabilidade</h1>
-    <p class="sub">Gerador de termos de responsabilidade para colaboradores. Escolhe o colaborador, lista os equipamentos entregues, recolhe a assinatura e o documento é gerado com o texto oficial e arquivado no SharePoint.</p>
+    <p class="sub">Gerador de termos e declarações para colaboradores. Escolhe o tipo de documento, preenche os dados, recolhe a assinatura e o documento é gerado com o texto oficial e arquivado no SharePoint.</p>
 
     <div class="card">
-      <h2><span class="step">1</span> Tipo de termo</h2>
-      <select id="fTipo" onchange="onTipoChange()">
-        <option value="equipamento">Guarda e uso de equipamento empresarial (computadores, telemóveis, tablets…)</option>
-      </select>
-      <div class="hintline">Por agora só existe este tipo. Quando houver outros (viatura, cartão de combustível, fardamento…), aparecem nesta lista.</div>
+      <h2><span class="step">1</span> Tipo de documento</h2>
+      <select id="fTipo" onchange="onTipoChange()"></select>
+      <div class="hintline" id="tipoHint"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="bColab">
       <h2><span class="step">2</span> Colaborador</h2>
       <div class="grid">
-        <div style="min-width:280px;">
+        <div style="min-width:270px;">
           <label class="fl">Colaborador</label>
           <select id="fColab" onchange="onColabChange()"></select>
         </div>
         <div>
-          <label class="fl">Nome completo (como consta no CC)</label>
+          <label class="fl">Nome completo (como consta no documento de identificação)</label>
           <input type="text" id="fNomeCompleto" placeholder="Ex.: Ricardo Valente Ferreira" oninput="draw()">
         </div>
       </div>
-      <div class="grid" style="margin-top:12px;">
+      <div class="grid" style="margin-top:12px;" id="rowNomeCurto">
         <div>
           <label class="fl">Nome usado no texto</label>
           <input type="text" id="fNomeCurto" placeholder="Ex.: Ricardo Ferreira" oninput="draw()">
         </div>
+      </div>
+      <div class="hintline" id="colabHint"></div>
+    </div>
+
+    <div class="card" id="bIdent">
+      <h2><span class="step">3</span> Identificação e NIF</h2>
+      <div class="grid">
+        <div style="max-width:230px;">
+          <label class="fl">Documento</label>
+          <select id="fIdentTipo" onchange="draw()">
+            <option value="cc">Cartão de Cidadão</option>
+            <option value="residencia">Título de residência</option>
+            <option value="passaporte">Passaporte</option>
+          </select>
+        </div>
         <div>
-          <label class="fl">Nº do Cartão de Cidadão</label>
-          <input type="text" id="fCC" placeholder="Ex.: 14602409 5 ZY9" oninput="draw()">
+          <label class="fl">Nº do documento</label>
+          <input type="text" id="fIdentNum" placeholder="Ex.: 14602409 5 ZY9" oninput="draw()">
         </div>
         <div>
           <label class="fl">NIF</label>
           <input type="text" id="fNIF" placeholder="Ex.: 236465740" oninput="draw()">
         </div>
       </div>
-      <div class="hintline">O <strong>nome usado no texto</strong> é o que aparece em todas as cláusulas (no anexo era "Ricardo Ferreira"). O nome completo aparece só na abertura, junto ao CC e ao NIF.</div>
     </div>
 
-    <div class="card">
-      <h2><span class="step">3</span> Equipamentos entregues</h2>
+    <div class="card" id="bFuncao">
+      <h2><span class="step">3</span> Função</h2>
+      <input type="text" id="fFuncao" placeholder="Ex.: Assessor de Vendas" oninput="draw()">
+      <div class="hintline">Preenchido automaticamente a partir do organigrama quando o colaborador é escolhido na lista. Ajusta se a função à data da devolução era outra.</div>
+    </div>
+
+    <div class="card" id="bLocal">
+      <h2><span class="step">3</span> Unidade do carrinho</h2>
+      <select id="fLocalCarrinho" onchange="draw()">
+        <option value="">— Selecionar —</option>
+        <option value="Mecânica Cacém">Mecânica Cacém — 23 artigos (3010.34€)</option>
+        <option value="Mecânica Lisboa">Mecânica Lisboa — 31 artigos (3628.40€)</option>
+      </select>
+      <div class="hintline">A lista de ferramentas e o valor total mudam conforme a unidade, tal como nas atas de auditoria.</div>
+    </div>
+
+    <div class="card" id="bEquip">
+      <h2><span class="step">4</span> Equipamentos entregues</h2>
       <div class="cat" id="catalogo"></div>
       <table class="eq">
         <thead><tr><th></th><th>Equipamento</th><th>Marca / Modelo</th><th style="width:150px;">Data de entrega</th><th style="width:44px;"></th></tr></thead>
@@ -169,36 +212,75 @@ table.dq td.c{text-align:center;white-space:nowrap;}
       </table>
       <div class="eq-empty" id="eqEmpty">Sem equipamentos. Usa os botões acima ou adiciona uma linha em branco.</div>
       <div class="actions" style="margin-top:12px;">
-        <button class="btn btn-ghost btn-sm" onclick="addRow('','', '')">➕ Linha em branco</button>
+        <button class="btn btn-ghost btn-sm" onclick="addRow('','','')">➕ Linha em branco</button>
         <button class="btn btn-ghost btn-sm" onclick="aplicarDataTodos()">📅 Aplicar a data da 1ª linha a todas</button>
       </div>
     </div>
 
-    <div class="card">
-      <h2><span class="step">4</span> Local, data e assinatura</h2>
-      <div class="grid">
-        <div>
-          <label class="fl">Localidade</label>
-          <input type="text" id="fLocalidade" value="Lisboa" oninput="draw()">
-        </div>
-        <div>
-          <label class="fl">Data do termo</label>
-          <input type="date" id="fData" onchange="draw()">
-        </div>
-      </div>
-      <div class="sigbox" style="margin-top:16px;">
-        <label class="fl">Assinatura do colaborador</label>
-        <div class="sig-wrap">
-          <canvas class="sig-pad" id="padColab"></canvas>
-          <div class="sig-ph">Assine aqui com o dedo ou o rato</div>
-        </div>
-        <div class="sig-tools"><span class="st" id="stColab">Sem assinatura</span><button onclick="clearPad()">Limpar</button></div>
-        <div class="hintline">A assinatura entra no fim do documento e é replicada em rubrica reduzida no canto inferior de cada página, como no termo em papel.</div>
+    <div class="card" id="bFarda">
+      <h2><span class="step">4</span> Artigos devolvidos</h2>
+      <div class="cat" id="catFarda"></div>
+      <table class="eq">
+        <thead><tr><th></th><th>Artigo</th><th style="width:120px;">Tamanho</th><th style="width:110px;">Quantidade</th><th style="width:44px;"></th></tr></thead>
+        <tbody id="fdBody"></tbody>
+      </table>
+      <div class="eq-empty" id="fdEmpty">Sem artigos. Usa os botões acima ou adiciona uma linha em branco.</div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="addFarda('','—',1)">➕ Linha em branco</button>
       </div>
     </div>
 
-    <div class="warn">
-      <strong>Dados pessoais:</strong> o número de CC e o NIF só existem no documento gerado — não ficam guardados na intranet nem em nenhum registo. O termo assinado é arquivado no SharePoint em <em>Intranet/RH/Termos_Responsabilidade</em>, de acesso restrito.
+    <div class="card" id="bDataReg">
+      <h2><span class="step">4</span> Data do regulamento</h2>
+      <div class="grid">
+        <div style="max-width:230px;">
+          <input type="date" id="fDataReg" onchange="draw()">
+        </div>
+      </div>
+      <div class="hintline">Data da versão do regulamento que aparece no cabeçalho (no original: 21.05.2026). A data de assinatura é a do passo seguinte.</div>
+    </div>
+
+    <div class="card" id="bFecho">
+      <h2><span class="step">5</span> Localidade e data</h2>
+      <div class="grid">
+        <div><label class="fl">Localidade</label><input type="text" id="fLocalidade" value="Lisboa" oninput="draw()"></div>
+        <div><label class="fl">Data do termo</label><input type="date" id="fData" onchange="draw()"></div>
+      </div>
+    </div>
+
+    <div class="card" id="bDataSimples">
+      <h2><span class="step">5</span> Data</h2>
+      <div class="grid"><div style="max-width:230px;"><input type="date" id="fData2" onchange="syncData2()"></div></div>
+    </div>
+
+    <div class="card" id="bAss">
+      <h2><span class="step">6</span> Assinaturas</h2>
+      <div class="sigrow">
+        <div class="sigbox" id="boxAssColab">
+          <label class="fl" id="lbAssColab">Assinatura do colaborador</label>
+          <div class="sig-wrap">
+            <canvas class="sig-pad" id="padColab"></canvas>
+            <div class="sig-ph">Assine aqui com o dedo ou o rato</div>
+          </div>
+          <div class="sig-tools"><span class="st" id="stColab">Sem assinatura</span><button onclick="clearPad('colab')">Limpar</button></div>
+        </div>
+        <div class="sigbox" id="boxAssRecebe">
+          <label class="fl">Assinatura de quem recebe a farda</label>
+          <div style="margin-bottom:8px;">
+            <select id="fRecebe" onchange="draw()"></select>
+          </div>
+          <div class="sig-wrap">
+            <canvas class="sig-pad" id="padRecebe"></canvas>
+            <div class="sig-ph">Assine aqui com o dedo ou o rato</div>
+          </div>
+          <div class="sig-tools"><span class="st" id="stRecebe">Sem assinatura</span><button onclick="clearPad('recebe')">Limpar</button></div>
+        </div>
+      </div>
+      <div class="hintline" id="assHint"></div>
+    </div>
+
+    <div class="warn" id="warnRGPD">
+      <strong>Dados pessoais:</strong> o número do documento de identificação e o NIF só existem no documento gerado — não ficam guardados na intranet nem em nenhum registo. Os documentos assinados são arquivados no SharePoint em <em>Intranet/RH/Termos_Responsabilidade</em>, de acesso restrito.
     </div>
 
     <div class="docbar">
@@ -223,14 +305,131 @@ table.dq td.c{text-align:center;white-space:nowrap;}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ===================== Dados fixos ===================== */
+var TOOLSETS = {
+  'Mecânica Cacém': {
+    total: '3010.34€ + IVA',
+    itens: [
+      { d: 'Aparafusadora BACS-1 12 V, 2,0 e 6,0 Ah, BC+ 12 V', r: 'Berner / 351949', v: 183.55 },
+      { d: 'Busca polos para teste auto em metal', r: 'Berner / 13560', v: 27.29 },
+      { d: 'Rabo de força 1/2"', r: 'Berner / 215414', v: 38.57 },
+      { d: 'Pistola de ar, 100 mm Blue Star 2', r: 'Berner / 244882', v: 25.00 },
+      { d: 'Espelho de inspeção com LED', r: 'Berner / 129352', v: 49.50 },
+      { d: 'Fita métrica autostop', r: 'Berner / 370493', v: 14.68 },
+      { d: 'Jogo de chaves boca luneta', r: 'Berner / 34582', v: 172.67 },
+      { d: 'Chave de bujões de óleo 8 em 1 universal', r: 'Berner / 153197', v: 58.34 },
+      { d: 'Conjunto de bits, 1/4 ", MIX, 51 PEÇ,', r: 'Berner / 156540', v: 78.70 },
+      { d: 'Alicate de pontas Premium 270 mm, para abraçadeira de mola', r: 'Berner / 405656', v: 111.12 },
+      { d: 'Chave de cinta para filtro de óleo', r: 'Berner / 245237', v: 40.11 },
+      { d: 'Conjunto de 6 adaptadores/redutores', r: 'Berner / 369076', v: 57.98 },
+      { d: 'Conjunto de 3 chaves de impacto Premium', r: 'Berner / 245246', v: 89.44 },
+      { d: 'Alavancas "Non Slip" aço', r: 'Berner / 111697', v: 30.08 },
+      { d: 'Jogo de 5 extratores de molas de friso', r: 'Berner / 216502', v: 123.81 },
+      { d: 'Conjunto de bits 1/2" + 3/8" 47 peças', r: 'Berner / 134663', v: 229.34 },
+      { d: 'Carro de ferramenta com 7 gavetas Evolution II', r: 'Berner / 157609', v: 785.71 },
+      { d: 'Conjunto de 132 chaves 1/4-3/8-1/2', r: 'Berner / 399216', v: 615.87 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K TX', r: 'Berner / 240293', v: 51.57 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K Premium, Fenda - PH', r: 'Berner / 240288', v: 53.47 },
+      { d: 'Molde de espuma com alicate 3K e alicate para bomba de água MX', r: 'Berner / 341013', v: 80.35 },
+      { d: 'Alicate de abraçadeira de mangueira - abraçadeiras caillau e cobra', r: 'Berner / 33542', v: 34.77 },
+      { d: 'Conjunto de alicates retos para freios, 5 peças', r: 'Berner / 4436', v: 58.42 }
+    ]
+  },
+  'Mecânica Lisboa': {
+    total: '3628.40€ + IVA',
+    itens: [
+      { d: 'Aparafusadora BACS-1 12 V, 2,0 e 6,0 Ah, BC+ 12 V', r: 'Berner / 351949', v: 183.55 },
+      { d: 'Busca polos para teste auto em metal', r: 'Berner / 13560', v: 27.29 },
+      { d: 'Rabo de força 1/2"', r: 'Berner / 215414', v: 38.57 },
+      { d: 'Pistola de ar, 100 mm Blue Star 2', r: 'Berner / 244882', v: 25.00 },
+      { d: 'Espelho de inspeção com LED', r: 'Berner / 129352', v: 49.50 },
+      { d: 'Fita métrica autostop', r: 'Berner / 370493', v: 14.68 },
+      { d: 'Jogo de chaves boca luneta', r: 'Berner / 34582', v: 172.67 },
+      { d: 'Chave de bujões de óleo 8 em 1 universal', r: 'Berner / 153197', v: 58.34 },
+      { d: 'Conjunto de bits, 1/4 ", MIX , 51 PEÇ,', r: 'Berner / 156540', v: 78.70 },
+      { d: 'Alicate de pontas Premium270 mm, para abraçadeira de mola', r: 'Berner / 405656', v: 111.12 },
+      { d: 'Chave de cinta para filtro de óleo', r: 'Berner / 245237', v: 40.11 },
+      { d: 'Conjunto de 6 adaptadores/redutores', r: 'Berner / 369076', v: 57.98 },
+      { d: 'Conjunto de 3 chaves de impacto Premium', r: 'Berner / 245246', v: 89.44 },
+      { d: 'Alavancas "Non Slip"aço', r: 'Berner / 111697', v: 30.08 },
+      { d: 'Jogo de 5 extratores de molas de friso', r: 'Berner / 216502', v: 123.81 },
+      { d: 'Conjunto de bits 1/2" + 3/8" 47 peças', r: 'Berner / 134663', v: 229.34 },
+      { d: 'Carro de ferramenta com 7 gavetas Evolution II', r: 'Berner / 157609', v: 785.71 },
+      { d: 'Conjunto de 132 chaves 1/4-3/8-1/2', r: 'Berner / 399216', v: 615.87 },
+      { d: 'Jogo bits 10mm 75 peças', r: 'Sr. Ferramentas / 01736145', v: 49.00 },
+      { d: 'Teste óleo de travões', r: 'Sr. Ferramentas / 006767241', v: 18.00 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K Premium, Fenda', r: 'Berner / 240288', v: 80.20 },
+      { d: 'Conjunto de chaves de punho em molde de espuma 2K TX', r: 'Berner / 240293', v: 77.35 },
+      { d: 'Alicate de abraçadeira de mangueira – abraçadeiras caillau e cobra', r: 'Berner / 33542', v: 48.68 },
+      { d: 'Conjunto de alicates retos para freios, 5 peças', r: 'Berner / 4436', v: 87.62 },
+      { d: 'Molde de espuma com alicate 3K e alicate para bomba de água', r: 'Berner / 341013', v: 120.52 },
+      { d: 'Moldes de espuma', r: 'Berner / 121184', v: 22.51 },
+      { d: 'Mini Retificadora Pneumática', r: 'Berner / 201144', v: 105.64 },
+      { d: 'Jogo punções/martelos c/ mld esp', r: 'Berner 39716', v: 101.37 },
+      { d: 'Alicate grifos', r: 'Berner /  406480', v: 27.37 },
+      { d: 'Jogo chaves bocas c/ mld esp', r: 'Berner / 34581', v: 65.96 },
+      { d: 'Jogo chaves luneta c/ mld esp', r: 'Berner / 34580', v: 92.42 }
+    ]
+  }
+};
+
+/* ===================== Configuração dos tipos ===================== */
+var TIPOS = {
+  equipamento: {
+    label: 'Guarda e uso de equipamento empresarial (computadores, telemóveis, tablets…)',
+    ficheiro: 'Termo_de_Responsabilidade_Equipamento',
+    blocos: ['colab','ident','equip','fecho','assColab'],
+    req: ['nomeCompleto','nomeCurto','identNum','nif','data']
+  },
+  carrinho: {
+    label: 'Guarda, uso e reposição de carrinho de ferramenta',
+    ficheiro: 'Termo_de_Responsabilidade_Carrinho_Ferramenta',
+    blocos: ['colab','ident','local','fecho','assColab'],
+    req: ['nomeCompleto','identNum','nif','local','data']
+  },
+  epi: {
+    label: 'Regulamento Interno — Fornecimento de EPI e aquisição de calçado de segurança',
+    ficheiro: 'Regulamento_EPI_Calcado_Seguranca',
+    blocos: ['colab','dataReg','assColab'],
+    req: ['nomeCurto','data']
+  },
+  devolucao_farda: {
+    label: 'Devolução de farda de trabalho',
+    ficheiro: 'Devolucao_Farda_Trabalho',
+    blocos: ['colab','funcao','farda','assColab','assRecebe'],
+    req: ['nomeCompleto','funcao','data']
+  }
+};
+
+var IDENT_TIPOS = {
+  cc: 'CC',
+  residencia: 'titulo de residência',
+  passaporte: 'passaporte'
+};
+
+/* Catálogo de fardamento — artigos em uso (fardas.html) */
+var CAT_FARDA = [
+  'Forro Polar Petróleo','Calça','Calça Homem','Calças Vale','Camisa Homem Manga Comprida',
+  'Pullover Inverno Homem','Polo Manga Curta Azul','Polo Manga Comprida Azul',
+  'Polo Manga Curta Petróleo PES','Polo Manga Curta PES','Polo Verão 100% PES',
+  'Colete Softshell','Sapatos Segurança Securlite'
+];
+var TAMANHOS = ['—','S','M','L','XL','XXL'];
+
+/* EPIs obrigatórios (regulamento) */
+var EPIS = [
+  'Luvas de Nylon','Luvas Descartáveis','Protetores Auditivos',
+  'Máscaras de Proteção de vias respiratórias','Máscara de Soldadura',
+  'Óculos de Proteção, e;','Calçado de segurança'
+];
+
+
 var EMPRESA = {
   nome: 'Walkingarage, Lda',
   nif: '513 281 622',
   sede: 'Estrada de Paço de Arcos Nº167 Armazém C, 2735-509'
 };
 
-/* Colaboradores — organigrama DomusCar (estrutura_organizacional.html) */
+/* Colaboradores — organigrama DomusCar */
 var COLABORADORES = [
   { g: 'Direção e Serviços Centrais', n: 'Vanessa Borges',      f: 'CEO — Direção Executiva' },
   { g: 'Direção e Serviços Centrais', n: 'André Pereira',       f: 'Diretor de Operações' },
@@ -238,7 +437,6 @@ var COLABORADORES = [
   { g: 'Direção e Serviços Centrais', n: 'Cláudia Pedro',       f: 'Recursos Humanos' },
   { g: 'Direção e Serviços Centrais', n: 'Fernando Couto',      f: 'Comercial' },
   { g: 'Direção e Serviços Centrais', n: 'Paulo Ferreira',      f: 'Apoio Técnico' },
-
   { g: 'Mecânica Cacém', n: 'José Rodriguez',      f: 'Coordenador' },
   { g: 'Mecânica Cacém', n: 'Tomás Figueiredo',    f: 'Receção' },
   { g: 'Mecânica Cacém', n: 'Rúben Nogueira',      f: 'Receção' },
@@ -247,7 +445,6 @@ var COLABORADORES = [
   { g: 'Mecânica Cacém', n: 'Filipe Bonifácio',    f: 'Técnico Mecânica' },
   { g: 'Mecânica Cacém', n: 'Gonçalo Matos',       f: 'Técnico Mecânica' },
   { g: 'Mecânica Cacém', n: 'Eduardo Macedo',      f: 'Lavagem' },
-
   { g: 'Mecânica Lisboa', n: 'Fábio Ramalho',      f: 'Coordenador' },
   { g: 'Mecânica Lisboa', n: 'Ricardo Ferreira',   f: 'Receção' },
   { g: 'Mecânica Lisboa', n: 'Pedro Pereira',      f: 'Receção' },
@@ -259,7 +456,6 @@ var COLABORADORES = [
   { g: 'Mecânica Lisboa', n: 'Pedro Carvalho',     f: 'Peças e Logística' },
   { g: 'Mecânica Lisboa', n: 'Gonçalo Faustino',   f: 'Peças e Logística / Compras' },
   { g: 'Mecânica Lisboa', n: 'Xavier Jorge',       f: 'Estagiário' },
-
   { g: 'Colisão', n: 'Mário Peres',        f: 'Coordenador' },
   { g: 'Colisão', n: 'Nuno Montes',        f: 'Coordenador' },
   { g: 'Colisão', n: 'Valter Borges',      f: 'Receção' },
@@ -272,35 +468,41 @@ var COLABORADORES = [
   { g: 'Colisão', n: 'Gyanu Pujara',       f: 'Técnico Pintura / Preparação' },
   { g: 'Colisão', n: 'João Bizarro',       f: 'Técnico Pintura / Preparação' },
   { g: 'Colisão', n: 'José Avelino',       f: 'Técnico Pintura / Preparação' },
-
   { g: 'Peças e Logística (Cacém / Colisão)', n: 'Inês Peixinho', f: 'Peças e Logística' },
   { g: 'Peças e Logística (Cacém / Colisão)', n: 'Olesya Vieira', f: 'Peças e Logística' },
   { g: 'Peças e Logística (Cacém / Colisão)', n: 'André Gomes',   f: 'Peças e Logística' },
   { g: 'Peças e Logística (Cacém / Colisão)', n: 'Alícia Vieira', f: 'Peças e Logística' }
 ];
 
-/* Catálogo de equipamentos habituais */
 var CATALOGO = [
-  'Computador Portátil', 'Computador Fixo', 'Monitor', 'Telemóvel', 'Tablet',
-  'Conjunto Teclado e Rato', 'Hub USB-C', 'Docking Station',
-  'Mala Transporte Computador Portátil', 'Carregador / Fonte de Alimentação',
-  'Auscultadores / Headset', 'Webcam', 'Impressora', 'Cartão SIM'
+  'Computador Portátil','Computador Fixo','Monitor','Telemóvel','Tablet',
+  'Conjunto Teclado e Rato','Hub USB-C','Docking Station',
+  'Mala Transporte Computador Portátil','Carregador / Fonte de Alimentação',
+  'Auscultadores / Headset','Webcam','Impressora','Cartão SIM'
 ];
 
 var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-var rows = [];   // {eq, mm, data}
-var pad = null;
+var rows = [];       // equipamentos
+var fardaRows = [];  // artigos de farda
+var pads = {};
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function slug(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'') || 'SemNome'; }
 function toast(m,e){ var t=document.getElementById('toast'); t.textContent=m; t.className='toast show'+(e?' err':''); setTimeout(function(){ t.className='toast'+(e?' err':''); },5200); }
 function hoje(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtPT(iso){ if(!iso) return ''; var p=String(iso).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):iso; }
+function fmtPTdot(iso){ if(!iso) return ''; var p=String(iso).slice(0,10).split('-'); return p.length===3?(p[2]+'.'+p[1]+'.'+p[0]):iso; }
 function dataLonga(iso){ if(!iso) return '______________'; var p=iso.split('-'); return parseInt(p[2],10)+' de '+MESES[parseInt(p[1],10)-1]+' de '+p[0]; }
+function tipoAtual(){ return document.getElementById('fTipo').value; }
+function ph(v,fb){ return v?esc(v):'<span style="background:#fff3cd;color:#8a6d3b">'+fb+'</span>'; }
 
 /* ===================== Formulário ===================== */
+function fillTipos(){
+  var h='';
+  Object.keys(TIPOS).forEach(function(k){ h+='<option value="'+k+'">'+esc(TIPOS[k].label)+'</option>'; });
+  document.getElementById('fTipo').innerHTML=h;
+}
 function fillColab(){
-  var sel=document.getElementById('fColab');
   var grupos={};
   COLABORADORES.forEach(function(c){ (grupos[c.g]=grupos[c.g]||[]).push(c); });
   var h='<option value="">— Selecionar colaborador —</option>';
@@ -310,13 +512,68 @@ function fillColab(){
     h+='</optgroup>';
   });
   h+='<optgroup label="Outro"><option value="__outro__">Outro (escrever à mão)</option></optgroup>';
-  sel.innerHTML=h;
+  document.getElementById('fColab').innerHTML=h;
+
+  var r='<option value="">— Selecionar —</option>';
+  COLABORADORES.forEach(function(c){ r+='<option value="'+esc(c.n)+'">'+esc(c.n)+' — '+esc(c.f)+'</option>'; });
+  var sel=document.getElementById('fRecebe');
+  sel.innerHTML=r;
+  sel.value='Cláudia Pedro';
+}
+function fillCatalogos(){
+  document.getElementById('catalogo').innerHTML = CATALOGO.map(function(c){
+    return '<button type="button" onclick="addRow(\''+c.replace(/'/g,"\\'")+'\',\'\',\'\')">+ '+esc(c)+'</button>';
+  }).join('');
+  document.getElementById('catFarda').innerHTML = CAT_FARDA.map(function(c){
+    return '<button type="button" onclick="addFarda(\''+c.replace(/'/g,"\\'")+'\',\'—\',1)">+ '+esc(c)+'</button>';
+  }).join('');
+}
+
+function onTipoChange(){
+  var t=tipoAtual(), cfg=TIPOS[t], b=cfg.blocos;
+  function show(id,on){ document.getElementById(id).classList.toggle('hide',!on); }
+  show('bColab', b.indexOf('colab')>=0);
+  show('bIdent', b.indexOf('ident')>=0);
+  show('bFuncao', b.indexOf('funcao')>=0);
+  show('bLocal', b.indexOf('local')>=0);
+  show('bEquip', b.indexOf('equip')>=0);
+  show('bFarda', b.indexOf('farda')>=0);
+  show('bDataReg', b.indexOf('dataReg')>=0);
+  show('bFecho', b.indexOf('fecho')>=0);
+  show('bDataSimples', b.indexOf('fecho')<0);
+  document.getElementById('boxAssRecebe').style.display = b.indexOf('assRecebe')>=0 ? '' : 'none';
+  document.getElementById('warnRGPD').style.display = b.indexOf('ident')>=0 ? '' : 'none';
+  document.getElementById('rowNomeCurto').style.display = (t==='devolucao_farda') ? 'none' : '';
+
+  document.getElementById('lbAssColab').textContent =
+    t==='devolucao_farda' ? 'Assinatura de quem entrega a farda (colaborador)' :
+    t==='epi' ? 'Assinatura do trabalhador' : 'Assinatura do colaborador';
+
+  var hints={
+    equipamento:'Segue o termo em papel de 4 páginas, com rubrica em cada página.',
+    carrinho:'Cabeçalho próprio: "GUARDA, USO E REPOSIÇÃO DE EQUIPAMENTO EMPRESARIAL". O texto trata o colaborador por "COLABORADOR", como no template.',
+    epi:'Regulamento de texto fixo. Só variam o nome do trabalhador, a assinatura e a data.',
+    devolucao_farda:'Declaração de devolução com duas assinaturas: quem entrega e quem recebe.'
+  };
+  document.getElementById('tipoHint').textContent = hints[t]||'';
+  document.getElementById('assHint').textContent =
+    t==='equipamento' ? 'A assinatura entra no fim e em rubrica reduzida no canto inferior das páginas 1 a 3.'
+    : t==='carrinho' ? 'A assinatura entra no fim, sobre a linha "O COLABORADOR", e em rubrica no canto das páginas anteriores.'
+    : '';
+  document.getElementById('colabHint').textContent =
+    t==='devolucao_farda' ? 'O nome completo é o que aparece na declaração ("Eu, ...").'
+    : t==='epi' ? 'O nome do trabalhador aparece no fim do regulamento.'
+    : 'O nome usado no texto repete-se nas cláusulas; o nome completo aparece só na abertura, junto ao documento de identificação e ao NIF.';
+  syncData2(true);
+  draw();
 }
 function onColabChange(){
   var v=document.getElementById('fColab').value;
   if(v && v!=='__outro__'){
     document.getElementById('fNomeCurto').value=v;
     if(!document.getElementById('fNomeCompleto').value.trim()) document.getElementById('fNomeCompleto').value=v;
+    var c=COLABORADORES.filter(function(x){return x.n===v;})[0];
+    if(c && !document.getElementById('fFuncao').value.trim()) document.getElementById('fFuncao').value=c.f;
   } else if(v==='__outro__'){
     document.getElementById('fNomeCurto').value='';
     document.getElementById('fNomeCompleto').value='';
@@ -324,44 +581,57 @@ function onColabChange(){
   }
   draw();
 }
-function onTipoChange(){ draw(); }
+function syncData2(init){
+  var a=document.getElementById('fData'), b=document.getElementById('fData2');
+  if(init){ if(!b.value) b.value=a.value||hoje(); return; }
+  a.value=b.value; draw();
+}
+function dataTermo(){
+  var b=TIPOS[tipoAtual()].blocos;
+  return (b.indexOf('fecho')>=0 ? document.getElementById('fData').value : document.getElementById('fData2').value);
+}
 
-function fillCatalogo(){
-  document.getElementById('catalogo').innerHTML = CATALOGO.map(function(c){
-    return '<button type="button" onclick="addRow(\''+c.replace(/'/g,"\\'")+'\',\'\',\'\')">+ '+esc(c)+'</button>';
-  }).join('');
-}
-function addRow(eq, mm, data){
-  rows.push({ eq: eq||'', mm: mm||'', data: data||document.getElementById('fData').value||hoje() });
-  renderRows(); draw();
-  if(!eq){ setTimeout(function(){ var i=document.getElementById('req'+(rows.length-1)); if(i) i.focus(); },40); }
-}
+/* linhas de equipamento */
+function addRow(eq,mm,data){ rows.push({eq:eq||'',mm:mm||'',data:data||dataTermo()||hoje()}); renderRows(); draw();
+  if(!eq) setTimeout(function(){ var i=document.getElementById('req'+(rows.length-1)); if(i) i.focus(); },40); }
 function delRow(i){ rows.splice(i,1); renderRows(); draw(); }
 function updRow(i,k,v){ rows[i][k]=v; draw(); }
 function aplicarDataTodos(){
   if(!rows.length){ toast('Ainda não há linhas.',true); return; }
-  var d=rows[0].data;
-  if(!d){ toast('A primeira linha não tem data.',true); return; }
-  rows.forEach(function(r){ r.data=d; });
-  renderRows(); draw(); toast('Data '+fmtPT(d)+' aplicada a todas as linhas.');
+  var d=rows[0].data; if(!d){ toast('A primeira linha não tem data.',true); return; }
+  rows.forEach(function(r){ r.data=d; }); renderRows(); draw(); toast('Data '+fmtPT(d)+' aplicada a todas as linhas.');
 }
 function renderRows(){
-  var tb=document.getElementById('eqBody');
   document.getElementById('eqEmpty').style.display = rows.length?'none':'';
-  tb.innerHTML = rows.map(function(r,i){
-    return '<tr>'+
-      '<td class="rn">'+(i+1)+'</td>'+
+  document.getElementById('eqBody').innerHTML = rows.map(function(r,i){
+    return '<tr><td class="rn">'+(i+1)+'</td>'+
       '<td><input type="text" id="req'+i+'" value="'+esc(r.eq)+'" placeholder="Ex.: Computador Portátil" oninput="updRow('+i+',\'eq\',this.value)"></td>'+
       '<td><input type="text" value="'+esc(r.mm)+'" placeholder="Ex.: Lenovo IP1 15ALC7 R5" oninput="updRow('+i+',\'mm\',this.value)"></td>'+
       '<td><input type="date" value="'+esc(r.data)+'" onchange="updRow('+i+',\'data\',this.value)"></td>'+
-      '<td><button class="delrow" onclick="delRow('+i+')" title="Remover">✕</button></td>'+
-    '</tr>';
+      '<td><button class="delrow" onclick="delRow('+i+')" title="Remover">✕</button></td></tr>';
   }).join('');
 }
 
-/* ===================== Assinatura ===================== */
-function initPad(){
-  var c=document.getElementById('padColab'), ctx=c.getContext('2d');
+/* linhas de farda */
+function addFarda(art,tam,qt){ fardaRows.push({art:art||'',tam:tam||'—',qt:qt||1}); renderFarda(); draw();
+  if(!art) setTimeout(function(){ var i=document.getElementById('fart'+(fardaRows.length-1)); if(i) i.focus(); },40); }
+function delFarda(i){ fardaRows.splice(i,1); renderFarda(); draw(); }
+function updFarda(i,k,v){ fardaRows[i][k]=(k==='qt'?(parseInt(v,10)||1):v); draw(); }
+function renderFarda(){
+  document.getElementById('fdEmpty').style.display = fardaRows.length?'none':'';
+  document.getElementById('fdBody').innerHTML = fardaRows.map(function(r,i){
+    var op=TAMANHOS.map(function(t){ return '<option value="'+t+'"'+(r.tam===t?' selected':'')+'>'+t+'</option>'; }).join('');
+    return '<tr><td class="rn">'+(i+1)+'</td>'+
+      '<td><input type="text" id="fart'+i+'" value="'+esc(r.art)+'" placeholder="Ex.: Camisa Homem Manga Comprida" oninput="updFarda('+i+',\'art\',this.value)"></td>'+
+      '<td><select onchange="updFarda('+i+',\'tam\',this.value)">'+op+'</select></td>'+
+      '<td><input type="number" min="1" value="'+esc(r.qt)+'" onchange="updFarda('+i+',\'qt\',this.value)"></td>'+
+      '<td><button class="delrow" onclick="delFarda('+i+')" title="Remover">✕</button></td></tr>';
+  }).join('');
+}
+
+/* ===================== Assinaturas ===================== */
+function initPad(key,canvasId,statusId){
+  var c=document.getElementById(canvasId), ctx=c.getContext('2d');
   var drawing=false, dirty=false, last=null;
   function resize(){
     var img=dirty?c.toDataURL():null;
@@ -384,169 +654,373 @@ function initPad(){
     ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p;
   });
   ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ c.addEventListener(ev,function(){ if(drawing){ drawing=false; draw(); } }); });
-  function setSigned(v){
-    dirty=v; c.classList.toggle('signed',v);
-    document.getElementById('stColab').textContent=v?'Assinado ✓':'Sem assinatura';
-  }
+  function setSigned(v){ dirty=v; c.classList.toggle('signed',v); document.getElementById(statusId).textContent=v?'Assinado ✓':'Sem assinatura'; }
   resize();
   window.addEventListener('resize',function(){ setTimeout(resize,120); });
-  pad={ clear:function(){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height); ctx.restore(); setSigned(false); draw(); },
-        isSigned:function(){ return dirty; },
-        url:function(){ return dirty?c.toDataURL('image/png'):''; } };
+  pads[key]={ clear:function(){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height); ctx.restore(); setSigned(false); draw(); },
+              isSigned:function(){ return dirty; }, url:function(){ return dirty?c.toDataURL('image/png'):''; } };
 }
-function clearPad(){ if(pad) pad.clear(); }
+function clearPad(k){ if(pads[k]) pads[k].clear(); }
 
-/* ===================== Documento ===================== */
+/* ===================== Dados ===================== */
 function dados(){
   return {
+    tipo: tipoAtual(),
     nomeCompleto: document.getElementById('fNomeCompleto').value.trim(),
     nomeCurto: document.getElementById('fNomeCurto').value.trim(),
-    cc: document.getElementById('fCC').value.trim(),
+    identTipo: document.getElementById('fIdentTipo').value,
+    identNum: document.getElementById('fIdentNum').value.trim(),
     nif: document.getElementById('fNIF').value.trim(),
+    funcao: document.getElementById('fFuncao').value.trim(),
+    local: document.getElementById('fLocalCarrinho').value,
     localidade: document.getElementById('fLocalidade').value.trim(),
-    data: document.getElementById('fData').value,
-    assinatura: pad?pad.url():''
+    data: dataTermo(),
+    dataReg: document.getElementById('fDataReg').value,
+    recebe: document.getElementById('fRecebe').value,
+    assColab: pads.colab?pads.colab.url():'',
+    assRecebe: pads.recebe?pads.recebe.url():''
   };
 }
 
-var TITULO = 'TERMO DE RESPONSABILIDADE PARA<br>GUARDA E USO DE EQUIPAMENTO EMPRESARIAL';
+/* ===================== Documentos ===================== */
+var T_EQUIP = 'TERMO DE RESPONSABILIDADE PARA<br>GUARDA E USO DE EQUIPAMENTO EMPRESARIAL';
+var T_CARRINHO = 'TERMO DE RESPONSABILIDADE PARA<br>GUARDA, USO E REPOSIÇÃO DE EQUIPAMENTO EMPRESARIAL';
 
-function ph(v, fallback){ return v ? esc(v) : '<span style="background:#fff3cd;color:#8a6d3b">'+fallback+'</span>'; }
+function abertura(d, refComo){
+  var idl = IDENT_TIPOS[d.identTipo] || 'CC';
+  return 'Pelo presente termo, na qualidade de Colaborador, '+ph(d.nomeCompleto,'[nome completo]')+
+    ', portador do '+idl+' nº '+ph(d.identNum,'[nº documento]')+', NIF '+ph(d.nif,'[NIF]')+
+    ', doravante referido como '+refComo+', declara estar ciente das disposições e obrigações estipuladas neste Termo de Responsabilidade e compromete-se a cumprir rigorosamente todas as cláusulas nele contidas, relativas à utilização dos equipamentos abaixo indicados, fornecidos pela '+
+    EMPRESA.nome+', com o NIF nº '+EMPRESA.nif+', com sede na '+EMPRESA.sede+', doravante referida como Walkingarage.';
+}
+function princípios(){
+  return '<p class="dserif ali"><strong>Ética e Integridade</strong>: Agir com honestidade, transparência e respeito em todas as relações profissionais;</p>'+
+         '<p class="dserif ali"><strong>Cumprimento Legal</strong>: Respeitar todas as leis e regulamentos aplicáveis às suas funções;</p>'+
+         '<p class="dserif ali"><strong>Prevenção de Corrupção</strong>: Não se envolver em práticas corruptas ou ilícitas;</p>'+
+         '<p class="dserif ali"><strong>Proteção de Dados Pessoais</strong>: Garantir a privacidade e segurança dos dados em conformidade com a legislação aplicável.</p>';
+}
 
-function docHTML(d, paraArquivo){
-  var N = d.nomeCurto ? esc(d.nomeCurto) : (paraArquivo ? '' : '<span style="background:#fff3cd;color:#8a6d3b">[nome]</span>');
-  var rub = d.assinatura ? '<div class="rubrica"><img src="'+d.assinatura+'" alt=""><img src="'+d.assinatura+'" alt=""></div>' : '';
+/* ---------- Tipo 1: equipamento ---------- */
+function docEquipamento(d){
+  var N = d.nomeCurto?esc(d.nomeCurto):'<span style="background:#fff3cd;color:#8a6d3b">[nome]</span>';
+  var rub = d.assColab?'<div class="rubrica"><img src="'+d.assColab+'" alt=""><img src="'+d.assColab+'" alt=""></div>':'';
+  var linhas = rows.filter(function(r){ return (r.eq||'').trim()||(r.mm||'').trim(); });
 
-  var linhas = rows.filter(function(r){ return (r.eq||'').trim() || (r.mm||'').trim(); });
-  var tabela = '<table class="dq"><thead><tr><th>EQUIPAMENTO</th><th>MARCA/MODELO</th><th>DATA ENTREGA</th></tr></thead><tbody>';
-  if(!linhas.length){
-    tabela += '<tr><td colspan="3" style="text-align:center;font-weight:400;color:#999">— sem equipamentos indicados —</td></tr>';
-  } else {
-    linhas.forEach(function(r){
-      tabela += '<tr><td>'+esc(r.eq)+'</td><td>'+esc(r.mm)+'</td><td class="c">'+(r.data?fmtPT(r.data):'')+'</td></tr>';
-    });
+  function tabEquip(lista, cab){
+    var t='<table class="dq">';
+    if(cab) t+='<thead><tr><th>EQUIPAMENTO</th><th>MARCA/MODELO</th><th>DATA ENTREGA</th></tr></thead>';
+    t+='<tbody>';
+    if(!lista.length) t+='<tr><td colspan="3" style="text-align:center;font-weight:400;color:#999">— sem equipamentos indicados —</td></tr>';
+    else lista.forEach(function(r){ t+='<tr><td>'+esc(r.eq)+'</td><td>'+esc(r.mm)+'</td><td class="c">'+(r.data?fmtPT(r.data):'')+'</td></tr>'; });
+    return t+'</tbody></table>';
   }
-  tabela += '</tbody></table>';
+  var considerandoCl1 =
+    '<p class="dserif"><strong>CONSIDERANDO</strong> que o presente Termo de Responsabilidade tem como objetivo estabelecer as condições e responsabilidades inerentes ao uso dos equipamentos acima listados, cedidos ao '+N+', para uso exclusivo na prestação de serviços a favor da Walkingarage;</p>'+
+    '<div class="cl">CLÁUSULA 1 - DO FORNECIMENTO DO EQUIPAMENTO</div>'+
+    '<p class="dserif">1.1. A Walkingarage fornecerá ao '+N+' o equipamento acima indicado para utilização única e exclusiva no desempenho das suas atividades profissionais.</p>'+
+    '<p class="dserif">1.2. O '+N+' declara estar ciente de que o uso dos equipamentos será exclusivamente para fins profissionais, relacionados às atividades da Walkingarage, comprometendo-se a não os utilizar para fins pessoais ou não autorizados.</p>';
 
-  var o = '';
+  /* Com poucos equipamentos mantem-se a paginacao do termo em papel (4 folhas).
+     Com muitos, a lista continua numa folha extra que leva tambem o CONSIDERANDO e a Clausula 1. */
+  var EQUIP_1A_PAG = 8;
+  var e1 = linhas.slice(0, EQUIP_1A_PAG), e2 = linhas.slice(EQUIP_1A_PAG);
 
-  /* ---------- Folha 1 ---------- */
-  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
-  o += '<p class="dsans">Pelo presente termo, na qualidade de Colaborador, '+ph(d.nomeCompleto,'[nome completo]')+
-       ', portador do CC nº '+ph(d.cc,'[nº CC]')+', NIF '+ph(d.nif,'[NIF]')+', doravante referido como '+
-       (d.nomeCurto?esc(d.nomeCurto):'<span style="background:#fff3cd;color:#8a6d3b">[nome]</span>')+
-       ', declara estar ciente das disposições e obrigações estipuladas neste Termo de Responsabilidade e compromete-se a cumprir rigorosamente todas as cláusulas nele contidas, relativas à utilização dos equipamentos abaixo indicados, fornecidos pela '+
-       EMPRESA.nome+', com o NIF nº '+EMPRESA.nif+', com sede na '+EMPRESA.sede+', doravante referida como Walkingarage.</p>';
-  o += tabela;
-  o += '<p class="dserif"><strong>CONSIDERANDO</strong> que o presente Termo de Responsabilidade tem como objetivo estabelecer as condições e responsabilidades inerentes ao uso dos equipamentos acima listados, cedidos ao '+N+', para uso exclusivo na prestação de serviços a favor da Walkingarage;</p>';
-  o += '<div class="cl">CLÁUSULA 1 - DO FORNECIMENTO DO EQUIPAMENTO</div>';
-  o += '<p class="dserif">1.1. A Walkingarage fornecerá ao '+N+' o equipamento acima indicado para utilização única e exclusiva no desempenho das suas atividades profissionais.</p>';
-  o += '<p class="dserif">1.2. O '+N+' declara estar ciente de que o uso dos equipamentos será exclusivamente para fins profissionais, relacionados às atividades da Walkingarage, comprometendo-se a não os utilizar para fins pessoais ou não autorizados.</p>';
-  o += rub + '</div>';
+  var o='';
+  o+='<div class="folha"><div class="dtitle">'+T_EQUIP+'</div>';
+  o+='<p class="dsans">'+abertura(d, N)+'</p>'+tabEquip(e1, true);
+  if(e2.length){
+    o+='<p class="dsans" style="font-size:10pt;color:#444;">(a lista continua na página seguinte)</p>';
+    o+=rub+'</div>';
+    o+='<div class="folha"><div class="dtitle">'+T_EQUIP+'</div>';
+    o+='<p class="dsans" style="font-size:10pt;color:#444;margin-bottom:3mm;">Equipamentos entregues (continuação)</p>';
+    o+=tabEquip(e2, true);
+    o+=considerandoCl1;
+    o+=rub+'</div>';
+  } else {
+    o+=considerandoCl1;
+    o+=rub+'</div>';
+  }
 
-  /* ---------- Folha 2 ---------- */
-  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
-  o += '<div class="cl">CLÁUSULA 2 - DA RESPONSABILIDADE PELO USO DO EQUIPAMENTO</div>';
-  o += '<p class="dserif">2.1. O '+N+' compromete-se a utilizar os equipamentos de forma ética e responsável, observando as disposições da legislação portuguesa aplicável.</p>';
-  o += '<p class="dserif">2.2. O '+N+' reconhece que é o único responsável pelo uso adequado dos equipamentos, bem como pelo conteúdo das informações transmitidas e armazenadas por meio desses recursos.</p>';
-  o += '<p class="dserif">2.3. É expressamente proibido ao '+N+':</p>';
-  o += '<p class="dserif">a) Partilhar os equipamentos com terceiros sem autorização prévia da Walkingarage;</p>';
-  o += '<p class="dserif">b) Utilizar os equipamentos para práticas ilícitas ou atividades que possam causar danos à Walkingarage ou a terceiros;</p>';
-  o += '<p class="dserif">c) Aceder a conteúdos impróprios ou que violem a privacidade de terceiros por meio dos equipamentos;</p>';
-  o += '<div class="cl">CLÁUSULA 3 - DA PROTEÇÃO DE DADOS PESSOAIS</div>';
-  o += '<p class="dserif">3.1. O '+N+' compromete-se a não partilhar dados pessoais de terceiros sem o consentimento expresso da Walkingarage, sob pena de responsabilidade civil e penal.</p>';
-  o += '<p class="dserif">3.2. O '+N+' deverá informar imediatamente à Walkingarage qualquer violação de dados pessoais ou incidente de segurança relacionado à utilização dos equipamentos.</p>';
-  o += '<div class="cl">CLÁUSULA 4 - DA SEGURANÇA DA INFORMAÇÃO E INTEGRIDADE</div>';
-  o += '<p class="dserif">4.1. O '+N+' compromete-se a adotar todas as medidas de segurança necessárias para proteger os equipamentos contra acesso não autorizado, perda, roubo ou qualquer forma de comprometimento da sua integridade, assumindo total responsabilidade pelos prejuízos causados.</p>';
-  o += rub + '</div>';
+  o+='<div class="folha"><div class="dtitle">'+T_EQUIP+'</div>';
+  o+='<div class="cl">CLÁUSULA 2 - DA RESPONSABILIDADE PELO USO DO EQUIPAMENTO</div>';
+  o+='<p class="dserif">2.1. O '+N+' compromete-se a utilizar os equipamentos de forma ética e responsável, observando as disposições da legislação portuguesa aplicável.</p>';
+  o+='<p class="dserif">2.2. O '+N+' reconhece que é o único responsável pelo uso adequado dos equipamentos, bem como pelo conteúdo das informações transmitidas e armazenadas por meio desses recursos.</p>';
+  o+='<p class="dserif">2.3. É expressamente proibido ao '+N+':</p>';
+  o+='<p class="dserif">a) Partilhar os equipamentos com terceiros sem autorização prévia da Walkingarage;</p>';
+  o+='<p class="dserif">b) Utilizar os equipamentos para práticas ilícitas ou atividades que possam causar danos à Walkingarage ou a terceiros;</p>';
+  o+='<p class="dserif">c) Aceder a conteúdos impróprios ou que violem a privacidade de terceiros por meio dos equipamentos;</p>';
+  o+='<div class="cl">CLÁUSULA 3 - DA PROTEÇÃO DE DADOS PESSOAIS</div>';
+  o+='<p class="dserif">3.1. O '+N+' compromete-se a não partilhar dados pessoais de terceiros sem o consentimento expresso da Walkingarage, sob pena de responsabilidade civil e penal.</p>';
+  o+='<p class="dserif">3.2. O '+N+' deverá informar imediatamente à Walkingarage qualquer violação de dados pessoais ou incidente de segurança relacionado à utilização dos equipamentos.</p>';
+  o+='<div class="cl">CLÁUSULA 4 - DA SEGURANÇA DA INFORMAÇÃO E INTEGRIDADE</div>';
+  o+='<p class="dserif">4.1. O '+N+' compromete-se a adotar todas as medidas de segurança necessárias para proteger os equipamentos contra acesso não autorizado, perda, roubo ou qualquer forma de comprometimento da sua integridade, assumindo total responsabilidade pelos prejuízos causados.</p>';
+  o+=rub+'</div>';
 
-  /* ---------- Folha 3 ---------- */
-  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
-  o += '<div class="cl">CLÁUSULA 5 - DA DEVOLUÇÃO DO EQUIPAMENTO</div>';
-  o += '<p class="dserif">5.1. Ao término da relação do '+N+' com a Walkingarage, este deverá devolver imediatamente os equipamentos fornecidos, em perfeito estado de conservação, ressalvando o desgaste decorrente do uso normal.</p>';
-  o += '<div class="cl" style="margin-top:14mm;">CLÁUSULA 6 - DA VIGÊNCIA</div>';
-  o += '<p class="dserif">6.1. O presente Termo de Responsabilidade entrará em vigor a partir da data da sua assinatura pelo '+N+' e permanecerá válido enquanto este estiver vinculado à Walkingarage.</p>';
-  o += '<div class="cl">CLÁUSULA 7 - O COMPROMISSO</div>';
-  o += '<p class="dserif">7.1. O '+N+' declara ter ciente e concorda em cumprir os princípios da Walkingarage, nomeadamente:</p>';
-  o += '<p class="dserif ali"><strong>Ética e Integridade</strong>: Agir com honestidade, transparência e respeito em todas as relações profissionais;</p>';
-  o += '<p class="dserif ali"><strong>Cumprimento Legal</strong>: Respeitar todas as leis e regulamentos aplicáveis às suas funções;</p>';
-  o += '<p class="dserif ali"><strong>Prevenção de Corrupção</strong>: Não se envolver em práticas corruptas ou ilícitas;</p>';
-  o += '<p class="dserif ali"><strong>Proteção de Dados Pessoais</strong>: Garantir a privacidade e segurança dos dados em conformidade com a legislação aplicável.</p>';
-  o += '<div class="cl">CLÁUSULA 8 - DA CONFIDENCIALIDADE</div>';
-  o += '<p class="dserif">8.1. O '+N+' reconhece que as informações a que tem acesso por meio dos equipamentos são confidenciais, comprometendo-se a não as divulgar.</p>';
-  o += '<p class="dserif">8.2. Esta obrigação de confidencialidade permanecerá em vigor mesmo após o término da relação com a Walkingarage.</p>';
-  o += rub + '</div>';
+  o+='<div class="folha"><div class="dtitle">'+T_EQUIP+'</div>';
+  o+='<div class="cl">CLÁUSULA 5 - DA DEVOLUÇÃO DO EQUIPAMENTO</div>';
+  o+='<p class="dserif">5.1. Ao término da relação do '+N+' com a Walkingarage, este deverá devolver imediatamente os equipamentos fornecidos, em perfeito estado de conservação, ressalvando o desgaste decorrente do uso normal.</p>';
+  o+='<div class="cl" style="margin-top:14mm;">CLÁUSULA 6 - DA VIGÊNCIA</div>';
+  o+='<p class="dserif">6.1. O presente Termo de Responsabilidade entrará em vigor a partir da data da sua assinatura pelo '+N+' e permanecerá válido enquanto este estiver vinculado à Walkingarage.</p>';
+  o+='<div class="cl">CLÁUSULA 7 - O COMPROMISSO</div>';
+  o+='<p class="dserif">7.1. O '+N+' declara ter ciente e concorda em cumprir os princípios da Walkingarage, nomeadamente:</p>'+princípios();
+  o+='<div class="cl">CLÁUSULA 8 - DA CONFIDENCIALIDADE</div>';
+  o+='<p class="dserif">8.1. O '+N+' reconhece que as informações a que tem acesso por meio dos equipamentos são confidenciais, comprometendo-se a não as divulgar.</p>';
+  o+='<p class="dserif">8.2. Esta obrigação de confidencialidade permanecerá em vigor mesmo após o término da relação com a Walkingarage.</p>';
+  o+=rub+'</div>';
 
-  /* ---------- Folha 4 ---------- */
-  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
-  o += '<div class="cl">CLÁUSULA 9 - DA CIÊNCIA E ACEITAÇÃO DO TERMO</div>';
-  o += '<p class="dserif">9.1. O '+N+' declara ter lido e compreendido todas as cláusulas deste termo, assumindo total responsabilidade pelo cumprimento das obrigações aqui previstas.</p>';
-  o += '<p class="fecho">'+(d.localidade?esc(d.localidade):'______')+', '+dataLonga(d.data)+'.</p>';
-  o += '<div class="assbloco">';
-  o += d.assinatura ? '<img src="'+d.assinatura+'" alt="Assinatura">' : '<div class="vazio"></div>';
-  o += '<div class="linha"></div><div class="nm">'+(d.nomeCurto?esc(d.nomeCurto):'&nbsp;')+'</div></div>';
-  o += '</div>';
-
+  o+='<div class="folha"><div class="dtitle">'+T_EQUIP+'</div>';
+  o+='<div class="cl">CLÁUSULA 9 - DA CIÊNCIA E ACEITAÇÃO DO TERMO</div>';
+  o+='<p class="dserif">9.1. O '+N+' declara ter lido e compreendido todas as cláusulas deste termo, assumindo total responsabilidade pelo cumprimento das obrigações aqui previstas.</p>';
+  o+='<p class="fecho">'+(d.localidade?esc(d.localidade):'______')+', '+dataLonga(d.data)+'.</p>';
+  o+='<div class="assbloco">'+(d.assColab?'<img src="'+d.assColab+'" alt="Assinatura">':'<div class="vazio"></div>')+
+     '<div class="linha"></div><div class="nm">'+(d.nomeCurto?esc(d.nomeCurto):'&nbsp;')+'</div></div></div>';
   return o;
+}
+
+/* ---------- Tipo 2: carrinho de ferramenta ---------- */
+/* A lista tem 23 (Cacem) ou 31 (Lisboa) artigos e nao cabe numa folha A4 com a abertura.
+   Divide-se em duas: ate CARRINHO_1A_PAG linhas na folha 1, o resto na folha 2. */
+var CARRINHO_1A_PAG = 16;
+function tabelaCarrinho(itens, total, cab){
+  var t='<table class="dq compact">';
+  if(cab) t+='<thead><tr><th>EQUIPAMENTO</th><th>MARCA/REFERENCIA</th><th>VALOR S/ IVA</th></tr></thead>';
+  t+='<tbody>';
+  itens.forEach(function(x){ t+='<tr><td>'+esc(x.d)+'</td><td>'+esc(x.r)+'</td><td class="c">'+x.v.toFixed(2)+'€</td></tr>'; });
+  if(total) t+='<tr><td></td><td class="c">Valor Total »</td><td class="c">'+esc(total)+'</td></tr>';
+  t+='</tbody></table>';
+  return t;
+}
+function docCarrinho(d){
+  var rub = d.assColab?'<div class="rubrica"><img src="'+d.assColab+'" alt=""><img src="'+d.assColab+'" alt=""></div>':'';
+  var ts = TOOLSETS[d.local];
+  var o='';
+
+  o+='<div class="folha"><div class="dtitle">'+T_CARRINHO+'</div>';
+  o+='<p class="dsans">'+abertura(d,'COLABORADOR')+'</p>';
+  if(!ts){
+    o+='<table class="dq compact"><thead><tr><th>EQUIPAMENTO</th><th>MARCA/REFERENCIA</th><th>VALOR S/ IVA</th></tr></thead>'+
+       '<tbody><tr><td colspan="3" style="text-align:center;font-weight:400;color:#999">— selecione a unidade para carregar a lista de ferramentas —</td></tr></tbody></table>';
+    o+=rub+'</div>';
+  } else {
+    var p1=ts.itens.slice(0,CARRINHO_1A_PAG), p2=ts.itens.slice(CARRINHO_1A_PAG);
+    o+=tabelaCarrinho(p1, p2.length?null:ts.total, true);
+    o+=rub+'</div>';
+    if(p2.length){
+      o+='<div class="folha"><div class="dtitle">'+T_CARRINHO+'</div>';
+      o+='<p class="dsans" style="font-size:10pt;color:#444;margin-bottom:3mm;">Equipamento do carrinho (continuação)</p>';
+      o+=tabelaCarrinho(p2, ts.total, true);
+      o+=rub+'</div>';
+    }
+  }
+
+  o+='<div class="folha"><div class="dtitle">'+T_CARRINHO+'</div>';
+  o+='<p class="dserif"><strong>CONSIDERANDO</strong> que o presente Termo de Responsabilidade tem como objetivo estabelecer as condições e responsabilidades inerentes ao uso dos equipamentos acima listados, cedidos ao COLABORADOR, para uso exclusivo na prestação de serviços a favor da Walkingarage;</p>';
+  o+='<div class="cl">CLÁUSULA 1 - DO FORNECIMENTO DO EQUIPAMENTO</div>';
+  o+='<p class="dserif">1.1. A Walkingarage fornecerá ao COLABORADOR o equipamento acima indicado para utilização única e exclusiva no desempenho das suas atividades profissionais.</p>';
+  o+='<p class="dserif">1.2. O COLABORADOR declara estar ciente de que o uso dos equipamentos será exclusivamente para fins profissionais, relacionados às atividades da Walkingarage, comprometendo-se a não os utilizar para fins pessoais ou não autorizados.</p>';
+  o+='<div class="cl">CLÁUSULA 2 - DA RESPONSABILIDADE PELO USO DO EQUIPAMENTO</div>';
+  o+='<p class="dserif">2.1. O COLABORADOR compromete-se a utilizar os equipamentos de forma ética e responsável, observando as disposições da legislação portuguesa aplicável.</p>';
+  o+='<p class="dserif">2.2. O COLABORADOR reconhece que é a única responsável pelo uso adequado dos equipamentos, bem como pelo estado, organização e limpeza.</p>';
+  o+='<p class="dserif">2.3. É expressamente proibido ao COLABORADOR:</p>';
+  o+='<p class="dserif">a) Partilhar os equipamentos com terceiros sem autorização prévia da Walkingarage;</p>';
+  o+='<p class="dserif">b) Utilizar os equipamentos para práticas ilícitas ou atividades que possam causar danos à Walkingarage ou a terceiros;</p>';
+  o+='<p class="dserif">2.4. O COLABORADOR é responsável pelo pagamento do equipamento de reposição ao atual, por danos causados através de uso negligente ou perda/extravio, da seguinte forma:</p>';
+  o+='<p class="dserif">a) O equipamento agora fornecido será recorrentemente auditado, na presença do auditor e COLABORADOR, devidamente registado e assinado pelo auditor e COLABORADOR.</p>';
+  o+='<p class="dserif">b) O equipamento de reposição será encomendado pela Walkingarage, com dedução direta ao colaborador no vencimento do seguinte mês.</p>';
+  o+=rub+'</div>';
+
+  o+='<div class="folha"><div class="dtitle">'+T_CARRINHO+'</div>';
+  o+='<div class="cl">CLÁUSULA 3 - DA DEVOLUÇÃO DO EQUIPAMENTO</div>';
+  o+='<p class="dserif">3.1. Ao término da relação do COLABORADOR com a Walkingarage, esta deverá devolver imediatamente os equipamentos fornecidos, em perfeito estado de conservação, ressalvando o desgaste decorrente do uso normal.</p>';
+  o+='<p class="dserif">Caso algum equipamento não seja devolvido, aplicar-se-á a regra da cláusula 2.4 relativa à reposição.</p>';
+  o+='<div class="cl">CLÁUSULA 4 - DA VIGÊNCIA</div>';
+  o+='<p class="dserif">4.1. O presente Termo de Responsabilidade entrará em vigor a partir da data da sua assinatura pelo COLABORADOR e permanecerá válido enquanto este estiver vinculado à Walkingarage.</p>';
+  o+='<div class="cl">CLÁUSULA 5 - O COMPROMISSO</div>';
+  o+='<p class="dserif">5.1. O COLABORADOR declara ter ciente e concorda em cumprir os princípios da Walkingarage, nomeadamente:</p>'+princípios();
+  o+=rub+'</div>';
+
+  o+='<div class="folha"><div class="dtitle">'+T_CARRINHO+'</div>';
+  o+='<div class="cl">CLÁUSULA 6 - DA CIÊNCIA E ACEITAÇÃO DO TERMO</div>';
+  o+='<p class="dserif">6.1. O COLABORADOR declara ter lido e compreendido todas as cláusulas deste termo, assumindo total responsabilidade pelo cumprimento das obrigações aqui previstas.</p>';
+  o+='<p class="fecho">'+(d.localidade?esc(d.localidade):'______')+', '+dataLonga(d.data)+'.</p>';
+  o+='<div class="assbloco">'+(d.assColab?'<img src="'+d.assColab+'" alt="Assinatura">':'<div class="vazio"></div>')+
+     '<div class="linha"></div><div class="rl">O COLABORADOR</div>'+
+     (d.nomeCurto?'<div class="nm" style="font-size:10pt;font-weight:400;">'+esc(d.nomeCurto)+'</div>':'')+
+     '</div></div>';
+  return o;
+}
+
+/* ---------- Tipo 3: regulamento EPI ---------- */
+function docEPI(d){
+  var o='<div class="folha flow">';
+  o+='<div class="dhead"><div class="t">Regulamento Interno Fornecimento EPI e Aquisição De Calçado De Segurança</div>'+
+     '<div class="e">'+EMPRESA.nome+'.</div>'+
+     '<div class="e">Data: '+(d.dataReg?fmtPTdot(d.dataReg):'__.__.____')+'</div></div>';
+  o+='<div class="sec">1. Enquadramento e Objetivo</div>';
+  o+='<p class="dsans">Nos termos da legislação aplicável, a '+EMPRESA.nome+'. é responsável por assegurar que todos os trabalhadores possuem Equipamentos de Proteção Individual (EPI), sendo eles:</p>';
+  o+='<ul class="dl">'+EPIS.map(function(e){ return '<li>'+esc(e)+'</li>'; }).join('')+'</ul>';
+  o+='<p class="dsans">Estes EPIs são obrigatórios para a realização das suas atividades em condições de segurança.</p>';
+  o+='<p class="dsans">Este regulamento define os EPIs obrigatórios a utilizar diariamente no local de trabalho e o procedimento para aquisição de calçado de segurança pelos trabalhadores e o seu respetivo reembolso, limitado ao valor máximo de 60€ (sessenta euros), garantido pela entidade patronal.</p>';
+  o+='<div class="sec">2. Beneficiários</div>';
+  o+='<p class="dsans">Este regulamento aplica-se a todos os trabalhadores da '+EMPRESA.nome+'. cuja função exija o uso de EPIs e seja obrigatório calçado de segurança.</p>';
+  o+='<div class="sec">3. Procedimento para Aquisição e Reembolso do Calçado de Segurança</div>';
+  o+='<div class="sec2">3.1. Aquisição do Calçado de Segurança</div>';
+  o+='<p class="dsans">O trabalhador deve adquirir o calçado de segurança em estabelecimento de sua escolha, desde que o modelo cumpra as normas de segurança aplicáveis à função desempenhada.</p>';
+  o+='<p class="dsans">O calçado deve ser usado em todo o tempo após a aquisição para garantir a segurança no desempenho da função, sendo o prazo máximo para aquisição do calçado de 48 horas.</p>';
+  o+='<div class="sec2">3.2. Valor Máximo de Reembolso</div>';
+  o+='<p class="dsans">A empresa reembolsará o trabalhador até ao valor máximo de 60€ (sessenta euros) por ano civil.</p>';
+  o+='<p class="dsans">Qualquer valor superior a este montante será da responsabilidade do trabalhador.</p>';
+  o+='<div class="sec2">3.3. Apresentação da Fatura</div>';
+  o+='<p class="dsans">O trabalhador deve entregar a fatura original da aquisição do calçado de segurança no prazo de 48 horas após a compra, para validação do cumprimento dos requisitos de segurança.</p>';
+  o+='<ul class="dl"><li>A fatura deve conter:<ul class="dl" style="margin-bottom:0;"><li>Nome ou NIF Empresa</li><li>Data da compra.</li><li>Descrição do produto (calçado de segurança).</li></ul></li></ul>';
+  o+='<div class="sec2">3.4. Processamento do Reembolso</div>';
+  o+='<p class="dsans">O reembolso será processado no prazo de 5 dias úteis após a entrega da fatura e a validação do cumprimento das normas de segurança pelo Departamento de Recursos Humanos ou responsável designado.</p>';
+  o+='<div class="sec2">3.5. Requisitos do Calçado de Segurança</div>';
+  o+='<p class="dsans">O calçado adquirido deve cumprir os requisitos mínimos de segurança definidos pelas normas em vigor (ISO 20345:2011 | Especificação mínima S3), incluindo características específicas exigidas para a função desempenhada pelo trabalhador.</p>';
+  o+='<div class="sec2">3.6. Não Cumprimento do Procedimento</div>';
+  o+='<p class="dsans">Caso o trabalhador não entregue a fatura do calçado de segurança no prazo de 48 horas, ou o calçado não cumpra as normas exigidas, a empresa poderá recusar o reembolso e solicitar a aquisição de outro equipamento adequado, com o custo a cargo do trabalhador.</p>';
+  o+='<div class="sec">4. Disposições Finais</div>';
+  o+='<p class="dsans">Este regulamento entra em vigor na data de início de contrato de cada colaborador e a sua aprovação, e, aplica-se a todos os EPIs existentes na empresa e às aquisições de calçado de segurança realizadas após esta data.</p>';
+  o+='<p class="dsans">A empresa reserva-se o direito de alterar ou atualizar este regulamento, comunicando previamente aos trabalhadores.</p>';
+  o+='<div class="sec" style="margin-top:11mm;">Assinatura do Trabalhador</div>';
+  o+='<p class="dsans">Declaro ter recebido, compreendido e aceitado os termos e condições descritos no presente regulamento.</p>';
+  o+='<p class="dsans" style="margin-top:7mm;">Nome do Trabalhador: <strong>'+ph(d.nomeCurto,'[nome]')+'</strong></p>';
+  o+='<div class="sigline"><span class="lb">Assinatura:</span><span class="vl">'+(d.assColab?'<img src="'+d.assColab+'" alt="Assinatura">':'')+'</span></div>';
+  o+='<div class="sigline"><span class="lb">Data:</span><span class="vl"><span>'+(d.data?fmtPT(d.data):'')+'</span></span></div>';
+  o+='</div>';
+  return o;
+}
+
+/* ---------- Tipo 4: devolução de farda ---------- */
+function docFarda(d){
+  var linhas=fardaRows.filter(function(r){ return (r.art||'').trim(); });
+  var tab='<table class="dq"><thead><tr><th>Items Devolvidos</th><th style="width:36mm;">Quantidades</th></tr></thead><tbody>';
+  if(!linhas.length) tab+='<tr><td colspan="2" style="text-align:center;font-weight:400;color:#999">— sem artigos indicados —</td></tr>';
+  else linhas.forEach(function(r){
+    tab+='<tr><td>'+esc(r.art)+(r.tam&&r.tam!=='—'?' '+esc(r.tam):'')+'</td><td class="c">'+esc(r.qt)+'</td></tr>';
+  });
+  tab+='</tbody></table>';
+
+  var o='<div class="folha flow">';
+  o+='<div class="dhead"><div class="t">Devolução Farda de Trabalho</div>'+
+     '<div class="e">'+EMPRESA.nome+'.</div>'+
+     '<div class="e">Data: '+(d.data?fmtPTdot(d.data):'__.__.____')+'</div></div>';
+  o+='<p class="dsans">Eu, '+ph(d.nomeCompleto,'[nome completo]')+', venho por este meio declarar que, na data de hoje, procedi à devolução integral da(s) farda(s) e/ou uniforme(s) fornecido(s) pela empresa Walkingarage, no âmbito das minhas funções como '+ph(d.funcao,'[função]')+', durante o período em que estive ao serviço.</p>';
+  o+=tab;
+  o+='<p class="dsans">Declaro ainda que os artigos devolvidos se encontram em estado de conservação compatível com o uso normal no exercício das minhas funções.</p>';
+  o+='<p class="dsans">Estou ciente de que este procedimento é parte do encerramento do meu vínculo contratual com a empresa e que a não devolução dos itens acima mencionados poderia implicar reposição dos mesmos ou compensação financeira, conforme previsto nas políticas internas da empresa.</p>';
+  o+='<p class="dsans" style="margin-top:7mm;">Por ser verdade, firmo o presente termo.</p>';
+  o+='<div class="sigline" style="margin-top:11mm;"><span class="lb">Assinatura de quem entrega a farda:</span><span class="vl">'+(d.assColab?'<img src="'+d.assColab+'" alt="Assinatura">':'')+'</span></div>';
+  o+=(d.nomeCompleto?'<div class="dsans" style="font-size:9pt;color:#555;margin:1mm 0 0 62mm;">'+esc(d.nomeCompleto)+'</div>':'');
+  o+='<div class="sigline" style="margin-top:9mm;"><span class="lb">Assinatura de quem recebe a farda:</span><span class="vl">'+(d.assRecebe?'<img src="'+d.assRecebe+'" alt="Assinatura">':'')+'</span></div>';
+  o+=(d.recebe?'<div class="dsans" style="font-size:9pt;color:#555;margin:1mm 0 0 62mm;">'+esc(d.recebe)+'</div>':'');
+  o+='</div>';
+  return o;
+}
+
+function docHTML(d){
+  if(d.tipo==='carrinho') return docCarrinho(d);
+  if(d.tipo==='epi') return docEPI(d);
+  if(d.tipo==='devolucao_farda') return docFarda(d);
+  return docEquipamento(d);
 }
 
 function draw(){
   var d=dados();
-  document.getElementById('paper').innerHTML=docHTML(d,false);
-  var faltam=[];
-  if(!d.nomeCompleto) faltam.push('nome completo');
-  if(!d.nomeCurto) faltam.push('nome no texto');
-  if(!d.cc) faltam.push('CC');
-  if(!d.nif) faltam.push('NIF');
-  if(!rows.filter(function(r){return (r.eq||'').trim();}).length) faltam.push('equipamentos');
-  if(!d.assinatura) faltam.push('assinatura');
-  document.getElementById('prevInfo').textContent = faltam.length ? ('Falta preencher: '+faltam.join(', ')+'.') : '4 páginas, pronto a guardar.';
+  document.getElementById('paper').innerHTML=docHTML(d);
+  var falta=[];
+  var t=d.tipo, b=TIPOS[t].blocos;
+  if(b.indexOf('colab')>=0){
+    if(t==='devolucao_farda'){ if(!d.nomeCompleto) falta.push('nome completo'); }
+    else if(t==='epi'){ if(!d.nomeCurto) falta.push('nome do trabalhador'); }
+    else { if(!d.nomeCompleto) falta.push('nome completo'); if(!d.nomeCurto && t!=='carrinho') falta.push('nome no texto'); }
+  }
+  if(b.indexOf('ident')>=0){ if(!d.identNum) falta.push('nº do documento'); if(!d.nif) falta.push('NIF'); }
+  if(b.indexOf('funcao')>=0 && !d.funcao) falta.push('função');
+  if(b.indexOf('local')>=0 && !d.local) falta.push('unidade');
+  if(b.indexOf('equip')>=0 && !rows.filter(function(r){return (r.eq||'').trim();}).length) falta.push('equipamentos');
+  if(b.indexOf('farda')>=0 && !fardaRows.filter(function(r){return (r.art||'').trim();}).length) falta.push('artigos');
+  if(b.indexOf('dataReg')>=0 && !d.dataReg) falta.push('data do regulamento');
+  if(!d.data) falta.push('data');
+  if(!d.assColab) falta.push('assinatura');
+  if(b.indexOf('assRecebe')>=0 && !d.assRecebe) falta.push('assinatura de quem recebe');
+  var folhas=document.querySelectorAll('#paper .folha');
+  var np=folhas.length;
+  var msg;
+  if(falta.length) msg='Falta preencher: '+falta.join(', ')+'.';
+  else msg=np+' página'+(np>1?'s':'')+', pronto a guardar.';
+  // aviso de transbordo: folhas de página fixa que excedem A4 vão partir na impressão
+  var pxmm=96/25.4, excede=[];
+  for(var i=0;i<folhas.length;i++){
+    if(folhas[i].classList.contains('flow')) continue;
+    if(folhas[i].getBoundingClientRect().height > 299*pxmm) excede.push(i+1);
+  }
+  if(excede.length) msg+=' ⚠ A página '+excede.join(', ')+' excede o A4 e vai partir na impressão — retire alguma linha.';
+  document.getElementById('prevInfo').textContent=msg;
 }
 
 /* ===================== Guardar ===================== */
 function nomeFicheiro(d){
   var p=(d.data||hoje()).split('-');
-  return slug(d.nomeCurto)+'_'+p[2]+p[1]+p[0]+'_Termo_de_Responsabilidade_Equipamento.html';
+  var quem = (d.tipo==='devolucao_farda'||!d.nomeCurto) ? (d.nomeCompleto||d.nomeCurto) : d.nomeCurto;
+  var extra = d.tipo==='carrinho' && d.local ? '_'+slug(d.local.replace('Mecânica ','')) : '';
+  return slug(quem)+'_'+p[2]+p[1]+p[0]+'_'+TIPOS[d.tipo].ficheiro+extra+'.html';
 }
 function standalone(d){
   var css=document.querySelector('style').textContent;
+  var quem = d.nomeCurto || d.nomeCompleto;
   return '<!DOCTYPE html>\n<html lang="pt">\n<head>\n<meta charset="UTF-8">\n'+
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'+
-    '<title>Termo de Responsabilidade — '+esc(d.nomeCurto)+' — '+fmtPT(d.data)+'</title>\n'+
+    '<title>'+esc(TIPOS[d.tipo].label)+' — '+esc(quem)+' — '+fmtPT(d.data)+'</title>\n'+
     '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">\n'+
     '<style>\n'+css+'\nbody{background:#e5e9ef;}.wrap{padding:20px;}\n</style>\n</head>\n<body>\n'+
-    '<div class="wrap"><div class="paper">'+docHTML(d,true)+'</div></div>\n</body>\n</html>';
+    '<div class="wrap"><div class="paper">'+docHTML(d)+'</div></div>\n</body>\n</html>';
 }
 function guardar(){
-  var d=dados();
-  var faltam=[];
-  if(!d.nomeCompleto) faltam.push('Nome completo');
-  if(!d.nomeCurto) faltam.push('Nome usado no texto');
-  if(!d.cc) faltam.push('Nº do CC');
-  if(!d.nif) faltam.push('NIF');
-  if(!d.data) faltam.push('Data do termo');
-  if(faltam.length){ toast('Preencha: '+faltam.join(', '),true); return; }
-  var linhas=rows.filter(function(r){ return (r.eq||'').trim(); });
-  if(!linhas.length){ toast('Indique pelo menos um equipamento.',true); return; }
-  if(linhas.some(function(r){ return !(r.mm||'').trim(); }) && !confirm('Há equipamentos sem marca/modelo. Guardar assim mesmo?')) return;
-  if(linhas.some(function(r){ return !r.data; }) && !confirm('Há equipamentos sem data de entrega. Guardar assim mesmo?')) return;
-  if(!d.assinatura && !confirm('O termo não está assinado pelo colaborador. Guardar assim mesmo?')) return;
+  var d=dados(), b=TIPOS[d.tipo].blocos, falta=[];
+  if(d.tipo==='devolucao_farda'){ if(!d.nomeCompleto) falta.push('Nome completo'); if(!d.funcao) falta.push('Função'); }
+  else if(d.tipo==='epi'){ if(!d.nomeCurto) falta.push('Nome do trabalhador'); if(!d.dataReg) falta.push('Data do regulamento'); }
+  else {
+    if(!d.nomeCompleto) falta.push('Nome completo');
+    if(d.tipo==='equipamento' && !d.nomeCurto) falta.push('Nome usado no texto');
+    if(!d.identNum) falta.push('Nº do documento');
+    if(!d.nif) falta.push('NIF');
+    if(d.tipo==='carrinho' && !d.local) falta.push('Unidade do carrinho');
+  }
+  if(!d.data) falta.push('Data');
+  if(falta.length){ toast('Preencha: '+falta.join(', '),true); return; }
+
+  if(b.indexOf('equip')>=0){
+    var le=rows.filter(function(r){ return (r.eq||'').trim(); });
+    if(!le.length){ toast('Indique pelo menos um equipamento.',true); return; }
+    if(le.some(function(r){ return !(r.mm||'').trim(); }) && !confirm('Há equipamentos sem marca/modelo. Guardar assim mesmo?')) return;
+    if(le.some(function(r){ return !r.data; }) && !confirm('Há equipamentos sem data de entrega. Guardar assim mesmo?')) return;
+  }
+  if(b.indexOf('farda')>=0 && !fardaRows.filter(function(r){ return (r.art||'').trim(); }).length){
+    toast('Indique pelo menos um artigo devolvido.',true); return;
+  }
+  if(!d.assColab && !confirm('O documento não está assinado pelo colaborador. Guardar assim mesmo?')) return;
+  if(b.indexOf('assRecebe')>=0 && !d.assRecebe && !confirm('Falta a assinatura de quem recebe a farda. Guardar assim mesmo?')) return;
 
   var fn=nomeFicheiro(d), html=standalone(d);
   var up=null;
   try{ if(window.parent && window.parent!==window && window.parent.uploadToSharePoint) up=window.parent.uploadToSharePoint; }catch(e){}
-
   if(!up){ download(fn,html); toast('Fora da intranet — ficheiro descarregado: '+fn); return; }
+
   Promise.resolve(up('termos_responsabilidade', fn, html, 'text/html')).then(function(){
-    toast('Termo arquivado no SharePoint: '+fn);
+    toast('Documento arquivado no SharePoint: '+fn);
     if(window.parent.sendNotification){
-      var body='<p><strong>Colaborador:</strong> '+esc(d.nomeCompleto)+'</p>'+
-        '<p><strong>Data do termo:</strong> '+fmtPT(d.data)+'</p>'+
-        '<p><strong>Equipamentos entregues:</strong></p><ul>'+
-        linhas.map(function(r){ return '<li>'+esc(r.eq)+(r.mm?' — '+esc(r.mm):'')+(r.data?' ('+fmtPT(r.data)+')':'')+'</li>'; }).join('')+
-        '</ul><p><strong>Assinado:</strong> '+(d.assinatura?'sim':'NÃO')+'</p>'+
+      var det='';
+      if(d.tipo==='equipamento') det='<p><strong>Equipamentos:</strong></p><ul>'+rows.filter(function(r){return (r.eq||'').trim();}).map(function(r){ return '<li>'+esc(r.eq)+(r.mm?' — '+esc(r.mm):'')+(r.data?' ('+fmtPT(r.data)+')':'')+'</li>'; }).join('')+'</ul>';
+      if(d.tipo==='carrinho') det='<p><strong>Unidade:</strong> '+esc(d.local)+' — '+(TOOLSETS[d.local]?TOOLSETS[d.local].itens.length+' artigos, '+TOOLSETS[d.local].total:'')+'</p>';
+      if(d.tipo==='devolucao_farda') det='<p><strong>Artigos devolvidos:</strong></p><ul>'+fardaRows.filter(function(r){return (r.art||'').trim();}).map(function(r){ return '<li>'+esc(r.art)+(r.tam&&r.tam!=='—'?' '+esc(r.tam):'')+' × '+esc(r.qt)+'</li>'; }).join('')+'</ul>'+
+        '<p><strong>Recebido por:</strong> '+esc(d.recebe||'—')+'</p>';
+      var body='<p><strong>Tipo:</strong> '+esc(TIPOS[d.tipo].label)+'</p>'+
+        '<p><strong>Colaborador:</strong> '+esc(d.nomeCompleto||d.nomeCurto)+'</p>'+
+        '<p><strong>Data:</strong> '+fmtPT(d.data)+'</p>'+det+
+        '<p><strong>Assinado:</strong> '+(d.assColab?'sim':'NÃO')+'</p>'+
         '<p style="color:#888;font-size:12px;">Ficheiro: '+esc(fn)+' — Intranet &gt; Definições &gt; Gestão de Ficheiros &gt; Termos de Responsabilidade.</p>';
-      window.parent.sendNotification('termos_responsabilidade','📄 Novo Termo de Responsabilidade — '+d.nomeCurto, body);
+      window.parent.sendNotification('termos_responsabilidade','📄 Novo documento — '+(d.nomeCurto||d.nomeCompleto)+' ('+TIPOS[d.tipo].ficheiro.replace(/_/g,' ')+')', body);
     }
   }).catch(function(err){
     toast('Erro ao guardar: '+(err&&err.message?err.message:err),true);
@@ -560,23 +1034,32 @@ function download(fn,html){
   setTimeout(function(){ URL.revokeObjectURL(u); },2000);
 }
 function limpar(){
-  if(!confirm('Limpar o formulário e a assinatura?')) return;
+  if(!confirm('Limpar o formulário e as assinaturas?')) return;
   document.getElementById('fColab').value='';
-  ['fNomeCompleto','fNomeCurto','fCC','fNIF'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['fNomeCompleto','fNomeCurto','fIdentNum','fNIF','fFuncao'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('fIdentTipo').value='cc';
+  document.getElementById('fLocalCarrinho').value='';
   document.getElementById('fLocalidade').value='Lisboa';
   document.getElementById('fData').value=hoje();
-  rows=[]; renderRows();
-  if(pad) pad.clear();
+  document.getElementById('fData2').value=hoje();
+  document.getElementById('fRecebe').value='Cláudia Pedro';
+  rows=[]; fardaRows=[]; renderRows(); renderFarda();
+  if(pads.colab) pads.colab.clear();
+  if(pads.recebe) pads.recebe.clear();
   draw();
 }
 
 /* ===================== Arranque ===================== */
+fillTipos();
 fillColab();
-fillCatalogo();
+fillCatalogos();
 document.getElementById('fData').value=hoje();
-initPad();
-renderRows();
-draw();
+document.getElementById('fData2').value=hoje();
+document.getElementById('fDataReg').value='2026-05-21';
+initPad('colab','padColab','stColab');
+initPad('recebe','padRecebe','stRecebe');
+renderRows(); renderFarda();
+onTipoChange();
 </script>
 
 </body>
