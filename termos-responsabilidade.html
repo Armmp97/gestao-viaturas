@@ -111,6 +111,52 @@ ul.dl li{margin-bottom:1.4mm;}
 .sigline .vl img{height:14mm;object-fit:contain;position:absolute;bottom:0;left:6mm;}
 .sigline .vl span{padding-left:3mm;}
 
+/* tabs + histórico */
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:11px 22px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;font-size:.87rem;font-weight:700;color:var(--muted);transition:all .15s;display:inline-flex;align-items:center;gap:8px;}
+.tab:hover{border-color:var(--blue);}
+.tab.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+.tab .pill{background:var(--red);color:#fff;border-radius:50px;font-size:.68rem;font-weight:800;padding:1px 8px;min-width:20px;text-align:center;}
+.view{display:none;}.view.active{display:block;}
+.banner{border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:.85rem;display:flex;gap:12px;align-items:flex-start;}
+.banner.warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;}
+.banner.ok{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;}
+.banner.inf{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;}
+.banner ul{margin:6px 0 0 18px;}
+.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+.kpi{flex:1;min-width:130px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-align:center;}
+.kpi .n{font-size:1.5rem;font-weight:800;}
+.kpi .l{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.hcard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+.hcard-h{padding:13px 20px;background:var(--navy2);color:#fff;font-size:.88rem;font-weight:700;}
+.hscroll{overflow-x:auto;}
+table.cov{width:100%;border-collapse:collapse;min-width:640px;}
+table.cov th{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:#eef1f5;padding:9px 8px;border-bottom:1px solid var(--line);text-align:center;}
+table.cov th.p{text-align:left;padding-left:18px;min-width:190px;}
+table.cov td{padding:7px 8px;border-bottom:1px solid #f1f5f9;text-align:center;font-size:12.5px;}
+table.cov td.p{text-align:left;padding-left:18px;font-weight:600;color:var(--text);white-space:nowrap;}
+table.cov td.p small{display:block;font-weight:400;color:#94a3b8;font-size:10.5px;}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:26px;border-radius:7px;font-size:11px;font-weight:700;padding:0 8px;}
+.cell.ok{background:#D1FAE5;color:#047857;}
+.cell.miss{background:#FEE2E2;color:#B91C1C;}
+.cell.na{background:#eef1f5;color:#94a3b8;font-weight:400;}
+table.regs{width:100%;border-collapse:collapse;}
+table.regs thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:#eef1f5;padding:9px 14px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+table.regs td{padding:9px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px;vertical-align:top;}
+table.regs .src{font-size:11px;color:var(--muted);word-break:break-all;}
+table.regs .tag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:50px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+table.regs .tag.t-equipamento{background:#DBEAFE;color:#1D4ED8;}
+table.regs .tag.t-carrinho{background:#FEF3C7;color:#B45309;}
+table.regs .tag.t-epi{background:#DCFCE7;color:#15803D;}
+table.regs .tag.t-devolucao_farda{background:#F3E8FF;color:#7E22CE;}
+table.regs .tag.o-intranet{background:#E0E7FF;color:#3730A3;}
+table.regs .tag.o-historico{background:#eef1f5;color:#64748b;}
+table.regs .nota{font-size:11px;color:#92400E;margin-top:3px;}
+.hfilters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin-bottom:16px;}
+.hfilters .hf{min-width:170px;}
+.hfilters .hf .ml{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--blue);margin-bottom:4px;}
+.hfilters .sp{flex:1;}
+
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(150%);background:#002B55;color:#fff;padding:13px 22px;border-radius:40px;font-size:13px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.22);transition:transform .3s;z-index:900;max-width:92vw;text-align:center;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.err{background:var(--red);}
@@ -138,6 +184,12 @@ ul.dl li{margin-bottom:1.4mm;}
     <h1>📄 Termos de Responsabilidade</h1>
     <p class="sub">Gerador de termos e declarações para colaboradores. Escolhe o tipo de documento, preenche os dados, recolhe a assinatura e o documento é gerado com o texto oficial e arquivado no SharePoint.</p>
 
+    <div class="tabs">
+      <button class="tab active" id="tabNovo" onclick="showView('novo')">✍️ Novo documento</button>
+      <button class="tab" id="tabHist" onclick="showView('hist')">📚 Histórico <span class="pill" id="histPill" style="display:none;">0</span></button>
+    </div>
+
+    <div class="view active" id="viewNovo">
     <div class="card">
       <h2><span class="step">1</span> Tipo de documento</h2>
       <select id="fTipo" onchange="onTipoChange()"></select>
@@ -283,7 +335,43 @@ ul.dl li{margin-bottom:1.4mm;}
       <strong>Dados pessoais:</strong> o número do documento de identificação e o NIF só existem no documento gerado — não ficam guardados na intranet nem em nenhum registo. Os documentos assinados são arquivados no SharePoint em <em>Intranet/RH/Termos_Responsabilidade</em>, de acesso restrito.
     </div>
 
-    <div class="docbar">
+    </div><!-- /viewNovo (o resto fica visível: pré-visualização) -->
+
+    <div class="view" id="viewHist">
+      <div id="alertZone"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="hfilters">
+        <div class="hf"><div class="ml">Tipo</div>
+          <select id="hTipo" onchange="renderHist()"><option value="">Todos</option></select>
+        </div>
+        <div class="hf"><div class="ml">Colaborador</div>
+          <select id="hPessoa" onchange="renderHist()"><option value="">Todos</option></select>
+        </div>
+        <div class="sp"></div>
+        <button class="btn btn-ghost btn-sm" onclick="reloadIndex(true)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Sincronizar
+        </button>
+      </div>
+      <div class="hcard">
+        <div class="hcard-h">📋 Cobertura por colaborador</div>
+        <div class="hscroll"><table class="cov"><thead id="covHead"></thead><tbody id="covBody"></tbody></table></div>
+        <div style="padding:12px 20px;font-size:11.5px;color:var(--muted);border-top:1px solid #f1f5f9;">
+          Regulamento EPI cobrado a técnicos de mecânica, chapa e pintura e a coordenadores. Termo de carrinho cobrado aos técnicos de mecânica de Cacém e Lisboa.
+          Termo de equipamento e devolução de farda são pontuais — mostram-se, mas não geram alerta.
+        </div>
+      </div>
+      <div class="hcard">
+        <div class="hcard-h">Documentos arquivados <span id="regCount" style="opacity:.75;font-weight:400;"></span></div>
+        <div class="hscroll"><table class="regs">
+          <thead><tr><th>Data</th><th>Tipo</th><th>Colaborador</th><th>Detalhe</th><th>Origem</th><th>Ficheiro</th></tr></thead>
+          <tbody id="regsBody"></tbody>
+        </table></div>
+      </div>
+      <div class="banner inf"><span>ℹ️</span><div>Os registos marcados como <strong>Histórico</strong> são os documentos em papel digitalizados que estão na pasta de origem no computador. Os marcados como <strong>Intranet</strong> foram gerados aqui e o HTML está no SharePoint.</div></div>
+    </div>
+
+    <div class="docbar" id="docbar">
       <h2>Pré-visualização</h2>
       <span class="hintline" id="prevInfo"></span>
       <span class="flex"></span>
@@ -422,6 +510,94 @@ var EPIS = [
   'Óculos de Proteção, e;','Calçado de segurança'
 ];
 
+
+/* ==================================================================
+   HISTÓRICO SEMEADO — documentos em papel já existentes.
+   Compilado a partir da pasta Downloads do André (36 PDFs), com as datas
+   e os dados lidos dentro de cada documento. Os PDFs ficam onde estão;
+   'ficheiro' é o nome do PDF de origem.
+   precisao:'mes' = só se conhece o mês (o nome do ficheiro só traz MM/AA).
+   ================================================================== */
+var INATIVOS = ['Robson Silva','Alexandre Torres','Fernando Mário Leitão dos Santos',
+                'Cheickh Gueye','Djeison Amado','Tiago Paixão'];
+
+/* Âmbito dos alertas de documento em falta (decidido com o André) */
+var ESCOPO_EPI = ['Técnico Mecânica','Técnico Chapa','Técnico Pintura / Preparação','Coordenador'];
+var ESCOPO_CARRINHO_FUNC = ['Técnico Mecânica'];
+var ESCOPO_CARRINHO_UNID = ['Mecânica Cacém','Mecânica Lisboa'];
+
+var TERMOS_SEED = [
+  /* ---------- Termos de equipamento / PC ---------- */
+  { tipo:'equipamento', pessoa:'Ricardo Ferreira', nomeCompleto:'Ricardo Valente Ferreira', data:'2025-01-13',
+    ficheiro:'RicardoFerreira_13012025_Termo de Responsabilidade PC.pdf', assinado:true,
+    itens:['Computador Portátil — Lenovo IP1 15ALC7 R5','Conjunto Teclado e Rato — Trust ODY II','Hub USB-C — Ewent Cable EW1148','Mala Transporte — Temium Mala 17'] },
+  { tipo:'equipamento', pessoa:'Inês Peixinho', nomeCompleto:'Inês de Almeida Peixinho', data:'2025-02-07',
+    ficheiro:'InesPeixinho_0702025_Termo de Responsabilidade PC.pdf', assinado:true,
+    itens:['Computador Portátil — Lenovo IdeaPad 1 15AMN7-717 15.6" SN:SMP2QN114','Conjunto Teclado e Rato — HP 330 Wireless SN:7CH430081N','Hub USB-C — Baseus 5/1 SN:5007816115','Mala Transporte — Lenovo B210 SN:202501072177'],
+    nota:'O nome do ficheiro tem a data malformada ("0702025"); o documento diz 07/02/2025.' },
+  { tipo:'equipamento', pessoa:'Paulo Rodrigues', nomeCompleto:'Paulo Jorge Serfaty Rodrigues', data:'2025-02-07',
+    ficheiro:'PauloRodrigues_28012025_Termo de Responsabilidade PC.pdf', assinado:true,
+    itens:['Computador Portátil — Lenovo IdeaPad 15ALC7-306 SN:3C0AF39A086D','Hub USB-C — Macally EAN:8717278765167','Mala Transporte — HP EAN:0198122297177'],
+    nota:'⚠ Datas em conflito no próprio documento: entregas e nome do ficheiro dizem 28/01/2025, a linha de fecho diz 7 de fevereiro de 2025. Semeada a data da assinatura.' },
+
+  /* ---------- Termos de carrinho de ferramenta ---------- */
+  { tipo:'carrinho', pessoa:'Arnaldo Cruz', nomeCompleto:'Arnaldo José Carvalho Brites da Cruz', data:'2025-10-31',
+    local:'Mecânica Cacém', ficheiro:'Termo de responsabilidade - Arnaldo Cruz.pdf', assinado:true },
+  { tipo:'carrinho', pessoa:'Edmilson Fernandes', nomeCompleto:'Edmilson Jorge Pereira Fernandes', data:'2025-10-31',
+    local:'Mecânica Cacém', ficheiro:'Termo de responsabilidade - Edmilson Fernandes.pdf', assinado:true },
+  { tipo:'carrinho', pessoa:'Gonçalo Matos', nomeCompleto:'Gonçalo Miguel Palrinhas Matos', data:'2025-10-31',
+    local:'Mecânica Cacém', ficheiro:'Termo de responsabilidade - Gonçalo Matos.pdf', assinado:true },
+  { tipo:'carrinho', pessoa:'Robson Silva', nomeCompleto:'Robson Oliveira da Silva', data:'2025-10-31',
+    local:'Mecânica Cacém', ficheiro:'Termo de responsabilidade - Robson Silva.pdf', assinado:true,
+    nota:'Ex-colaborador.' },
+  { tipo:'carrinho', pessoa:'Emanuel Gonçalves', nomeCompleto:'Emanuel Antonio de Oliveira Alves Gonçalves', data:'2025-12-09',
+    local:'Mecânica Lisboa', ficheiro:'Termo de responsabilidade - Emanuel Gonçalves.pdf', assinado:true },
+  { tipo:'carrinho', pessoa:'Jorge Silva', nomeCompleto:'Jorge Miguel Alves Silva', data:'2025-12-09',
+    local:'Mecânica Lisboa', ficheiro:'Termo de responsabilidade - Jorge Silva.pdf', assinado:true },
+  { tipo:'carrinho', pessoa:'Sérgio Pereira', nomeCompleto:'Sérgio Fernando Migueis Pereira', data:'2025-12-09',
+    local:'Mecânica Lisboa', ficheiro:'Termo de responsabilidade - Sérgio Pereira.pdf', assinado:true,
+    nota:'⚠ As páginas deste PDF estão fora de ordem (a 1ª página do PDF é o fim da tabela).' },
+  { tipo:'carrinho', pessoa:'Filipe Bonifácio', nomeCompleto:'Filipe José Reis Bonifácio', data:'2026-04-01',
+    local:'Mecânica Cacém', ficheiro:'Termo de responsabilidade - Filipe Bonifacio.pdf', assinado:true,
+    nota:'⚠ Data reconstruída: o scan foi feito com a página recortada e a linha de fecho ficou truncada. Confirmar no original.' },
+
+  /* ---------- Regulamento EPI / calçado de segurança ---------- */
+  { tipo:'epi', pessoa:'Gonçalo Matos', data:'2024-12', precisao:'mes', ficheiro:'1224_GonçaloMatos_Regulamento.pdf', assinado:true },
+
+  { tipo:'epi', pessoa:'Carlos Antunes',   data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_CarlosAntunes.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Diogo Fernandes',  data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_DiogoFernandes.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Gyanu Pujara',     data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_GyanuPujara.pdf', assinado:true },
+  { tipo:'epi', pessoa:'José Borges',      data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_JoseBorges.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Mário Peres',      data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_MarioPeres.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Nuno Montes',      data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_NunoMontes.pdf', assinado:true },
+  { tipo:'epi', pessoa:'João Bizarro',     data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_PauloBizarro.pdf', assinado:true,
+    nota:'Ficheiro em nome de "Paulo Bizarro" — mesma pessoa (já registado assim nas fardas).' },
+  { tipo:'epi', pessoa:'Pedro Jana',       data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_PedroJana.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Vítor Soutilha',   data:'2025-04', precisao:'mes', ficheiro:'0425_Regulamento_VitorSoutilha.pdf', assinado:true },
+
+  { tipo:'epi', pessoa:'Arnaldo Cruz',       data:'2025-08', precisao:'mes', ficheiro:'0825_Regulamento_Arnaldo.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Edmilson Fernandes', data:'2025-08', precisao:'mes', ficheiro:'0825_Regulamento_Edmilson.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Emanuel Gonçalves',  data:'2025-08', precisao:'mes', ficheiro:'0825_Regulamento_EmanuelGoncalves.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Jorge Silva',        data:'2025-08', precisao:'mes', ficheiro:'0825_Regulamento_JorgeSilva.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Robson Silva',       data:'2025-08', precisao:'mes', ficheiro:'0825_Regulamento_Robson.pdf', assinado:true, nota:'Ex-colaborador.' },
+  { tipo:'epi', pessoa:'Sérgio Pereira',     data:'2025-08', precisao:'mes', ficheiro:'0825_Regulamento_SergioPereira.pdf', assinado:true },
+
+  { tipo:'epi', pessoa:'Cheickh Gueye',     data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_CheickhGueye.pdf', assinado:true, nota:'Ex-colaborador.' },
+  { tipo:'epi', pessoa:'Djeison Amado',     data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_DjeisonAmado.pdf', assinado:true, nota:'Ex-colaborador.' },
+  { tipo:'epi', pessoa:'Fábio Ramalho',     data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_FabioRamalho.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Filipe Bonifácio',  data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_FilipeBonifacio.pdf', assinado:true },
+  { tipo:'epi', pessoa:'José Rodriguez',    data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_JoseRodriguez.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Paulo Ferreira',    data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_PauloFerreira.pdf', assinado:true },
+  { tipo:'epi', pessoa:'Tiago Paixão',      data:'2025-09', precisao:'mes', ficheiro:'0925_Regulamento_TiagoPaixão.pdf', assinado:true, nota:'Ex-colaborador.' },
+
+  /* ---------- Devolução de farda ---------- */
+  { tipo:'devolucao_farda', pessoa:'Alexandre Torres', nomeCompleto:'Alexandre Tavares Torres', data:'2025-04-30',
+    funcao:'Assessor de Vendas', ficheiro:'0425_Devolução_AlexandreTorres.pdf', assinado:true,
+    itens:['Pullover Inverno Homem × 1','Camisa Homem Manga Comprida × 4'], nota:'Ex-colaborador. Sem tamanhos indicados no documento.' },
+  { tipo:'devolucao_farda', pessoa:'Fernando Mário Leitão dos Santos', nomeCompleto:'Fernando Mário Leitão dos Santos', data:'2025-07-01',
+    funcao:'Assessor de Vendas', ficheiro:'0725_Devolução_FernandoMario.pdf', assinado:true,
+    itens:['Pullover Inverno Homem XXL × 1','Camisa Homem Manga Comprida XXL × 5'], nota:'Ex-colaborador.' }
+];
 
 var EMPRESA = {
   nome: 'Walkingarage, Lda',
@@ -1007,8 +1183,18 @@ function guardar(){
   try{ if(window.parent && window.parent!==window && window.parent.uploadToSharePoint) up=window.parent.uploadToSharePoint; }catch(e){}
   if(!up){ download(fn,html); toast('Fora da intranet — ficheiro descarregado: '+fn); return; }
 
+  var record = { tipo:d.tipo, pessoa:(d.nomeCurto||d.nomeCompleto), nomeCompleto:d.nomeCompleto,
+    data:d.data, ficheiro:fn, assinado:!!d.assColab, origem:'intranet', criadoEm:new Date().toISOString() };
+  if(d.tipo==='carrinho') record.local=d.local;
+  if(d.tipo==='devolucao_farda'){ record.funcao=d.funcao; record.recebe=d.recebe;
+    record.itens=fardaRows.filter(function(r){return (r.art||'').trim();}).map(function(r){ return r.art+(r.tam&&r.tam!=='—'?' '+r.tam:'')+' × '+r.qt; }); }
+  if(d.tipo==='equipamento') record.itens=rows.filter(function(r){return (r.eq||'').trim();}).map(function(r){ return r.eq+(r.mm?' — '+r.mm:''); });
+
   Promise.resolve(up('termos_responsabilidade', fn, html, 'text/html')).then(function(){
+    return appendToIndex(record).catch(function(e){ console.warn('[Termos] indice:', e); return false; });
+  }).then(function(){
     toast('Documento arquivado no SharePoint: '+fn);
+    renderHist(); updatePill();
     if(window.parent.sendNotification){
       var det='';
       if(d.tipo==='equipamento') det='<p><strong>Equipamentos:</strong></p><ul>'+rows.filter(function(r){return (r.eq||'').trim();}).map(function(r){ return '<li>'+esc(r.eq)+(r.mm?' — '+esc(r.mm):'')+(r.data?' ('+fmtPT(r.data)+')':'')+'</li>'; }).join('')+'</ul>';
@@ -1049,6 +1235,196 @@ function limpar(){
   draw();
 }
 
+/* ===================== Histórico ===================== */
+var INDEX_ROWS = [];
+var spLoaded = false;
+var MES_ABR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function showView(v){
+  document.getElementById('viewNovo').classList.toggle('active', v==='novo');
+  document.getElementById('viewHist').classList.toggle('active', v==='hist');
+  document.getElementById('tabNovo').classList.toggle('active', v==='novo');
+  document.getElementById('tabHist').classList.toggle('active', v==='hist');
+  document.getElementById('docbar').style.display = v==='novo' ? '' : 'none';
+  document.getElementById('paper').style.display = v==='novo' ? '' : 'none';
+  if(v==='hist') renderHist();
+}
+function dataLabel(r){
+  if(!r.data) return '—';
+  if(r.precisao==='mes'){ var p=r.data.split('-'); return MES_ABR[parseInt(p[1],10)-1]+' '+p[0]; }
+  return fmtPT(r.data);
+}
+function seedRows(){
+  return TERMOS_SEED.map(function(r){ var c={}; for(var k in r) c[k]=r[k]; c.origem='historico'; return c; });
+}
+function rowKey(r){ return [r.tipo,r.pessoa,(r.data||'').slice(0,7)].join('||'); }
+function mergeRows(seed, sp){
+  var out=seed.slice(), seen={};
+  out.forEach(function(r){ seen[rowKey(r)]=true; });
+  (sp||[]).forEach(function(r){
+    if(!r||!r.tipo||!r.pessoa) return;
+    var k=rowKey(r);
+    if(seen[k]){ for(var i=0;i<out.length;i++) if(rowKey(out[i])===k){ out[i]=r; break; } }
+    else { out.push(r); seen[k]=true; }
+  });
+  return out;
+}
+function reloadIndex(msg){
+  var loader=null;
+  try{ if(window.parent && window.parent!==window && window.parent.termosLoadIndex) loader=window.parent.termosLoadIndex; }catch(e){}
+  if(!loader){
+    INDEX_ROWS=seedRows(); spLoaded=false; renderHist(); updatePill();
+    if(msg) toast('Fora da intranet — a mostrar apenas o histórico semeado.');
+    return Promise.resolve();
+  }
+  return loader().then(function(d){
+    INDEX_ROWS=mergeRows(seedRows(), (d&&d.rows)||[]); spLoaded=true;
+    renderHist(); updatePill();
+    if(msg) toast('Histórico sincronizado ('+INDEX_ROWS.length+' documentos).');
+  }).catch(function(){
+    INDEX_ROWS=seedRows(); spLoaded=false; renderHist(); updatePill();
+    if(msg) toast('Não foi possível ler o SharePoint — a mostrar o histórico semeado.', true);
+  });
+}
+function appendToIndex(record){
+  var saver=null, loader=null;
+  try{ saver=window.parent.termosSaveIndex; loader=window.parent.termosLoadIndex; }catch(e){}
+  if(!saver) return Promise.resolve(false);
+  var base = loader ? loader().catch(function(){ return null; }) : Promise.resolve(null);
+  return base.then(function(d){
+    var rows=(d&&d.rows)||[];
+    rows=rows.filter(function(r){ return !(r.tipo===record.tipo && r.pessoa===record.pessoa && r.ficheiro===record.ficheiro); });
+    rows.push(record);
+    return saver({ updatedAt:new Date().toISOString(), rows:rows });
+  }).then(function(){
+    INDEX_ROWS=mergeRows(seedRows(), INDEX_ROWS.filter(function(r){ return r.origem==='intranet'; }).concat([record]));
+    return true;
+  });
+}
+
+/* quem é cobrado em cada tipo */
+function noEscopo(c, tipo){
+  if(INATIVOS.indexOf(c.n)>=0) return false;
+  if(tipo==='epi') return ESCOPO_EPI.indexOf(c.f)>=0;
+  if(tipo==='carrinho') return ESCOPO_CARRINHO_FUNC.indexOf(c.f)>=0 && ESCOPO_CARRINHO_UNID.indexOf(c.g)>=0;
+  return false;
+}
+function temDoc(pessoa, tipo){
+  return INDEX_ROWS.filter(function(r){ return r.pessoa===pessoa && r.tipo===tipo; })
+    .sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); })[0] || null;
+}
+function emFalta(){
+  var res=[];
+  ['epi','carrinho'].forEach(function(tipo){
+    COLABORADORES.forEach(function(c){
+      if(!noEscopo(c,tipo)) return;
+      if(!temDoc(c.n,tipo)) res.push({ tipo:tipo, pessoa:c.n, funcao:c.f, unidade:c.g });
+    });
+  });
+  return res;
+}
+function updatePill(){
+  var f=emFalta(), pill=document.getElementById('histPill');
+  if(f.length){ pill.textContent=f.length; pill.style.display=''; } else pill.style.display='none';
+}
+
+function renderHist(){
+  if(!INDEX_ROWS.length) INDEX_ROWS=seedRows();
+  var faltas=emFalta();
+
+  /* alertas */
+  var z=document.getElementById('alertZone');
+  if(!faltas.length){
+    z.innerHTML='<div class="banner ok"><span>✅</span><div>Sem documentos em falta no âmbito definido.</div></div>';
+  } else {
+    var porTipo={};
+    faltas.forEach(function(f){ (porTipo[f.tipo]=porTipo[f.tipo]||[]).push(f); });
+    var h='<div class="banner warn"><span>⚠️</span><div><strong>'+faltas.length+' documento(s) em falta</strong><ul>';
+    Object.keys(porTipo).forEach(function(t){
+      h+='<li><strong>'+esc(TIPOS[t].label.split('—')[0].split('(')[0].trim())+'</strong>: '+
+         porTipo[t].map(function(f){ return esc(f.pessoa)+' <span style="opacity:.7">('+esc(f.funcao)+' · '+esc(f.unidade.replace('Mecânica ',''))+')</span>'; }).join(' · ')+'</li>';
+    });
+    h+='</ul></div></div>';
+    if(!spLoaded) h+='<div class="banner inf"><span>ℹ️</span><div>A mostrar o histórico semeado. Os documentos gerados na intranet aparecem depois de sincronizar com o SharePoint.</div></div>';
+    z.innerHTML=h;
+  }
+
+  /* KPIs por tipo */
+  var k='';
+  Object.keys(TIPOS).forEach(function(t){
+    var n=INDEX_ROWS.filter(function(r){ return r.tipo===t; }).length;
+    var cor = t==='epi'?'#15803D': t==='carrinho'?'#B45309': t==='devolucao_farda'?'#7E22CE':'#1D4ED8';
+    k+='<div class="kpi"><div class="n" style="color:'+cor+'">'+n+'</div><div class="l">'+esc(TIPOS[t].ficheiro.replace(/_/g,' ').replace('Termo de Responsabilidade ','').replace('Regulamento ','Reg. '))+'</div></div>';
+  });
+  k+='<div class="kpi"><div class="n" style="color:'+(faltas.length?'#DC2626':'#16a34a')+'">'+faltas.length+'</div><div class="l">Em falta</div></div>';
+  document.getElementById('kpis').innerHTML=k;
+
+  /* filtros */
+  var st=document.getElementById('hTipo');
+  if(st.options.length<=1){ Object.keys(TIPOS).forEach(function(t){ st.innerHTML+='<option value="'+t+'">'+esc(TIPOS[t].label.split('(')[0].trim())+'</option>'; }); }
+  var sp=document.getElementById('hPessoa');
+  if(sp.options.length<=1){
+    var pessoas={};
+    INDEX_ROWS.forEach(function(r){ pessoas[r.pessoa]=true; });
+    COLABORADORES.forEach(function(c){ pessoas[c.n]=true; });
+    Object.keys(pessoas).sort().forEach(function(n){ sp.innerHTML+='<option value="'+esc(n)+'">'+esc(n)+'</option>'; });
+  }
+  var fT=st.value, fP=sp.value;
+
+  /* matriz de cobertura */
+  var cols=['epi','carrinho','equipamento','devolucao_farda'];
+  var head='<tr><th class="p">Colaborador</th>'+cols.map(function(t){
+    return '<th>'+esc(TIPOS[t].ficheiro.replace(/_/g,' ').replace('Termo de Responsabilidade ','').replace('Regulamento ','Reg. '))+'</th>';
+  }).join('')+'</tr>';
+  var body='';
+  var lista=COLABORADORES.slice();
+  // ex-colaboradores com documentos no histórico aparecem no fim
+  INATIVOS.forEach(function(n){
+    if(INDEX_ROWS.some(function(r){ return r.pessoa===n; })) lista.push({ n:n, f:'ex-colaborador', g:'—', inativo:true });
+  });
+  lista.forEach(function(c){
+    if(fP && c.n!==fP) return;
+    var linha='<td class="p">'+esc(c.n)+'<small>'+esc(c.f)+(c.g&&c.g!=='—'?' · '+esc(c.g.replace('Mecânica ','')):'')+'</small></td>';
+    var relevante=false;
+    cols.forEach(function(t){
+      var reg=temDoc(c.n,t);
+      if(reg){
+        relevante=true;
+        linha+='<td><span class="cell ok" title="'+esc(reg.ficheiro||'')+'">'+dataLabel(reg)+'</span></td>';
+      } else if(noEscopo(c,t)){
+        relevante=true;
+        linha+='<td><span class="cell miss" title="Documento em falta">em falta</span></td>';
+      } else {
+        linha+='<td><span class="cell na">—</span></td>';
+      }
+    });
+    if(relevante || !fP) body+='<tr>'+linha+'</tr>';
+  });
+  document.getElementById('covHead').innerHTML=head;
+  document.getElementById('covBody').innerHTML=body||'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:22px;">Sem colaboradores para este filtro.</td></tr>';
+
+  /* lista de documentos */
+  var rows=INDEX_ROWS.filter(function(r){
+    return (!fT || r.tipo===fT) && (!fP || r.pessoa===fP);
+  }).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+  document.getElementById('regCount').textContent='('+rows.length+')';
+  document.getElementById('regsBody').innerHTML = rows.length ? rows.map(function(r){
+    var det=[];
+    if(r.local) det.push(esc(r.local)+(TOOLSETS[r.local]?' · '+TOOLSETS[r.local].itens.length+' artigos · '+TOOLSETS[r.local].total:''));
+    if(r.funcao) det.push(esc(r.funcao));
+    if(r.itens && r.itens.length) det.push('<div class="src">'+r.itens.map(esc).join('<br>')+'</div>');
+    if(r.assinado===false) det.push('<span style="color:#DC2626;font-weight:700">não assinado</span>');
+    return '<tr>'+
+      '<td><strong>'+dataLabel(r)+'</strong></td>'+
+      '<td><span class="tag t-'+r.tipo+'">'+esc(TIPOS[r.tipo].ficheiro.replace(/_/g,' ').replace('Termo de Responsabilidade ','').replace('Regulamento ','Reg. '))+'</span></td>'+
+      '<td>'+esc(r.pessoa)+(r.nomeCompleto&&r.nomeCompleto!==r.pessoa?'<div class="src">'+esc(r.nomeCompleto)+'</div>':'')+'</td>'+
+      '<td>'+(det.length?det.join('<br>'):'<span style="color:#cbd5e1">—</span>')+'</td>'+
+      '<td><span class="tag o-'+(r.origem==='intranet'?'intranet':'historico')+'">'+(r.origem==='intranet'?'Intranet':'Histórico')+'</span></td>'+
+      '<td><div class="src">'+esc(r.ficheiro||'—')+'</div>'+(r.nota?'<div class="nota">'+esc(r.nota)+'</div>':'')+'</td>'+
+    '</tr>';
+  }).join('') : '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:22px;">Sem documentos para este filtro.</td></tr>';
+}
+
 /* ===================== Arranque ===================== */
 fillTipos();
 fillColab();
@@ -1060,6 +1436,10 @@ initPad('colab','padColab','stColab');
 initPad('recebe','padRecebe','stRecebe');
 renderRows(); renderFarda();
 onTipoChange();
+INDEX_ROWS=seedRows();
+renderHist();
+updatePill();
+reloadIndex(false);
 </script>
 
 </body>
