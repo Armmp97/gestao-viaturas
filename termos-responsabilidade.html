@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Termos de Responsabilidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#003B73;--navy2:#1e3a5f;--blue:#007BC0;--bg:#f5f7fa;--line:#e2e8f0;
+  --text:#0f172a;--muted:#64748b;--green:#16a34a;--amber:#b45309;--red:#dc2626;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 70px;}
+h1{font-size:1.35rem;color:var(--navy);margin:0 0 3px;}
+.sub{color:var(--muted);font-size:.87rem;margin:0 0 18px;max-width:900px;}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;}
+.card h2{font-size:.98rem;color:var(--navy);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+.card h2 .step{background:var(--navy);color:#fff;width:22px;height:22px;border-radius:50%;font-size:.72rem;display:inline-flex;align-items:center;justify-content:center;font-weight:800;}
+label.fl{display:block;font-size:11.5px;font-weight:700;color:#334155;margin:0 0 4px;text-transform:uppercase;letter-spacing:.4px;}
+input[type=text],input[type=date],select,textarea{
+  width:100%;padding:9px 11px;border:1px solid #cbd5e1;border-radius:9px;
+  font-family:inherit;font-size:13.5px;color:var(--text);background:#fff;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);}
+.grid{display:flex;gap:12px;flex-wrap:wrap;}
+.grid>div{flex:1;min-width:190px;}
+.hintline{font-size:11.5px;color:var(--muted);margin-top:5px;}
+
+.btn{padding:10px 17px;border:none;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;font-size:13.5px;display:inline-flex;align-items:center;gap:7px;transition:all .15s;}
+.btn-primary{background:var(--blue);color:#fff;}.btn-primary:hover{background:var(--navy);}
+.btn-ghost{background:#e2e8f0;color:#334155;}.btn-ghost:hover{background:#cbd5e1;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn svg{width:15px;height:15px;}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+/* catálogo */
+.cat{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.cat button{
+  padding:6px 12px;border:1px solid #cbd5e1;border-radius:20px;background:#fff;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:600;color:#334155;transition:all .15s;
+}
+.cat button:hover{border-color:var(--blue);color:var(--blue);background:#f0f9ff;}
+
+table.eq{width:100%;border-collapse:collapse;font-size:13px;}
+table.eq th{background:var(--navy2);color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;font-weight:600;}
+table.eq td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+table.eq td input{padding:7px 9px;font-size:13px;}
+table.eq .delrow{background:#fee2e2;color:#b91c1c;border:none;border-radius:7px;padding:6px 9px;cursor:pointer;font-weight:800;font-size:12px;}
+table.eq .rn{color:#94a3b8;font-weight:700;font-size:12px;width:26px;text-align:center;}
+.eq-empty{padding:16px;text-align:center;color:var(--muted);font-size:13px;}
+
+/* assinatura */
+.sigbox{max-width:460px;}
+.sig-pad{width:100%;height:150px;border:2px dashed #cbd5e1;border-radius:10px;background:#fdfdfe;touch-action:none;cursor:crosshair;display:block;}
+.sig-pad.signed{border-style:solid;border-color:var(--green);background:#fff;}
+.sig-wrap{position:relative;}
+.sig-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12.5px;color:#94a3b8;pointer-events:none;}
+.sig-pad.signed + .sig-ph{display:none;}
+.sig-tools{display:flex;justify-content:space-between;align-items:center;margin-top:7px;}
+.sig-tools .st{font-size:12px;color:var(--muted);}
+.sig-tools button{background:none;border:none;color:var(--red);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+
+.warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:10px;padding:12px 15px;font-size:12.8px;margin-bottom:14px;}
+.warn strong{font-weight:800;}
+
+/* ===== Documento A4 ===== */
+.docbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 12px;}
+.docbar h2{font-size:.98rem;color:var(--navy);margin:0;}
+.docbar .flex{flex:1;}
+.paper{background:#e5e9ef;padding:20px;border-radius:var(--radius);overflow-x:auto;}
+.folha{
+  width:210mm;min-height:297mm;background:#fff;margin:0 auto 20px;padding:24mm 21mm 20mm;
+  box-shadow:0 3px 14px rgba(0,0,0,.13);position:relative;
+  font-size:11.6pt;line-height:1.72;color:#000;
+}
+.folha:last-child{margin-bottom:0;}
+.dtitle{text-align:center;font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:12pt;line-height:1.35;margin-bottom:9mm;}
+.dsans{font-family:Inter,Calibri,Carlito,sans-serif;text-align:justify;}
+.dserif{font-family:Cambria,Georgia,'Times New Roman',serif;text-align:justify;}
+.folha p{margin-bottom:4.6mm;}
+.cl{font-family:Cambria,Georgia,'Times New Roman',serif;font-weight:700;font-size:11.8pt;margin:7mm 0 4.6mm;}
+.ali{margin-left:8mm;}
+table.dq{width:100%;border-collapse:collapse;margin:7mm 0 8mm;font-family:Inter,Calibri,Carlito,sans-serif;}
+table.dq th{border:1px solid #000;background:#d9d9d9;text-align:center;font-weight:700;font-size:10.5pt;padding:2.6mm 2mm;letter-spacing:.3px;}
+table.dq td{border:1px solid #000;padding:3.2mm 2.5mm;font-size:11pt;font-weight:700;vertical-align:top;}
+table.dq td.c{text-align:center;white-space:nowrap;}
+.rubrica{position:absolute;right:21mm;bottom:14mm;display:flex;gap:6mm;align-items:flex-end;}
+.rubrica img{height:11mm;object-fit:contain;}
+.fecho{font-family:Inter,Calibri,Carlito,sans-serif;margin:9mm 0 0;}
+.assbloco{margin-top:8mm;text-align:center;width:78mm;margin-left:34mm;}
+.assbloco img{height:17mm;object-fit:contain;display:block;margin:0 auto -1mm;}
+.assbloco .linha{border-top:1px solid #000;}
+.assbloco .nm{font-family:Inter,Calibri,Carlito,sans-serif;font-weight:700;font-size:11.5pt;margin-top:1.5mm;}
+.assbloco .vazio{height:17mm;}
+
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(150%);
+  background:#002B55;color:#fff;padding:13px 22px;border-radius:40px;font-size:13px;font-weight:600;
+  box-shadow:0 10px 30px rgba(0,0,0,.22);transition:transform .3s;z-index:900;max-width:92vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--red);}
+
+@media print{
+  body{background:#fff;}
+  .wrap{padding:0;max-width:none;}
+  .noprint{display:none !important;}
+  .paper{background:#fff;padding:0;border-radius:0;overflow:visible;}
+  .folha{box-shadow:none;margin:0;padding:20mm 20mm 16mm;width:auto;min-height:0;page-break-after:always;}
+  .folha:last-child{page-break-after:auto;}
+  @page{size:A4;margin:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="noprint">
+    <h1>📄 Termos de Responsabilidade</h1>
+    <p class="sub">Gerador de termos de responsabilidade para colaboradores. Escolhe o colaborador, lista os equipamentos entregues, recolhe a assinatura e o documento é gerado com o texto oficial e arquivado no SharePoint.</p>
+
+    <div class="card">
+      <h2><span class="step">1</span> Tipo de termo</h2>
+      <select id="fTipo" onchange="onTipoChange()">
+        <option value="equipamento">Guarda e uso de equipamento empresarial (computadores, telemóveis, tablets…)</option>
+      </select>
+      <div class="hintline">Por agora só existe este tipo. Quando houver outros (viatura, cartão de combustível, fardamento…), aparecem nesta lista.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">2</span> Colaborador</h2>
+      <div class="grid">
+        <div style="min-width:280px;">
+          <label class="fl">Colaborador</label>
+          <select id="fColab" onchange="onColabChange()"></select>
+        </div>
+        <div>
+          <label class="fl">Nome completo (como consta no CC)</label>
+          <input type="text" id="fNomeCompleto" placeholder="Ex.: Ricardo Valente Ferreira" oninput="draw()">
+        </div>
+      </div>
+      <div class="grid" style="margin-top:12px;">
+        <div>
+          <label class="fl">Nome usado no texto</label>
+          <input type="text" id="fNomeCurto" placeholder="Ex.: Ricardo Ferreira" oninput="draw()">
+        </div>
+        <div>
+          <label class="fl">Nº do Cartão de Cidadão</label>
+          <input type="text" id="fCC" placeholder="Ex.: 14602409 5 ZY9" oninput="draw()">
+        </div>
+        <div>
+          <label class="fl">NIF</label>
+          <input type="text" id="fNIF" placeholder="Ex.: 236465740" oninput="draw()">
+        </div>
+      </div>
+      <div class="hintline">O <strong>nome usado no texto</strong> é o que aparece em todas as cláusulas (no anexo era "Ricardo Ferreira"). O nome completo aparece só na abertura, junto ao CC e ao NIF.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">3</span> Equipamentos entregues</h2>
+      <div class="cat" id="catalogo"></div>
+      <table class="eq">
+        <thead><tr><th></th><th>Equipamento</th><th>Marca / Modelo</th><th style="width:150px;">Data de entrega</th><th style="width:44px;"></th></tr></thead>
+        <tbody id="eqBody"></tbody>
+      </table>
+      <div class="eq-empty" id="eqEmpty">Sem equipamentos. Usa os botões acima ou adiciona uma linha em branco.</div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="addRow('','', '')">➕ Linha em branco</button>
+        <button class="btn btn-ghost btn-sm" onclick="aplicarDataTodos()">📅 Aplicar a data da 1ª linha a todas</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">4</span> Local, data e assinatura</h2>
+      <div class="grid">
+        <div>
+          <label class="fl">Localidade</label>
+          <input type="text" id="fLocalidade" value="Lisboa" oninput="draw()">
+        </div>
+        <div>
+          <label class="fl">Data do termo</label>
+          <input type="date" id="fData" onchange="draw()">
+        </div>
+      </div>
+      <div class="sigbox" style="margin-top:16px;">
+        <label class="fl">Assinatura do colaborador</label>
+        <div class="sig-wrap">
+          <canvas class="sig-pad" id="padColab"></canvas>
+          <div class="sig-ph">Assine aqui com o dedo ou o rato</div>
+        </div>
+        <div class="sig-tools"><span class="st" id="stColab">Sem assinatura</span><button onclick="clearPad()">Limpar</button></div>
+        <div class="hintline">A assinatura entra no fim do documento e é replicada em rubrica reduzida no canto inferior de cada página, como no termo em papel.</div>
+      </div>
+    </div>
+
+    <div class="warn">
+      <strong>Dados pessoais:</strong> o número de CC e o NIF só existem no documento gerado — não ficam guardados na intranet nem em nenhum registo. O termo assinado é arquivado no SharePoint em <em>Intranet/RH/Termos_Responsabilidade</em>, de acesso restrito.
+    </div>
+
+    <div class="docbar">
+      <h2>Pré-visualização</h2>
+      <span class="hintline" id="prevInfo"></span>
+      <span class="flex"></span>
+      <button class="btn btn-primary" onclick="guardar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar no SharePoint
+      </button>
+      <button class="btn btn-ghost" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / PDF
+      </button>
+      <button class="btn btn-ghost" onclick="limpar()">Limpar</button>
+    </div>
+  </div>
+
+  <div class="paper" id="paper"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== Dados fixos ===================== */
+var EMPRESA = {
+  nome: 'Walkingarage, Lda',
+  nif: '513 281 622',
+  sede: 'Estrada de Paço de Arcos Nº167 Armazém C, 2735-509'
+};
+
+/* Colaboradores — organigrama DomusCar (estrutura_organizacional.html) */
+var COLABORADORES = [
+  { g: 'Direção e Serviços Centrais', n: 'Vanessa Borges',      f: 'CEO — Direção Executiva' },
+  { g: 'Direção e Serviços Centrais', n: 'André Pereira',       f: 'Diretor de Operações' },
+  { g: 'Direção e Serviços Centrais', n: 'Marta Marques',       f: 'CFO — Direção Financeira' },
+  { g: 'Direção e Serviços Centrais', n: 'Cláudia Pedro',       f: 'Recursos Humanos' },
+  { g: 'Direção e Serviços Centrais', n: 'Fernando Couto',      f: 'Comercial' },
+  { g: 'Direção e Serviços Centrais', n: 'Paulo Ferreira',      f: 'Apoio Técnico' },
+
+  { g: 'Mecânica Cacém', n: 'José Rodriguez',      f: 'Coordenador' },
+  { g: 'Mecânica Cacém', n: 'Tomás Figueiredo',    f: 'Receção' },
+  { g: 'Mecânica Cacém', n: 'Rúben Nogueira',      f: 'Receção' },
+  { g: 'Mecânica Cacém', n: 'Arnaldo Cruz',        f: 'Técnico Mecânica' },
+  { g: 'Mecânica Cacém', n: 'Edmilson Fernandes',  f: 'Técnico Mecânica' },
+  { g: 'Mecânica Cacém', n: 'Filipe Bonifácio',    f: 'Técnico Mecânica' },
+  { g: 'Mecânica Cacém', n: 'Gonçalo Matos',       f: 'Técnico Mecânica' },
+  { g: 'Mecânica Cacém', n: 'Eduardo Macedo',      f: 'Lavagem' },
+
+  { g: 'Mecânica Lisboa', n: 'Fábio Ramalho',      f: 'Coordenador' },
+  { g: 'Mecânica Lisboa', n: 'Ricardo Ferreira',   f: 'Receção' },
+  { g: 'Mecânica Lisboa', n: 'Pedro Pereira',      f: 'Receção' },
+  { g: 'Mecânica Lisboa', n: 'Sérgio Pereira',     f: 'Técnico Mecânica' },
+  { g: 'Mecânica Lisboa', n: 'Jorge Silva',        f: 'Técnico Mecânica' },
+  { g: 'Mecânica Lisboa', n: 'Emanuel Gonçalves',  f: 'Técnico Mecânica' },
+  { g: 'Mecânica Lisboa', n: 'Rafael Janeiro',     f: 'Técnico Mecânica' },
+  { g: 'Mecânica Lisboa', n: 'Ajay Shah',          f: 'Lavagem' },
+  { g: 'Mecânica Lisboa', n: 'Pedro Carvalho',     f: 'Peças e Logística' },
+  { g: 'Mecânica Lisboa', n: 'Gonçalo Faustino',   f: 'Peças e Logística / Compras' },
+  { g: 'Mecânica Lisboa', n: 'Xavier Jorge',       f: 'Estagiário' },
+
+  { g: 'Colisão', n: 'Mário Peres',        f: 'Coordenador' },
+  { g: 'Colisão', n: 'Nuno Montes',        f: 'Coordenador' },
+  { g: 'Colisão', n: 'Valter Borges',      f: 'Receção' },
+  { g: 'Colisão', n: 'Paulo Rodrigues',    f: 'Receção' },
+  { g: 'Colisão', n: 'José Borges',        f: 'Técnico Chapa' },
+  { g: 'Colisão', n: 'Pedro Jana',         f: 'Técnico Chapa' },
+  { g: 'Colisão', n: 'Carlos Antunes',     f: 'Técnico Chapa' },
+  { g: 'Colisão', n: 'Diogo Fernandes',    f: 'Técnico Pintura / Preparação' },
+  { g: 'Colisão', n: 'Vítor Soutilha',     f: 'Técnico Pintura / Preparação' },
+  { g: 'Colisão', n: 'Gyanu Pujara',       f: 'Técnico Pintura / Preparação' },
+  { g: 'Colisão', n: 'João Bizarro',       f: 'Técnico Pintura / Preparação' },
+  { g: 'Colisão', n: 'José Avelino',       f: 'Técnico Pintura / Preparação' },
+
+  { g: 'Peças e Logística (Cacém / Colisão)', n: 'Inês Peixinho', f: 'Peças e Logística' },
+  { g: 'Peças e Logística (Cacém / Colisão)', n: 'Olesya Vieira', f: 'Peças e Logística' },
+  { g: 'Peças e Logística (Cacém / Colisão)', n: 'André Gomes',   f: 'Peças e Logística' },
+  { g: 'Peças e Logística (Cacém / Colisão)', n: 'Alícia Vieira', f: 'Peças e Logística' }
+];
+
+/* Catálogo de equipamentos habituais */
+var CATALOGO = [
+  'Computador Portátil', 'Computador Fixo', 'Monitor', 'Telemóvel', 'Tablet',
+  'Conjunto Teclado e Rato', 'Hub USB-C', 'Docking Station',
+  'Mala Transporte Computador Portátil', 'Carregador / Fonte de Alimentação',
+  'Auscultadores / Headset', 'Webcam', 'Impressora', 'Cartão SIM'
+];
+
+var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+var rows = [];   // {eq, mm, data}
+var pad = null;
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function slug(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'') || 'SemNome'; }
+function toast(m,e){ var t=document.getElementById('toast'); t.textContent=m; t.className='toast show'+(e?' err':''); setTimeout(function(){ t.className='toast'+(e?' err':''); },5200); }
+function hoje(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtPT(iso){ if(!iso) return ''; var p=String(iso).slice(0,10).split('-'); return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):iso; }
+function dataLonga(iso){ if(!iso) return '______________'; var p=iso.split('-'); return parseInt(p[2],10)+' de '+MESES[parseInt(p[1],10)-1]+' de '+p[0]; }
+
+/* ===================== Formulário ===================== */
+function fillColab(){
+  var sel=document.getElementById('fColab');
+  var grupos={};
+  COLABORADORES.forEach(function(c){ (grupos[c.g]=grupos[c.g]||[]).push(c); });
+  var h='<option value="">— Selecionar colaborador —</option>';
+  Object.keys(grupos).forEach(function(g){
+    h+='<optgroup label="'+esc(g)+'">';
+    grupos[g].forEach(function(c){ h+='<option value="'+esc(c.n)+'">'+esc(c.n)+' — '+esc(c.f)+'</option>'; });
+    h+='</optgroup>';
+  });
+  h+='<optgroup label="Outro"><option value="__outro__">Outro (escrever à mão)</option></optgroup>';
+  sel.innerHTML=h;
+}
+function onColabChange(){
+  var v=document.getElementById('fColab').value;
+  if(v && v!=='__outro__'){
+    document.getElementById('fNomeCurto').value=v;
+    if(!document.getElementById('fNomeCompleto').value.trim()) document.getElementById('fNomeCompleto').value=v;
+  } else if(v==='__outro__'){
+    document.getElementById('fNomeCurto').value='';
+    document.getElementById('fNomeCompleto').value='';
+    document.getElementById('fNomeCompleto').focus();
+  }
+  draw();
+}
+function onTipoChange(){ draw(); }
+
+function fillCatalogo(){
+  document.getElementById('catalogo').innerHTML = CATALOGO.map(function(c){
+    return '<button type="button" onclick="addRow(\''+c.replace(/'/g,"\\'")+'\',\'\',\'\')">+ '+esc(c)+'</button>';
+  }).join('');
+}
+function addRow(eq, mm, data){
+  rows.push({ eq: eq||'', mm: mm||'', data: data||document.getElementById('fData').value||hoje() });
+  renderRows(); draw();
+  if(!eq){ setTimeout(function(){ var i=document.getElementById('req'+(rows.length-1)); if(i) i.focus(); },40); }
+}
+function delRow(i){ rows.splice(i,1); renderRows(); draw(); }
+function updRow(i,k,v){ rows[i][k]=v; draw(); }
+function aplicarDataTodos(){
+  if(!rows.length){ toast('Ainda não há linhas.',true); return; }
+  var d=rows[0].data;
+  if(!d){ toast('A primeira linha não tem data.',true); return; }
+  rows.forEach(function(r){ r.data=d; });
+  renderRows(); draw(); toast('Data '+fmtPT(d)+' aplicada a todas as linhas.');
+}
+function renderRows(){
+  var tb=document.getElementById('eqBody');
+  document.getElementById('eqEmpty').style.display = rows.length?'none':'';
+  tb.innerHTML = rows.map(function(r,i){
+    return '<tr>'+
+      '<td class="rn">'+(i+1)+'</td>'+
+      '<td><input type="text" id="req'+i+'" value="'+esc(r.eq)+'" placeholder="Ex.: Computador Portátil" oninput="updRow('+i+',\'eq\',this.value)"></td>'+
+      '<td><input type="text" value="'+esc(r.mm)+'" placeholder="Ex.: Lenovo IP1 15ALC7 R5" oninput="updRow('+i+',\'mm\',this.value)"></td>'+
+      '<td><input type="date" value="'+esc(r.data)+'" onchange="updRow('+i+',\'data\',this.value)"></td>'+
+      '<td><button class="delrow" onclick="delRow('+i+')" title="Remover">✕</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+/* ===================== Assinatura ===================== */
+function initPad(){
+  var c=document.getElementById('padColab'), ctx=c.getContext('2d');
+  var drawing=false, dirty=false, last=null;
+  function resize(){
+    var img=dirty?c.toDataURL():null;
+    var r=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+    if(!r.width) return;
+    c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#111';
+    if(img){ var im=new Image(); im.onload=function(){ ctx.drawImage(im,0,0,r.width,r.height); }; im.src=img; }
+  }
+  function pos(e){ var r=c.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+  c.addEventListener('pointerdown',function(e){
+    e.preventDefault(); c.setPointerCapture(e.pointerId);
+    drawing=true; last=pos(e);
+    ctx.beginPath(); ctx.arc(last.x,last.y,1,0,Math.PI*2); ctx.fillStyle='#111'; ctx.fill();
+    setSigned(true);
+  });
+  c.addEventListener('pointermove',function(e){
+    if(!drawing) return; e.preventDefault(); var p=pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p;
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ c.addEventListener(ev,function(){ if(drawing){ drawing=false; draw(); } }); });
+  function setSigned(v){
+    dirty=v; c.classList.toggle('signed',v);
+    document.getElementById('stColab').textContent=v?'Assinado ✓':'Sem assinatura';
+  }
+  resize();
+  window.addEventListener('resize',function(){ setTimeout(resize,120); });
+  pad={ clear:function(){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height); ctx.restore(); setSigned(false); draw(); },
+        isSigned:function(){ return dirty; },
+        url:function(){ return dirty?c.toDataURL('image/png'):''; } };
+}
+function clearPad(){ if(pad) pad.clear(); }
+
+/* ===================== Documento ===================== */
+function dados(){
+  return {
+    nomeCompleto: document.getElementById('fNomeCompleto').value.trim(),
+    nomeCurto: document.getElementById('fNomeCurto').value.trim(),
+    cc: document.getElementById('fCC').value.trim(),
+    nif: document.getElementById('fNIF').value.trim(),
+    localidade: document.getElementById('fLocalidade').value.trim(),
+    data: document.getElementById('fData').value,
+    assinatura: pad?pad.url():''
+  };
+}
+
+var TITULO = 'TERMO DE RESPONSABILIDADE PARA<br>GUARDA E USO DE EQUIPAMENTO EMPRESARIAL';
+
+function ph(v, fallback){ return v ? esc(v) : '<span style="background:#fff3cd;color:#8a6d3b">'+fallback+'</span>'; }
+
+function docHTML(d, paraArquivo){
+  var N = d.nomeCurto ? esc(d.nomeCurto) : (paraArquivo ? '' : '<span style="background:#fff3cd;color:#8a6d3b">[nome]</span>');
+  var rub = d.assinatura ? '<div class="rubrica"><img src="'+d.assinatura+'" alt=""><img src="'+d.assinatura+'" alt=""></div>' : '';
+
+  var linhas = rows.filter(function(r){ return (r.eq||'').trim() || (r.mm||'').trim(); });
+  var tabela = '<table class="dq"><thead><tr><th>EQUIPAMENTO</th><th>MARCA/MODELO</th><th>DATA ENTREGA</th></tr></thead><tbody>';
+  if(!linhas.length){
+    tabela += '<tr><td colspan="3" style="text-align:center;font-weight:400;color:#999">— sem equipamentos indicados —</td></tr>';
+  } else {
+    linhas.forEach(function(r){
+      tabela += '<tr><td>'+esc(r.eq)+'</td><td>'+esc(r.mm)+'</td><td class="c">'+(r.data?fmtPT(r.data):'')+'</td></tr>';
+    });
+  }
+  tabela += '</tbody></table>';
+
+  var o = '';
+
+  /* ---------- Folha 1 ---------- */
+  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
+  o += '<p class="dsans">Pelo presente termo, na qualidade de Colaborador, '+ph(d.nomeCompleto,'[nome completo]')+
+       ', portador do CC nº '+ph(d.cc,'[nº CC]')+', NIF '+ph(d.nif,'[NIF]')+', doravante referido como '+
+       (d.nomeCurto?esc(d.nomeCurto):'<span style="background:#fff3cd;color:#8a6d3b">[nome]</span>')+
+       ', declara estar ciente das disposições e obrigações estipuladas neste Termo de Responsabilidade e compromete-se a cumprir rigorosamente todas as cláusulas nele contidas, relativas à utilização dos equipamentos abaixo indicados, fornecidos pela '+
+       EMPRESA.nome+', com o NIF nº '+EMPRESA.nif+', com sede na '+EMPRESA.sede+', doravante referida como Walkingarage.</p>';
+  o += tabela;
+  o += '<p class="dserif"><strong>CONSIDERANDO</strong> que o presente Termo de Responsabilidade tem como objetivo estabelecer as condições e responsabilidades inerentes ao uso dos equipamentos acima listados, cedidos ao '+N+', para uso exclusivo na prestação de serviços a favor da Walkingarage;</p>';
+  o += '<div class="cl">CLÁUSULA 1 - DO FORNECIMENTO DO EQUIPAMENTO</div>';
+  o += '<p class="dserif">1.1. A Walkingarage fornecerá ao '+N+' o equipamento acima indicado para utilização única e exclusiva no desempenho das suas atividades profissionais.</p>';
+  o += '<p class="dserif">1.2. O '+N+' declara estar ciente de que o uso dos equipamentos será exclusivamente para fins profissionais, relacionados às atividades da Walkingarage, comprometendo-se a não os utilizar para fins pessoais ou não autorizados.</p>';
+  o += rub + '</div>';
+
+  /* ---------- Folha 2 ---------- */
+  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
+  o += '<div class="cl">CLÁUSULA 2 - DA RESPONSABILIDADE PELO USO DO EQUIPAMENTO</div>';
+  o += '<p class="dserif">2.1. O '+N+' compromete-se a utilizar os equipamentos de forma ética e responsável, observando as disposições da legislação portuguesa aplicável.</p>';
+  o += '<p class="dserif">2.2. O '+N+' reconhece que é o único responsável pelo uso adequado dos equipamentos, bem como pelo conteúdo das informações transmitidas e armazenadas por meio desses recursos.</p>';
+  o += '<p class="dserif">2.3. É expressamente proibido ao '+N+':</p>';
+  o += '<p class="dserif">a) Partilhar os equipamentos com terceiros sem autorização prévia da Walkingarage;</p>';
+  o += '<p class="dserif">b) Utilizar os equipamentos para práticas ilícitas ou atividades que possam causar danos à Walkingarage ou a terceiros;</p>';
+  o += '<p class="dserif">c) Aceder a conteúdos impróprios ou que violem a privacidade de terceiros por meio dos equipamentos;</p>';
+  o += '<div class="cl">CLÁUSULA 3 - DA PROTEÇÃO DE DADOS PESSOAIS</div>';
+  o += '<p class="dserif">3.1. O '+N+' compromete-se a não partilhar dados pessoais de terceiros sem o consentimento expresso da Walkingarage, sob pena de responsabilidade civil e penal.</p>';
+  o += '<p class="dserif">3.2. O '+N+' deverá informar imediatamente à Walkingarage qualquer violação de dados pessoais ou incidente de segurança relacionado à utilização dos equipamentos.</p>';
+  o += '<div class="cl">CLÁUSULA 4 - DA SEGURANÇA DA INFORMAÇÃO E INTEGRIDADE</div>';
+  o += '<p class="dserif">4.1. O '+N+' compromete-se a adotar todas as medidas de segurança necessárias para proteger os equipamentos contra acesso não autorizado, perda, roubo ou qualquer forma de comprometimento da sua integridade, assumindo total responsabilidade pelos prejuízos causados.</p>';
+  o += rub + '</div>';
+
+  /* ---------- Folha 3 ---------- */
+  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
+  o += '<div class="cl">CLÁUSULA 5 - DA DEVOLUÇÃO DO EQUIPAMENTO</div>';
+  o += '<p class="dserif">5.1. Ao término da relação do '+N+' com a Walkingarage, este deverá devolver imediatamente os equipamentos fornecidos, em perfeito estado de conservação, ressalvando o desgaste decorrente do uso normal.</p>';
+  o += '<div class="cl" style="margin-top:14mm;">CLÁUSULA 6 - DA VIGÊNCIA</div>';
+  o += '<p class="dserif">6.1. O presente Termo de Responsabilidade entrará em vigor a partir da data da sua assinatura pelo '+N+' e permanecerá válido enquanto este estiver vinculado à Walkingarage.</p>';
+  o += '<div class="cl">CLÁUSULA 7 - O COMPROMISSO</div>';
+  o += '<p class="dserif">7.1. O '+N+' declara ter ciente e concorda em cumprir os princípios da Walkingarage, nomeadamente:</p>';
+  o += '<p class="dserif ali"><strong>Ética e Integridade</strong>: Agir com honestidade, transparência e respeito em todas as relações profissionais;</p>';
+  o += '<p class="dserif ali"><strong>Cumprimento Legal</strong>: Respeitar todas as leis e regulamentos aplicáveis às suas funções;</p>';
+  o += '<p class="dserif ali"><strong>Prevenção de Corrupção</strong>: Não se envolver em práticas corruptas ou ilícitas;</p>';
+  o += '<p class="dserif ali"><strong>Proteção de Dados Pessoais</strong>: Garantir a privacidade e segurança dos dados em conformidade com a legislação aplicável.</p>';
+  o += '<div class="cl">CLÁUSULA 8 - DA CONFIDENCIALIDADE</div>';
+  o += '<p class="dserif">8.1. O '+N+' reconhece que as informações a que tem acesso por meio dos equipamentos são confidenciais, comprometendo-se a não as divulgar.</p>';
+  o += '<p class="dserif">8.2. Esta obrigação de confidencialidade permanecerá em vigor mesmo após o término da relação com a Walkingarage.</p>';
+  o += rub + '</div>';
+
+  /* ---------- Folha 4 ---------- */
+  o += '<div class="folha"><div class="dtitle">'+TITULO+'</div>';
+  o += '<div class="cl">CLÁUSULA 9 - DA CIÊNCIA E ACEITAÇÃO DO TERMO</div>';
+  o += '<p class="dserif">9.1. O '+N+' declara ter lido e compreendido todas as cláusulas deste termo, assumindo total responsabilidade pelo cumprimento das obrigações aqui previstas.</p>';
+  o += '<p class="fecho">'+(d.localidade?esc(d.localidade):'______')+', '+dataLonga(d.data)+'.</p>';
+  o += '<div class="assbloco">';
+  o += d.assinatura ? '<img src="'+d.assinatura+'" alt="Assinatura">' : '<div class="vazio"></div>';
+  o += '<div class="linha"></div><div class="nm">'+(d.nomeCurto?esc(d.nomeCurto):'&nbsp;')+'</div></div>';
+  o += '</div>';
+
+  return o;
+}
+
+function draw(){
+  var d=dados();
+  document.getElementById('paper').innerHTML=docHTML(d,false);
+  var faltam=[];
+  if(!d.nomeCompleto) faltam.push('nome completo');
+  if(!d.nomeCurto) faltam.push('nome no texto');
+  if(!d.cc) faltam.push('CC');
+  if(!d.nif) faltam.push('NIF');
+  if(!rows.filter(function(r){return (r.eq||'').trim();}).length) faltam.push('equipamentos');
+  if(!d.assinatura) faltam.push('assinatura');
+  document.getElementById('prevInfo').textContent = faltam.length ? ('Falta preencher: '+faltam.join(', ')+'.') : '4 páginas, pronto a guardar.';
+}
+
+/* ===================== Guardar ===================== */
+function nomeFicheiro(d){
+  var p=(d.data||hoje()).split('-');
+  return slug(d.nomeCurto)+'_'+p[2]+p[1]+p[0]+'_Termo_de_Responsabilidade_Equipamento.html';
+}
+function standalone(d){
+  var css=document.querySelector('style').textContent;
+  return '<!DOCTYPE html>\n<html lang="pt">\n<head>\n<meta charset="UTF-8">\n'+
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'+
+    '<title>Termo de Responsabilidade — '+esc(d.nomeCurto)+' — '+fmtPT(d.data)+'</title>\n'+
+    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">\n'+
+    '<style>\n'+css+'\nbody{background:#e5e9ef;}.wrap{padding:20px;}\n</style>\n</head>\n<body>\n'+
+    '<div class="wrap"><div class="paper">'+docHTML(d,true)+'</div></div>\n</body>\n</html>';
+}
+function guardar(){
+  var d=dados();
+  var faltam=[];
+  if(!d.nomeCompleto) faltam.push('Nome completo');
+  if(!d.nomeCurto) faltam.push('Nome usado no texto');
+  if(!d.cc) faltam.push('Nº do CC');
+  if(!d.nif) faltam.push('NIF');
+  if(!d.data) faltam.push('Data do termo');
+  if(faltam.length){ toast('Preencha: '+faltam.join(', '),true); return; }
+  var linhas=rows.filter(function(r){ return (r.eq||'').trim(); });
+  if(!linhas.length){ toast('Indique pelo menos um equipamento.',true); return; }
+  if(linhas.some(function(r){ return !(r.mm||'').trim(); }) && !confirm('Há equipamentos sem marca/modelo. Guardar assim mesmo?')) return;
+  if(linhas.some(function(r){ return !r.data; }) && !confirm('Há equipamentos sem data de entrega. Guardar assim mesmo?')) return;
+  if(!d.assinatura && !confirm('O termo não está assinado pelo colaborador. Guardar assim mesmo?')) return;
+
+  var fn=nomeFicheiro(d), html=standalone(d);
+  var up=null;
+  try{ if(window.parent && window.parent!==window && window.parent.uploadToSharePoint) up=window.parent.uploadToSharePoint; }catch(e){}
+
+  if(!up){ download(fn,html); toast('Fora da intranet — ficheiro descarregado: '+fn); return; }
+  Promise.resolve(up('termos_responsabilidade', fn, html, 'text/html')).then(function(){
+    toast('Termo arquivado no SharePoint: '+fn);
+    if(window.parent.sendNotification){
+      var body='<p><strong>Colaborador:</strong> '+esc(d.nomeCompleto)+'</p>'+
+        '<p><strong>Data do termo:</strong> '+fmtPT(d.data)+'</p>'+
+        '<p><strong>Equipamentos entregues:</strong></p><ul>'+
+        linhas.map(function(r){ return '<li>'+esc(r.eq)+(r.mm?' — '+esc(r.mm):'')+(r.data?' ('+fmtPT(r.data)+')':'')+'</li>'; }).join('')+
+        '</ul><p><strong>Assinado:</strong> '+(d.assinatura?'sim':'NÃO')+'</p>'+
+        '<p style="color:#888;font-size:12px;">Ficheiro: '+esc(fn)+' — Intranet &gt; Definições &gt; Gestão de Ficheiros &gt; Termos de Responsabilidade.</p>';
+      window.parent.sendNotification('termos_responsabilidade','📄 Novo Termo de Responsabilidade — '+d.nomeCurto, body);
+    }
+  }).catch(function(err){
+    toast('Erro ao guardar: '+(err&&err.message?err.message:err),true);
+    download(fn,html);
+  });
+}
+function download(fn,html){
+  var b=new Blob([html],{type:'text/html;charset=utf-8'}), u=URL.createObjectURL(b);
+  var a=document.createElement('a'); a.href=u; a.download=fn; a.style.display='none';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(u); },2000);
+}
+function limpar(){
+  if(!confirm('Limpar o formulário e a assinatura?')) return;
+  document.getElementById('fColab').value='';
+  ['fNomeCompleto','fNomeCurto','fCC','fNIF'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('fLocalidade').value='Lisboa';
+  document.getElementById('fData').value=hoje();
+  rows=[]; renderRows();
+  if(pad) pad.clear();
+  draw();
+}
+
+/* ===================== Arranque ===================== */
+fillColab();
+fillCatalogo();
+document.getElementById('fData').value=hoje();
+initPad();
+renderRows();
+draw();
+</script>
+
+</body>
+</html>
