@@ -1026,6 +1026,7 @@
             <li><a onclick="openModule('coord_divergencias')" id="navCoord_divergencias"><span class="nav-icon">📊</span> Divergências Picagens</a></li>
             <li><a onclick="openModule('coord_estatisticas')" id="navCoord_estatisticas"><span class="nav-icon">📈</span> Estatísticas Picagens</a></li>
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
+            <li><a onclick="openModule('coord_auditoria_carrinhos')" id="navCoord_auditoria_carrinhos"><span class="nav-icon">🧰</span> Auditorias Carrinhos Ferramentas Mensal</a></li>
             <li>
                 <a onclick="toggleDropdown('prepAuditoriasSubmenu','prepAuditoriasArrow')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span><span class="nav-icon">📋</span> Preparação Auditorias</span><span id="prepAuditoriasArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="prepAuditoriasSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
@@ -1296,6 +1297,7 @@
                     <button class="form-button sp-direct-btn" onclick="browseSharePoint('formularios_nc')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">⚠️ Formulários NC</button>
                     <button class="form-button sp-direct-btn" onclick="browseSharePoint('inspecoes_diarias')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">✅ Inspeções Diárias</button>
                     <button class="form-button sp-direct-btn" onclick="browseSharePoint('auditorias_internas')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">🔍 Auditorias Internas</button>
+                    <button class="form-button sp-direct-btn" onclick="browseSharePoint('auditorias_carrinhos')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">🧰 Auditorias Carrinhos</button>
                     <button class="form-button sp-direct-btn" onclick="browseSharePoint('rh_justificacoes_faltas')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">📝 Justificações Faltas</button>
                     <button class="form-button sp-direct-btn" onclick="browseSharePoint('rh_justificacoes_anexos')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">📎 Justif. Faltas — Anexos</button>
                     <button class="form-button sp-direct-btn" onclick="browseSharePoint('rh_pedidos_formacao')" style="font-size: 12px; padding: 8px 14px; background: var(--text-secondary);">🎓 Pedidos Formação</button>
@@ -2089,27 +2091,27 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs']
         },
         'mario.perez@domuscar.com': {
             role: 'coordenador', name: 'Mário Perez (Colisão Tagus Park)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs']
         },
         'nuno.montes@domuscar.com': {
             role: 'coordenador', name: 'Nuno Montes (Colisão Bela Vista)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','prep_auditoria_sqa_bcs']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs']
         },
         'diogolj009@gmail.com': {
             role: 'colaborador', name: 'Diogo Henrique Gomes Fernandes',
@@ -2560,6 +2562,7 @@
             formularios_nc: 'Intranet/Formularios_Nao_Conformidade',
             inspecoes_diarias: 'Intranet/Inspecoes_Diarias',
             auditorias_internas: 'Intranet/Auditorias_Internas',
+            auditorias_carrinhos: 'Intranet/Auditorias_Carrinhos_Ferramentas',
             rh_justificacoes_faltas: 'Intranet/RH/Justificacoes_Faltas',
             rh_justificacoes_anexos: 'Intranet/RH/Justificacoes_Faltas_Anexos',
             rh_pedidos_formacao: 'Intranet/RH/Pedidos_Formacao',
@@ -2761,6 +2764,7 @@
         formularios_nc:     { recipients: 'admins' },
         inspecoes_diarias:  { recipients: 'admins' },
         auditorias_internas:{ recipients: 'admins+coordenadores' },
+        auditorias_carrinhos:{ recipients: 'admins+coordenadores' },
         rh_justificacoes:   { recipients: 'admins+rh' },
         rh_pedidos_formacao:{ recipients: 'admins' }
     };
@@ -3368,6 +3372,7 @@
             coord_inspecoes: { title: 'Auditoria Interna Trimestral', url: 'checklist_auditoria_trimestral.html' },
             equipamentos: { title: 'Manutenção de Equipamentos', url: 'manutencao-equipamentos.html' },
             coord_inspecao_diaria: { title: 'Checklist Inspeção Diária', url: 'checklist_inspecao_diaria.html' },
+            coord_auditoria_carrinhos: { title: 'Auditorias Carrinhos Ferramentas Mensal', url: 'auditoria-carrinhos-ferramentas.html' },
             prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' },
             officegest_api: { title: 'API Officegest (Consola)', url: 'officegest-api-explorer.html' },
             fardas: { title: 'Gestão de Fardas', url: 'fardas.html' },
@@ -4128,6 +4133,9 @@
             margem_importados: '💰 Margem (Importados)',
             kpis_gerados: '📈 KPIs Coordenação (Gerados)',
             kpis_importados: '📈 KPIs Coordenação (Importados)',
+            auditorias_carrinhos: '🧰 Auditorias Carrinhos de Ferramenta',
+            auditorias_internas: '🔍 Auditorias Internas',
+            inspecoes_diarias: '✅ Inspeções Diárias',
             gv_fotos_levantamento: '📷 Fotos Levantamento',
             gv_docs_cliente: '🪪 Documentos Cliente (CC/Carta)',
             gv_docs_assinados_lev: '✍️ Docs. Assinados — Levantamento',

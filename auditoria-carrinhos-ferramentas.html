@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Auditoria Mensal Carrinhos de Ferramenta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --warn: #D97706; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.7; }
+.page { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 32px 36px;
+  margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.doc-header::after {
+  content: ''; position: absolute; top: -30%; right: -5%;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
+  border-radius: 50%;
+}
+.doc-header h1 { font-size: 1.5rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .85rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+.doc-header .doc-ref { font-size: .7rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 10px; position: relative; z-index: 2; }
+
+/* Meta */
+.meta-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.meta-chip {
+  background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 12px 16px; flex: 1; min-width: 190px;
+}
+.meta-chip .ml { font-size: .68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.meta-chip input, .meta-chip select {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: .9rem; padding: 4px 0; color: var(--text-dark);
+  background: transparent; outline: none;
+}
+.meta-chip input:focus, .meta-chip select:focus { border-bottom-color: var(--accent); }
+.meta-chip.required-missing { border-color: var(--danger); }
+
+.hint { font-size: .78rem; color: var(--gray-600); margin-bottom: 20px; padding-left: 4px; }
+
+/* Bulk actions */
+.bulk-bar {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 12px 16px; margin-bottom: 16px;
+}
+.bulk-bar span.bl { font-size: .72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); }
+
+/* Table */
+.tools-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+.tools-card-head {
+  padding: 16px 24px; background: var(--navy); color: var(--white);
+  font-size: .9rem; font-weight: 700; display: flex; align-items: center; gap: 10px;
+}
+.tools-card-head .badge {
+  margin-left: auto; font-size: .72rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 50px; background: rgba(255,255,255,.15);
+}
+table.tools { width: 100%; border-collapse: collapse; }
+table.tools thead th {
+  font-size: .66rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--gray-600); text-align: left; padding: 10px 14px;
+  background: var(--gray-100); border-bottom: 1px solid var(--gray-200); white-space: nowrap;
+}
+table.tools tbody td { padding: 10px 14px; border-bottom: 1px solid var(--gray-100); font-size: .84rem; vertical-align: middle; }
+table.tools tbody tr:last-child td { border-bottom: none; }
+table.tools tbody tr.st-ok { background: rgba(5,150,105,.04); }
+table.tools tbody tr.st-nok { background: rgba(220,38,38,.05); }
+.t-idx { color: var(--gray-400); font-weight: 700; font-size: .74rem; width: 34px; }
+.t-desc { color: var(--text-dark); font-weight: 500; min-width: 240px; }
+.t-ref { font-size: .76rem; color: var(--gray-600); white-space: nowrap; }
+.t-val { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-dark); white-space: nowrap; text-align: right; }
+.t-obs input {
+  width: 100%; min-width: 200px; border: 1px solid var(--gray-200); border-radius: 8px;
+  padding: 7px 10px; font-family: inherit; font-size: .8rem; color: var(--text-body); outline: none; background: var(--white);
+}
+.t-obs input:focus { border-color: var(--accent); }
+.t-obs input.flag { border-color: var(--warn); background: #FFFBEB; }
+
+.qcheck-toggle { display: flex; gap: 4px; }
+.toggle-btn {
+  padding: 4px 12px; border-radius: 6px; border: 1.5px solid var(--gray-200);
+  background: var(--white); cursor: pointer; font-family: inherit;
+  font-size: .72rem; font-weight: 700; color: var(--gray-600); transition: all .15s;
+}
+.toggle-btn:hover { border-color: var(--gray-400); }
+.toggle-btn.ok-active { background: var(--success); border-color: var(--success); color: white; }
+.toggle-btn.nok-active { background: var(--danger); border-color: var(--danger); color: white; }
+
+tfoot td {
+  padding: 14px; font-size: .86rem; font-weight: 700; color: var(--navy);
+  background: var(--gray-100); border-top: 2px solid var(--gray-200);
+}
+tfoot td.t-val { font-size: .95rem; font-weight: 800; }
+
+/* Summary */
+.summary-strip {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  padding: 20px 28px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+.ss-item { text-align: center; flex: 1; min-width: 90px; }
+.ss-item .num { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+.ss-item .lbl { font-size: .66rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); }
+.ss-item.ok .num { color: var(--success); }
+.ss-item.nok .num { color: var(--danger); }
+.ss-item.pend .num { color: var(--gray-400); }
+.ss-item.val .num { color: var(--warn); font-size: 1.3rem; }
+
+/* Obs */
+.obs-box { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.obs-box h3 { font-size: .95rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.obs-box textarea {
+  width: 100%; min-height: 90px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-family: inherit; font-size: .88rem; color: var(--text-body); resize: vertical; outline: none;
+}
+.obs-box textarea:focus { border-color: var(--accent); }
+
+/* Closing line */
+.closing-box { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.closing-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.closing-field { flex: 1; min-width: 170px; }
+.closing-field .ml { font-size: .68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.closing-field input {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: .9rem; padding: 4px 0; color: var(--text-dark); background: transparent; outline: none;
+}
+.closing-field input:focus { border-bottom-color: var(--accent); }
+.closing-preview { margin-top: 14px; font-size: .9rem; color: var(--text-dark); font-weight: 500; }
+
+/* Signatures */
+.sig-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+.sig-cell { flex: 1; min-width: 280px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px; }
+.sig-cell .sl { font-size: .68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.sig-cell input.signame {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200); font-family: inherit;
+  font-size: .88rem; padding: 4px 0; margin-bottom: 12px; color: var(--text-dark); background: transparent; outline: none;
+}
+.sig-cell input.signame:focus { border-bottom-color: var(--accent); }
+.sig-pad-wrap { position: relative; }
+.sig-pad {
+  width: 100%; height: 140px; border: 2px dashed var(--gray-200); border-radius: var(--radius-sm);
+  background: #FDFDFE; touch-action: none; cursor: crosshair; display: block;
+}
+.sig-pad.signed { border-style: solid; border-color: var(--success); background: var(--white); }
+.sig-placeholder {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; color: var(--gray-400); pointer-events: none;
+}
+.sig-pad.signed + .sig-placeholder { display: none; }
+.sig-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.sig-tools .st { font-size: .72rem; color: var(--gray-600); }
+.sig-tools button {
+  background: none; border: none; color: var(--danger); font-family: inherit;
+  font-size: .74rem; font-weight: 700; cursor: pointer; padding: 4px 6px;
+}
+
+/* Actions */
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  padding: 12px 24px; border-radius: var(--radius-sm); border: none;
+  font-family: inherit; font-size: .88rem; font-weight: 700; cursor: pointer;
+  transition: all .2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: var(--white); }
+.btn-primary:hover { background: var(--navy); }
+.btn-outline { background: var(--white); color: var(--navy); border: 2px solid var(--gray-200); }
+.btn-outline:hover { border-color: var(--navy); }
+.btn svg { width: 16px; height: 16px; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+  background: var(--navy-deep); color: var(--white); padding: 14px 24px; border-radius: 50px;
+  font-size: .86rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  transition: transform .3s; z-index: 999; max-width: 90vw; text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.err { background: var(--danger); }
+
+.draft-note { font-size: .74rem; color: var(--gray-600); margin-top: 10px; }
+
+@media (max-width: 720px) {
+  table.tools thead { display: none; }
+  table.tools tbody td { display: block; border-bottom: none; padding: 4px 14px; }
+  table.tools tbody tr { display: block; border-bottom: 1px solid var(--gray-200); padding: 10px 0; }
+  .t-val { text-align: left; }
+}
+@media print {
+  body { background: white; }
+  .page { padding: 12px; max-width: none; }
+  .actions, .bulk-bar, .hint, .draft-note, .sig-tools button { display: none; }
+  .tools-card, .sig-cell { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="doc-header">
+    <h1>Auditoria Carrinhos de Ferramenta — <em>Mensal</em></h1>
+    <p>Verificação mensal do carrinho de ferramenta atribuído a cada técnico de mecânica, realizada pelo coordenador da unidade.</p>
+    <div class="doc-ref">QS-ACF-001 · Walkingarage, Lda. — Bosch Car Service</div>
+  </div>
+
+  <div class="meta-strip">
+    <div class="meta-chip" id="chipLocal">
+      <div class="ml">Local</div>
+      <select id="fLocal" onchange="onLocalChange()">
+        <option value="">— Selecionar —</option>
+        <option value="Mecânica Cacém">Mecânica Cacém</option>
+        <option value="Mecânica Lisboa">Mecânica Lisboa</option>
+      </select>
+    </div>
+    <div class="meta-chip" id="chipTecnico">
+      <div class="ml">Técnico auditado</div>
+      <select id="fTecnico" onchange="onTecnicoChange()">
+        <option value="">— Selecionar local primeiro —</option>
+      </select>
+    </div>
+    <div class="meta-chip" id="chipTecnicoOutro" style="display:none;">
+      <div class="ml">Nome do técnico</div>
+      <input type="text" id="fTecnicoOutro" placeholder="Nome completo" oninput="markDirty()">
+    </div>
+    <div class="meta-chip">
+      <div class="ml">Nº / Identificação do carrinho</div>
+      <input type="text" id="fCarrinho" placeholder="Ex: Carrinho 1" oninput="markDirty()">
+    </div>
+    <div class="meta-chip" id="chipData">
+      <div class="ml">Data da auditoria</div>
+      <input type="date" id="fData" onchange="onDataChange()">
+    </div>
+    <div class="meta-chip">
+      <div class="ml">Coordenador / Auditor</div>
+      <input type="text" id="fCoordenador" placeholder="Nome" oninput="syncSigNames()">
+    </div>
+  </div>
+  <div class="hint">A lista de técnicos segue o organigrama da empresa (Técnicos de Mecânica — Cacém e Lisboa). O ficheiro é nomeado automaticamente pelo técnico, data e local.</div>
+
+  <div class="bulk-bar">
+    <span class="bl">Preenchimento rápido</span>
+    <button class="toggle-btn" onclick="setAll('ok')">Marcar tudo OK</button>
+    <button class="toggle-btn" onclick="setAll('nok')">Marcar tudo NOK</button>
+    <button class="toggle-btn" onclick="setAll(null)">Limpar estados</button>
+  </div>
+
+  <div class="tools-card">
+    <div class="tools-card-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      Equipamento do carrinho
+      <span class="badge" id="fillBadge">0 / 23</span>
+    </div>
+    <table class="tools">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Equipamento</th>
+          <th>Marca / Referência</th>
+          <th style="text-align:right;">Valor s/ IVA</th>
+          <th>Estado</th>
+          <th>Dano / perda a reportar</th>
+        </tr>
+      </thead>
+      <tbody id="toolsBody"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="text-align:right;">Valor Total »</td>
+          <td class="t-val">3010.34€ + IVA</td>
+          <td colspan="2" style="font-weight:600;color:var(--warn);" id="footNok">Valor em NOK: 0.00€</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="summary-strip">
+    <div class="ss-item ok"><div class="num" id="sOk">0</div><div class="lbl">OK</div></div>
+    <div class="ss-item nok"><div class="num" id="sNok">0</div><div class="lbl">NOK</div></div>
+    <div class="ss-item pend"><div class="num" id="sPend">23</div><div class="lbl">Pendente</div></div>
+    <div class="ss-item val"><div class="num" id="sVal">0.00€</div><div class="lbl">Valor em falta / danificado</div></div>
+  </div>
+
+  <div class="obs-box">
+    <h3>Observações gerais / Ações a tomar</h3>
+    <textarea id="fObs" placeholder="Registar contexto, reposições a encomendar, prazos acordados com o técnico..." oninput="markDirty()"></textarea>
+  </div>
+
+  <div class="closing-box">
+    <div class="closing-row">
+      <div class="closing-field">
+        <div class="ml">Localidade do fecho</div>
+        <input type="text" id="fLocalidade" placeholder="Lisboa" oninput="renderClosing()">
+      </div>
+      <div class="closing-field">
+        <div class="ml">Data do fecho / assinatura</div>
+        <input type="date" id="fDataFecho" onchange="renderClosing()">
+      </div>
+    </div>
+    <div class="closing-preview" id="closingPreview">—</div>
+  </div>
+
+  <div class="sig-row">
+    <div class="sig-cell">
+      <div class="sl">O Auditor — Coordenador</div>
+      <input type="text" class="signame" id="sigNameCoord" placeholder="Nome do coordenador">
+      <div class="sig-pad-wrap">
+        <canvas class="sig-pad" id="padCoord"></canvas>
+        <div class="sig-placeholder">Assine aqui com o dedo ou o rato</div>
+      </div>
+      <div class="sig-tools"><span class="st" id="stCoord">Sem assinatura</span><button onclick="clearPad('coord')">Limpar</button></div>
+    </div>
+    <div class="sig-cell">
+      <div class="sl">O Colaborador — Técnico auditado</div>
+      <input type="text" class="signame" id="sigNameTec" placeholder="Nome do técnico">
+      <div class="sig-pad-wrap">
+        <canvas class="sig-pad" id="padTec"></canvas>
+        <div class="sig-placeholder">Assine aqui com o dedo ou o rato</div>
+      </div>
+      <div class="sig-tools"><span class="st" id="stTec">Sem assinatura</span><button onclick="clearPad('tec')">Limpar</button></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="saveAuditoria()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar e arquivar no SharePoint
+    </button>
+    <button class="btn btn-outline" onclick="window.print()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimir
+    </button>
+    <button class="btn btn-outline" onclick="resetAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Limpar tudo
+    </button>
+  </div>
+  <div class="draft-note" id="draftNote">Rascunho guardado automaticamente neste dispositivo.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====== Dados fixos — artigos, descrições, referências e preços do documento original (INALTERADOS) ====== */
+var TOOLS = [
+  { d: 'Aparafusadora BACS-1 12 V, 2,0 e 6,0 Ah, BC+ 12 V', r: 'Berner / 351949', v: 183.55 },
+  { d: 'Busca polos para teste auto em metal', r: 'Berner / 13560', v: 27.29 },
+  { d: 'Rabo de força 1/2"', r: 'Berner / 215414', v: 38.57 },
+  { d: 'Pistola de ar, 100 mm Blue Star 2', r: 'Berner / 244882', v: 25.00 },
+  { d: 'Espelho de inspeção com LED', r: 'Berner / 129352', v: 49.50 },
+  { d: 'Fita métrica autostop', r: 'Berner / 370493', v: 14.68 },
+  { d: 'Jogo de chaves boca luneta', r: 'Berner / 34582', v: 172.67 },
+  { d: 'Chave de bujões de óleo 8 em 1 universal', r: 'Berner / 153197', v: 58.34 },
+  { d: 'Conjunto de bits, 1/4 ", MIX, 51 PEÇ,', r: 'Berner / 156540', v: 78.70 },
+  { d: 'Alicate de pontas Premium 270 mm, para abraçadeira de mola', r: 'Berner / 405656', v: 111.12 },
+  { d: 'Chave de cinta para filtro de óleo', r: 'Berner / 245237', v: 40.11 },
+  { d: 'Conjunto de 6 adaptadores/redutores', r: 'Berner / 369076', v: 57.98 },
+  { d: 'Conjunto de 3 chaves de impacto Premium', r: 'Berner / 245246', v: 89.44 },
+  { d: 'Alavancas "Non Slip" aço', r: 'Berner / 111697', v: 30.08 },
+  { d: 'Jogo de 5 extratores de molas de friso', r: 'Berner / 216502', v: 123.81 },
+  { d: 'Conjunto de bits 1/2" + 3/8" 47 peças', r: 'Berner / 134663', v: 229.34 },
+  { d: 'Carro de ferramenta com 7 gavetas Evolution II', r: 'Berner / 157609', v: 785.71 },
+  { d: 'Conjunto de 132 chaves 1/4-3/8-1/2', r: 'Berner / 399216', v: 615.87 },
+  { d: 'Conjunto de chaves de punho em molde de espuma 2K TX', r: 'Berner / 240293', v: 51.57 },
+  { d: 'Conjunto de chaves de punho em molde de espuma 2K Premium, Fenda - PH', r: 'Berner / 240288', v: 53.47 },
+  { d: 'Molde de espuma com alicate 3K e alicate para bomba de água MX', r: 'Berner / 341013', v: 80.35 },
+  { d: 'Alicate de abraçadeira de mangueira - abraçadeiras caillau e cobra', r: 'Berner / 33542', v: 34.77 },
+  { d: 'Conjunto de alicates retos para freios, 5 peças', r: 'Berner / 4436', v: 58.42 }
+];
+var TOTAL_LABEL = '3010.34€ + IVA';
+
+/* Técnicos de Mecânica por unidade — organigrama DomusCar (estrutura_organizacional.html) */
+var TECNICOS = {
+  'Mecânica Cacém':  ['Arnaldo Cruz', 'Edmilson Fernandes', 'Filipe Bonifácio', 'Gonçalo Matos'],
+  'Mecânica Lisboa': ['Sérgio Pereira', 'Jorge Silva', 'Emanuel Gonçalves', 'Rafael Janeiro']
+};
+var COORD_POR_LOCAL = { 'Mecânica Cacém': 'José Rodriguez', 'Mecânica Lisboa': 'Fábio Ramalho' };
+var LOCALIDADE_POR_LOCAL = { 'Mecânica Cacém': 'Cacém', 'Mecânica Lisboa': 'Lisboa' };
+
+var DRAFT_KEY = 'acf_draft_v1';
+var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+/* ====== Render da tabela ====== */
+function buildTable() {
+  var tb = document.getElementById('toolsBody');
+  var html = '';
+  TOOLS.forEach(function(t, i) {
+    html += '<tr data-i="' + i + '">' +
+      '<td class="t-idx">' + (i + 1) + '</td>' +
+      '<td class="t-desc">' + esc(t.d) + '</td>' +
+      '<td class="t-ref">' + esc(t.r) + '</td>' +
+      '<td class="t-val">' + t.v.toFixed(2) + '€</td>' +
+      '<td><div class="qcheck-toggle">' +
+        '<button class="toggle-btn ok-btn" onclick="setState(' + i + ',\'ok\')">OK</button>' +
+        '<button class="toggle-btn nok-btn" onclick="setState(' + i + ',\'nok\')">NOK</button>' +
+      '</div></td>' +
+      '<td class="t-obs"><input type="text" id="obs' + i + '" placeholder="Dano, perda, desgaste, em falta..." oninput="onObsInput(' + i + ')"></td>' +
+    '</tr>';
+  });
+  tb.innerHTML = html;
+}
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+var states = new Array(TOOLS.length).fill(null);
+
+function setState(i, st) {
+  states[i] = (states[i] === st) ? null : st;
+  paintRow(i);
+  updateSummary();
+  markDirty();
+}
+function paintRow(i) {
+  var tr = document.querySelector('tr[data-i="' + i + '"]');
+  if (!tr) return;
+  var okB = tr.querySelector('.ok-btn'), nokB = tr.querySelector('.nok-btn');
+  okB.classList.remove('ok-active'); nokB.classList.remove('nok-active');
+  tr.classList.remove('st-ok', 'st-nok');
+  if (states[i] === 'ok')  { okB.classList.add('ok-active');  tr.classList.add('st-ok'); }
+  if (states[i] === 'nok') { nokB.classList.add('nok-active'); tr.classList.add('st-nok'); }
+  var inp = document.getElementById('obs' + i);
+  if (inp) {
+    if (states[i] === 'nok' && !inp.value.trim()) inp.classList.add('flag');
+    else inp.classList.remove('flag');
+  }
+}
+function onObsInput(i) { paintRow(i); markDirty(); }
+function setAll(st) {
+  for (var i = 0; i < states.length; i++) { states[i] = st; paintRow(i); }
+  updateSummary(); markDirty();
+}
+
+function updateSummary() {
+  var ok = 0, nok = 0, val = 0;
+  states.forEach(function(s, i) {
+    if (s === 'ok') ok++;
+    else if (s === 'nok') { nok++; val += TOOLS[i].v; }
+  });
+  var pend = TOOLS.length - ok - nok;
+  document.getElementById('sOk').textContent = ok;
+  document.getElementById('sNok').textContent = nok;
+  document.getElementById('sPend').textContent = pend;
+  document.getElementById('sVal').textContent = val.toFixed(2) + '€';
+  document.getElementById('fillBadge').textContent = (ok + nok) + ' / ' + TOOLS.length;
+  document.getElementById('footNok').textContent = 'Valor em NOK: ' + val.toFixed(2) + '€';
+}
+
+/* ====== Cabeçalho ====== */
+function onLocalChange() {
+  var local = document.getElementById('fLocal').value;
+  var sel = document.getElementById('fTecnico');
+  sel.innerHTML = '<option value="">— Selecionar —</option>';
+  (TECNICOS[local] || []).forEach(function(n) {
+    sel.innerHTML += '<option value="' + esc(n) + '">' + esc(n) + '</option>';
+  });
+  sel.innerHTML += '<option value="__outro__">Outro (escrever)</option>';
+  document.getElementById('chipTecnicoOutro').style.display = 'none';
+  var coordF = document.getElementById('fCoordenador');
+  if (!coordF.value.trim() && COORD_POR_LOCAL[local]) coordF.value = COORD_POR_LOCAL[local];
+  var locF = document.getElementById('fLocalidade');
+  if (LOCALIDADE_POR_LOCAL[local]) locF.value = LOCALIDADE_POR_LOCAL[local];
+  syncSigNames(); renderClosing(); markDirty();
+}
+function onTecnicoChange() {
+  var v = document.getElementById('fTecnico').value;
+  document.getElementById('chipTecnicoOutro').style.display = (v === '__outro__') ? 'block' : 'none';
+  syncSigNames(); markDirty();
+}
+function onDataChange() {
+  var d = document.getElementById('fData').value;
+  var f = document.getElementById('fDataFecho');
+  if (d && !f.value) f.value = d;
+  renderClosing(); markDirty();
+}
+function getTecnicoName() {
+  var v = document.getElementById('fTecnico').value;
+  if (v === '__outro__') return document.getElementById('fTecnicoOutro').value.trim();
+  return v;
+}
+function syncSigNames() {
+  var c = document.getElementById('fCoordenador').value.trim();
+  var t = getTecnicoName();
+  var sc = document.getElementById('sigNameCoord'), st = document.getElementById('sigNameTec');
+  if (c) sc.value = c;
+  if (t) st.value = t;
+  markDirty();
+}
+function renderClosing() {
+  var loc = document.getElementById('fLocalidade').value.trim();
+  var d = document.getElementById('fDataFecho').value;
+  var out = '—';
+  if (d) {
+    var p = d.split('-');
+    var txt = parseInt(p[2], 10) + ' de ' + MESES[parseInt(p[1], 10) - 1] + ' de ' + p[0];
+    out = (loc ? loc + ', ' : '') + txt + '.';
+  } else if (loc) { out = loc + ', ______________.'; }
+  document.getElementById('closingPreview').textContent = out;
+  markDirty();
+}
+
+/* ====== Assinaturas (canvas) ====== */
+var pads = {};
+function initPad(key, canvasId, statusId) {
+  var c = document.getElementById(canvasId);
+  var ctx = c.getContext('2d');
+  var drawing = false, dirty = false, last = null;
+
+  function resize() {
+    var img = dirty ? c.toDataURL() : null;
+    var rect = c.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    c.width = Math.max(1, Math.round(rect.width * dpr));
+    c.height = Math.max(1, Math.round(rect.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1A2A3A';
+    if (img) { var im = new Image(); im.onload = function() { ctx.drawImage(im, 0, 0, rect.width, rect.height); }; im.src = img; }
+  }
+  function pos(e) {
+    var r = c.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  c.addEventListener('pointerdown', function(e) {
+    e.preventDefault(); c.setPointerCapture(e.pointerId);
+    drawing = true; last = pos(e);
+    ctx.beginPath(); ctx.arc(last.x, last.y, 1, 0, Math.PI * 2); ctx.fillStyle = '#1A2A3A'; ctx.fill();
+    setSigned(true);
+  });
+  c.addEventListener('pointermove', function(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    var p = pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    last = p;
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) {
+    c.addEventListener(ev, function() { drawing = false; });
+  });
+
+  function setSigned(v) {
+    dirty = v;
+    c.classList.toggle('signed', v);
+    document.getElementById(statusId).textContent = v ? 'Assinado ✓' : 'Sem assinatura';
+    if (v) markDirty();
+  }
+  function clear() {
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.restore();
+    setSigned(false); markDirty();
+  }
+  function isSigned() { return dirty; }
+  function toDataURL() { return dirty ? c.toDataURL('image/png') : ''; }
+  function restore(url) {
+    if (!url) return;
+    var im = new Image();
+    im.onload = function() {
+      var r = c.getBoundingClientRect();
+      ctx.drawImage(im, 0, 0, r.width, r.height);
+      setSigned(true);
+    };
+    im.src = url;
+  }
+
+  resize();
+  window.addEventListener('resize', function() { setTimeout(resize, 100); });
+  pads[key] = { clear: clear, isSigned: isSigned, toDataURL: toDataURL, restore: restore, resize: resize };
+}
+function clearPad(k) { if (pads[k]) pads[k].clear(); }
+
+/* ====== Rascunho local ====== */
+var draftTimer = null;
+function markDirty() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 700);
+}
+function collect() {
+  return {
+    local: document.getElementById('fLocal').value,
+    tecnicoSel: document.getElementById('fTecnico').value,
+    tecnicoOutro: document.getElementById('fTecnicoOutro').value,
+    carrinho: document.getElementById('fCarrinho').value,
+    data: document.getElementById('fData').value,
+    coordenador: document.getElementById('fCoordenador').value,
+    obs: document.getElementById('fObs').value,
+    localidade: document.getElementById('fLocalidade').value,
+    dataFecho: document.getElementById('fDataFecho').value,
+    sigNameCoord: document.getElementById('sigNameCoord').value,
+    sigNameTec: document.getElementById('sigNameTec').value,
+    states: states.slice(),
+    obsItens: TOOLS.map(function(_, i) { return document.getElementById('obs' + i).value; }),
+    sigCoord: pads.coord ? pads.coord.toDataURL() : '',
+    sigTec: pads.tec ? pads.tec.toDataURL() : ''
+  };
+}
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(collect()));
+    var n = document.getElementById('draftNote');
+    n.textContent = 'Rascunho guardado localmente às ' + new Date().toLocaleTimeString('pt-PT');
+  } catch (e) { /* quota / modo privado */ }
+}
+function loadDraft() {
+  var raw = null;
+  try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) { return; }
+  if (!raw) return;
+  var d;
+  try { d = JSON.parse(raw); } catch (e) { return; }
+  document.getElementById('fLocal').value = d.local || '';
+  if (d.local) onLocalChange();
+  document.getElementById('fTecnico').value = d.tecnicoSel || '';
+  onTecnicoChange();
+  document.getElementById('fTecnicoOutro').value = d.tecnicoOutro || '';
+  document.getElementById('fCarrinho').value = d.carrinho || '';
+  document.getElementById('fData').value = d.data || '';
+  document.getElementById('fCoordenador').value = d.coordenador || '';
+  document.getElementById('fObs').value = d.obs || '';
+  document.getElementById('fLocalidade').value = d.localidade || '';
+  document.getElementById('fDataFecho').value = d.dataFecho || '';
+  document.getElementById('sigNameCoord').value = d.sigNameCoord || '';
+  document.getElementById('sigNameTec').value = d.sigNameTec || '';
+  if (Array.isArray(d.states)) {
+    for (var i = 0; i < states.length; i++) { states[i] = d.states[i] || null; paintRow(i); }
+  }
+  if (Array.isArray(d.obsItens)) {
+    d.obsItens.forEach(function(v, i) { var el = document.getElementById('obs' + i); if (el) el.value = v || ''; paintRow(i); });
+  }
+  setTimeout(function() {
+    if (d.sigCoord && pads.coord) pads.coord.restore(d.sigCoord);
+    if (d.sigTec && pads.tec) pads.tec.restore(d.sigTec);
+  }, 150);
+  updateSummary(); renderClosing();
+}
+function resetAll() {
+  if (!confirm('Limpar toda a auditoria (incluindo assinaturas e rascunho guardado)?')) return;
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  states = new Array(TOOLS.length).fill(null);
+  buildTable();
+  document.querySelectorAll('input[type=text], input[type=date], textarea').forEach(function(i) { i.value = ''; });
+  document.getElementById('fLocal').value = '';
+  document.getElementById('fTecnico').innerHTML = '<option value="">— Selecionar local primeiro —</option>';
+  document.getElementById('chipTecnicoOutro').style.display = 'none';
+  if (pads.coord) pads.coord.clear();
+  if (pads.tec) pads.tec.clear();
+  setToday();
+  updateSummary(); renderClosing();
+  document.getElementById('draftNote').textContent = 'Rascunho limpo.';
+}
+
+/* ====== Guardar ====== */
+function slug(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'SemNome';
+}
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(function() { t.className = 'toast' + (isErr ? ' err' : ''); }, 5000);
+}
+
+function saveAuditoria() {
+  var d = collect();
+  var tecnico = (d.tecnicoSel === '__outro__') ? d.tecnicoOutro.trim() : d.tecnicoSel;
+
+  // Validações mínimas
+  var faltas = [];
+  if (!d.local) faltas.push('Local');
+  if (!tecnico) faltas.push('Técnico auditado');
+  if (!d.data) faltas.push('Data da auditoria');
+  if (faltas.length) { toast('Preencha: ' + faltas.join(', '), true); return; }
+
+  var pend = states.filter(function(s) { return !s; }).length;
+  if (pend > 0 && !confirm('Há ' + pend + ' artigo(s) sem estado marcado. Guardar assim mesmo?')) return;
+
+  var semAss = [];
+  if (!(pads.coord && pads.coord.isSigned())) semAss.push('coordenador');
+  if (!(pads.tec && pads.tec.isSigned())) semAss.push('técnico');
+  if (semAss.length && !confirm('Falta a assinatura do ' + semAss.join(' e do ') + '. Guardar assim mesmo?')) return;
+
+  var nokItens = [], okCount = 0, valNok = 0;
+  states.forEach(function(s, i) {
+    if (s === 'ok') okCount++;
+    if (s === 'nok') { nokItens.push({ i: i, obs: d.obsItens[i] || '' }); valNok += TOOLS[i].v; }
+  });
+  var comObs = d.obsItens.filter(function(v) { return v && v.trim(); }).length;
+
+  var html = buildReport(d, tecnico, okCount, nokItens, valNok);
+
+  var dp = d.data.split('-');
+  var dataFile = dp[2] + '-' + dp[1] + '-' + dp[0];
+  var filename = 'Auditoria_Carrinho_' + slug(tecnico) + '_' + dataFile + '_' + slug(d.local) + '.html';
+
+  var parentOk = false;
+  try { parentOk = !!(window.parent && window.parent !== window && window.parent.uploadToSharePoint); } catch (e) { parentOk = false; }
+
+  if (parentOk) {
+    try {
+      window.parent.uploadToSharePoint('auditorias_carrinhos', filename, html, 'text/html');
+
+      // Notificação apenas quando há NOK ou observações reportadas
+      if ((nokItens.length > 0 || comObs > 0) && window.parent.sendNotification) {
+        var subject = '🧰 Auditoria Carrinho Ferramenta com ocorrências — ' + tecnico + ' (' + d.local + ')';
+        var body = '<p><strong>Técnico:</strong> ' + esc(tecnico) + '</p>' +
+          '<p><strong>Local:</strong> ' + esc(d.local) + '</p>' +
+          '<p><strong>Carrinho:</strong> ' + esc(d.carrinho || 'N/A') + '</p>' +
+          '<p><strong>Data:</strong> ' + dataFile + '</p>' +
+          '<p><strong>Coordenador:</strong> ' + esc(d.coordenador || 'N/A') + '</p>' +
+          '<p><strong>Resultado:</strong> OK ' + okCount + ' · NOK ' + nokItens.length + ' · Pendente ' + pend + '</p>' +
+          '<p><strong>Valor em falta / danificado:</strong> ' + valNok.toFixed(2) + '€ s/ IVA</p>';
+        if (nokItens.length) {
+          body += '<p><strong>Artigos NOK:</strong></p><ul>';
+          nokItens.forEach(function(n) {
+            body += '<li>' + esc(TOOLS[n.i].d) + ' (' + esc(TOOLS[n.i].r) + ') — ' + TOOLS[n.i].v.toFixed(2) + '€' +
+                    (n.obs ? ' — <em>' + esc(n.obs) + '</em>' : '') + '</li>';
+          });
+          body += '</ul>';
+        }
+        body += '<p style="color:#888;font-size:12px;">Ficheiro: ' + esc(filename) +
+                ' — consultar em Intranet &gt; Definições &gt; Gestão de Ficheiros &gt; Auditorias Carrinhos.</p>';
+        window.parent.sendNotification('auditorias_carrinhos', subject, body);
+      }
+      toast('Auditoria arquivada no SharePoint: ' + filename);
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    } catch (err) {
+      toast('Erro ao guardar: ' + err.message, true);
+      download(filename, html);
+    }
+  } else {
+    download(filename, html);
+    toast('Fora da intranet — ficheiro descarregado: ' + filename);
+  }
+}
+
+function download(filename, html) {
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+}
+
+function buildReport(d, tecnico, okCount, nokItens, valNok) {
+  var pend = states.filter(function(s) { return !s; }).length;
+  var closing = document.getElementById('closingPreview').textContent;
+  var stamp = new Date().toLocaleString('pt-PT');
+  var submitter = '';
+  try {
+    if (window.parent && window.parent.currentMsalUser) {
+      var u = window.parent.currentMsalUser;
+      submitter = (u.name || '') + (u.username ? ' &lt;' + u.username + '&gt;' : '');
+    }
+  } catch (e) {}
+
+  var rows = '';
+  TOOLS.forEach(function(t, i) {
+    var s = states[i];
+    var lbl = s === 'ok' ? 'OK' : (s === 'nok' ? 'NOK' : 'Pendente');
+    var cls = s === 'ok' ? 'ok' : (s === 'nok' ? 'nok' : 'pend');
+    var obs = (d.obsItens[i] || '').trim();
+    rows += '<tr class="r-' + cls + '">' +
+      '<td class="idx">' + (i + 1) + '</td>' +
+      '<td>' + esc(t.d) + '</td>' +
+      '<td class="ref">' + esc(t.r) + '</td>' +
+      '<td class="val">' + t.v.toFixed(2) + '€</td>' +
+      '<td><span class="st ' + cls + '">' + lbl + '</span></td>' +
+      '<td class="obs">' + (obs ? esc(obs) : '<span class="muted">—</span>') + '</td>' +
+    '</tr>';
+  });
+
+  var sigCoordImg = d.sigCoord ? '<img src="' + d.sigCoord + '" alt="Assinatura do coordenador">' : '<div class="noSig">Sem assinatura</div>';
+  var sigTecImg = d.sigTec ? '<img src="' + d.sigTec + '" alt="Assinatura do técnico">' : '<div class="noSig">Sem assinatura</div>';
+
+  var out = '';
+  out += '<!DOCTYPE html>\n<html lang="pt">\n<head>\n<meta charset="UTF-8">\n';
+  out += '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
+  out += '<title>Auditoria Carrinho Ferramenta — ' + esc(tecnico) + ' — ' + esc(d.data) + '</title>\n';
+  out += '<style>\n';
+  out += 'body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;background:#f5f5f5;color:#333;margin:0;line-height:1.6}';
+  out += '.container{max-width:980px;margin:0 auto;padding:28px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1)}';
+  out += 'h1{color:#003B73;border-bottom:2px solid #007BC0;padding-bottom:10px;font-size:1.35rem;margin:0 0 6px}';
+  out += '.docref{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:18px}';
+  out += 'h2{color:#007BC0;margin:26px 0 10px;font-size:1.05rem}';
+  out += '.meta{background:#f9f9f9;padding:16px;border-radius:8px;margin:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px}';
+  out += '.meta-item{min-width:200px}';
+  out += '.meta-label{font-weight:700;color:#003B73;display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}';
+  out += '.summary{display:flex;gap:14px;margin:18px 0;flex-wrap:wrap}';
+  out += '.summary-item{padding:14px;background:#f0f0f0;border-radius:8px;text-align:center;flex:1;min-width:110px}';
+  out += '.summary-item .num{font-size:1.7rem;font-weight:800}';
+  out += '.summary-item.ok .num{color:#059669}.summary-item.nok .num{color:#DC2626}';
+  out += '.summary-item.pend .num{color:#9CA3AF}.summary-item.val .num{color:#D97706;font-size:1.35rem}';
+  out += '.summary-item .lbl{font-size:.7rem;color:#666;text-transform:uppercase;letter-spacing:.5px}';
+  out += 'table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}';
+  out += 'thead th{background:#003B73;color:#fff;text-align:left;padding:9px 11px;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}';
+  out += 'tbody td{padding:9px 11px;border-bottom:1px solid #eee;vertical-align:middle}';
+  out += 'tbody tr.r-ok{background:rgba(5,150,105,.05)}tbody tr.r-nok{background:rgba(220,38,38,.06)}';
+  out += '.idx{color:#aaa;font-weight:700;width:30px}.ref{color:#666;white-space:nowrap;font-size:.78rem}';
+  out += '.val{text-align:right;font-weight:600;white-space:nowrap}';
+  out += '.st{font-weight:700;padding:3px 9px;border-radius:4px;font-size:.75rem;white-space:nowrap}';
+  out += '.st.ok{background:#d1fae5;color:#059669}.st.nok{background:#fee2e2;color:#DC2626}.st.pend{background:#f3f4f6;color:#9CA3AF}';
+  out += '.obs{color:#7c2d12}.muted{color:#ccc}';
+  out += 'tfoot td{background:#f0f0f0;font-weight:800;color:#003B73;padding:12px 11px;border-top:2px solid #ddd}';
+  out += '.notes{background:#eff6ff;padding:14px 16px;border-left:4px solid #007BC0;border-radius:4px;margin:16px 0;white-space:pre-wrap}';
+  out += '.notes-title{font-weight:700;color:#003B73;margin-bottom:6px}';
+  out += '.closing{margin:28px 0 10px;font-size:.95rem}';
+  out += '.sigs{display:flex;gap:24px;flex-wrap:wrap;margin-top:14px}';
+  out += '.sig{flex:1;min-width:250px;text-align:center;border:1px solid #ddd;border-radius:8px;padding:14px}';
+  out += '.sig img{max-width:100%;height:120px;object-fit:contain;display:block;margin:0 auto}';
+  out += '.sig .noSig{height:120px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:.8rem}';
+  out += '.sig .line{border-top:1px solid #999;margin:6px 20px 8px}';
+  out += '.sig .role{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:700}';
+  out += '.sig .nm{font-size:.88rem;color:#003B73;font-weight:600}';
+  out += '.footer{text-align:center;margin-top:30px;font-size:.78rem;color:#666;border-top:1px solid #ddd;padding-top:14px}';
+  out += '@media print{body{background:#fff}.container{box-shadow:none;padding:10px}table{font-size:.78rem}}';
+  out += '\n</style>\n</head>\n<body>\n<div class="container">\n';
+  out += '<h1>Ata de Auditoria — Carrinho de Ferramenta</h1>\n';
+  out += '<div class="docref">QS-ACF-001 · Auditoria Mensal · Walkingarage, Lda. — Bosch Car Service</div>\n';
+
+  out += '<div class="meta">';
+  out += '<div class="meta-item"><span class="meta-label">Técnico auditado</span>' + esc(tecnico) + '</div>';
+  out += '<div class="meta-item"><span class="meta-label">Local</span>' + esc(d.local) + '</div>';
+  out += '<div class="meta-item"><span class="meta-label">Carrinho</span>' + esc(d.carrinho || '—') + '</div>';
+  out += '<div class="meta-item"><span class="meta-label">Data da auditoria</span>' + esc(d.data) + '</div>';
+  out += '<div class="meta-item"><span class="meta-label">Coordenador / Auditor</span>' + esc(d.coordenador || '—') + '</div>';
+  out += '</div>\n';
+
+  out += '<div class="summary">';
+  out += '<div class="summary-item ok"><div class="num">' + okCount + '</div><div class="lbl">OK</div></div>';
+  out += '<div class="summary-item nok"><div class="num">' + nokItens.length + '</div><div class="lbl">NOK</div></div>';
+  out += '<div class="summary-item pend"><div class="num">' + pend + '</div><div class="lbl">Pendente</div></div>';
+  out += '<div class="summary-item val"><div class="num">' + valNok.toFixed(2) + '€</div><div class="lbl">Valor em falta / danificado</div></div>';
+  out += '</div>\n';
+
+  out += '<h2>Equipamento do carrinho</h2>\n<table>\n<thead><tr>';
+  out += '<th>#</th><th>Equipamento</th><th>Marca / Referência</th><th style="text-align:right">Valor s/ IVA</th><th>Estado</th><th>Dano / perda reportada</th>';
+  out += '</tr></thead>\n<tbody>\n' + rows + '</tbody>\n';
+  out += '<tfoot><tr><td colspan="3" style="text-align:right">Valor Total »</td><td class="val">' + TOTAL_LABEL + '</td>';
+  out += '<td colspan="2" style="color:#D97706">Valor em NOK: ' + valNok.toFixed(2) + '€</td></tr></tfoot>\n</table>\n';
+
+  if (d.obs && d.obs.trim()) {
+    out += '<div class="notes"><div class="notes-title">Observações gerais / Ações a tomar</div>' + esc(d.obs.trim()) + '</div>\n';
+  }
+
+  out += '<div class="closing">' + esc(closing) + '</div>\n';
+  out += '<div class="sigs">\n';
+  out += '<div class="sig">' + sigCoordImg + '<div class="line"></div><div class="role">O Auditor — Coordenador</div><div class="nm">' + esc(d.sigNameCoord || d.coordenador || '') + '</div></div>\n';
+  out += '<div class="sig">' + sigTecImg + '<div class="line"></div><div class="role">O Colaborador — Técnico</div><div class="nm">' + esc(d.sigNameTec || tecnico) + '</div></div>\n';
+  out += '</div>\n';
+
+  out += '<div class="footer">Registo gerado na Intranet DomusCar em ' + stamp;
+  if (submitter) out += ' por ' + submitter;
+  out += '<br>Ata de Auditoria de Carrinho de Ferramenta — QS-ACF-001</div>\n';
+  out += '</div>\n</body>\n</html>';
+  return out;
+}
+
+/* ====== Arranque ====== */
+function setToday() {
+  var t = new Date();
+  var iso = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+  document.getElementById('fData').value = iso;
+  document.getElementById('fDataFecho').value = iso;
+}
+
+buildTable();
+initPad('coord', 'padCoord', 'stCoord');
+initPad('tec', 'padTec', 'stTec');
+setToday();
+
+// Pré-preencher o coordenador com o utilizador autenticado na intranet
+try {
+  if (window.parent && window.parent !== window) {
+    var perm = window.parent.currentUserPermissions;
+    var mu = window.parent.currentMsalUser;
+    var nm = (perm && perm.name) || (mu && mu.name) || '';
+    if (nm) document.getElementById('fCoordenador').value = nm;
+  }
+} catch (e) {}
+
+loadDraft();
+updateSummary();
+renderClosing();
+syncSigNames();
+</script>
+
+</body>
+</html>
