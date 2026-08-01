@@ -3308,6 +3308,17 @@
             return data || { updatedAt: null, rows: [] };
         });
     };
+    // Apagar relatório arquivado (apenas admins) — usado pelo botão 🗑 do histórico do módulo
+    window.amDeleteReport = function(fileName) {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin') return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        return listSharePointFiles('avaliacoes_merito').then(function(res) {
+            var items = (res && res.value) || [];
+            var hit = items.filter(function(f) { return f.name === fileName; })[0];
+            if (!hit) { console.warn('[AM] ficheiro não encontrado no SP:', fileName); return true; }
+            return deleteSharePointFile(hit.id);
+        });
+    };
     window.amSaveIndex = function(data) {
         var role = currentUserPermissions ? currentUserPermissions.role : null;
         if (role !== 'admin' && role !== 'coordenador') {

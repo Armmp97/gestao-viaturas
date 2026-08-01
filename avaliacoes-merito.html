@@ -17,11 +17,11 @@
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.6; }
-.page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 140px; }
+.page { max-width: 980px; margin: 0 auto; padding: 32px 24px 140px; }
 
 .doc-header {
   background: linear-gradient(135deg, var(--navy-deep), var(--navy));
-  color: var(--white); border-radius: var(--radius); padding: 30px 34px;
+  color: var(--white); border-radius: var(--radius); padding: 26px 32px;
   margin-bottom: 20px; position: relative; overflow: hidden;
 }
 .doc-header::after {
@@ -30,10 +30,10 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
   background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
   border-radius: 50%;
 }
-.doc-header h1 { font-size: 1.45rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 { font-size: 1.35rem; font-weight: 800; position: relative; z-index: 2; }
 .doc-header h1 em { font-style: normal; color: var(--accent-light); }
-.doc-header p { font-size: .84rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
-.doc-header .doc-ref { font-size: .69rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 10px; position: relative; z-index: 2; }
+.doc-header p { font-size: .82rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+.doc-header .doc-ref { font-size: .67rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 8px; position: relative; z-index: 2; }
 
 .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
 .tab {
@@ -47,66 +47,72 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
 .view { display: none; }
 .view.active { display: block; }
 
-.meta-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
-.meta-chip { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 12px 16px; flex: 1; min-width: 185px; }
-.meta-chip .ml { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.meta-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.meta-chip { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px 14px; flex: 1; min-width: 170px; }
+.meta-chip .ml { font-size: .65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
 .meta-chip input, .meta-chip select {
   width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
-  font-family: inherit; font-size: .9rem; padding: 4px 0; color: var(--text-dark);
+  font-family: inherit; font-size: .88rem; padding: 3px 0; color: var(--text-dark);
   background: transparent; outline: none;
 }
 .meta-chip input:focus, .meta-chip select:focus { border-bottom-color: var(--accent); }
-.hint { font-size: .77rem; color: var(--gray-600); margin-bottom: 18px; padding-left: 4px; }
 
-.banner { border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 18px; font-size: .85rem; display: flex; gap: 12px; align-items: flex-start; }
+.banner { border-radius: var(--radius-sm); padding: 13px 17px; margin-bottom: 14px; font-size: .84rem; display: flex; gap: 12px; align-items: flex-start; }
 .banner.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
 .banner.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
 .banner.ok { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
-.banner .bi { font-size: 1.1rem; line-height: 1.4; }
+.banner.err { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+.banner .bi { font-size: 1.05rem; line-height: 1.4; }
 .banner strong { font-weight: 800; }
 
-/* Competências */
-.comp-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
-.comp-card-head { padding: 15px 22px; background: var(--navy); color: var(--white); font-size: .89rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.comp-card-head .badge { margin-left: auto; font-size: .71rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; background: rgba(255,255,255,.15); }
-.comp-row { padding: 14px 22px; border-bottom: 1px solid var(--gray-100); }
-.comp-row:last-child { border-bottom: none; }
-.comp-row.rated { background: rgba(5,150,105,.03); }
-.comp-top { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
-.comp-info { flex: 1; min-width: 260px; }
-.comp-nome { font-weight: 700; color: var(--text-dark); font-size: .88rem; }
-.comp-nome .cnum { color: var(--gray-400); font-size: .75rem; font-weight: 700; margin-right: 6px; }
-.comp-ind { font-size: .78rem; color: var(--gray-600); margin-top: 2px; }
-.guide-btn { border: 1px solid var(--gray-200); background: var(--gray-100); border-radius: 8px; padding: 4px 10px; font-family: inherit; font-size: .72rem; font-weight: 700; color: var(--accent); cursor: pointer; white-space: nowrap; }
-.guide-btn:hover { border-color: var(--accent-light); }
-.rate-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.rate-btn {
-  width: 40px; height: 36px; border-radius: 9px; border: 1px solid var(--gray-200);
-  background: var(--white); font-family: inherit; font-size: .9rem; font-weight: 800;
-  color: var(--gray-600); cursor: pointer; transition: all .12s;
-}
-.rate-btn.na { width: auto; padding: 0 10px; font-size: .72rem; }
-.rate-btn:hover { border-color: var(--accent-light); }
-.rate-btn.sel-1 { background: #DC2626; border-color: #DC2626; color: #fff; }
-.rate-btn.sel-2 { background: #F59E0B; border-color: #F59E0B; color: #fff; }
-.rate-btn.sel-3 { background: #0284C7; border-color: #0284C7; color: #fff; }
-.rate-btn.sel-4 { background: #059669; border-color: #059669; color: #fff; }
-.rate-btn.sel-5 { background: #003B73; border-color: #003B73; color: #fff; }
-.rate-btn.sel-na { background: var(--gray-600); border-color: var(--gray-600); color: #fff; }
-.guide-panel { display: none; margin-top: 12px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); overflow: hidden; }
-.guide-panel.open { display: block; }
-.guide-panel table { width: 100%; border-collapse: collapse; }
-.guide-panel td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: .78rem; vertical-align: top; }
-.guide-panel tr:last-child td { border-bottom: none; }
-.gn { width: 34px; font-weight: 800; text-align: center; border-radius: 6px; }
-.gn-1 { color: #DC2626; } .gn-2 { color: #F59E0B; } .gn-3 { color: #0284C7; } .gn-4 { color: #059669; } .gn-5 { color: #003B73; }
-.ganc { color: var(--text-dark); font-weight: 500; }
-.gex { color: var(--gray-600); font-style: italic; margin-top: 2px; }
+/* ===== Wizard ===== */
+.wiz-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.wiz-head { padding: 13px 22px; background: var(--navy); color: var(--white); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wiz-head .wtipo { font-size: .68rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: rgba(255,255,255,.15); padding: 3px 10px; border-radius: 50px; }
+.wiz-head .wcount { font-size: .8rem; font-weight: 700; opacity: .85; margin-left: auto; }
+.wiz-progress { height: 5px; background: var(--gray-100); }
+.wiz-progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width .25s; }
+.wiz-body { padding: 20px 22px; }
+.wiz-nome { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); }
+.wiz-ind { font-size: .82rem; color: var(--gray-600); margin: 4px 0 16px; }
+.lvl { display: flex; gap: 14px; align-items: flex-start; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 12px 15px; margin-bottom: 8px; cursor: pointer; transition: all .12s; background: var(--white); }
+.lvl:hover { border-color: var(--accent-light); background: #F8FBFE; }
+.lvl .lvl-n { width: 38px; height: 38px; min-width: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.05rem; color: #fff; }
+.ln-1 { background: #DC2626; } .ln-2 { background: #F59E0B; } .ln-3 { background: #0284C7; } .ln-4 { background: #059669; } .ln-5 { background: #003B73; }
+.lvl .lvl-t { font-weight: 800; font-size: .84rem; color: var(--text-dark); }
+.lvl .lvl-a { font-size: .8rem; color: var(--text-body); margin-top: 1px; }
+.lvl .lvl-ex { display: none; font-size: .76rem; color: var(--gray-600); font-style: italic; margin-top: 6px; border-top: 1px dashed var(--gray-200); padding-top: 6px; }
+.lvl.show-ex .lvl-ex { display: block; }
+.lvl.sel { border-width: 2px; }
+.lvl.sel.s-1 { border-color: #DC2626; background: rgba(220,38,38,.05); }
+.lvl.sel.s-2 { border-color: #F59E0B; background: rgba(245,158,11,.06); }
+.lvl.sel.s-3 { border-color: #0284C7; background: rgba(2,132,199,.06); }
+.lvl.sel.s-4 { border-color: #059669; background: rgba(5,150,105,.06); }
+.lvl.sel.s-5 { border-color: #003B73; background: rgba(0,59,115,.06); }
+.lvl .sel-mark { margin-left: auto; font-size: 1rem; display: none; }
+.lvl.sel .sel-mark { display: block; }
+.ex-toggle { border: none; background: none; color: var(--accent); font-family: inherit; font-size: .76rem; font-weight: 700; cursor: pointer; padding: 4px 0; margin-bottom: 6px; }
+.wiz-nav { display: flex; gap: 10px; align-items: center; padding: 14px 22px; border-top: 1px solid var(--gray-100); flex-wrap: wrap; }
+.wnav-btn { border: 1px solid var(--gray-200); background: var(--white); border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: .84rem; font-weight: 700; color: var(--text-dark); cursor: pointer; }
+.wnav-btn:hover:not(:disabled) { border-color: var(--accent-light); }
+.wnav-btn:disabled { opacity: .4; cursor: not-allowed; }
+.wnav-btn.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
+.wiz-jump { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.jump-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--gray-200); cursor: pointer; border: none; padding: 0; }
+.jump-dot.done { background: var(--success); }
+.jump-dot.cur { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--accent); }
 
-.obs-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 20px; }
-.obs-card .ml { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-.obs-card textarea { width: 100%; min-height: 80px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: .84rem; color: var(--text-body); outline: none; resize: vertical; }
-.obs-card textarea:focus { border-color: var(--accent); }
+/* Página final */
+.final-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.final-box { flex: 1; min-width: 150px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
+.final-box .l { font-size: .64rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); font-weight: 700; }
+.final-box .v { font-size: 1.6rem; font-weight: 900; color: var(--navy); }
+.final-box.niv { background: var(--navy); border-color: var(--navy); }
+.final-box.niv .l { color: rgba(255,255,255,.7); }
+.final-box.niv .v { color: #fff; }
+.obs-lab { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.wiz-body textarea { width: 100%; min-height: 90px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: .84rem; color: var(--text-body); outline: none; resize: vertical; }
+.wiz-body textarea:focus { border-color: var(--accent); }
 
 /* Barra fixa de resultado */
 .result-bar {
@@ -115,16 +121,13 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
   padding: 12px 18px; display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap;
   box-shadow: 0 -4px 20px rgba(0,0,0,.18); font-size: .82rem;
 }
-.result-bar .rb-item { text-align: center; min-width: 90px; }
+.result-bar .rb-item { text-align: center; min-width: 88px; }
 .result-bar .rb-l { font-size: .62rem; letter-spacing: 1px; text-transform: uppercase; opacity: .65; font-weight: 700; }
 .result-bar .rb-v { font-size: 1.05rem; font-weight: 800; }
 .result-bar .nivel-badge { font-size: 1.05rem; font-weight: 900; padding: 3px 14px; border-radius: 50px; background: var(--accent); }
 .result-bar .nivel-badge.na { background: rgba(255,255,255,.15); }
-.save-btn {
-  background: var(--success); color: #fff; border: none; border-radius: var(--radius-sm);
-  padding: 12px 26px; font-family: inherit; font-size: .9rem; font-weight: 800; cursor: pointer;
-}
-.save-btn:hover { filter: brightness(1.08); }
+.save-btn { background: var(--success); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px 26px; font-family: inherit; font-size: .9rem; font-weight: 800; cursor: pointer; }
+.save-btn:hover:not(:disabled) { filter: brightness(1.08); }
 .save-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
 
 /* Histórico */
@@ -149,16 +152,17 @@ table.hlist { width: 100%; border-collapse: collapse; background: var(--white); 
 .hlist-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow-x: auto; }
 table.hlist th { font-size: .63rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); padding: 10px 12px; background: var(--gray-100); border-bottom: 1px solid var(--gray-200); text-align: left; white-space: nowrap; }
 table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: .8rem; white-space: nowrap; }
+.del-btn { border: 1px solid var(--gray-200); background: var(--white); border-radius: 8px; padding: 4px 9px; cursor: pointer; font-size: .8rem; }
+.del-btn:hover { border-color: var(--danger); background: #FEF2F2; }
 .empty-state { padding: 40px 24px; text-align: center; color: var(--gray-400); font-size: .88rem; }
 
-/* Toast */
 #toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 99; background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: .84rem; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); display: none; max-width: 90vw; }
 #toast.err { background: var(--danger); }
 
 @media (max-width: 640px) {
-  .page { padding: 18px 12px 170px; }
-  .comp-top { flex-direction: column; }
+  .page { padding: 18px 12px 180px; }
   .result-bar { gap: 10px; font-size: .74rem; }
+  .wiz-jump { display: none; }
 }
 </style>
 </head>
@@ -203,18 +207,10 @@ table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); fo
         <select id="fCoordenador" onchange="onFormChange()"></select>
       </div>
     </div>
-    <div class="hint">A avaliação do mês X faz-se no início do mês seguinte. Avalie comportamento consistente e observável — não episódios isolados. Na dúvida entre dois níveis, atribua o inferior. Use <strong>N/A</strong> nas competências técnicas que não se aplicam (ex.: técnico não habilitado a alta tensão) — não contam para a média.</div>
 
-    <div class="banner warn" id="dupBanner" style="display:none;"><span class="bi">⚠️</span><div>Já existe uma avaliação de <strong id="dupInfo"></strong>. Ao gravar, o registo anterior é substituído no histórico.</div></div>
+    <div class="banner err" id="dupBanner" style="display:none;"><span class="bi">🚫</span><div><strong id="dupInfo"></strong> Cada técnico só pode ser avaliado uma vez por mês. Se for necessário repetir, um administrador tem de apagar o registo no Histórico (🗑).</div></div>
 
-    <div id="compContainer"></div>
-
-    <div class="obs-card">
-      <div class="ml">Observações gerais (opcional)</div>
-      <textarea id="fObs" placeholder="Evidências, exemplos concretos, plano de desenvolvimento, formação recomendada..." oninput="saveDraft()"></textarea>
-    </div>
-
-    <div class="banner info"><span class="bi">📏</span><div><strong>Régua de enquadramento</strong> — atingir o perfil de um nível enquadra no seguinte: até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.</div></div>
+    <div id="wizContainer"></div>
   </div>
 
   <!-- ================= HISTÓRICO ================= -->
@@ -244,6 +240,12 @@ var COMPORT = DATA.comportamentais;   /* 5 */
 var TECNICAS = DATA.tecnicas;         /* 26, cada uma com anc[5] (âncoras + exemplos) */
 var ESCALA = DATA.escala;             /* descritores genéricos 1-5 */
 
+/* Lista única para o wizard: 0-4 comportamentais (C), 5-30 técnicas (T) */
+var ALL = [];
+COMPORT.forEach(function(c, i) { ALL.push({ tipo: 'C', idx: i, c: c }); });
+TECNICAS.forEach(function(c, i) { ALL.push({ tipo: 'T', idx: i, c: c }); });
+var TOTAL = ALL.length; /* 31 */
+
 /* Régua ancorada nos níveis-alvo da matriz: atingir o perfil de um nível enquadra no seguinte. */
 var REGUA = [
   { n: 'A1', min: 0    },
@@ -261,8 +263,7 @@ var COORDENADORES = ['Fábio Ramalho', 'José Rodriguez'];
 var COORD_POR_LOCAL = { 'Mecânica Lisboa': 'Fábio Ramalho', 'Mecânica Cacém': 'José Rodriguez' };
 var LOCAL_POR_EMAIL = { 'fabio.ramalho@domuscar.com': 'Mecânica Lisboa', 'jose.rodriguez@domuscar.com': 'Mecânica Cacém' };
 
-/* Técnicos de Mecânica por unidade — organigrama DomusCar.
-   'desde'/'ate' (YYYY-MM) controlam a partir/até quando o técnico é cobrado nos alertas. */
+/* Técnicos de Mecânica por unidade — organigrama DomusCar. */
 var TECNICOS = {
   'Mecânica Lisboa': [
     { n: 'Sérgio Pereira' },
@@ -279,16 +280,20 @@ var TECNICOS = {
   ]
 };
 
-/* Mês a partir do qual se cobram avaliações em falta (a avaliação do mês X faz-se em X+1; o mês corrente não é cobrado). */
-var ALERT_START = '2026-08';
-var DRAFT_KEY = 'am_draft_v1';
+/* As avaliações começam em Julho/2026 (feitas no início do mês seguinte).
+   Meses anteriores não aparecem nem são cobrados; o mês corrente também não é cobrado. */
+var ALERT_START = '2026-07';
+var DRAFT_KEY = 'am_draft_v2';
 
 /* ================== ESTADO ================== */
-var ratings = { C: {}, T: {} };   /* idx -> 1..5 ou 'na' (na só em T) */
+var ratings = { C: {}, T: {} };   /* idx -> 1..5 */
+var pageIdx = 0;                  /* 0..TOTAL-1 competências; TOTAL = página final */
 var histRows = [];
 var histLoaded = false;
 var currentUserEmail = '', currentUserName = '';
 var isCoordinatorLocked = false;
+var isAdmin = false;
+var obsValue = '';
 
 /* ================== HELPERS ================== */
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -311,6 +316,7 @@ function nivelPara(nota) {
 }
 function keyOf(local, mes, tecnico) { return local + '||' + mes + '||' + tecnico; }
 function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+function getRating(item) { return ratings[item.tipo][item.idx]; }
 
 /* ================== ARRANQUE ================== */
 (function init() {
@@ -320,15 +326,18 @@ function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A
       currentUserEmail = (u.username || '').toLowerCase();
       currentUserName = u.name || u.username || '';
     }
+    if (window.parent && window.parent !== window && window.parent.currentUserPermissions) {
+      isAdmin = window.parent.currentUserPermissions.role === 'admin';
+    }
   } catch (e) {}
 
-  /* defaults de datas */
   var hoje = new Date();
   document.getElementById('fData').value = hoje.toISOString().slice(0,10);
   var prev = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
-  document.getElementById('fMes').value = prev.getFullYear() + '-' + String(prev.getMonth()+1).padStart(2,'0');
+  var prevYm = prev.getFullYear() + '-' + String(prev.getMonth()+1).padStart(2,'0');
+  document.getElementById('fMes').value = prevYm >= ALERT_START ? prevYm : ALERT_START;
+  document.getElementById('fMes').min = ALERT_START;
 
-  /* locais + coordenadores */
   var lockLocal = LOCAL_POR_EMAIL[currentUserEmail] || null;
   isCoordinatorLocked = !!lockLocal;
   var selL = document.getElementById('fLocal');
@@ -345,28 +354,41 @@ function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A
   var selC = document.getElementById('fCoordenador');
   COORDENADORES.forEach(function(n) { var o = document.createElement('option'); o.value = n; o.textContent = n; selC.appendChild(o); });
 
-  onLocalChange();
-  renderForm();
+  rebuildTecnicos();
   restoreDraft();
+  renderWizard();
   updateSummary();
   loadHist();
 })();
 
-function onLocalChange() {
+function rebuildTecnicos() {
   var local = document.getElementById('fLocal').value;
+  var mes = document.getElementById('fMes').value;
   var selT = document.getElementById('fTecnico');
+  var current = selT.value;
   selT.innerHTML = '<option value="">— selecionar —</option>';
   (TECNICOS[local] || []).forEach(function(t) {
     if (t.inativo) return;
-    var o = document.createElement('option'); o.value = t.n; o.textContent = t.n; selT.appendChild(o);
+    var done = histLoaded && histRows.some(function(r) { return r.local === local && r.tecnico === t.n && r.mes === mes; });
+    var o = document.createElement('option');
+    o.value = t.n; o.textContent = t.n + (done ? ' — ✓ já avaliado' : '');
+    if (done) o.disabled = true;
+    selT.appendChild(o);
   });
+  if (current && [].some.call(selT.options, function(o) { return o.value === current && !o.disabled; })) selT.value = current;
   if (COORD_POR_LOCAL[local]) document.getElementById('fCoordenador').value = COORD_POR_LOCAL[local];
-  onFormChange();
 }
 
+function onLocalChange() { rebuildTecnicos(); onFormChange(); }
+
 function onFormChange() {
+  rebuildTecnicosKeepingSelection();
   checkDuplicate();
   saveDraft();
+}
+function rebuildTecnicosKeepingSelection() {
+  /* reconstrói apenas os disabled/labels quando muda o mês */
+  rebuildTecnicos();
 }
 
 function checkDuplicate() {
@@ -374,121 +396,175 @@ function checkDuplicate() {
   var mes = document.getElementById('fMes').value;
   var tec = document.getElementById('fTecnico').value;
   var ban = document.getElementById('dupBanner');
-  if (!histLoaded || !local || !mes || !tec) { ban.style.display = 'none'; return; }
-  var k = keyOf(local, mes, tec);
-  var exist = histRows.filter(function(r) { return keyOf(r.local, r.mes, r.tecnico) === k; })[0];
-  if (exist) {
-    document.getElementById('dupInfo').textContent = tec + ' referente a ' + mesLabel(mes) + ' (' + (exist.nivel || '—') + ', ' + (exist.cf != null ? exist.cf.toFixed(2) : '—') + ')';
-    ban.style.display = 'flex';
-  } else ban.style.display = 'none';
-}
-
-/* ================== FORMULÁRIO ================== */
-function renderForm() {
-  var c = document.getElementById('compContainer');
-  var html = '';
-
-  html += '<div class="comp-card"><div class="comp-card-head">🤝 Competências Comportamentais <span class="badge">5 · peso 50%</span></div>';
-  COMPORT.forEach(function(cp, i) { html += rowHtml('C', i, cp, false); });
-  html += '</div>';
-
-  html += '<div class="comp-card"><div class="comp-card-head">🔧 Competências Técnicas — Mecatrónico <span class="badge">26 · peso 50%</span></div>';
-  TECNICAS.forEach(function(tc, i) { html += rowHtml('T', i, tc, true); });
-  html += '</div>';
-
-  c.innerHTML = html;
-}
-
-function rowHtml(tipo, i, comp, allowNa) {
-  var id = tipo + i;
-  var h = '<div class="comp-row" id="row' + id + '"><div class="comp-top">';
-  h += '<div class="comp-info"><div class="comp-nome"><span class="cnum">' + (tipo === 'C' ? 'C' : 'T') + (i+1) + '</span>' + esc(comp.nome) + '</div>';
-  h += '<div class="comp-ind">' + esc(comp.ind || comp.desc) + '</div></div>';
-  h += '<div class="rate-group">';
-  for (var n = 1; n <= 5; n++) {
-    h += '<button type="button" class="rate-btn" id="rb' + id + '_' + n + '" onclick="setRating(\'' + tipo + '\',' + i + ',' + n + ')" title="' + esc(nomeNivel(n)) + '">' + n + '</button>';
+  var blocked = false;
+  if (histLoaded && local && mes && tec) {
+    var k = keyOf(local, mes, tec);
+    var exist = histRows.filter(function(r) { return keyOf(r.local, r.mes, r.tecnico) === k; })[0];
+    if (exist) {
+      blocked = true;
+      document.getElementById('dupInfo').textContent = tec + ' já foi avaliado em ' + mesLabel(mes) + ' (' + (exist.nivel || '—') + ' · ' + (exist.cf != null ? exist.cf.toFixed(2) : '—') + ').';
+    }
   }
-  if (allowNa) h += '<button type="button" class="rate-btn na" id="rb' + id + '_na" onclick="setRating(\'' + tipo + '\',' + i + ',\'na\')" title="Não aplicável — não conta para a média">N/A</button>';
-  h += '<button type="button" class="guide-btn" onclick="toggleGuide(\'' + id + '\')">ℹ️ Guia</button>';
-  h += '</div></div>';
-  h += '<div class="guide-panel" id="guide' + id + '">' + guideHtml(tipo, comp) + '</div>';
+  ban.style.display = blocked ? 'flex' : 'none';
+  document.getElementById('saveBtn').disabled = blocked;
+  return blocked;
+}
+
+/* ================== WIZARD ================== */
+function renderWizard() {
+  var c = document.getElementById('wizContainer');
+  var answered = countAnswered();
+  var pct = Math.round(100 * answered / TOTAL);
+
+  if (pageIdx >= TOTAL) { c.innerHTML = finalPageHtml(pct); return; }
+
+  var item = ALL[pageIdx];
+  var comp = item.c;
+  var isC = item.tipo === 'C';
+  var num = (isC ? 'C' : 'T') + (item.idx + 1);
+  var sel = getRating(item);
+
+  var h = '<div class="wiz-card">';
+  h += '<div class="wiz-head"><span class="wtipo">' + (isC ? '🤝 Comportamental' : '🔧 Técnica') + '</span>' +
+       '<span style="font-weight:800;font-size:.85rem;">' + num + '</span>' +
+       '<span class="wcount">' + (pageIdx + 1) + ' de ' + TOTAL + ' · ' + answered + ' respondidas</span></div>';
+  h += '<div class="wiz-progress"><div style="width:' + pct + '%"></div></div>';
+  h += '<div class="wiz-body">';
+  h += '<div class="wiz-nome">' + esc(comp.nome) + '</div>';
+  h += '<div class="wiz-ind">' + esc(comp.ind || comp.desc) + '</div>';
+
+  var hasEx = !isC && comp.anc && comp.anc.length === 5 && comp.anc.some(function(a) { return a.ex; });
+  if (hasEx) h += '<button type="button" class="ex-toggle" onclick="toggleExemplos(this)">💡 Mostrar exemplos concretos</button>';
+
+  for (var n = 1; n <= 5; n++) {
+    var anc = '', ex = '';
+    if (!isC && comp.anc && comp.anc[n-1]) { anc = comp.anc[n-1].anc; ex = comp.anc[n-1].ex || ''; }
+    else { var e2 = ESCALA[n-1]; anc = e2 ? (e2.comp || e2.desc) : ''; }
+    var selCls = sel === n ? ' sel s-' + n : '';
+    h += '<div class="lvl' + selCls + '" id="lvl' + n + '" onclick="pickLevel(' + n + ')">' +
+      '<div class="lvl-n ln-' + n + '">' + n + '</div>' +
+      '<div style="flex:1;"><div class="lvl-t">' + esc(ESCALA[n-1] ? ESCALA[n-1].nome : n) + '</div>' +
+      '<div class="lvl-a">' + esc(anc) + '</div>' +
+      (ex ? '<div class="lvl-ex">' + esc(ex) + '</div>' : '') +
+      '</div><div class="sel-mark">✔</div></div>';
+  }
+
   h += '</div>';
+  h += '<div class="wiz-nav">';
+  h += '<button type="button" class="wnav-btn" onclick="goPrev()"' + (pageIdx === 0 ? ' disabled' : '') + '>← Anterior</button>';
+  h += '<button type="button" class="wnav-btn primary" onclick="goNext()"' + (sel === undefined ? ' disabled' : '') + '>Seguinte →</button>';
+  h += '<div class="wiz-jump">' + jumpDots() + '</div>';
+  h += '</div></div>';
+  c.innerHTML = h;
+}
+
+function jumpDots() {
+  var h = '';
+  for (var i = 0; i < TOTAL; i++) {
+    var done = getRating(ALL[i]) !== undefined;
+    var cls = 'jump-dot' + (done ? ' done' : '') + (i === pageIdx ? ' cur' : '');
+    h += '<button type="button" class="' + cls + '" onclick="goTo(' + i + ')" title="' + (ALL[i].tipo === 'C' ? 'C' : 'T') + (ALL[i].idx + 1) + '"></button>';
+  }
+  var doneAll = countAnswered() === TOTAL;
+  h += '<button type="button" class="jump-dot' + (pageIdx >= TOTAL ? ' cur' : '') + (doneAll ? ' done' : '') + '" onclick="goTo(' + TOTAL + ')" title="Resumo" style="border-radius:4px;"></button>';
   return h;
 }
 
-function nomeNivel(n) {
-  var e = ESCALA[n-1];
-  return e ? (n + ' — ' + e.nome) : String(n);
-}
-
-function guideHtml(tipo, comp) {
-  var h = '<table>';
-  if (tipo === 'T' && comp.anc && comp.anc.length === 5) {
-    comp.anc.forEach(function(a) {
-      h += '<tr><td class="gn gn-' + a.n + '">' + a.n + '</td><td><div class="ganc">' + esc(a.anc) + '</div>' + (a.ex ? '<div class="gex">' + esc(a.ex) + '</div>' : '') + '</td></tr>';
-    });
+function finalPageHtml(pct) {
+  var r = calc();
+  var completo = r.completo;
+  var h = '<div class="wiz-card">';
+  h += '<div class="wiz-head"><span class="wtipo">🏁 Resumo</span><span class="wcount">' + countAnswered() + ' de ' + TOTAL + ' respondidas</span></div>';
+  h += '<div class="wiz-progress"><div style="width:' + pct + '%"></div></div>';
+  h += '<div class="wiz-body">';
+  if (!completo) {
+    var falta = [];
+    ALL.forEach(function(it, i) { if (getRating(it) === undefined) falta.push({ i: i, lbl: (it.tipo === 'C' ? 'C' : 'T') + (it.idx + 1) + ' — ' + it.c.nome }); });
+    h += '<div class="banner warn"><span class="bi">⚠️</span><div><strong>Faltam ' + falta.length + ' competência(s):</strong><br>';
+    falta.slice(0, 6).forEach(function(f) { h += '<a href="#" onclick="goTo(' + f.i + ');return false;" style="color:inherit;text-decoration:underline;">' + esc(f.lbl) + '</a><br>'; });
+    if (falta.length > 6) h += '… e mais ' + (falta.length - 6) + '.';
+    h += '</div></div>';
   } else {
-    ESCALA.forEach(function(e) {
-      h += '<tr><td class="gn gn-' + e.n + '">' + e.n + '</td><td><div class="ganc">' + esc(e.nome) + ' — ' + esc(e.comp || e.desc) + '</div></td></tr>';
-    });
+    h += '<div class="final-grid">' +
+      '<div class="final-box"><div class="l">Média Comportamental</div><div class="v">' + r.mc.toFixed(2) + '</div></div>' +
+      '<div class="final-box"><div class="l">Média Técnica</div><div class="v">' + r.mt.toFixed(2) + '</div></div>' +
+      '<div class="final-box"><div class="l">Classificação Final</div><div class="v">' + r.cf.toFixed(2) + '</div></div>' +
+      '<div class="final-box niv"><div class="l">Nível enquadrado</div><div class="v">' + nivelPara(r.cf) + '</div></div>' +
+      '</div>';
   }
-  h += '</table>';
+  h += '<div class="obs-lab">Observações gerais (opcional)</div>';
+  h += '<textarea id="fObs" placeholder="Evidências, exemplos concretos, plano de desenvolvimento, formação recomendada..." oninput="obsValue=this.value;saveDraft()">' + esc(obsValue) + '</textarea>';
+  h += '<div style="font-size:.77rem;color:var(--gray-600);margin-top:12px;">Régua de enquadramento (atingir o perfil de um nível enquadra no seguinte): até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.</div>';
+  h += '</div>';
+  h += '<div class="wiz-nav">';
+  h += '<button type="button" class="wnav-btn" onclick="goPrev()">← Anterior</button>';
+  h += '<div style="margin-left:auto;font-size:.8rem;color:var(--gray-600);">' + (completo ? 'Tudo preenchido — use <strong>✔ Concluir e Arquivar</strong> na barra abaixo.' : 'Complete as competências em falta para concluir.') + '</div>';
+  h += '</div></div>';
   return h;
 }
 
-function toggleGuide(id) {
-  var p = document.getElementById('guide' + id);
-  if (p) p.classList.toggle('open');
-}
-
-function setRating(tipo, i, val) {
-  var cur = ratings[tipo][i];
-  if (cur === val) { delete ratings[tipo][i]; } else { ratings[tipo][i] = val; }
-  paintRow(tipo, i);
-  updateSummary();
-  saveDraft();
-}
-
-function paintRow(tipo, i) {
-  var id = tipo + i;
-  var val = ratings[tipo][i];
+function toggleExemplos(btn) {
+  var open = btn.getAttribute('data-open') === '1';
+  btn.setAttribute('data-open', open ? '0' : '1');
+  btn.textContent = open ? '💡 Mostrar exemplos concretos' : '💡 Ocultar exemplos';
   for (var n = 1; n <= 5; n++) {
-    var b = document.getElementById('rb' + id + '_' + n);
-    if (b) b.className = 'rate-btn' + (val === n ? ' sel-' + n : '');
+    var el = document.getElementById('lvl' + n);
+    if (el) el.classList.toggle('show-ex', !open);
   }
-  var bna = document.getElementById('rb' + id + '_na');
-  if (bna) bna.className = 'rate-btn na' + (val === 'na' ? ' sel-na' : '');
-  var row = document.getElementById('row' + id);
-  if (row) row.className = 'comp-row' + (val !== undefined ? ' rated' : '');
 }
 
+function pickLevel(n) {
+  var item = ALL[pageIdx];
+  var cur = getRating(item);
+  if (cur === n) { delete ratings[item.tipo][item.idx]; renderWizard(); updateSummary(); saveDraft(); return; }
+  ratings[item.tipo][item.idx] = n;
+  updateSummary(); saveDraft();
+  /* feedback visual breve e avanço automático para a próxima por responder */
+  renderWizard();
+  setTimeout(function() {
+    var next = nextUnanswered(pageIdx + 1);
+    pageIdx = next !== -1 ? next : TOTAL;
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 260);
+}
+
+function nextUnanswered(from) {
+  for (var i = from; i < TOTAL; i++) if (getRating(ALL[i]) === undefined) return i;
+  for (var j = 0; j < TOTAL; j++) if (getRating(ALL[j]) === undefined) return j;
+  return -1;
+}
+
+function goPrev() { if (pageIdx > 0) { pageIdx--; renderWizard(); } }
+function goNext() { if (pageIdx < TOTAL) { pageIdx++; renderWizard(); } }
+function goTo(i) { pageIdx = Math.max(0, Math.min(TOTAL, i)); renderWizard(); }
+function countAnswered() {
+  var n = 0;
+  ALL.forEach(function(it) { if (getRating(it) !== undefined) n++; });
+  return n;
+}
+
+/* ================== CÁLCULO ================== */
 function calc() {
   var somaC = 0, nC = 0;
   COMPORT.forEach(function(_, i) { var v = ratings.C[i]; if (typeof v === 'number') { somaC += v; nC++; } });
-  var somaT = 0, nT = 0, nNa = 0, done = 0;
-  TECNICAS.forEach(function(_, i) {
-    var v = ratings.T[i];
-    if (typeof v === 'number') { somaT += v; nT++; done++; }
-    else if (v === 'na') { nNa++; done++; }
-  });
+  var somaT = 0, nT = 0;
+  TECNICAS.forEach(function(_, i) { var v = ratings.T[i]; if (typeof v === 'number') { somaT += v; nT++; } });
   var mc = nC ? somaC / nC : null;
   var mt = nT ? somaT / nT : null;
   var cf = (mc != null && mt != null) ? 0.5 * mc + 0.5 * mt : null;
-  return { mc: mc, mt: mt, cf: cf, nC: nC, nT: nT, nNa: nNa, preenchidas: nC + done, total: COMPORT.length + TECNICAS.length, completo: (nC === COMPORT.length && done === TECNICAS.length && nT > 0) };
+  return { mc: mc, mt: mt, cf: cf, nC: nC, nT: nT, completo: (nC === COMPORT.length && nT === TECNICAS.length) };
 }
 
 function updateSummary() {
   var r = calc();
-  document.getElementById('rbProg').textContent = r.preenchidas + '/' + r.total;
+  document.getElementById('rbProg').textContent = (r.nC + r.nT) + '/' + TOTAL;
   document.getElementById('rbMC').textContent = r.mc != null ? r.mc.toFixed(2) : '—';
   document.getElementById('rbMT').textContent = r.mt != null ? r.mt.toFixed(2) : '—';
   document.getElementById('rbCF').textContent = r.cf != null ? r.cf.toFixed(2) : '—';
   var nb = document.getElementById('rbNivel');
-  if (r.completo && r.cf != null) {
-    nb.textContent = nivelPara(r.cf); nb.className = 'nivel-badge';
-  } else {
-    nb.textContent = '—'; nb.className = 'nivel-badge na';
-  }
+  if (r.completo && r.cf != null) { nb.textContent = nivelPara(r.cf); nb.className = 'nivel-badge'; }
+  else { nb.textContent = '—'; nb.className = 'nivel-badge na'; }
 }
 
 /* ================== RASCUNHO ================== */
@@ -500,7 +576,7 @@ function saveDraft() {
       mes: document.getElementById('fMes').value,
       data: document.getElementById('fData').value,
       coordenador: document.getElementById('fCoordenador').value,
-      obs: document.getElementById('fObs').value,
+      obs: obsValue,
       ratings: ratings
     }));
   } catch (e) {}
@@ -510,27 +586,19 @@ function restoreDraft() {
   try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) {}
   if (!d) return;
   if (d.local && !isCoordinatorLocked) { var sl = document.getElementById('fLocal'); if ([].some.call(sl.options, function(o){return o.value===d.local;})) sl.value = d.local; }
-  onLocalChangeSilent();
+  rebuildTecnicos();
   if (d.tecnico) document.getElementById('fTecnico').value = d.tecnico;
-  if (d.mes) document.getElementById('fMes').value = d.mes;
+  if (d.mes && d.mes >= ALERT_START) document.getElementById('fMes').value = d.mes;
   if (d.data) document.getElementById('fData').value = d.data;
   if (d.coordenador) document.getElementById('fCoordenador').value = d.coordenador;
-  if (d.obs) document.getElementById('fObs').value = d.obs;
+  if (d.obs) obsValue = d.obs;
   if (d.ratings) {
     ratings = { C: {}, T: {} };
-    Object.keys(d.ratings.C || {}).forEach(function(k) { ratings.C[k] = d.ratings.C[k]; paintRow('C', k); });
-    Object.keys(d.ratings.T || {}).forEach(function(k) { ratings.T[k] = d.ratings.T[k]; paintRow('T', k); });
+    Object.keys(d.ratings.C || {}).forEach(function(k) { var v = d.ratings.C[k]; if (typeof v === 'number') ratings.C[k] = v; });
+    Object.keys(d.ratings.T || {}).forEach(function(k) { var v = d.ratings.T[k]; if (typeof v === 'number') ratings.T[k] = v; });
   }
-}
-function onLocalChangeSilent() {
-  var local = document.getElementById('fLocal').value;
-  var selT = document.getElementById('fTecnico');
-  selT.innerHTML = '<option value="">— selecionar —</option>';
-  (TECNICOS[local] || []).forEach(function(t) {
-    if (t.inativo) return;
-    var o = document.createElement('option'); o.value = t.n; o.textContent = t.n; selT.appendChild(o);
-  });
-  if (COORD_POR_LOCAL[local]) document.getElementById('fCoordenador').value = COORD_POR_LOCAL[local];
+  var next = nextUnanswered(0);
+  pageIdx = next !== -1 ? next : TOTAL;
 }
 
 /* ================== GRAVAÇÃO ================== */
@@ -540,18 +608,18 @@ function guardar() {
   var mes = document.getElementById('fMes').value;
   var data = document.getElementById('fData').value;
   var coordenador = document.getElementById('fCoordenador').value;
-  var obs = document.getElementById('fObs').value.trim();
+  var obs = (obsValue || '').trim();
 
   if (!local || !tecnico || !mes || !data || !coordenador) { toast('Preencha a unidade, o técnico, o mês, a data e o coordenador.', true); return; }
+  if (mes < ALERT_START) { toast('As avaliações começam em ' + mesLabel(ALERT_START) + ' — não é possível avaliar meses anteriores.', true); return; }
   var r = calc();
-  if (r.nC < COMPORT.length) { toast('Faltam competências comportamentais por avaliar (' + r.nC + '/' + COMPORT.length + ').', true); return; }
-  var doneT = r.nT + r.nNa;
-  if (doneT < TECNICAS.length) { toast('Faltam competências técnicas por avaliar (' + doneT + '/' + TECNICAS.length + '). Use N/A nas que não se aplicam.', true); return; }
-  if (r.nT === 0) { toast('Todas as técnicas estão N/A — a avaliação precisa de pelo menos uma competência técnica avaliada.', true); return; }
-
-  var k = keyOf(local, mes, tecnico);
-  var exist = histLoaded && histRows.some(function(x) { return keyOf(x.local, x.mes, x.tecnico) === k; });
-  if (exist && !confirm('Já existe uma avaliação de ' + tecnico + ' para ' + mesLabel(mes) + '. Substituir?')) return;
+  if (!r.completo) {
+    var next = nextUnanswered(0);
+    if (next !== -1) { pageIdx = next; renderWizard(); }
+    toast('Faltam competências por avaliar (' + (r.nC + r.nT) + '/' + TOTAL + ').', true);
+    return;
+  }
+  if (checkDuplicate()) { toast(tecnico + ' já foi avaliado em ' + mesLabel(mes) + '. Um administrador pode apagar o registo no Histórico.', true); return; }
 
   var nivel = nivelPara(r.cf);
   var d = { local: local, tecnico: tecnico, mes: mes, data: data, coordenador: coordenador, obs: obs };
@@ -561,7 +629,7 @@ function guardar() {
   var record = {
     local: local, mes: mes, tecnico: tecnico, coordenador: coordenador, dataAvaliacao: data,
     mc: +r.mc.toFixed(2), mt: +r.mt.toFixed(2), cf: +r.cf.toFixed(2), nivel: nivel,
-    na: r.nNa, ficheiro: filename, origem: 'intranet', criadoEm: new Date().toISOString()
+    ficheiro: filename, origem: 'intranet', criadoEm: new Date().toISOString()
   };
 
   var parentOk = false;
@@ -584,19 +652,20 @@ function guardar() {
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
     limparForm();
     toast('Avaliação de ' + tecnico + ' (' + mesLabel(mes) + ') arquivada: ' + nivel + ' · ' + record.cf.toFixed(2));
-    renderHist(); updateHistPill(); checkDuplicate();
+    rebuildTecnicos(); renderHist(); updateHistPill(); checkDuplicate();
   }).catch(function(err) {
     toast('Erro ao guardar: ' + (err && err.message ? err.message : err), true);
     download(filename, html);
-  }).then(function() { btn.disabled = false; });
+    btn.disabled = false;
+  });
 }
 
 function limparForm() {
   ratings = { C: {}, T: {} };
-  COMPORT.forEach(function(_, i) { paintRow('C', i); });
-  TECNICAS.forEach(function(_, i) { paintRow('T', i); });
+  obsValue = '';
+  pageIdx = 0;
   document.getElementById('fTecnico').value = '';
-  document.getElementById('fObs').value = '';
+  renderWizard();
   updateSummary();
 }
 
@@ -660,10 +729,8 @@ function buildReport(d, r, nivel) {
     var h = '';
     arr.forEach(function(c, i) {
       var v = ratings[tipo][i];
-      var lbl = v === 'na' ? 'N/A' : (v || '—');
-      var cls = v === 'na' ? 'na' : ('n' + v);
       h += '<tr><td class="idx">' + (tipo === 'C' ? 'C' : 'T') + (i+1) + '</td><td>' + esc(c.nome) + '</td>' +
-           '<td class="ind">' + esc(c.ind || c.desc) + '</td><td class="nota ' + cls + '">' + lbl + '</td></tr>';
+           '<td class="ind">' + esc(c.ind || c.desc) + '</td><td class="nota n' + v + '">' + v + '</td></tr>';
     });
     return h;
   }
@@ -684,7 +751,7 @@ function buildReport(d, r, nivel) {
   'td.idx{color:#9CA3AF;font-weight:700;font-size:11px;width:34px;}' +
   'td.ind{color:#6B7280;font-size:11.5px;}' +
   'td.nota{font-weight:800;text-align:center;width:52px;border-radius:6px;}' +
-  '.n1{color:#DC2626;} .n2{color:#F59E0B;} .n3{color:#0284C7;} .n4{color:#059669;} .n5{color:#003B73;} .na{color:#6B7280;}' +
+  '.n1{color:#DC2626;} .n2{color:#F59E0B;} .n3{color:#0284C7;} .n4{color:#059669;} .n5{color:#003B73;}' +
   '.res{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0;}' +
   '.res .r{border:1px solid #DEE2E8;border-radius:12px;padding:14px 20px;text-align:center;flex:1;min-width:140px;}' +
   '.res .r .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6B7280;font-weight:700;}' +
@@ -714,8 +781,7 @@ function buildReport(d, r, nivel) {
   '<div class="r"><div class="l">Classificação Final (50/50)</div><div class="v">' + r.cf.toFixed(2) + '</div></div>' +
   '<div class="r niv"><div class="l">Nível enquadrado</div><div class="v">' + nivel + '</div></div>' +
   '</div>' +
-  '<div class="regua">Régua de enquadramento (atingir o perfil de um nível enquadra no seguinte): até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.' +
-  (r.nNa ? ' Competências N/A: ' + r.nNa + ' (excluídas da média técnica).' : '') + '</div>' +
+  '<div class="regua">Régua de enquadramento (atingir o perfil de um nível enquadra no seguinte): até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.</div>' +
   (d.obs ? '<h2>Observações</h2><div class="obs">' + esc(d.obs) + '</div>' : '') +
   '<div class="foot">Documento gerado pela Intranet DomusCar — módulo Avaliações de Mérito.' +
   (submitter ? ' Submetido por ' + esc(submitter) + '.' : '') + ' ' + esc(stamp) + '</div>' +
@@ -729,14 +795,14 @@ function loadHist() {
   if (!loader) {
     histLoaded = true;
     document.getElementById('histLoading').style.display = 'none';
-    renderHist(); updateHistPill();
+    rebuildTecnicos(); renderHist(); updateHistPill();
     return;
   }
   loader().then(function(idx) {
     histRows = (idx && idx.rows) || [];
     histLoaded = true;
     document.getElementById('histLoading').style.display = 'none';
-    renderHist(); updateHistPill(); checkDuplicate();
+    rebuildTecnicos(); renderHist(); updateHistPill(); checkDuplicate();
   }).catch(function(e) {
     histLoaded = true;
     document.getElementById('histLoading').style.display = 'none';
@@ -746,7 +812,6 @@ function loadHist() {
 }
 
 function mesesCobrados() {
-  /* de ALERT_START até ao mês anterior ao corrente */
   var out = [];
   var now = new Date();
   var cur = ALERT_START;
@@ -809,25 +874,28 @@ function renderHist() {
   });
   html += '</div>';
 
-  /* Matriz técnico × 12 meses do ano corrente */
+  /* Matriz técnico × meses do ano corrente — só a partir de ALERT_START (Jul/2026) */
+  var mLblAll = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var mesesAno = [];
-  for (var m = 1; m <= 12; m++) mesesAno.push(ano + '-' + String(m).padStart(2, '0'));
-  var mLbl = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  for (var m = 1; m <= 12; m++) {
+    var ym = ano + '-' + String(m).padStart(2, '0');
+    if (ym >= ALERT_START) mesesAno.push({ ym: ym, lbl: mLblAll[m-1] });
+  }
   var cobrados = mesesCobrados();
 
   Object.keys(TECNICOS).forEach(function(local) {
     html += '<div class="matrix-wrap"><table class="matrix"><thead><tr><th>' + esc(local) + ' — ' + ano + '</th>';
-    mLbl.forEach(function(l) { html += '<th>' + l + '</th>'; });
+    mesesAno.forEach(function(mm) { html += '<th>' + mm.lbl + '</th>'; });
     html += '</tr></thead><tbody>';
     TECNICOS[local].forEach(function(t) {
       if (t.inativo) return;
       html += '<tr><td>' + esc(t.n) + '</td>';
-      mesesAno.forEach(function(mes) {
-        var reg = histRows.filter(function(r) { return r.local === local && r.tecnico === t.n && r.mes === mes; })[0];
+      mesesAno.forEach(function(mm) {
+        var reg = histRows.filter(function(r) { return r.local === local && r.tecnico === t.n && r.mes === mm.ym; })[0];
         if (reg) {
           html += '<td><span class="m-niv" title="Classificação ' + (reg.cf != null ? reg.cf.toFixed(2) : '') + '">' + esc(reg.nivel || '•') + '</span></td>';
         } else {
-          var cobrado = cobrados.indexOf(mes) !== -1 && !(t.desde && mes < t.desde) && !(t.ate && mes > t.ate);
+          var cobrado = cobrados.indexOf(mm.ym) !== -1 && !(t.desde && mm.ym < t.desde) && !(t.ate && mm.ym > t.ate);
           html += '<td class="' + (cobrado ? 'm-falta' : 'm-fora') + '">' + (cobrado ? '✗' : '·') + '</td>';
         }
       });
@@ -836,15 +904,18 @@ function renderHist() {
     html += '</tbody></table></div>';
   });
 
-  /* Lista de registos */
-  if (histRows.length) {
-    var sorted = histRows.slice().sort(function(a, b) { return (b.mes + b.tecnico).localeCompare(a.mes + a.tecnico); });
-    html += '<div class="hlist-wrap"><table class="hlist"><thead><tr><th>Mês</th><th>Técnico</th><th>Unidade</th><th>Coordenador</th><th>Comport.</th><th>Técnica</th><th>Classif.</th><th>Nível</th><th>Data</th><th>Ficheiro</th></tr></thead><tbody>';
+  /* Lista de registos (só desde ALERT_START) */
+  var vis = histRows.filter(function(r) { return r.mes >= ALERT_START; });
+  if (vis.length) {
+    var sorted = vis.slice().sort(function(a, b) { return (b.mes + b.tecnico).localeCompare(a.mes + a.tecnico); });
+    html += '<div class="hlist-wrap"><table class="hlist"><thead><tr><th>Mês</th><th>Técnico</th><th>Unidade</th><th>Coordenador</th><th>Comport.</th><th>Técnica</th><th>Classif.</th><th>Nível</th><th>Data</th>' + (isAdmin ? '<th></th>' : '') + '</tr></thead><tbody>';
     sorted.forEach(function(r) {
       html += '<tr><td>' + esc(mesLabel(r.mes)) + '</td><td>' + esc(r.tecnico) + '</td><td>' + esc(r.local) + '</td><td>' + esc(r.coordenador) + '</td>' +
         '<td>' + (r.mc != null ? r.mc.toFixed(2) : '—') + '</td><td>' + (r.mt != null ? r.mt.toFixed(2) : '—') + '</td>' +
         '<td><strong>' + (r.cf != null ? r.cf.toFixed(2) : '—') + '</strong></td><td><span class="m-niv">' + esc(r.nivel || '—') + '</span></td>' +
-        '<td>' + esc(r.dataAvaliacao || '') + '</td><td style="white-space:normal;font-size:.72rem;color:var(--gray-600);">' + esc(r.ficheiro || '') + '</td></tr>';
+        '<td>' + esc(r.dataAvaliacao || '') + '</td>' +
+        (isAdmin ? '<td><button type="button" class="del-btn" title="Apagar avaliação (apenas administradores)" onclick="apagarRegisto(\'' + esc(r.local) + '\',\'' + esc(r.mes) + '\',\'' + esc(r.tecnico) + '\')">🗑</button></td>' : '') +
+        '</tr>';
     });
     html += '</tbody></table></div>';
   } else {
@@ -852,6 +923,35 @@ function renderHist() {
   }
 
   c.innerHTML = html;
+}
+
+function apagarRegisto(local, mes, tecnico) {
+  if (!isAdmin) { toast('Apenas administradores podem apagar avaliações.', true); return; }
+  if (!confirm('Apagar a avaliação de ' + tecnico + ' (' + local + ', ' + mesLabel(mes) + ')?\nO relatório é removido do SharePoint e o técnico volta a poder ser avaliado nesse mês.')) return;
+  var k = keyOf(local, mes, tecnico);
+  var row = histRows.filter(function(r) { return keyOf(r.local, r.mes, r.tecnico) === k; })[0];
+  var delFile = Promise.resolve();
+  try {
+    if (row && row.ficheiro && window.parent.amDeleteReport) delFile = window.parent.amDeleteReport(row.ficheiro);
+  } catch (e) {}
+  toast('A apagar avaliação...');
+  delFile.catch(function(e) {
+    console.warn('[AM] falha ao apagar o ficheiro no SP (o registo será removido do índice na mesma):', e);
+  }).then(function() {
+    var loader = window.parent.amLoadIndex, saver = window.parent.amSaveIndex;
+    if (!loader || !saver) throw new Error('Fora da intranet');
+    return loader().then(function(idx) {
+      idx = idx || { updatedAt: null, rows: [] };
+      idx.rows = (idx.rows || []).filter(function(x) { return keyOf(x.local, x.mes, x.tecnico) !== k; });
+      idx.updatedAt = new Date().toISOString();
+      return saver(idx).then(function() { histRows = idx.rows; });
+    });
+  }).then(function() {
+    toast('Avaliação apagada.');
+    rebuildTecnicos(); renderHist(); updateHistPill(); checkDuplicate();
+  }).catch(function(e) {
+    toast('Erro ao apagar: ' + (e && e.message ? e.message : e), true);
+  });
 }
 
 /* ================== NAVEGAÇÃO ================== */
