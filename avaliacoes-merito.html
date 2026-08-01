@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Avaliações de Mérito | Mecatrónico</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --warn: #D97706; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.6; }
+.page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 140px; }
+
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 30px 34px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.doc-header::after {
+  content: ''; position: absolute; top: -30%; right: -5%;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
+  border-radius: 50%;
+}
+.doc-header h1 { font-size: 1.45rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .84rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+.doc-header .doc-ref { font-size: .69rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 10px; position: relative; z-index: 2; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab {
+  padding: 11px 22px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200);
+  background: var(--white); cursor: pointer; font-family: inherit; font-size: .87rem;
+  font-weight: 700; color: var(--gray-600); transition: all .15s; display: inline-flex; align-items: center; gap: 8px;
+}
+.tab:hover { border-color: var(--accent-light); }
+.tab.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.tab .pill { background: var(--danger); color: #fff; border-radius: 50px; font-size: .68rem; font-weight: 800; padding: 1px 8px; min-width: 20px; text-align: center; }
+.view { display: none; }
+.view.active { display: block; }
+
+.meta-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.meta-chip { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 12px 16px; flex: 1; min-width: 185px; }
+.meta-chip .ml { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.meta-chip input, .meta-chip select {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: .9rem; padding: 4px 0; color: var(--text-dark);
+  background: transparent; outline: none;
+}
+.meta-chip input:focus, .meta-chip select:focus { border-bottom-color: var(--accent); }
+.hint { font-size: .77rem; color: var(--gray-600); margin-bottom: 18px; padding-left: 4px; }
+
+.banner { border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 18px; font-size: .85rem; display: flex; gap: 12px; align-items: flex-start; }
+.banner.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+.banner.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.banner.ok { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+.banner .bi { font-size: 1.1rem; line-height: 1.4; }
+.banner strong { font-weight: 800; }
+
+/* Competências */
+.comp-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+.comp-card-head { padding: 15px 22px; background: var(--navy); color: var(--white); font-size: .89rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.comp-card-head .badge { margin-left: auto; font-size: .71rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; background: rgba(255,255,255,.15); }
+.comp-row { padding: 14px 22px; border-bottom: 1px solid var(--gray-100); }
+.comp-row:last-child { border-bottom: none; }
+.comp-row.rated { background: rgba(5,150,105,.03); }
+.comp-top { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+.comp-info { flex: 1; min-width: 260px; }
+.comp-nome { font-weight: 700; color: var(--text-dark); font-size: .88rem; }
+.comp-nome .cnum { color: var(--gray-400); font-size: .75rem; font-weight: 700; margin-right: 6px; }
+.comp-ind { font-size: .78rem; color: var(--gray-600); margin-top: 2px; }
+.guide-btn { border: 1px solid var(--gray-200); background: var(--gray-100); border-radius: 8px; padding: 4px 10px; font-family: inherit; font-size: .72rem; font-weight: 700; color: var(--accent); cursor: pointer; white-space: nowrap; }
+.guide-btn:hover { border-color: var(--accent-light); }
+.rate-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.rate-btn {
+  width: 40px; height: 36px; border-radius: 9px; border: 1px solid var(--gray-200);
+  background: var(--white); font-family: inherit; font-size: .9rem; font-weight: 800;
+  color: var(--gray-600); cursor: pointer; transition: all .12s;
+}
+.rate-btn.na { width: auto; padding: 0 10px; font-size: .72rem; }
+.rate-btn:hover { border-color: var(--accent-light); }
+.rate-btn.sel-1 { background: #DC2626; border-color: #DC2626; color: #fff; }
+.rate-btn.sel-2 { background: #F59E0B; border-color: #F59E0B; color: #fff; }
+.rate-btn.sel-3 { background: #0284C7; border-color: #0284C7; color: #fff; }
+.rate-btn.sel-4 { background: #059669; border-color: #059669; color: #fff; }
+.rate-btn.sel-5 { background: #003B73; border-color: #003B73; color: #fff; }
+.rate-btn.sel-na { background: var(--gray-600); border-color: var(--gray-600); color: #fff; }
+.guide-panel { display: none; margin-top: 12px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); overflow: hidden; }
+.guide-panel.open { display: block; }
+.guide-panel table { width: 100%; border-collapse: collapse; }
+.guide-panel td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: .78rem; vertical-align: top; }
+.guide-panel tr:last-child td { border-bottom: none; }
+.gn { width: 34px; font-weight: 800; text-align: center; border-radius: 6px; }
+.gn-1 { color: #DC2626; } .gn-2 { color: #F59E0B; } .gn-3 { color: #0284C7; } .gn-4 { color: #059669; } .gn-5 { color: #003B73; }
+.ganc { color: var(--text-dark); font-weight: 500; }
+.gex { color: var(--gray-600); font-style: italic; margin-top: 2px; }
+
+.obs-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 20px; }
+.obs-card .ml { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.obs-card textarea { width: 100%; min-height: 80px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: .84rem; color: var(--text-body); outline: none; resize: vertical; }
+.obs-card textarea:focus { border-color: var(--accent); }
+
+/* Barra fixa de resultado */
+.result-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: var(--navy-deep); color: var(--white);
+  padding: 12px 18px; display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.18); font-size: .82rem;
+}
+.result-bar .rb-item { text-align: center; min-width: 90px; }
+.result-bar .rb-l { font-size: .62rem; letter-spacing: 1px; text-transform: uppercase; opacity: .65; font-weight: 700; }
+.result-bar .rb-v { font-size: 1.05rem; font-weight: 800; }
+.result-bar .nivel-badge { font-size: 1.05rem; font-weight: 900; padding: 3px 14px; border-radius: 50px; background: var(--accent); }
+.result-bar .nivel-badge.na { background: rgba(255,255,255,.15); }
+.save-btn {
+  background: var(--success); color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 12px 26px; font-family: inherit; font-size: .9rem; font-weight: 800; cursor: pointer;
+}
+.save-btn:hover { filter: brightness(1.08); }
+.save-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+/* Histórico */
+.hist-cards { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.hist-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 22px; flex: 1; min-width: 280px; }
+.hist-card h3 { font-size: .95rem; color: var(--text-dark); font-weight: 800; margin-bottom: 10px; }
+.hist-card .hstat { display: flex; gap: 18px; flex-wrap: wrap; }
+.hist-card .hs { text-align: center; }
+.hist-card .hs .v { font-size: 1.4rem; font-weight: 900; color: var(--navy); }
+.hist-card .hs .v.bad { color: var(--danger); }
+.hist-card .hs .l { font-size: .66rem; text-transform: uppercase; letter-spacing: .8px; color: var(--gray-600); font-weight: 700; }
+table.matrix { width: 100%; border-collapse: collapse; background: var(--white); }
+.matrix-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow-x: auto; margin-bottom: 20px; }
+table.matrix th { font-size: .63rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); padding: 9px 8px; background: var(--gray-100); border-bottom: 1px solid var(--gray-200); text-align: center; white-space: nowrap; }
+table.matrix th:first-child { text-align: left; padding-left: 14px; }
+table.matrix td { padding: 8px; border-bottom: 1px solid var(--gray-100); font-size: .78rem; text-align: center; }
+table.matrix td:first-child { text-align: left; padding-left: 14px; font-weight: 600; color: var(--text-dark); white-space: nowrap; }
+.m-niv { display: inline-block; font-size: .68rem; font-weight: 800; padding: 2px 8px; border-radius: 50px; background: #E0F2FE; color: var(--navy); }
+.m-falta { color: var(--danger); font-weight: 800; }
+.m-fora { color: var(--gray-200); }
+table.hlist { width: 100%; border-collapse: collapse; background: var(--white); }
+.hlist-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow-x: auto; }
+table.hlist th { font-size: .63rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); padding: 10px 12px; background: var(--gray-100); border-bottom: 1px solid var(--gray-200); text-align: left; white-space: nowrap; }
+table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: .8rem; white-space: nowrap; }
+.empty-state { padding: 40px 24px; text-align: center; color: var(--gray-400); font-size: .88rem; }
+
+/* Toast */
+#toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 99; background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: .84rem; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); display: none; max-width: 90vw; }
+#toast.err { background: var(--danger); }
+
+@media (max-width: 640px) {
+  .page { padding: 18px 12px 170px; }
+  .comp-top { flex-direction: column; }
+  .result-bar { gap: 10px; font-size: .74rem; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Avaliação por Mérito — <em>Mecatrónico</em></h1>
+    <p>Competências comportamentais e técnicas · escala 1–5 · classificação 50% comportamental + 50% técnica</p>
+    <div class="doc-ref">DomusCar · Bosch Car Service — Mecânica Lisboa &amp; Mecânica Cacém</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabNova" onclick="showView('nova')">📝 Nova Avaliação</button>
+    <button class="tab" id="tabHist" onclick="showView('hist')">📚 Histórico <span class="pill" id="histPill" style="display:none;">0</span></button>
+  </div>
+
+  <!-- ================= NOVA AVALIAÇÃO ================= -->
+  <div class="view active" id="viewNova">
+
+    <div class="banner info" id="coordBanner" style="display:none;"><span class="bi">👤</span><div id="coordBannerTxt"></div></div>
+
+    <div class="meta-strip">
+      <div class="meta-chip">
+        <div class="ml">Unidade</div>
+        <select id="fLocal" onchange="onLocalChange()"></select>
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Técnico avaliado</div>
+        <select id="fTecnico" onchange="onFormChange()"></select>
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Mês avaliado</div>
+        <input type="month" id="fMes" onchange="onFormChange()">
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Data da avaliação</div>
+        <input type="date" id="fData" onchange="onFormChange()">
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Coordenador avaliador</div>
+        <select id="fCoordenador" onchange="onFormChange()"></select>
+      </div>
+    </div>
+    <div class="hint">A avaliação do mês X faz-se no início do mês seguinte. Avalie comportamento consistente e observável — não episódios isolados. Na dúvida entre dois níveis, atribua o inferior. Use <strong>N/A</strong> nas competências técnicas que não se aplicam (ex.: técnico não habilitado a alta tensão) — não contam para a média.</div>
+
+    <div class="banner warn" id="dupBanner" style="display:none;"><span class="bi">⚠️</span><div>Já existe uma avaliação de <strong id="dupInfo"></strong>. Ao gravar, o registo anterior é substituído no histórico.</div></div>
+
+    <div id="compContainer"></div>
+
+    <div class="obs-card">
+      <div class="ml">Observações gerais (opcional)</div>
+      <textarea id="fObs" placeholder="Evidências, exemplos concretos, plano de desenvolvimento, formação recomendada..." oninput="saveDraft()"></textarea>
+    </div>
+
+    <div class="banner info"><span class="bi">📏</span><div><strong>Régua de enquadramento</strong> — atingir o perfil de um nível enquadra no seguinte: até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.</div></div>
+  </div>
+
+  <!-- ================= HISTÓRICO ================= -->
+  <div class="view" id="viewHist">
+    <div class="banner info" id="histLoading"><span class="bi">⏳</span><div>A carregar histórico do SharePoint...</div></div>
+    <div id="histContent"></div>
+  </div>
+
+</div>
+
+<!-- Barra fixa de resultado -->
+<div class="result-bar" id="resultBar">
+  <div class="rb-item"><div class="rb-l">Preenchidas</div><div class="rb-v" id="rbProg">0/31</div></div>
+  <div class="rb-item"><div class="rb-l">Comportamental</div><div class="rb-v" id="rbMC">—</div></div>
+  <div class="rb-item"><div class="rb-l">Técnica</div><div class="rb-v" id="rbMT">—</div></div>
+  <div class="rb-item"><div class="rb-l">Classificação</div><div class="rb-v" id="rbCF">—</div></div>
+  <div class="rb-item"><div class="rb-l">Nível</div><div class="nivel-badge na" id="rbNivel">—</div></div>
+  <button class="save-btn" id="saveBtn" onclick="guardar()">✔ Concluir e Arquivar</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================== DADOS (gerados a partir do Excel de Avaliações de Mérito — Mecatrónicos) ================== */
+var DATA = {"comportamentais": [{"nome": "Rigor e Qualidade", "desc": "Trabalha com rigor, segue os procedimentos e normas internas e do construtor, minimizando erros e retrabalho.", "ind": "Segue os procedimentos e normas internas e do construtor e executa a intervenção sem erros nem retrabalho.", "alvos": [2, 2, 3, 3, 4, 4, 5, 5, 5], "tipo": "C"}, {"nome": "Responsabilidade", "desc": "Leva as intervenções até à conclusão sem ser relembrado, assume e corrige erros e preocupa-se com o resultado e a segurança do cliente.", "ind": "Leva a intervenção até à conclusão sem ser relembrado, assume e corrige erros e preocupa-se com o resultado e a segurança.", "alvos": [2, 2, 3, 3, 4, 5, 5, 5, 5], "tipo": "C"}, {"nome": "Trabalho em Equipa", "desc": "Coopera com colegas, receção e peças, partilha informação relevante e contribui para um bom ambiente de trabalho.", "ind": "Coopera com colegas, receção e peças, partilha informação e apoia a equipa, tratando todos com respeito.", "alvos": [2, 2, 3, 3, 4, 4, 5, 5, 5], "tipo": "C"}, {"nome": "Assiduidade e Pontualidade", "desc": "Cumpre de forma consistente os horários definidos e minimiza impactos operacionais por atrasos ou faltas.", "ind": "Cumpre os horários de forma consistente e comunica atempadamente atrasos ou ausências.", "alvos": [2, 3, 3, 4, 4, 5, 5, 5, 5], "tipo": "C"}, {"nome": "Segurança e Organização", "desc": "Cumpre as normas de segurança, usa EPI e mantém a baía/box, ferramentas e equipamentos organizados e conservados.", "ind": "Cumpre as normas de segurança, usa EPI e mantém a baia, ferramentas e equipamentos organizados e conservados.", "alvos": [2, 2, 3, 3, 4, 4, 5, 5, 5], "tipo": "C"}], "tecnicas": [{"nome": "Revisões e Planos de Manutenção conforme o fabricante e procedimentos da empresa", "desc": "Executa revisões e serviços segundo o plano e os intervalos do construtor, cumprindo a checklist.", "ind": "Executa revisões e manutenção segundo o plano do construtor, sem falhar pontos da checklist.", "alvos": [2, 3, 3, 4, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não faz uma revisão sozinho, não cumpre os pontos da checklist e precisa de constante reconfirmação.", "ex": "Ex.: Esquece-se de repor os níveis de fluidos essenciais ou de efetuar o reset físico/digital do indicador de serviço no painel. Necessita de ajuda a localizar filtros e lubrificantes."}, {"n": 2, "anc": "Faz revisões falhando itens do plano de manutenção/checklists.", "ex": "Ex.: Substitui o óleo do motor e o respetivo filtro, mas falha em check up. Verificações de travagem, suspensão, etc; Esquece-se de trocar filtros."}, {"n": 3, "anc": "Faz a revisão de forma autónoma segundo o plano do construtor e procedimentos da empresa, sem falhar pontos.", "ex": "Ex.: Realiza a revisão geral de uma viatura comum seguindo todos os itens da checklist nos tempos padrão. Domina totalmente as manutenções simples."}, {"n": 4, "anc": "Em revisões deteta problemas adicionais e antecipa serviços.", "ex": "Ex.: Durante uma revisão, deteta fissuras na correia de distribuição ou uma folga residual e reporta para orçamentação preventiva."}, {"n": 5, "anc": "Tem a capacidade de transmitir o procedimento da empresa, formando e auditando o trabalho dos colegas, garantindo zero falhas.", "ex": "Ex.: Cria o procedimento padrão de revisão da oficina e forma a equipa."}]}, {"nome": "Binários e os seus procedimentos", "desc": "Substitui qualquer peça que seja adequada com os binários e procedimentos corretos.", "ind": "Substitui componentes de desgaste com os binários e procedimentos corretos, sem danos.", "alvos": [2, 3, 3, 4, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não conhece os binários nem os procedimentos de aperto.", "ex": "Ex.: Desconhece totalmente para que serve a chave dinamométrica. Não tem noção de que existem sequências de aperto."}, {"n": 2, "anc": "Aperta com dinamométrica, só quando lhe indicam os valores. Precisa de supervisão.", "ex": "Ex.: Sabe utilizar a ferramenta em si mas apenas a utiliza quando é lembrado. Esquece-se de consultar manuais para informações de binários e sequências."}, {"n": 3, "anc": "Autónomo, consulta os valores, e aplica os binários e sequências corretos.", "ex": "Ex.: Domina totalmente o uso da ferramenta. Não tem duvidas sobre procedimentos e sabe consultar os manuais."}, {"n": 4, "anc": "Aplica sempre os binários e procedimentos corretos mesmo em casos complexos.", "ex": "Ex.: Efetua a extração limpa de um perno partido ou calcinado num bloco de motor sem danificar a rosca original da estrutura."}, {"n": 5, "anc": "Domina totalmente, apoia e forma os colegas nos apertos e procedimentos.", "ex": "Ex.: Elabora um guia de consulta rápida com os binários e sequências de aperto de alta rotação para os modelos mais frequentes. Ensina os colegas com dificuldades e tem a capacidade de ensinar os procedimentos."}]}, {"nome": "Pneus, geometria e equilibragem", "desc": "Desmonta e monta pneus, equilibra rodas e alinha a direção (geometria) com rigor.", "ind": "Monta, equilibra e faz a geometria/alinhamento de direção corretamente.", "alvos": [1, 2, 3, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não executa.", "ex": "Ex.: Entrega um veículo com o volante desalinhado ou com vibrações detetáveis em autoestrada por má equilibragem. Não sabe montar pneus ou equilibrar rodas."}, {"n": 2, "anc": "Faz com supervisão.", "ex": "Ex.: Equilibra uma roda, mas não repara que a jante está empenada. Não sabe ou não é autónomo a alinhar direções."}, {"n": 3, "anc": "Desmonta e monta pneus e equilibra rodas de forma autónoma; faz alinhamentos básicos autonomamente (convergência, 1ºeixo).", "ex": "Ex.: Corrige a convergência do eixo dianteiro dentro das tolerâncias do fabricante e valida o comportamento dinâmico em estrada. Domina totalmente a substituição de pneus, equilibrio de rodas e alinhamento."}, {"n": 4, "anc": "Executa tudo de forma autónoma, incluindo alinhamentos completos, identifica anonalias de alinhamento e corrige-as. Diagnostica e corrige problemas de TPMS.", "ex": "Ex.: Identifica um braço de suspensão danificado através da leitura de dados de alinhamento incorretos e propõe a substituição. Sabe identificar e reparar/adaptar sensores de pressão dos pneus (eletrónicos)"}, {"n": 5, "anc": "Domina totalmente, apoia e forma os colegas em todo o processo de pneus, geometria e equilibrio.", "ex": "Ex.: Domina totalmente e tem a capacidade de ensinar os colegas. Faz alinhamentos completos."}]}, {"nome": "Operação do equipamento de diagnóstico (leitura)", "desc": "Liga a viatura ao equipamento, lê códigos de avaria (DTC), parâmetros e dados em tempo real e gera relatórios.", "ind": "Liga a viatura à máquina e lê corretamente DTC, parâmetros e dados em tempo real, gerando o relatório.", "alvos": [2, 3, 3, 4, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não consegue ligar nem ler sozinho; precisa que liguem a máquina por ele.", "ex": "Ex.: Não tem sequer conhecimento o que é nem para que serve uma máquina de diagnóstico."}, {"n": 2, "anc": "Liga e lê DTC e gera relatório colocando na OSV, com apoio.", "ex": "Ex.: Extrai uma memória de avarias, mas não sabe aceder ou ler os dados em tempo real. Sabe ler e apagar memórias de avarias de forma autónoma."}, {"n": 3, "anc": "Liga, lê DTC, parâmetros e dados em tempo real e gera o relatório, autónomo.", "ex": "Ex.: Monitoriza em tempo real valores de sensores e anexa o gráfico gerado à Ordem de Reparação. Consegue identificar códigos de avarias e fazer um diagnóstico simples."}, {"n": 4, "anc": "Usa funções avançadas (testes de atuadores, valores congelados, gráficos) em qualquer marca, com a máquina de diagnóstico adequada.", "ex": "Ex.: Ativa de forma isolada um atuador eletrónico via máquina para testar a sua resposta física."}, {"n": 5, "anc": "Referência: domina vários equipamentos e ensina a usá-los.", "ex": "Ex.: Forma a equipa no software de diagnóstico."}]}, {"nome": "Interpretação e diagnóstico da avaria (causa-raiz)", "desc": "A partir de sintomas e dados, formula hipóteses, isola a causa-raiz com método e confirma a reparação — não troca peças à sorte.", "ind": "Interpreta os dados e os sintomas, isola a causa-raiz com método e confirma a reparação, sem trocas desnecessárias.", "alvos": [1, 1, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Troca peças à sorte; não relaciona o sintoma com a causa.", "ex": "Ex.: Substitui um sensor só porque visualizou o código de erro, sem testar nem perceber o porquê. Não sabe distinguir se existe algum erro ou peça avariada que faça com que algum sistema não funcione corretamente."}, {"n": 2, "anc": "Diagnostica avarias óbvias com apoio; perde-se em casos pouco claros.", "ex": "Ex.: Resolve uma fuga visível de anticongelante, mas pede ajuda se detetar depois que a luz de motor está acesa."}, {"n": 3, "anc": "Isola a causa-raiz com método e confirma a reparação, autónomo na maioria dos casos.", "ex": "Ex.: Segue uma linha de raciocinio, esquemas elétricos, mede as alimentações e massas e confirma a avaria antes de pedir a peça."}, {"n": 4, "anc": "Resolve avarias intermitentes e complexas que os outros não conseguem.", "ex": "Ex.: Consegue diagnosticar e reparar/resolver uma avaria intermitente, uma avaria que se manifesta muito raramente."}, {"n": 5, "anc": "Referência de diagnóstico: apoia toda a oficina e documenta o método.", "ex": "Ex.: Intervém em viaturas com avarias crónicas severas rejeitadas por outras oficinas, solucionando e explicando a causa à equipa."}]}, {"nome": "Diagnóstico elétrico/eletrónico com instrumentação", "desc": "Lê esquemas elétricos e mede com multímetro e osciloscópio, localizando falhas em circuitos, sensores e atuadores.", "ind": "Lê esquemas e mede sinais (multímetro/osciloscópio), localizando a falha em circuitos, sensores e atuadores.", "alvos": [1, 1, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não lê esquemas nem usa o multímetro corretamente.", "ex": "Ex.: Revela total desconhecimento na utilização do multímetro e é incapaz de interpretar um esquema elétrico."}, {"n": 2, "anc": "Mede coisas simples com apoio, usando multímetro e consultando esquemas; não usa osciloscópio.", "ex": "Ex.: Efetua testes básicos de continuidade (com multimetro) em fusíveis e relés sob supervisão direta, recorrendo a esquemas simples."}, {"n": 3, "anc": "Lê esquemas e mede com multímetro, localizando a falha, autónomo; não usa osciloscópio.", "ex": "Ex.: Identifica autonomamente uma quebra na cablagem de uma porta seguindo o esquema elétrico, procedendo à reparação e isolamento do circuito."}, {"n": 4, "anc": "Diagnostica sinais complexos (CAN, sensores, atuadores, etc.) com osciloscópio.", "ex": "Ex.: Captura e analisa sinais com o osciloscópio (ex: redes CAN ou ondas de sensores CKP/CMP) para diagnosticar falhas de sincronismo ou comunicação."}, {"n": 5, "anc": "Referência: ensina leitura de esquemas utilização do multímetro e utilização do  osciloscópio, dá suporte e formação à equipa.", "ex": "Ex.: Domina totalmente as ferramentas de diagnóstico. Forma os colegas para o uso de todas as máquinas de diagnóstico disponiveis em oficina."}]}, {"nome": "Redes de comunicação de bordo (CAN/LIN/FlexRay)", "desc": "Diagnostica falhas de multiplexagem e de comunicação entre módulos.", "ind": "Diagnostica falhas de comunicação (CAN/LIN/FlexRay) entre módulos.", "alvos": [1, 1, 2, 2, 3, 4, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Desconhece o funcionamento das redes; não diagnostica.", "ex": "Ex.: Tenta medir a continuidade da rede com o busca-pólos ou espeta agulhas nos cabos entrançados sem critério."}, {"n": 2, "anc": "Identifica que há falha de comunicação mas não a localiza.", "ex": "Ex.: Vê o erro \"Sem comunicação com a UCE do motor\" na máquina, mas fica sem saber se o problema é alimentação, massa ou da própria rede."}, {"n": 3, "anc": "Diagnostica falhas de comunicação entre módulos, autónomo.", "ex": "Ex.: Identifica que a rede CAN-Bus falha intermitentemente devido a cabos decapados a roçar no suporte da bateria; reconstrói o troço e garante o entrançado correto dos fios para evitar interferências."}, {"n": 4, "anc": "Resolve falhas complexas de barramento (resistências, terminadores, curtos).", "ex": "Ex.: Identifica com exatidão qual o módulo específico que está a corromper ou a 'derrubar' a linha de comunicação CAN-Bus."}, {"n": 5, "anc": "Referência: domina a arquitetura de redes de várias marcas e forma colegas.", "ex": "Ex.: Assume os diagnósticos que estão encravados na oficina há dias; analisa o esquema elétrico completo do fabricante. É a referência para diagnósticos na oficina."}]}, {"nome": "Programação, codificação e atualização de software", "desc": "Codifica/parametriza módulos e atualiza software (flash) conforme os procedimentos do construtor.", "ind": "Codifica/parametriza módulos e atualiza software conforme o procedimento oficial, sem erros.", "alvos": [1, 1, 2, 2, 3, 4, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não programa nem codifica; risco de inutilizar módulos.", "ex": "Ex.: Apenas substitui módulos por indicação. Não programa nem tem o conhecimento necessário."}, {"n": 2, "anc": "Faz adaptações e codificações simples com apoio e supervisão.", "ex": "Ex.: Consegue efetuar a parametrização de um sensor de ângulo de direção, mas hesita ou pede apoio."}, {"n": 3, "anc": "Codifica e parametriza, comunica a atualização de software conforme o procedimento, autónomo e sem erros.", "ex": "Ex.: Efetua com sucesso a substituição, parametrização e codificação de um novo módulo de conforto ou unidade de comando."}, {"n": 4, "anc": "Resolve programações complexas e recupera módulos com erro de flash.", "ex": "Ex.: Utiliza ferramentas de recuperação para repor o software de uma ECU cuja gravação foi interrompida."}, {"n": 5, "anc": "Referência: domina a programação online de várias marcas e forma a equipa.", "ex": "Ex.: Coordena todas as atualizações de software críticas online e parametrizações de proteção de componentes com os servidores das marcas."}]}, {"nome": "Motor — mecânica", "desc": "Diagnostica e repara motor, vedação e mecânica interna.", "ind": "Diagnostica e repara motor, distribuição e mecânica interna corretamente.", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não intervém em motor sem ajuda constante.", "ex": "Ex.: Alapa parafusos diretamente com a pistola pneumática sem os apontar à mão; ignora o uso de chaves dinamométricas em tampas de plástico/alumínio (provocando fissuras ou roscas moídas) e falha na marcação de distribuições simples."}, {"n": 2, "anc": "Repara motor, vedação e mecânica interna, com apoio.", "ex": "Ex.: Sabe desarmar o bloco e tirar os pistões, mas precisa de ajuda direta para usar a cinta de segmentos ou para garantir a limpeza dos planos de junta."}, {"n": 3, "anc": "Repara motor, vedação e mecânica interna, autónomo.", "ex": "Ex.: Troca uma junta da cabeça ou substitui uma bomba de óleo, fechando tudo com o aperto do manual."}, {"n": 4, "anc": "Diagnostica e repara motor, vedação e mecânica interna, autónomo.", "ex": "Ex.: Repara motores que partiram a distribuição ou descomprimiram, tratando da substituição de válvulas, bronzes ou segmentos de forma autónoma."}, {"n": 5, "anc": "Referência em mecânica de motor: resolve casos difíceis e forma colegas.", "ex": "Ex.: Faz a reconstrução total de motores batidos ou gripados, garantindo todas as folgas internas e orientando a equipa nos casos mais bicudos."}]}, {"nome": "Gestão de motor e emissões (injeção, sobrealimentação, EGR/AdBlue/FAP)", "desc": "Diagnostica e repara injeção (gasolina/diesel), turbo e pós-tratamento de gases.", "ind": "Diagnostica e repara sistemas de injeção, sobrealimentação e pós-tratamento de gases.", "alvos": [1, 1, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não diagnostica injeção nem emissões.", "ex": "Ex.: Recomenda a troca de um filtro de partículas (FAP) colmatado sem testar os sensores de pressão ou as causas de saturação."}, {"n": 2, "anc": "Resolve avarias simples com apoio.", "ex": "Ex.: Limpa a EGR mas não diagnostica a causa do entupimento."}, {"n": 3, "anc": "Diagnostica e repara injeção, turbo e pós-tratamento de gases, autónomo.", "ex": "Ex.: Identifica uma linha de AdBlue obstruída, localiza e substitui o injetor de ureia bloqueado e parametriza o sistema via máquina."}, {"n": 4, "anc": "Resolve casos complexos de emissões e fumos.", "ex": "Ex.: Diagnostica uma quebra de rendimento intermitente cruzando gráficos de pressão de sobrealimentação com o ciclo de trabalho da N75."}, {"n": 5, "anc": "Referência: domina sistemas diesel e gasolina de várias marcas e forma colegas.", "ex": "Ex.: Soluciona uma avaria complexa de desvio de mistura provocada por uma entrada de ar falsa impercetível em modo estático."}]}, {"nome": "Transmissão e embraiagem", "desc": "Intervém em embraiagem, caixas manuais, automáticas e diferenciais.", "ind": "Diagnostica e repara embraiagem, caixas (manual/automática) e transmissões.", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não intervém em caixas e diferenciais nem embraiagem sem ajuda.", "ex": "Ex.: Não substitui uma embraiagem sozinho."}, {"n": 2, "anc": "Substitui embraiagem com apoio; não repara, nem diagnostica caixas e diferenciais.", "ex": "Ex.: Substitui uma embraiagem convencional, mas necessita de auxílio técnico em volantes bimassa ou afinações."}, {"n": 3, "anc": "Diagnostica e troca embraiagem e caixas (manual e automática) e diferenciais, autónomo.", "ex": "Ex.: Executa a substituição de um volante bimassa e kit de embraiagem autoajustável utilizando a ferramenta de pré-tensão adequada."}, {"n": 4, "anc": "Resolve avarias internas de caixas manuais e diferenciais.", "ex": "Ex.: Diagnostica e substitui componentes internos de caixas manuais e/ou diferenciais."}, {"n": 5, "anc": "Resolve avarias internas de caixas automáticas e forma os colegas nos pontos acima mencionados.", "ex": "Ex.: Desmonta e repara internamente os corpos de válvulas ou substitui rolamentos internos de caixas automáticas com total precisão."}]}, {"nome": "Travagem (incl. ABS/ESP)", "desc": "Repara e diagnostica o sistema de travagem convencional e eletrónico (ABS/ESP).", "ind": "Repara e diagnostica travagem convencional e eletrónica (ABS/ESP).", "alvos": [1, 2, 3, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Faz só travagem básica, sem diagnóstico eletrónico.", "ex": "Ex.: Substitui discos e pastilhas nos dois eixos sem travão elétrico. Necessita de auxilio para substituir travagem."}, {"n": 2, "anc": "Substitui componentes de travagem; não diagnostica o ABS.", "ex": "Ex.: Substitui discos e pastilhas nos dois eixos, pinças, kit de maxilas, tubos de travão, óleo de travões. Tem autonomia total."}, {"n": 3, "anc": "Repara e diagnostica travagem convencional e eletrónica (ABS/ESP), autónomo.", "ex": "Ex.: Diagnostica uma avaria num sensor de velocidade de roda do ABS. Efetua a substituição de componentes e realiza a sangria do bloco via máquina de diagnóstico."}, {"n": 4, "anc": "Resolve avarias complexas do sistema (bomba ABS, ESP).", "ex": "Ex.: Diagnostica unidades hidráulicas ou módulos eletrónicos de ABS/ESP em curto/bloqueados, tratando da substituição e codificação."}, {"n": 5, "anc": "Referência em sistemas de travagem: forma colegas.", "ex": "Ex.: Diagnostica perdas de pressão internas ocultas no bloco de válvulas ou avarias de ESP, apoiando os colegas nos casos mecânicos mais difíceis."}]}, {"nome": "Direção e suspensão", "desc": "Repara direção (incl. assistida elétrica) e suspensão.", "ind": "Diagnostica e repara direção (incl. assistida elétrica) e suspensão.", "alvos": [1, 2, 3, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não diagnostica folgas nem ruídos com fiabilidade.", "ex": "Ex.: Recomenda a substituição de um amortecedor quando o ruído real era provocado por um casquilho de braço oscilante com folga."}, {"n": 2, "anc": "Substitui componentes com apoio.", "ex": "Ex.: Efetua a substituição de pendurais da barra estabilizadora após a folga ter sido identificada por um colega."}, {"n": 3, "anc": "Diagnostica e substitui componentes direção (incl. assistida elétrica) e suspensão, autónomo.", "ex": "Ex.: Identifica folga axial na caixa de direção, substitui as rótulas e braços e encaminha autonomamente o carro para geometria."}, {"n": 4, "anc": "Resolve casos complexos (direção elétrica, suspensão pneumática).", "ex": "Ex.: Localiza uma fuga numa bolsa de suspensão pneumática, efetua a sua substituição e calibra os sensores de altura de eixos."}, {"n": 5, "anc": "Referência: forma colegas.", "ex": "Ex.: Deteta um empeno no cubo de roda/manga de eixo através de relógio comparador, eliminando uma vibração crónica."}]}, {"nome": "Sistemas elétricos e de carga/arranque", "desc": "Diagnostica bateria, alternador, motor de arranque e circuitos de potência.", "ind": "Diagnostica e repara carga/arranque (bateria, alternador, motor de arranque) e circuitos de potência.", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não diagnostica carga nem arranque com fiabilidade.", "ex": "Ex.: Condena um alternador novo porque a bateria não carrega, sem testar a queda de tensão no cabo principal de massa ou num fusivel danificado."}, {"n": 2, "anc": "Testa a bateria e alternador.", "ex": "Ex.: Mede a tensão estática da bateria e do alternador com o multímetro, mas não sabe testar consumos."}, {"n": 3, "anc": "Diagnostica e repara carga e arranque, autónomo.", "ex": "Ex.: Resolve falhas de carga em alternadores, substitui motores de arranque e regista baterias novas na máquina de diagnóstico."}, {"n": 4, "anc": "Resolve fugas de corrente e avarias intermitentes.", "ex": "Ex.: Isola um consumo parasita que descarregava a bateria em 48h, descobrindo um módulo de porta que não entrava em sleep mode."}, {"n": 5, "anc": "Referência: forma colegas em eletricidade.", "ex": "Ex.: Resolve curtos-circuitos internos complexos em caixas de fusíveis inteligentes (BSI/SAM/UHC), orientando a equipa nos testes."}]}, {"nome": "Conforto e carroçaria eletrónica", "desc": "Diagnostica e repara vidros, fecho centralizado, climatização automática e infoentretenimento.", "ind": "Diagnostica e repara conforto e carroçaria eletrónica (vidros, fecho, infoentretenimento).", "alvos": [1, 2, 2, 3, 4, 4, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não diagnostica conforto nem eletrónica de carroçaria.", "ex": "Ex.: Desmonta uma quartela de porta inteira para testar um motor de vidro sem primeiro verificar a integridade dos fusíveis."}, {"n": 2, "anc": "Resolve avarias simples com apoio.", "ex": "Ex.: Substitui o elevador de um vidro elétrico, mas é incapaz de realizar o procedimento de aprendizagem da função anti-entalamento ou reset ao sistema confort."}, {"n": 3, "anc": "Diagnostica e repara conforto e carroçaria eletrónica, autónomo.", "ex": "Ex.: Diagnostica falha no fecho centralizado, localiza o motor da fechadura danificado, substitui e emparelha os comandos da chave."}, {"n": 4, "anc": "Resolve avarias complexas de infoentretenimento e conectividade.", "ex": "Ex.: Isola falhas em ecrãs multimédia que reiniciam, quadrantes digitais apagados ou módulos de navegação/bluetooth que bloqueiam o sistema."}, {"n": 5, "anc": "Referência: forma colegas.", "ex": "Ex.: Diagnostica curtos ocultos que baralham a eletrónica de habitáculo (luzes acesas sozinhas, limpa-vidros parados), interpreta esquemas e orienta os colegas."}]}, {"nome": "ADAS e calibrações", "desc": "Diagnostica, repara e calibra câmaras, radares e sensores de assistência à condução.", "ind": "Diagnostica, repara e calibra sistemas ADAS (câmaras, radares) conforme o procedimento.", "alvos": [1, 1, 2, 2, 3, 4, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não faz ADAS.", "ex": "Ex.: Substitui um para-brisas ou repara um para-choques com radares integrados e entrega o carro sem calibrar as câmaras ou radar. Desconhece o procedimento de calibração."}, {"n": 2, "anc": "Faz calibração simples com apoio.", "ex": "Ex.: Posiciona os painéis de alvos à distância correta, mas demonstra insegurança ao iniciar a rotina de emparelhamento na máquina."}, {"n": 3, "anc": "Diagnostica, repara e calibra ADAS conforme o procedimento, autónomo.", "ex": "Ex.: Efetua a calibração bem-sucedida da câmara do para-brisas ou radar utilizando o painel de alvos."}, {"n": 4, "anc": "Resolve calibrações complexas (radar, multi-sensor) e casos de falha.", "ex": "Ex.: Descobre que uma calibração de Cruise Control Adaptativo falha repetidamente devido a um suporte de radar ligeiramente empenado."}, {"n": 5, "anc": "Referência: domina ADAS de várias marcas e forma colegas.", "ex": "Ex.: Resolve calibrações dinâmicas ou estáticas que a equipa não consegue concluir e orienta os colegas nos procedimentos e condições exigidas pelo fabricante."}]}, {"nome": "Ar condicionado e climatização (gases fluorados)", "desc": "Recupera/carrega gás, deteta fugas e repara o circuito de climatização, com manuseamento certificado.", "ind": "Recupera/carrega gás, deteta fugas e repara o circuito de AC, com manuseamento certificado de gases.", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não manuseia o gás nem o equipamento.", "ex": "Ex.: Troca componentes sem recuperar o gás, faz ligações erradas nas tomadas de alta/baixa ou liberta gás para a atmosfera."}, {"n": 2, "anc": "Faz carga simples com apoio.", "ex": "Ex.: Carrega o sistema com gás e contraste UV, mas não sabe utilizar o detetor eletrónico ou testar a estanquicidade com azoto."}, {"n": 3, "anc": "Recupera/carrega gás, deteta fugas e repara o circuito, com certificação, autónomo.", "ex": "Ex.: Localiza uma fuga no evaporador/condensador com azoto, substitui o componente, faz o vácuo correto e recarrega o sistema."}, {"n": 4, "anc": "Resolve avarias complexas (compressor, eletrónica de climatização).", "ex": "Ex.: Diagnostica compressores que não atuam, deteta entupimentos na válvula de expansão ou falhas em sensores de pressão."}, {"n": 5, "anc": "Referência: gere o equipamento e a conformidade dos gases e forma colegas.", "ex": "Ex.: Resolve avarias nos motores dos flaps das caixas misturadoras (ar quente/frio baralhado no bizona), interpreta esquemas de climatização e ajuda os colegas nos casos bicudos."}]}, {"nome": "Veículos híbridos e elétricos — alta tensão", "desc": "Trabalha com segurança no sistema de alta tensão (consignação), diagnostica e repara componentes HV.", "ind": "Consigna e trabalha em segurança na alta tensão, diagnosticando e reparando componentes HV.", "alvos": [1, 1, 2, 2, 3, 4, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não está habilitado nem trabalha em alta tensão.", "ex": "Ex.: Faz a manutenção mecânica normal (travões, suspensão, pneus) em elétricos, mas não toca nem desliga cabos cor de laranja."}, {"n": 2, "anc": "Faz tarefas só com supervisão de um habilitado (Certificação nível 2).", "ex": "Ex.: Executa o protocolo de corte de alta tensão, remove a ficha de serviço e valida a ausência de tensão. Diagnostica mas não repara."}, {"n": 3, "anc": "Consigna e trabalha em segurança na alta tensão, diagnostica e repara componentes HV, autónomo (Certificação nível 3).", "ex": "Ex.: Abre o pack de baterias de tração para substituir módulos de células danificados. Efetua o balanceamento manual de tensão entre os blocos novos e velhos. Faz diagnóstico e reparação de forma autónoma."}, {"n": 4, "anc": "Resolve avarias complexas de HV e da bateria.", "ex": "Ex.: Descobre quebras intermitentes na linha de segurança (Interlock) causadas por uma ficha mal encaixada ou pino recuado que impede os contactores principais da bateria de fechar."}, {"n": 5, "anc": "Referência e formador em alta tensão; responsável pela segurança HV.", "ex": "Ex.: Avalia baterias deformadas ou inundadas em carros sinistrados, decide se há risco de incêndio, define o plano de quarentena segura e lidera os procedimentos mais perigosos na oficina."}]}, {"nome": "Registo e documentação da intervenção na OSV", "desc": "Regista tempos/picagens, fotografa, valida e deixa a OSV rastreável.", "ind": "Regista, fotografa e valida a intervenção na OR, com picagens corretas e rastreabilidade.", "alvos": [2, 3, 3, 4, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Regista mal ou não regista; OSV incompleta.", "ex": "Ex.: Não pica os tempos de início e fim da reparação, entrega checklist em branco ou esquece-se de preencher pontos fundamentais."}, {"n": 2, "anc": "Regista o básico com checklists.", "ex": "Ex.: Escreve apenas 'revisão feita', omitindo que detetou uma fuga de óleo, de motor ou caixa, ou que necessita de intervenção futura."}, {"n": 3, "anc": "Regista tempos/picagens, fotografa e valida a OSV, com rastreabilidade, autónomo.", "ex": "Ex.: Escreve o relatório detalhado da avaria, junta fotos dos componentes danificados para a receção mostrar ao cliente e pica os tempos certos."}, {"n": 4, "anc": "Documenta de forma exemplar, útil para garantia e seguro.", "ex": "Ex.: Regista as causas da avaria e anexa os relatórios da máquina de diagnóstico para suportar processos de garantia de peças ou peritagens de seguros."}, {"n": 5, "anc": "Referência: ensina/forma o padrão de documentação da oficina.", "ex": "Ex.: Orienta a equipa na forma correta de descrever os diagnósticos complexos nas OSV e garante que nenhum carro sai sem o fecho correto dos tempos."}]}, {"nome": "Teste final, ensaio de estrada e qualidade", "desc": "Faz o ensaio/teste final e entrega sem retrabalho nem não-conformidades.", "ind": "Faz o teste final/ensaio de estrada e entrega sem retrabalho nem não-conformidades.", "alvos": [1, 2, 3, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Entrega sem testar; retrabalho frequente.", "ex": "Ex.: O cliente levanta a viatura e a luz de aviso acende ou o ruído inicial mantém-se logo nos primeiros metros por falta de teste."}, {"n": 2, "anc": "Testa o básico", "ex": "Ex.: Confirma que o motor trabalha sem erros no painel, mas não conduz o veículo na estrada para validar a eficácia da reparação."}, {"n": 3, "anc": "Faz o teste final/ensaio e entrega sem retrabalho nem não-conformidades, autónomo.", "ex": "Ex.: Conduz o veículo em pisos irregulares e regimes de velocidade distintos para certificar a eliminação completa do ruído reportado."}, {"n": 4, "anc": "Deteta e corrige detalhes que anteriormente não foram detetados.", "ex": "Ex.: Nota uma vibração ligeira a travar ou um plástico solto durante o ensaio e volta a meter o carro no elevador para corrigir antes da entrega ou para orçamentar um problema adicional não reportado pelo cliente"}, {"n": 5, "anc": "Referência de qualidade: audita entregas e reduz o retrabalho da equipa.", "ex": "Ex.: Faz o teste de estrada final nos casos mais bicudos da oficina, valida se os parâmetros eletrónicos ficaram a 100% e ajuda os colegas a resolver falhas que voltam para trás."}]}, {"nome": "Sistema de arrefecimento e gestão térmica", "desc": "Diagnostica e repara o circuito de arrefecimento (radiador, termóstato, bomba de água, ventiladores) e a gestão térmica.", "ind": "Diagnostica e repara o sistema de arrefecimento e a gestão térmica (termóstato, bomba, ventiladores).", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não diagnostica sobreaquecimento com fiabilidade.", "ex": "Ex.: Substitui um radiador ou outro componente mas falha na sangria de ar, deixando bolsas no circuito que podem queimar a junta da cabeça."}, {"n": 2, "anc": "Substitui peças com apoio.", "ex": "Ex.: Troca um termóstato mecânico ou uma bomba de água comum, mas precisa de ajuda para fazer a purga eletrónica em sistemas modernos."}, {"n": 3, "anc": "Diagnostica e repara arrefecimento e gestão térmica, autónomo.", "ex": "Ex.: Deteta fugas ocultas com o teste de pressão, substitui radiadores de sofagem e faz o enchimento e a sangria do circuito por vácuo."}, {"n": 4, "anc": "Resolve casos complexos (gestão térmica eletrónica, válvulas).", "ex": "Ex.: Caça falhas intermitentes em eletroválvulas de corte ou sensores de temperatura que baralham a abertura dos circuitos de água e fazem disparar a ventoinha sem razão."}, {"n": 5, "anc": "Referência: forma colegas.", "ex": "Ex.: Desvenda falhas de circulação em sistemas complexos com vários circuitos independentes (motores híbridos ou elétricos) e orienta a equipa."}]}, {"nome": "Distribuição (correia/corrente) e calagem", "desc": "Substitui e cala corretamente a distribuição (correia ou corrente) segundo o construtor.", "ind": "Substitui e cala a distribuição (correia/corrente) com os procedimentos e binários corretos.", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não faz distribuição sem ajuda; risco de sincronismo errado.", "ex": "Ex.: Ajuda a desmontar as tampas plásticas ou periféricos para aprender, mas não mexe em trancas nem toca no ponto do motor."}, {"n": 2, "anc": "Faz com apoio e supervisão.", "ex": "Ex.: Desmonta e monta os roletes, tensores e a correia, mas precisa que alguém valide o ponto e a tensão antes de rodar o motor."}, {"n": 3, "anc": "Diagnostica, substitui e cala a distribuição com procedimentos e binários corretos, autónomo.", "ex": "Ex.: Faz a substituição completa de um kit de distribuição por correia ou corrente comum, trancando a cambota e as árvores de cames com as ferramentas adequadas e dando os binários certos."}, {"n": 4, "anc": "Resolve casos difíceis (corrente, motores complexos) sem erros.", "ex": "Ex.: Identifica ruídos ou folgas anormais no sistema de distribuição vindos de guias gastas ou tensores hidráulicos com perda de pressão, substituindo os componentes afetados."}, {"n": 5, "anc": "Referência: forma colegas.", "ex": "Ex.: Resolve motores que falharam o ponto ou que já vêm desmontados de fora, acerta o sincronismo do zero e treina os colegas nos procedimentos."}]}, {"nome": "Airbags / SRS e segurança passiva", "desc": "Diagnostica e repara o sistema de airbags/SRS e pré-tensores com segurança.", "ind": "Diagnostica e repara SRS/airbags e pré-tensores com segurança e conforme o procedimento.", "alvos": [1, 1, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não intervém em SRS com segurança.", "ex": "Ex.: Desliga ou liga fichas amarelas de airbags com a ignição ligada ou sem isolar previamente a bateria do veículo."}, {"n": 2, "anc": "Faz tarefas simples com apoio.", "ex": "Ex.: Substitui um sensor de impacto ou um módulo físico, mas pede ajuda para ligar a bateria e validar o sistema na máquina."}, {"n": 3, "anc": "Diagnostica e substitui SRS/airbags e pré-tensores com segurança, autónomo.", "ex": "Ex.: Troca um módulo de airbag danificado (como o do volante ou do tablier), faz a montagem segura dos novos componentes e limpa a memória de avarias na máquina de forma autónoma."}, {"n": 4, "anc": "Resolve avarias complexas de SRS/airbags.", "ex": "Ex.: Caça falhas de alta resistência ou mau contacto na fita do volante ou nas fichas sob os bancos, reparando as cablagens ou pinos recuados."}, {"n": 5, "anc": "Referência em segurança passiva: forma colegas.", "ex": "Ex.: Desativa em segurança sistemas pirotécnicos que não dispararam após colisão grave, resolve bloqueios de centrais e orienta a equipa."}]}, {"nome": "Iluminação e regulação de faróis", "desc": "Diagnostica, substitui e regula faróis (incl. LED/xénon/matrix).", "ind": "Diagnostica e regula a iluminação e os faróis (incl. LED/xénon).", "alvos": [1, 2, 3, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Não regula faróis; as entregas reprovam.", "ex": "Ex.: Substitui uma ótica dianteira mas entrega o carro sem o passar pelo regloscópio para alinhar os faróis."}, {"n": 2, "anc": "Substitui lâmpadas e faz focagem de faróis convencionais.", "ex": "Ex.: Regula faróis de halogéneo no regloscópio mecânico, mas necessita de apoio para calibrar e nivelar óticas de Xénon."}, {"n": 3, "anc": "Diagnostica e regula/programa a iluminação e os faróis (incl. LED/xénon), autónomo.", "ex": "Ex.: Substitui lâmpadas de Xénon e balastros, fazendo a regulação física no regloscópio e o ajuste eletrónico de nível sem apoio."}, {"n": 4, "anc": "Resolve avarias complexas (matrix LED, AFS).", "ex": "Ex.: Diagnostica falhas de comunicação nos atuadores de faróis ou sistemas direcionais e faz a calibração com a máquina."}, {"n": 5, "anc": "Referência: forma colegas.", "ex": "Ex.: Domina a calibração de faróis adaptativos laser de última geração, resolve erros de alinhamento difíceis e treina os colegas."}]}, {"nome": "Gestão de tempos / tempário e produtividade", "desc": "Cumpre os tempos de tabela (tempário).", "ind": "Cumpre os tempos de tabela e regista corretamente a produtividade.", "alvos": [1, 2, 2, 3, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Demora muito acima do tempário e não regista tempos.", "ex": "Ex.: Demora o triplo do tempo de tabela para substituir um conjunto simples de discos e pastilhas por falta de organização."}, {"n": 2, "anc": "Aproxima-se do tempo com apoio.", "ex": "Ex.: Cumpre o tempo estipulado na mudança de óleo, mas excede largamente o tempário se surgir um parafuso partido ou calcinado."}, {"n": 3, "anc": "Cumpre os tempos de tabela.", "ex": "Ex.: Conclui uma substituição de embraiagem completa e uma revisão geral exatamente dentro das horas previstas no tempário oficial."}, {"n": 4, "anc": "É consistentemente produtivo sem perder qualidade e ajuda a equipa a cumprir.", "ex": "Ex.: Termina as suas intervenções antes do tempo regulamentar com qualidade e ajuda um colega para evitar o atraso na entrega da viatura."}, {"n": 5, "anc": "Referência de produtividade: é o benchmark da oficina.", "ex": "Ex.: Mantém o nível de faturação de horas sempre no máximo, resolve os serviços mais rápidos do que a tabela prevê e nunca tem carros a voltar com garantias."}]}, {"nome": "Entrega da viatura — limpeza e proteção", "desc": "Entrega a viatura limpa e com as proteções usadas durante a intervenção (tapetes, capas, volante).", "ind": "Usa proteções na intervenção e entrega a viatura limpa e cuidada.", "alvos": [2, 3, 3, 4, 4, 5, 5, 5, 5], "tipo": "T", "anc": [{"n": 1, "anc": "Entrega suja ou sem proteções; gera queixas de clientes.", "ex": "Ex.: Deixa marcas de dedos pretos de gordura no volante, na manete de velocidades ou nos estofos do cliente."}, {"n": 2, "anc": "Usa proteções com lembretes.", "ex": "Ex.: Mantém o banco e o volante protegidos, mas deixa dedadas de massa nas pegas das portas, no capô ou na chave do carro."}, {"n": 3, "anc": "Usa proteções na intervenção e entrega a viatura limpa e cuidada, autónomo.", "ex": "Ex.: Garante que as capas não saem do sítio durante o serviço e entrega o veículo com a pintura e pontos de contacto 100% limpos."}, {"n": 4, "anc": "Cuida do detalhe e eleva a perceção de qualidade do cliente.", "ex": "Ex.: Limpa uma mancha pré-existente no quadrante ou certifica-se de que o relógio e as memórias de rádio não se perderam após desligar a bateria."}, {"n": 5, "anc": "Referência: ensina os demais a ter o mesmo cuidado e ajuda a implementar a cultura da empresa.", "ex": "Ex.: Fiscaliza os carros antes de saírem da zona de trabalho, avisa os colegas se houver marcas de sujidade e mantém o brio da oficina no topo."}]}], "escala": [{"n": "1", "nome": "Insuficiente", "desc": "Nao corresponde ao esperado. Necessita de supervisao constante e correcao frequente.", "comp": "Demonstra comportamentos inadequados de forma frequente; necessita correção constante e impacta negativamente a equipa, cliente ou operação.", "tec": "Nao executa a tarefa de forma autonoma nem com qualidade aceitavel."}, {"n": "2", "nome": "Em desenvolvimento", "desc": "Corresponde parcialmente. Ainda precisa de apoio e validacao em situacoes correntes.", "comp": "Demonstra o comportamento esperado apenas em algumas situações; ainda necessita acompanhamento frequente para manter consistência.", "tec": "Executa tarefas simples com apoio; ainda comete erros em tarefas correntes."}, {"n": "3", "nome": "Cumpre o esperado", "desc": "Corresponde plenamente ao exigido para o nivel. Autonomo nas situacoes correntes.", "comp": "Demonstra de forma consistente os comportamentos esperados na função e mantém postura adequada nas situações correntes.", "tec": "Executa de forma autonoma e com qualidade as tarefas tipicas da funcao."}, {"n": "4", "nome": "Supera o esperado", "desc": "Vai alem do exigido. Resolve situacoes complexas e apoia colegas.", "comp": "Demonstra maturidade, iniciativa e influência positiva na equipa; contribui ativamente para a resolução de problemas e melhoria do ambiente operacional.", "tec": "Domina tarefas complexas, antecipa problemas e melhora processos."}, {"n": "5", "nome": "Referencia", "desc": "Nivel de excelencia. Referencia interna; forma e desenvolve outros.", "comp": "É uma referência comportamental dentro da equipa; influencia positivamente colegas, promove a cultura da empresa e eleva os padrões da operação.", "tec": "Especialista reconhecido; resolve os casos mais dificeis e forma a equipa."}]};
+var COMPORT = DATA.comportamentais;   /* 5 */
+var TECNICAS = DATA.tecnicas;         /* 26, cada uma com anc[5] (âncoras + exemplos) */
+var ESCALA = DATA.escala;             /* descritores genéricos 1-5 */
+
+/* Régua ancorada nos níveis-alvo da matriz: atingir o perfil de um nível enquadra no seguinte. */
+var REGUA = [
+  { n: 'A1', min: 0    },
+  { n: 'A2', min: 1.32 },
+  { n: 'A3', min: 1.94 },
+  { n: 'B1', min: 2.48 },
+  { n: 'B2', min: 3.06 },
+  { n: 'B3', min: 3.87 },
+  { n: 'C1', min: 4.74 },
+  { n: 'C2', min: 4.85 },
+  { n: 'C3', min: 4.95 }
+];
+
+var COORDENADORES = ['Fábio Ramalho', 'José Rodriguez'];
+var COORD_POR_LOCAL = { 'Mecânica Lisboa': 'Fábio Ramalho', 'Mecânica Cacém': 'José Rodriguez' };
+var LOCAL_POR_EMAIL = { 'fabio.ramalho@domuscar.com': 'Mecânica Lisboa', 'jose.rodriguez@domuscar.com': 'Mecânica Cacém' };
+
+/* Técnicos de Mecânica por unidade — organigrama DomusCar.
+   'desde'/'ate' (YYYY-MM) controlam a partir/até quando o técnico é cobrado nos alertas. */
+var TECNICOS = {
+  'Mecânica Lisboa': [
+    { n: 'Sérgio Pereira' },
+    { n: 'Jorge Silva' },
+    { n: 'Emanuel Gonçalves' },
+    { n: 'Rafael Janeiro' },
+    { n: 'Xavier Jorge' }
+  ],
+  'Mecânica Cacém': [
+    { n: 'Arnaldo Cruz' },
+    { n: 'Edmilson Fernandes' },
+    { n: 'Filipe Bonifácio' },
+    { n: 'Gonçalo Matos' }
+  ]
+};
+
+/* Mês a partir do qual se cobram avaliações em falta (a avaliação do mês X faz-se em X+1; o mês corrente não é cobrado). */
+var ALERT_START = '2026-08';
+var DRAFT_KEY = 'am_draft_v1';
+
+/* ================== ESTADO ================== */
+var ratings = { C: {}, T: {} };   /* idx -> 1..5 ou 'na' (na só em T) */
+var histRows = [];
+var histLoaded = false;
+var currentUserEmail = '', currentUserName = '';
+var isCoordinatorLocked = false;
+
+/* ================== HELPERS ================== */
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = isErr ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function() { t.style.display = 'none'; }, isErr ? 6000 : 4000);
+}
+function mesLabel(ym) {
+  if (!ym) return '';
+  var m = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var p = ym.split('-');
+  return m[parseInt(p[1],10)-1] + ' ' + p[0];
+}
+function nivelPara(nota) {
+  if (nota == null || isNaN(nota)) return null;
+  var nv = REGUA[0].n;
+  for (var i = 0; i < REGUA.length; i++) if (nota >= REGUA[i].min) nv = REGUA[i].n;
+  return nv;
+}
+function keyOf(local, mes, tecnico) { return local + '||' + mes + '||' + tecnico; }
+function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+
+/* ================== ARRANQUE ================== */
+(function init() {
+  try {
+    if (window.parent && window.parent !== window && window.parent.currentMsalUser) {
+      var u = window.parent.currentMsalUser;
+      currentUserEmail = (u.username || '').toLowerCase();
+      currentUserName = u.name || u.username || '';
+    }
+  } catch (e) {}
+
+  /* defaults de datas */
+  var hoje = new Date();
+  document.getElementById('fData').value = hoje.toISOString().slice(0,10);
+  var prev = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  document.getElementById('fMes').value = prev.getFullYear() + '-' + String(prev.getMonth()+1).padStart(2,'0');
+
+  /* locais + coordenadores */
+  var lockLocal = LOCAL_POR_EMAIL[currentUserEmail] || null;
+  isCoordinatorLocked = !!lockLocal;
+  var selL = document.getElementById('fLocal');
+  Object.keys(TECNICOS).forEach(function(l) {
+    if (lockLocal && l !== lockLocal) return;
+    var o = document.createElement('option'); o.value = l; o.textContent = l; selL.appendChild(o);
+  });
+  if (lockLocal) {
+    selL.value = lockLocal; selL.disabled = true;
+    var b = document.getElementById('coordBanner');
+    document.getElementById('coordBannerTxt').innerHTML = 'Sessão de <strong>' + esc(currentUserName) + '</strong> — avaliação dos técnicos de <strong>' + esc(lockLocal) + '</strong>.';
+    b.style.display = 'flex';
+  }
+  var selC = document.getElementById('fCoordenador');
+  COORDENADORES.forEach(function(n) { var o = document.createElement('option'); o.value = n; o.textContent = n; selC.appendChild(o); });
+
+  onLocalChange();
+  renderForm();
+  restoreDraft();
+  updateSummary();
+  loadHist();
+})();
+
+function onLocalChange() {
+  var local = document.getElementById('fLocal').value;
+  var selT = document.getElementById('fTecnico');
+  selT.innerHTML = '<option value="">— selecionar —</option>';
+  (TECNICOS[local] || []).forEach(function(t) {
+    if (t.inativo) return;
+    var o = document.createElement('option'); o.value = t.n; o.textContent = t.n; selT.appendChild(o);
+  });
+  if (COORD_POR_LOCAL[local]) document.getElementById('fCoordenador').value = COORD_POR_LOCAL[local];
+  onFormChange();
+}
+
+function onFormChange() {
+  checkDuplicate();
+  saveDraft();
+}
+
+function checkDuplicate() {
+  var local = document.getElementById('fLocal').value;
+  var mes = document.getElementById('fMes').value;
+  var tec = document.getElementById('fTecnico').value;
+  var ban = document.getElementById('dupBanner');
+  if (!histLoaded || !local || !mes || !tec) { ban.style.display = 'none'; return; }
+  var k = keyOf(local, mes, tec);
+  var exist = histRows.filter(function(r) { return keyOf(r.local, r.mes, r.tecnico) === k; })[0];
+  if (exist) {
+    document.getElementById('dupInfo').textContent = tec + ' referente a ' + mesLabel(mes) + ' (' + (exist.nivel || '—') + ', ' + (exist.cf != null ? exist.cf.toFixed(2) : '—') + ')';
+    ban.style.display = 'flex';
+  } else ban.style.display = 'none';
+}
+
+/* ================== FORMULÁRIO ================== */
+function renderForm() {
+  var c = document.getElementById('compContainer');
+  var html = '';
+
+  html += '<div class="comp-card"><div class="comp-card-head">🤝 Competências Comportamentais <span class="badge">5 · peso 50%</span></div>';
+  COMPORT.forEach(function(cp, i) { html += rowHtml('C', i, cp, false); });
+  html += '</div>';
+
+  html += '<div class="comp-card"><div class="comp-card-head">🔧 Competências Técnicas — Mecatrónico <span class="badge">26 · peso 50%</span></div>';
+  TECNICAS.forEach(function(tc, i) { html += rowHtml('T', i, tc, true); });
+  html += '</div>';
+
+  c.innerHTML = html;
+}
+
+function rowHtml(tipo, i, comp, allowNa) {
+  var id = tipo + i;
+  var h = '<div class="comp-row" id="row' + id + '"><div class="comp-top">';
+  h += '<div class="comp-info"><div class="comp-nome"><span class="cnum">' + (tipo === 'C' ? 'C' : 'T') + (i+1) + '</span>' + esc(comp.nome) + '</div>';
+  h += '<div class="comp-ind">' + esc(comp.ind || comp.desc) + '</div></div>';
+  h += '<div class="rate-group">';
+  for (var n = 1; n <= 5; n++) {
+    h += '<button type="button" class="rate-btn" id="rb' + id + '_' + n + '" onclick="setRating(\'' + tipo + '\',' + i + ',' + n + ')" title="' + esc(nomeNivel(n)) + '">' + n + '</button>';
+  }
+  if (allowNa) h += '<button type="button" class="rate-btn na" id="rb' + id + '_na" onclick="setRating(\'' + tipo + '\',' + i + ',\'na\')" title="Não aplicável — não conta para a média">N/A</button>';
+  h += '<button type="button" class="guide-btn" onclick="toggleGuide(\'' + id + '\')">ℹ️ Guia</button>';
+  h += '</div></div>';
+  h += '<div class="guide-panel" id="guide' + id + '">' + guideHtml(tipo, comp) + '</div>';
+  h += '</div>';
+  return h;
+}
+
+function nomeNivel(n) {
+  var e = ESCALA[n-1];
+  return e ? (n + ' — ' + e.nome) : String(n);
+}
+
+function guideHtml(tipo, comp) {
+  var h = '<table>';
+  if (tipo === 'T' && comp.anc && comp.anc.length === 5) {
+    comp.anc.forEach(function(a) {
+      h += '<tr><td class="gn gn-' + a.n + '">' + a.n + '</td><td><div class="ganc">' + esc(a.anc) + '</div>' + (a.ex ? '<div class="gex">' + esc(a.ex) + '</div>' : '') + '</td></tr>';
+    });
+  } else {
+    ESCALA.forEach(function(e) {
+      h += '<tr><td class="gn gn-' + e.n + '">' + e.n + '</td><td><div class="ganc">' + esc(e.nome) + ' — ' + esc(e.comp || e.desc) + '</div></td></tr>';
+    });
+  }
+  h += '</table>';
+  return h;
+}
+
+function toggleGuide(id) {
+  var p = document.getElementById('guide' + id);
+  if (p) p.classList.toggle('open');
+}
+
+function setRating(tipo, i, val) {
+  var cur = ratings[tipo][i];
+  if (cur === val) { delete ratings[tipo][i]; } else { ratings[tipo][i] = val; }
+  paintRow(tipo, i);
+  updateSummary();
+  saveDraft();
+}
+
+function paintRow(tipo, i) {
+  var id = tipo + i;
+  var val = ratings[tipo][i];
+  for (var n = 1; n <= 5; n++) {
+    var b = document.getElementById('rb' + id + '_' + n);
+    if (b) b.className = 'rate-btn' + (val === n ? ' sel-' + n : '');
+  }
+  var bna = document.getElementById('rb' + id + '_na');
+  if (bna) bna.className = 'rate-btn na' + (val === 'na' ? ' sel-na' : '');
+  var row = document.getElementById('row' + id);
+  if (row) row.className = 'comp-row' + (val !== undefined ? ' rated' : '');
+}
+
+function calc() {
+  var somaC = 0, nC = 0;
+  COMPORT.forEach(function(_, i) { var v = ratings.C[i]; if (typeof v === 'number') { somaC += v; nC++; } });
+  var somaT = 0, nT = 0, nNa = 0, done = 0;
+  TECNICAS.forEach(function(_, i) {
+    var v = ratings.T[i];
+    if (typeof v === 'number') { somaT += v; nT++; done++; }
+    else if (v === 'na') { nNa++; done++; }
+  });
+  var mc = nC ? somaC / nC : null;
+  var mt = nT ? somaT / nT : null;
+  var cf = (mc != null && mt != null) ? 0.5 * mc + 0.5 * mt : null;
+  return { mc: mc, mt: mt, cf: cf, nC: nC, nT: nT, nNa: nNa, preenchidas: nC + done, total: COMPORT.length + TECNICAS.length, completo: (nC === COMPORT.length && done === TECNICAS.length && nT > 0) };
+}
+
+function updateSummary() {
+  var r = calc();
+  document.getElementById('rbProg').textContent = r.preenchidas + '/' + r.total;
+  document.getElementById('rbMC').textContent = r.mc != null ? r.mc.toFixed(2) : '—';
+  document.getElementById('rbMT').textContent = r.mt != null ? r.mt.toFixed(2) : '—';
+  document.getElementById('rbCF').textContent = r.cf != null ? r.cf.toFixed(2) : '—';
+  var nb = document.getElementById('rbNivel');
+  if (r.completo && r.cf != null) {
+    nb.textContent = nivelPara(r.cf); nb.className = 'nivel-badge';
+  } else {
+    nb.textContent = '—'; nb.className = 'nivel-badge na';
+  }
+}
+
+/* ================== RASCUNHO ================== */
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      local: document.getElementById('fLocal').value,
+      tecnico: document.getElementById('fTecnico').value,
+      mes: document.getElementById('fMes').value,
+      data: document.getElementById('fData').value,
+      coordenador: document.getElementById('fCoordenador').value,
+      obs: document.getElementById('fObs').value,
+      ratings: ratings
+    }));
+  } catch (e) {}
+}
+function restoreDraft() {
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) {}
+  if (!d) return;
+  if (d.local && !isCoordinatorLocked) { var sl = document.getElementById('fLocal'); if ([].some.call(sl.options, function(o){return o.value===d.local;})) sl.value = d.local; }
+  onLocalChangeSilent();
+  if (d.tecnico) document.getElementById('fTecnico').value = d.tecnico;
+  if (d.mes) document.getElementById('fMes').value = d.mes;
+  if (d.data) document.getElementById('fData').value = d.data;
+  if (d.coordenador) document.getElementById('fCoordenador').value = d.coordenador;
+  if (d.obs) document.getElementById('fObs').value = d.obs;
+  if (d.ratings) {
+    ratings = { C: {}, T: {} };
+    Object.keys(d.ratings.C || {}).forEach(function(k) { ratings.C[k] = d.ratings.C[k]; paintRow('C', k); });
+    Object.keys(d.ratings.T || {}).forEach(function(k) { ratings.T[k] = d.ratings.T[k]; paintRow('T', k); });
+  }
+}
+function onLocalChangeSilent() {
+  var local = document.getElementById('fLocal').value;
+  var selT = document.getElementById('fTecnico');
+  selT.innerHTML = '<option value="">— selecionar —</option>';
+  (TECNICOS[local] || []).forEach(function(t) {
+    if (t.inativo) return;
+    var o = document.createElement('option'); o.value = t.n; o.textContent = t.n; selT.appendChild(o);
+  });
+  if (COORD_POR_LOCAL[local]) document.getElementById('fCoordenador').value = COORD_POR_LOCAL[local];
+}
+
+/* ================== GRAVAÇÃO ================== */
+function guardar() {
+  var local = document.getElementById('fLocal').value;
+  var tecnico = document.getElementById('fTecnico').value;
+  var mes = document.getElementById('fMes').value;
+  var data = document.getElementById('fData').value;
+  var coordenador = document.getElementById('fCoordenador').value;
+  var obs = document.getElementById('fObs').value.trim();
+
+  if (!local || !tecnico || !mes || !data || !coordenador) { toast('Preencha a unidade, o técnico, o mês, a data e o coordenador.', true); return; }
+  var r = calc();
+  if (r.nC < COMPORT.length) { toast('Faltam competências comportamentais por avaliar (' + r.nC + '/' + COMPORT.length + ').', true); return; }
+  var doneT = r.nT + r.nNa;
+  if (doneT < TECNICAS.length) { toast('Faltam competências técnicas por avaliar (' + doneT + '/' + TECNICAS.length + '). Use N/A nas que não se aplicam.', true); return; }
+  if (r.nT === 0) { toast('Todas as técnicas estão N/A — a avaliação precisa de pelo menos uma competência técnica avaliada.', true); return; }
+
+  var k = keyOf(local, mes, tecnico);
+  var exist = histLoaded && histRows.some(function(x) { return keyOf(x.local, x.mes, x.tecnico) === k; });
+  if (exist && !confirm('Já existe uma avaliação de ' + tecnico + ' para ' + mesLabel(mes) + '. Substituir?')) return;
+
+  var nivel = nivelPara(r.cf);
+  var d = { local: local, tecnico: tecnico, mes: mes, data: data, coordenador: coordenador, obs: obs };
+  var filename = 'Avaliacao_Merito_' + slug(tecnico) + '_' + mes + '_' + slug(local) + '.html';
+  var html = buildReport(d, r, nivel);
+
+  var record = {
+    local: local, mes: mes, tecnico: tecnico, coordenador: coordenador, dataAvaliacao: data,
+    mc: +r.mc.toFixed(2), mt: +r.mt.toFixed(2), cf: +r.cf.toFixed(2), nivel: nivel,
+    na: r.nNa, ficheiro: filename, origem: 'intranet', criadoEm: new Date().toISOString()
+  };
+
+  var parentOk = false;
+  try { parentOk = !!(window.parent && window.parent !== window && window.parent.amUploadReport); } catch (e) { parentOk = false; }
+
+  if (!parentOk) {
+    download(filename, html);
+    toast('Fora da intranet — ficheiro descarregado: ' + filename);
+    return;
+  }
+
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  toast('A arquivar a avaliação no SharePoint...');
+
+  window.parent.amUploadReport(filename, html).then(function() {
+    return appendToIndex(record);
+  }).then(function() {
+    if (window.parent.sendNotification) notify(d, record);
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    limparForm();
+    toast('Avaliação de ' + tecnico + ' (' + mesLabel(mes) + ') arquivada: ' + nivel + ' · ' + record.cf.toFixed(2));
+    renderHist(); updateHistPill(); checkDuplicate();
+  }).catch(function(err) {
+    toast('Erro ao guardar: ' + (err && err.message ? err.message : err), true);
+    download(filename, html);
+  }).then(function() { btn.disabled = false; });
+}
+
+function limparForm() {
+  ratings = { C: {}, T: {} };
+  COMPORT.forEach(function(_, i) { paintRow('C', i); });
+  TECNICAS.forEach(function(_, i) { paintRow('T', i); });
+  document.getElementById('fTecnico').value = '';
+  document.getElementById('fObs').value = '';
+  updateSummary();
+}
+
+function appendToIndex(record) {
+  var loader = null, saver = null;
+  try { loader = window.parent.amLoadIndex; saver = window.parent.amSaveIndex; } catch (e) {}
+  if (!loader || !saver) return Promise.resolve();
+  return loader().then(function(idx) {
+    idx = idx || { updatedAt: null, rows: [] };
+    var k = keyOf(record.local, record.mes, record.tecnico);
+    idx.rows = (idx.rows || []).filter(function(x) { return keyOf(x.local, x.mes, x.tecnico) !== k; });
+    idx.rows.push(record);
+    idx.updatedAt = new Date().toISOString();
+    return saver(idx).then(function() { histRows = idx.rows; histLoaded = true; });
+  });
+}
+
+function notify(d, record) {
+  var subject = '⭐ Avaliação de Mérito concluída — ' + d.tecnico + ' (' + d.local + ', ' + mesLabel(d.mes) + ')';
+  var body = '<p><strong>Técnico:</strong> ' + esc(d.tecnico) + '</p>' +
+    '<p><strong>Unidade:</strong> ' + esc(d.local) + '</p>' +
+    '<p><strong>Mês avaliado:</strong> ' + mesLabel(d.mes) + '</p>' +
+    '<p><strong>Coordenador avaliador:</strong> ' + esc(d.coordenador) + '</p>' +
+    '<p><strong>Data da avaliação:</strong> ' + esc(d.data) + '</p>' +
+    '<p><strong>Média comportamental:</strong> ' + record.mc.toFixed(2) + ' · <strong>Média técnica:</strong> ' + record.mt.toFixed(2) + '</p>' +
+    '<p><strong>Classificação final:</strong> ' + record.cf.toFixed(2) + ' → <strong>Nível ' + record.nivel + '</strong></p>';
+  var baixas = [];
+  COMPORT.forEach(function(c, i) { var v = ratings.C[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')'); });
+  TECNICAS.forEach(function(c, i) { var v = ratings.T[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')'); });
+  if (baixas.length) {
+    body += '<p><strong>Competências com nota ≤ 2:</strong></p><ul>';
+    baixas.forEach(function(b) { body += '<li>' + esc(b) + '</li>'; });
+    body += '</ul>';
+  }
+  if (d.obs) body += '<p><strong>Observações:</strong> ' + esc(d.obs) + '</p>';
+  body += '<p style="color:#888;font-size:12px;">Ficheiro: ' + esc(record.ficheiro) + ' — histórico em Intranet &gt; Coordenação &gt; Avaliações de Mérito &gt; Histórico. Nota: por decisão interna, o vencimento associado ao nível não é mostrado ao coordenador — consta apenas da Grelha Salarial.</p>';
+  window.parent.sendNotification('avaliacoes_merito', subject, body);
+}
+
+function download(filename, html) {
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+}
+
+/* ================== RELATÓRIO ARQUIVADO ================== */
+function buildReport(d, r, nivel) {
+  var stamp = new Date().toLocaleString('pt-PT');
+  var submitter = '';
+  try {
+    if (window.parent && window.parent.currentMsalUser) {
+      var u = window.parent.currentMsalUser;
+      submitter = (u.name || '') + (u.username ? ' <' + u.username + '>' : '');
+    }
+  } catch (e) {}
+
+  function linhas(arr, tipo) {
+    var h = '';
+    arr.forEach(function(c, i) {
+      var v = ratings[tipo][i];
+      var lbl = v === 'na' ? 'N/A' : (v || '—');
+      var cls = v === 'na' ? 'na' : ('n' + v);
+      h += '<tr><td class="idx">' + (tipo === 'C' ? 'C' : 'T') + (i+1) + '</td><td>' + esc(c.nome) + '</td>' +
+           '<td class="ind">' + esc(c.ind || c.desc) + '</td><td class="nota ' + cls + '">' + lbl + '</td></tr>';
+    });
+    return h;
+  }
+
+  return '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+  '<title>Avaliação de Mérito — ' + esc(d.tecnico) + ' — ' + esc(mesLabel(d.mes)) + '</title><style>' +
+  'body{font-family:Segoe UI,Arial,sans-serif;color:#1A2A3A;background:#fff;margin:0;padding:32px;line-height:1.5;}' +
+  '.head{background:linear-gradient(135deg,#002B55,#003B73);color:#fff;border-radius:14px;padding:24px 30px;margin-bottom:22px;}' +
+  '.head h1{margin:0;font-size:20px;} .head p{margin:6px 0 0;opacity:.8;font-size:13px;}' +
+  '.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}' +
+  '.chip{border:1px solid #DEE2E8;border-radius:10px;padding:10px 14px;min-width:160px;flex:1;}' +
+  '.chip .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#007BC0;font-weight:700;}' +
+  '.chip .v{font-size:14px;font-weight:600;}' +
+  'h2{font-size:14px;color:#003B73;border-left:4px solid #007BC0;padding-left:10px;margin:26px 0 10px;}' +
+  'table{width:100%;border-collapse:collapse;margin-bottom:8px;}' +
+  'th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#6B7280;text-align:left;padding:8px 10px;background:#EEF1F5;border-bottom:1px solid #DEE2E8;}' +
+  'td{padding:7px 10px;border-bottom:1px solid #EEF1F5;font-size:12.5px;vertical-align:top;}' +
+  'td.idx{color:#9CA3AF;font-weight:700;font-size:11px;width:34px;}' +
+  'td.ind{color:#6B7280;font-size:11.5px;}' +
+  'td.nota{font-weight:800;text-align:center;width:52px;border-radius:6px;}' +
+  '.n1{color:#DC2626;} .n2{color:#F59E0B;} .n3{color:#0284C7;} .n4{color:#059669;} .n5{color:#003B73;} .na{color:#6B7280;}' +
+  '.res{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0;}' +
+  '.res .r{border:1px solid #DEE2E8;border-radius:12px;padding:14px 20px;text-align:center;flex:1;min-width:140px;}' +
+  '.res .r .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6B7280;font-weight:700;}' +
+  '.res .r .v{font-size:22px;font-weight:900;color:#003B73;}' +
+  '.res .r.niv{background:#003B73;color:#fff;} .res .r.niv .l{color:rgba(255,255,255,.7);} .res .r.niv .v{color:#fff;font-size:26px;}' +
+  '.regua{font-size:11px;color:#6B7280;margin:10px 0 0;}' +
+  '.obs{border:1px solid #DEE2E8;border-radius:10px;padding:12px 16px;font-size:13px;white-space:pre-wrap;}' +
+  '.foot{margin-top:26px;font-size:11px;color:#9CA3AF;border-top:1px solid #DEE2E8;padding-top:10px;}' +
+  '@media print{body{padding:10mm;}}' +
+  '</style></head><body>' +
+  '<div class="head"><h1>Avaliação por Mérito — Mecatrónico</h1><p>DomusCar · Bosch Car Service — escala 1–5 · classificação 50% comportamental + 50% técnica</p></div>' +
+  '<div class="meta">' +
+  '<div class="chip"><div class="l">Técnico avaliado</div><div class="v">' + esc(d.tecnico) + '</div></div>' +
+  '<div class="chip"><div class="l">Unidade</div><div class="v">' + esc(d.local) + '</div></div>' +
+  '<div class="chip"><div class="l">Mês avaliado</div><div class="v">' + esc(mesLabel(d.mes)) + '</div></div>' +
+  '<div class="chip"><div class="l">Data da avaliação</div><div class="v">' + esc(d.data) + '</div></div>' +
+  '<div class="chip"><div class="l">Coordenador avaliador</div><div class="v">' + esc(d.coordenador) + '</div></div>' +
+  '</div>' +
+  '<h2>Competências Comportamentais (peso 50%)</h2>' +
+  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th></tr></thead><tbody>' + linhas(COMPORT, 'C') + '</tbody></table>' +
+  '<h2>Competências Técnicas (peso 50%)</h2>' +
+  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th></tr></thead><tbody>' + linhas(TECNICAS, 'T') + '</tbody></table>' +
+  '<h2>Resultado</h2>' +
+  '<div class="res">' +
+  '<div class="r"><div class="l">Média Comportamental</div><div class="v">' + r.mc.toFixed(2) + '</div></div>' +
+  '<div class="r"><div class="l">Média Técnica</div><div class="v">' + r.mt.toFixed(2) + '</div></div>' +
+  '<div class="r"><div class="l">Classificação Final (50/50)</div><div class="v">' + r.cf.toFixed(2) + '</div></div>' +
+  '<div class="r niv"><div class="l">Nível enquadrado</div><div class="v">' + nivel + '</div></div>' +
+  '</div>' +
+  '<div class="regua">Régua de enquadramento (atingir o perfil de um nível enquadra no seguinte): até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.' +
+  (r.nNa ? ' Competências N/A: ' + r.nNa + ' (excluídas da média técnica).' : '') + '</div>' +
+  (d.obs ? '<h2>Observações</h2><div class="obs">' + esc(d.obs) + '</div>' : '') +
+  '<div class="foot">Documento gerado pela Intranet DomusCar — módulo Avaliações de Mérito.' +
+  (submitter ? ' Submetido por ' + esc(submitter) + '.' : '') + ' ' + esc(stamp) + '</div>' +
+  '</body></html>';
+}
+
+/* ================== HISTÓRICO ================== */
+function loadHist() {
+  var loader = null;
+  try { if (window.parent && window.parent !== window && window.parent.amLoadIndex) loader = window.parent.amLoadIndex; } catch (e) {}
+  if (!loader) {
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    renderHist(); updateHistPill();
+    return;
+  }
+  loader().then(function(idx) {
+    histRows = (idx && idx.rows) || [];
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    renderHist(); updateHistPill(); checkDuplicate();
+  }).catch(function(e) {
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    document.getElementById('histContent').innerHTML = '<div class="banner warn"><span class="bi">⚠️</span><div>Não foi possível carregar o histórico do SharePoint: ' + esc(e && e.message ? e.message : e) + '</div></div>';
+    updateHistPill();
+  });
+}
+
+function mesesCobrados() {
+  /* de ALERT_START até ao mês anterior ao corrente */
+  var out = [];
+  var now = new Date();
+  var cur = ALERT_START;
+  var last = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0'); /* mês corrente — excluído */
+  while (cur < last) {
+    out.push(cur);
+    var p = cur.split('-'); var y = +p[0], m = +p[1];
+    m++; if (m > 12) { m = 1; y++; }
+    cur = y + '-' + String(m).padStart(2, '0');
+  }
+  return out;
+}
+
+function emFalta() {
+  var meses = mesesCobrados();
+  var faltas = [];
+  Object.keys(TECNICOS).forEach(function(local) {
+    TECNICOS[local].forEach(function(t) {
+      if (t.inativo) return;
+      meses.forEach(function(m) {
+        if (t.desde && m < t.desde) return;
+        if (t.ate && m > t.ate) return;
+        var tem = histRows.some(function(r) { return r.local === local && r.tecnico === t.n && r.mes === m; });
+        if (!tem) faltas.push({ local: local, tecnico: t.n, mes: m });
+      });
+    });
+  });
+  return faltas;
+}
+
+function updateHistPill() {
+  var n = emFalta().length;
+  var p = document.getElementById('histPill');
+  if (n > 0) { p.textContent = n; p.style.display = 'inline-block'; } else { p.style.display = 'none'; }
+}
+
+function renderHist() {
+  var c = document.getElementById('histContent');
+  if (!histLoaded) return;
+  var faltas = emFalta();
+  var ano = String(new Date().getFullYear());
+  var html = '';
+
+  if (faltas.length) {
+    html += '<div class="banner warn"><span class="bi">⚠️</span><div><strong>' + faltas.length + ' avaliação(ões) em falta</strong> (desde ' + mesLabel(ALERT_START) + '; o mês corrente não é cobrado — a avaliação do mês X faz-se no início de X+1).</div></div>';
+  } else {
+    html += '<div class="banner ok"><span class="bi">✅</span><div>Sem avaliações em falta desde ' + mesLabel(ALERT_START) + '.</div></div>';
+  }
+
+  html += '<div class="hist-cards">';
+  Object.keys(TECNICOS).forEach(function(local) {
+    var regs = histRows.filter(function(r) { return r.local === local && r.mes.indexOf(ano) === 0; });
+    var f = faltas.filter(function(x) { return x.local === local; }).length;
+    var med = regs.length ? (regs.reduce(function(s, r) { return s + (r.cf || 0); }, 0) / regs.length) : null;
+    html += '<div class="hist-card"><h3>' + esc(local) + '</h3><div class="hstat">' +
+      '<div class="hs"><div class="v">' + regs.length + '</div><div class="l">Avaliações ' + ano + '</div></div>' +
+      '<div class="hs"><div class="v' + (f ? ' bad' : '') + '">' + f + '</div><div class="l">Em falta</div></div>' +
+      '<div class="hs"><div class="v">' + (med != null ? med.toFixed(2) : '—') + '</div><div class="l">Média ' + ano + '</div></div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+
+  /* Matriz técnico × 12 meses do ano corrente */
+  var mesesAno = [];
+  for (var m = 1; m <= 12; m++) mesesAno.push(ano + '-' + String(m).padStart(2, '0'));
+  var mLbl = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var cobrados = mesesCobrados();
+
+  Object.keys(TECNICOS).forEach(function(local) {
+    html += '<div class="matrix-wrap"><table class="matrix"><thead><tr><th>' + esc(local) + ' — ' + ano + '</th>';
+    mLbl.forEach(function(l) { html += '<th>' + l + '</th>'; });
+    html += '</tr></thead><tbody>';
+    TECNICOS[local].forEach(function(t) {
+      if (t.inativo) return;
+      html += '<tr><td>' + esc(t.n) + '</td>';
+      mesesAno.forEach(function(mes) {
+        var reg = histRows.filter(function(r) { return r.local === local && r.tecnico === t.n && r.mes === mes; })[0];
+        if (reg) {
+          html += '<td><span class="m-niv" title="Classificação ' + (reg.cf != null ? reg.cf.toFixed(2) : '') + '">' + esc(reg.nivel || '•') + '</span></td>';
+        } else {
+          var cobrado = cobrados.indexOf(mes) !== -1 && !(t.desde && mes < t.desde) && !(t.ate && mes > t.ate);
+          html += '<td class="' + (cobrado ? 'm-falta' : 'm-fora') + '">' + (cobrado ? '✗' : '·') + '</td>';
+        }
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+
+  /* Lista de registos */
+  if (histRows.length) {
+    var sorted = histRows.slice().sort(function(a, b) { return (b.mes + b.tecnico).localeCompare(a.mes + a.tecnico); });
+    html += '<div class="hlist-wrap"><table class="hlist"><thead><tr><th>Mês</th><th>Técnico</th><th>Unidade</th><th>Coordenador</th><th>Comport.</th><th>Técnica</th><th>Classif.</th><th>Nível</th><th>Data</th><th>Ficheiro</th></tr></thead><tbody>';
+    sorted.forEach(function(r) {
+      html += '<tr><td>' + esc(mesLabel(r.mes)) + '</td><td>' + esc(r.tecnico) + '</td><td>' + esc(r.local) + '</td><td>' + esc(r.coordenador) + '</td>' +
+        '<td>' + (r.mc != null ? r.mc.toFixed(2) : '—') + '</td><td>' + (r.mt != null ? r.mt.toFixed(2) : '—') + '</td>' +
+        '<td><strong>' + (r.cf != null ? r.cf.toFixed(2) : '—') + '</strong></td><td><span class="m-niv">' + esc(r.nivel || '—') + '</span></td>' +
+        '<td>' + esc(r.dataAvaliacao || '') + '</td><td style="white-space:normal;font-size:.72rem;color:var(--gray-600);">' + esc(r.ficheiro || '') + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  } else {
+    html += '<div class="hlist-wrap"><div class="empty-state">Ainda não há avaliações registadas.</div></div>';
+  }
+
+  c.innerHTML = html;
+}
+
+/* ================== NAVEGAÇÃO ================== */
+function showView(v) {
+  document.getElementById('viewNova').className = 'view' + (v === 'nova' ? ' active' : '');
+  document.getElementById('viewHist').className = 'view' + (v === 'hist' ? ' active' : '');
+  document.getElementById('tabNova').className = 'tab' + (v === 'nova' ? ' active' : '');
+  document.getElementById('tabHist').className = 'tab' + (v === 'hist' ? ' active' : '');
+  document.getElementById('resultBar').style.display = v === 'nova' ? 'flex' : 'none';
+  if (v === 'hist') { renderHist(); }
+}
+</script>
+</body>
+</html>
