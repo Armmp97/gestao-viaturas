@@ -2838,9 +2838,9 @@
         if (val === null || val === undefined) return null;
         var n = parseFloat(val);
         if (isNaN(n)) return null;
-        // If value is between 0 and 2, it's likely a decimal (0.85 = 85%)
-        if (Math.abs(n) <= 2 && Math.abs(n) > 0) return parseFloat((n * 100).toFixed(2));
-        return parseFloat(n.toFixed(2));
+        // Excel stores percentages as fractions (0.85 = 85%, 2.10 = 210%), so always multiply by 100.
+        // NOTE: the old heuristic (only multiply when <= 2) broke values above 200% — e.g. 2.0958 was published as 2.1% instead of 209.58%.
+        return parseFloat((n * 100).toFixed(2));
     }
 
     function buildRankingHF(technicians) {
