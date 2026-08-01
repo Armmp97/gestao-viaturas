@@ -210,6 +210,8 @@ table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); fo
 
     <div class="banner err" id="dupBanner" style="display:none;"><span class="bi">🚫</span><div><strong id="dupInfo"></strong> Cada técnico só pode ser avaliado uma vez por mês. Se for necessário repetir, um administrador tem de apagar o registo no Histórico (🗑).</div></div>
 
+    <div class="banner ok" id="resBanner" style="display:none;"><span class="bi">✅</span><div id="resBannerTxt"></div></div>
+
     <div id="wizContainer"></div>
   </div>
 
@@ -224,10 +226,10 @@ table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); fo
 <!-- Barra fixa de resultado -->
 <div class="result-bar" id="resultBar">
   <div class="rb-item"><div class="rb-l">Preenchidas</div><div class="rb-v" id="rbProg">0/31</div></div>
-  <div class="rb-item"><div class="rb-l">Comportamental</div><div class="rb-v" id="rbMC">—</div></div>
-  <div class="rb-item"><div class="rb-l">Técnica</div><div class="rb-v" id="rbMT">—</div></div>
-  <div class="rb-item"><div class="rb-l">Classificação</div><div class="rb-v" id="rbCF">—</div></div>
-  <div class="rb-item"><div class="rb-l">Nível</div><div class="nivel-badge na" id="rbNivel">—</div></div>
+  <div class="rb-item" id="rbiMC"><div class="rb-l">Comportamental</div><div class="rb-v" id="rbMC">—</div></div>
+  <div class="rb-item" id="rbiMT"><div class="rb-l">Técnica</div><div class="rb-v" id="rbMT">—</div></div>
+  <div class="rb-item" id="rbiCF"><div class="rb-l">Classificação</div><div class="rb-v" id="rbCF">—</div></div>
+  <div class="rb-item" id="rbiNivel"><div class="rb-l">Nível</div><div class="nivel-badge na" id="rbNivel">—</div></div>
   <button class="save-btn" id="saveBtn" onclick="guardar()">✔ Concluir e Arquivar</button>
 </div>
 
@@ -283,16 +285,19 @@ var TECNICOS = {
 /* As avaliações começam em Julho/2026 (feitas no início do mês seguinte).
    Meses anteriores não aparecem nem são cobrados; o mês corrente também não é cobrado. */
 var ALERT_START = '2026-07';
-var DRAFT_KEY = 'am_draft_v2';
+var DRAFT_KEY = 'am_draft_v3';
 
 /* ================== ESTADO ================== */
 var ratings = { C: {}, T: {} };   /* idx -> 1..5 */
+var obsPer = { C: {}, T: {} };    /* observações por competência */
 var pageIdx = 0;                  /* 0..TOTAL-1 competências; TOTAL = página final */
 var histRows = [];
 var histLoaded = false;
 var currentUserEmail = '', currentUserName = '';
 var isCoordinatorLocked = false;
 var isAdmin = false;
+var userRole = null;
+var hideLive = false;             /* coordenadores só veem médias/nível após Concluir e Arquivar */
 var obsValue = '';
 
 /* ================== HELPERS ================== */
@@ -321,15 +326,30 @@ function getRating(item) { return ratings[item.tipo][item.idx]; }
 /* ================== ARRANQUE ================== */
 (function init() {
   try {
-    if (window.parent && window.parent !== window && window.parent.currentMsalUser) {
-      var u = window.parent.currentMsalUser;
-      currentUserEmail = (u.username || '').toLowerCase();
-      currentUserName = u.name || u.username || '';
-    }
-    if (window.parent && window.parent !== window && window.parent.currentUserPermissions) {
-      isAdmin = window.parent.currentUserPermissions.role === 'admin';
+    if (window.parent && window.parent !== window) {
+      var u0 = null;
+      if (window.parent.amGetUser) {
+        u0 = window.parent.amGetUser();
+      } else if (window.parent.currentMsalUser) { /* fallback para versões antigas do parent */
+        var mu = window.parent.currentMsalUser;
+        u0 = { email: String(mu.username || '').toLowerCase(), name: mu.name || mu.username || '', role: null };
+      }
+      if (u0) {
+        currentUserEmail = u0.email || '';
+        currentUserName = u0.name || '';
+        userRole = u0.role || null;
+        isAdmin = userRole === 'admin';
+      }
     }
   } catch (e) {}
+
+  /* Coordenadores: médias, classificação e nível só aparecem depois de Concluir e Arquivar */
+  hideLive = userRole === 'coordenador' || (!userRole && !!LOCAL_POR_EMAIL[currentUserEmail]);
+  if (hideLive) {
+    ['rbiMC','rbiMT','rbiCF','rbiNivel'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+  }
 
   var hoje = new Date();
   document.getElementById('fData').value = hoje.toISOString().slice(0,10);
@@ -382,9 +402,22 @@ function rebuildTecnicos() {
 function onLocalChange() { rebuildTecnicos(); onFormChange(); }
 
 function onFormChange() {
+  hideResBanner();
   rebuildTecnicosKeepingSelection();
   checkDuplicate();
   saveDraft();
+}
+
+function showResBanner(record) {
+  var el = document.getElementById('resBanner');
+  document.getElementById('resBannerTxt').innerHTML = 'Avaliação arquivada — <strong>' + esc(record.tecnico) + '</strong> (' + esc(record.local) + ', ' + mesLabel(record.mes) + '): ' +
+    'Comportamental <strong>' + record.mc.toFixed(2) + '</strong> · Técnica <strong>' + record.mt.toFixed(2) + '</strong> · ' +
+    'Classificação <strong>' + record.cf.toFixed(2) + '</strong> → Nível <strong>' + record.nivel + '</strong>';
+  el.style.display = 'flex';
+}
+function hideResBanner() {
+  var el = document.getElementById('resBanner');
+  if (el) el.style.display = 'none';
 }
 function rebuildTecnicosKeepingSelection() {
   /* reconstrói apenas os disabled/labels quando muda o mês */
@@ -449,6 +482,9 @@ function renderWizard() {
       '</div><div class="sel-mark">✔</div></div>';
   }
 
+  h += '<div class="obs-lab" style="margin-top:14px;">Observações deste ponto (opcional)</div>';
+  h += '<textarea id="obsComp" style="min-height:52px;" placeholder="Evidência ou exemplo observado neste ponto..." oninput="setObsComp(this.value)">' + esc(getObsComp(item)) + '</textarea>';
+
   h += '</div>';
   h += '<div class="wiz-nav">';
   h += '<button type="button" class="wnav-btn" onclick="goPrev()"' + (pageIdx === 0 ? ' disabled' : '') + '>← Anterior</button>';
@@ -484,6 +520,8 @@ function finalPageHtml(pct) {
     falta.slice(0, 6).forEach(function(f) { h += '<a href="#" onclick="goTo(' + f.i + ');return false;" style="color:inherit;text-decoration:underline;">' + esc(f.lbl) + '</a><br>'; });
     if (falta.length > 6) h += '… e mais ' + (falta.length - 6) + '.';
     h += '</div></div>';
+  } else if (hideLive) {
+    h += '<div class="banner info"><span class="bi">🔒</span><div>Tudo preenchido. A classificação e o nível são calculados e apresentados <strong>depois de Concluir e Arquivar</strong>.</div></div>';
   } else {
     h += '<div class="final-grid">' +
       '<div class="final-box"><div class="l">Média Comportamental</div><div class="v">' + r.mc.toFixed(2) + '</div></div>' +
@@ -494,13 +532,21 @@ function finalPageHtml(pct) {
   }
   h += '<div class="obs-lab">Observações gerais (opcional)</div>';
   h += '<textarea id="fObs" placeholder="Evidências, exemplos concretos, plano de desenvolvimento, formação recomendada..." oninput="obsValue=this.value;saveDraft()">' + esc(obsValue) + '</textarea>';
-  h += '<div style="font-size:.77rem;color:var(--gray-600);margin-top:12px;">Régua de enquadramento (atingir o perfil de um nível enquadra no seguinte): até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.</div>';
+  if (!hideLive) h += '<div style="font-size:.77rem;color:var(--gray-600);margin-top:12px;">Régua de enquadramento (atingir o perfil de um nível enquadra no seguinte): até 1,31 → A1 · 1,32 → A2 · 1,94 → A3 · 2,48 → B1 · 3,06 → B2 · 3,87 → B3 · 4,74 → C1 · 4,85 → C2 · 4,95 → C3.</div>';
   h += '</div>';
   h += '<div class="wiz-nav">';
   h += '<button type="button" class="wnav-btn" onclick="goPrev()">← Anterior</button>';
   h += '<div style="margin-left:auto;font-size:.8rem;color:var(--gray-600);">' + (completo ? 'Tudo preenchido — use <strong>✔ Concluir e Arquivar</strong> na barra abaixo.' : 'Complete as competências em falta para concluir.') + '</div>';
   h += '</div></div>';
   return h;
+}
+
+function getObsComp(item) { return obsPer[item.tipo][item.idx] || ''; }
+function setObsComp(v) {
+  var it = ALL[pageIdx];
+  if (!it) return;
+  if (v && v.trim()) obsPer[it.tipo][it.idx] = v; else delete obsPer[it.tipo][it.idx];
+  saveDraft();
 }
 
 function toggleExemplos(btn) {
@@ -514,6 +560,7 @@ function toggleExemplos(btn) {
 }
 
 function pickLevel(n) {
+  hideResBanner();
   var item = ALL[pageIdx];
   var cur = getRating(item);
   if (cur === n) { delete ratings[item.tipo][item.idx]; renderWizard(); updateSummary(); saveDraft(); return; }
@@ -577,7 +624,8 @@ function saveDraft() {
       data: document.getElementById('fData').value,
       coordenador: document.getElementById('fCoordenador').value,
       obs: obsValue,
-      ratings: ratings
+      ratings: ratings,
+      obsPer: obsPer
     }));
   } catch (e) {}
 }
@@ -597,6 +645,7 @@ function restoreDraft() {
     Object.keys(d.ratings.C || {}).forEach(function(k) { var v = d.ratings.C[k]; if (typeof v === 'number') ratings.C[k] = v; });
     Object.keys(d.ratings.T || {}).forEach(function(k) { var v = d.ratings.T[k]; if (typeof v === 'number') ratings.T[k] = v; });
   }
+  if (d.obsPer) obsPer = { C: d.obsPer.C || {}, T: d.obsPer.T || {} };
   var next = nextUnanswered(0);
   pageIdx = next !== -1 ? next : TOTAL;
 }
@@ -651,6 +700,8 @@ function guardar() {
     if (window.parent.sendNotification) notify(d, record);
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
     limparForm();
+    showResBanner(record);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     toast('Avaliação de ' + tecnico + ' (' + mesLabel(mes) + ') arquivada: ' + nivel + ' · ' + record.cf.toFixed(2));
     rebuildTecnicos(); renderHist(); updateHistPill(); checkDuplicate();
   }).catch(function(err) {
@@ -662,6 +713,7 @@ function guardar() {
 
 function limparForm() {
   ratings = { C: {}, T: {} };
+  obsPer = { C: {}, T: {} };
   obsValue = '';
   pageIdx = 0;
   document.getElementById('fTecnico').value = '';
@@ -693,8 +745,8 @@ function notify(d, record) {
     '<p><strong>Média comportamental:</strong> ' + record.mc.toFixed(2) + ' · <strong>Média técnica:</strong> ' + record.mt.toFixed(2) + '</p>' +
     '<p><strong>Classificação final:</strong> ' + record.cf.toFixed(2) + ' → <strong>Nível ' + record.nivel + '</strong></p>';
   var baixas = [];
-  COMPORT.forEach(function(c, i) { var v = ratings.C[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')'); });
-  TECNICAS.forEach(function(c, i) { var v = ratings.T[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')'); });
+  COMPORT.forEach(function(c, i) { var v = ratings.C[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')' + (obsPer.C[i] ? ' — ' + obsPer.C[i] : '')); });
+  TECNICAS.forEach(function(c, i) { var v = ratings.T[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')' + (obsPer.T[i] ? ' — ' + obsPer.T[i] : '')); });
   if (baixas.length) {
     body += '<p><strong>Competências com nota ≤ 2:</strong></p><ul>';
     baixas.forEach(function(b) { body += '<li>' + esc(b) + '</li>'; });
@@ -729,8 +781,10 @@ function buildReport(d, r, nivel) {
     var h = '';
     arr.forEach(function(c, i) {
       var v = ratings[tipo][i];
+      var o = (obsPer[tipo][i] || '').trim();
       h += '<tr><td class="idx">' + (tipo === 'C' ? 'C' : 'T') + (i+1) + '</td><td>' + esc(c.nome) + '</td>' +
-           '<td class="ind">' + esc(c.ind || c.desc) + '</td><td class="nota n' + v + '">' + v + '</td></tr>';
+           '<td class="ind">' + esc(c.ind || c.desc) + '</td><td class="nota n' + v + '">' + v + '</td>' +
+           '<td class="ind">' + (o ? esc(o) : '—') + '</td></tr>';
     });
     return h;
   }
@@ -771,9 +825,9 @@ function buildReport(d, r, nivel) {
   '<div class="chip"><div class="l">Coordenador avaliador</div><div class="v">' + esc(d.coordenador) + '</div></div>' +
   '</div>' +
   '<h2>Competências Comportamentais (peso 50%)</h2>' +
-  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th></tr></thead><tbody>' + linhas(COMPORT, 'C') + '</tbody></table>' +
+  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th><th>Observações</th></tr></thead><tbody>' + linhas(COMPORT, 'C') + '</tbody></table>' +
   '<h2>Competências Técnicas (peso 50%)</h2>' +
-  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th></tr></thead><tbody>' + linhas(TECNICAS, 'T') + '</tbody></table>' +
+  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th><th>Observações</th></tr></thead><tbody>' + linhas(TECNICAS, 'T') + '</tbody></table>' +
   '<h2>Resultado</h2>' +
   '<div class="res">' +
   '<div class="r"><div class="l">Média Comportamental</div><div class="v">' + r.mc.toFixed(2) + '</div></div>' +

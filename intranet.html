@@ -3308,6 +3308,15 @@
             return data || { updatedAt: null, rows: [] };
         });
     };
+    // Identidade do utilizador para o módulo (currentMsalUser/currentUserPermissions são 'let',
+    // logo não são acessíveis via window.parent.<nome> — este helper fecha sobre as variáveis)
+    window.amGetUser = function() {
+        return {
+            email: currentMsalUser ? String(currentMsalUser.username || '').toLowerCase() : '',
+            name: currentMsalUser ? (currentMsalUser.name || currentMsalUser.username || '') : '',
+            role: currentUserPermissions ? currentUserPermissions.role : null
+        };
+    };
     // Apagar relatório arquivado (apenas admins) — usado pelo botão 🗑 do histórico do módulo
     window.amDeleteReport = function(fileName) {
         var role = currentUserPermissions ? currentUserPermissions.role : null;
