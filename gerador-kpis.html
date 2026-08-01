@@ -2311,14 +2311,13 @@
                     totalFaltas += tech.faltas[day] || 0;
                 }
 
-                const workingDays = 0;
-                let daysUsed = 0;
+                // Dias úteis = dias em que o técnico esteve presente (disponíveis ou produtivos picados).
+                // Dias de férias/faltas completos têm disponíveis = 0, logo já ficam excluídos —
+                // não se subtrai nada (a fórmula antiga subtraía-os outra vez, dando médias a 0 ou infladas).
+                let daysWithWork = 0;
                 for (let day = 1; day <= d.lastDay; day++) {
-                    const disp = tech.disponiveis[day] || 0;
-                    if (disp > 0) daysUsed++;
+                    if ((tech.disponiveis[day] || 0) > 0 || (tech.produtivos[day] || 0) > 0) daysWithWork++;
                 }
-
-                const daysWithWork = daysUsed - Math.ceil(totalFerias / 6.8) - Math.ceil(totalFaltas / 6.8);
                 const avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
 
                 const avgClass = avgPerDay >= 6.8 ? 'color-productive-high' : (avgPerDay >= 5.0 ? 'color-productive-medium' : (avgPerDay > 0 ? 'color-productive-low' : ''));
@@ -2907,11 +2906,12 @@
                 totalFerias += tech.ferias[day] || 0;
                 totalFaltas += tech.faltas[day] || 0;
             }
-            var daysUsed = 0;
+            // Dias úteis = dias com presença (disponíveis ou produtivos > 0); férias/faltas completas
+            // já têm disponíveis = 0 e ficam excluídas automaticamente — não subtrair outra vez.
+            var daysWithWork = 0;
             for (var day = 1; day <= horasData.lastDay; day++) {
-                if ((tech.disponiveis[day] || 0) > 0) daysUsed++;
+                if ((tech.disponiveis[day] || 0) > 0 || (tech.produtivos[day] || 0) > 0) daysWithWork++;
             }
-            var daysWithWork = daysUsed - Math.ceil(totalFerias / 6.8) - Math.ceil(totalFaltas / 6.8);
             var avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
             return {
                 tecnico: tech.name,
