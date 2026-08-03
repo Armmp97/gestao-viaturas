@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Editor Contrato Valpirent</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --warn: #D97706; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.6; }
+.page { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
+
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 26px 32px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.doc-header::after {
+  content: ''; position: absolute; top: -30%; right: -5%;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
+  border-radius: 50%;
+}
+.doc-header h1 { font-size: 1.35rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .82rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+
+.banner { border-radius: var(--radius-sm); padding: 13px 17px; margin-bottom: 14px; font-size: .84rem; display: flex; gap: 12px; align-items: flex-start; }
+.banner.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+.banner.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.banner.ok { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+.banner.err { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+.banner .bi { font-size: 1.05rem; line-height: 1.4; }
+.banner strong { font-weight: 800; }
+.banner ul { margin: 6px 0 0 18px; }
+
+.drop {
+  border: 2px dashed var(--gray-200); border-radius: var(--radius); background: var(--white);
+  padding: 42px 24px; text-align: center; cursor: pointer; transition: all .15s; margin-bottom: 18px;
+}
+.drop:hover, .drop.over { border-color: var(--accent); background: #F8FBFE; }
+.drop .di { font-size: 2rem; }
+.drop .dt { font-weight: 700; color: var(--text-dark); margin-top: 8px; }
+.drop .dh { font-size: .78rem; color: var(--gray-600); margin-top: 4px; }
+.drop input { display: none; }
+
+.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 18px; }
+.card-head { padding: 14px 22px; background: var(--navy); color: var(--white); font-size: .88rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card-head .badge { margin-left: auto; font-size: .71rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; background: rgba(255,255,255,.15); }
+.card-body { padding: 20px 22px; }
+
+.vals { display: flex; gap: 12px; flex-wrap: wrap; }
+.val-chip { flex: 1; min-width: 180px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 12px 16px; }
+.val-chip .vl { font-size: .65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.val-chip input {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: 1.05rem; font-weight: 700; padding: 4px 0; color: var(--text-dark);
+  background: transparent; outline: none;
+}
+.val-chip input:focus { border-bottom-color: var(--accent); }
+.val-chip .vc { font-size: .72rem; color: var(--gray-600); margin-top: 4px; }
+.val-chip.calc { background: var(--gray-100); }
+
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.btn {
+  border: none; border-radius: var(--radius-sm); padding: 12px 24px; font-family: inherit;
+  font-size: .88rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn.primary { background: var(--navy); color: #fff; }
+.btn.success { background: var(--success); color: #fff; }
+.btn.ghost { background: var(--white); color: var(--text-dark); border: 1px solid var(--gray-200); }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { background: var(--gray-400); color: #fff; cursor: not-allowed; filter: none; }
+
+.preview-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius-sm); overflow: auto; background: var(--gray-100); padding: 14px; text-align: center; }
+.preview-wrap canvas { max-width: 100%; box-shadow: 0 4px 18px rgba(0,0,0,.12); background: #fff; margin-bottom: 12px; }
+
+#toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 99; background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: .84rem; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); display: none; max-width: 90vw; }
+#toast.err { background: var(--danger); }
+
+@media (max-width: 640px) { .page { padding: 18px 12px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Editor Contrato <em>Valpirent</em></h1>
+    <p>Carrega o contrato PDF: o módulo corrige os valores do quadro PRODUTOS, o texto do limite de quilómetros e acrescenta assinaturas e numeração nas páginas onde faltarem — tudo o resto fica exatamente igual.</p>
+  </div>
+
+  <div class="drop" id="drop" onclick="document.getElementById('fileInput').click()">
+    <div class="di">📄</div>
+    <div class="dt" id="dropTitle">Carregar contrato PDF</div>
+    <div class="dh" id="dropHint">Clica ou arrasta o ficheiro para aqui (ex.: C26.25239_PT_E.pdf)</div>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf">
+  </div>
+
+  <div class="banner err" id="errBanner" style="display:none;"><span class="bi">⚠️</span><div id="errTxt"></div></div>
+
+  <div class="card" id="editCard" style="display:none;">
+    <div class="card-head">✏️ Correções ao contrato <span class="badge" id="fileBadge"></span></div>
+    <div class="card-body">
+      <div class="banner info" id="foundBanner"><span class="bi">🔎</span><div id="foundTxt"></div></div>
+      <div class="vals">
+        <div class="val-chip">
+          <div class="vl">Taxa Dia c/ IVA Normal (€)</div>
+          <input type="number" step="0.01" min="0" id="inTaxa" oninput="recalcTotal()">
+          <div class="vc">Valor por dia, com IVA</div>
+        </div>
+        <div class="val-chip">
+          <div class="vl">Quantidade (dias)</div>
+          <input type="number" step="1" min="0" id="inQtd" oninput="recalcTotal()">
+          <div class="vc">Nº de diárias</div>
+        </div>
+        <div class="val-chip calc">
+          <div class="vl">Total (€)</div>
+          <input type="number" step="0.01" min="0" id="inTotal" oninput="totalManual=true">
+          <div class="vc">Calculado automaticamente (Taxa × Quantidade); podes ajustar à mão</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="genBtn" onclick="gerar()">🔧 Gerar PDF corrigido</button>
+        <button class="btn success" id="dlBtn" onclick="descarregar()" style="display:none;">⬇️ Descarregar PDF final</button>
+        <button class="btn ghost" onclick="reiniciar()">↺ Novo documento</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="prevCard" style="display:none;">
+    <div class="card-head">👁️ Pré-visualização <span class="badge" id="prevBadge"></span></div>
+    <div class="card-body">
+      <div class="preview-wrap" id="prevWrap"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* Texto fixo do limite de quilómetros — tem de ser sempre este */
+var KMS_TEXT = 'Contrato com limite diário de 250 kms grátis (limite mensal de 4.200 kms gratuitos)';
+var KMS_OK_RE = /Contrato com limite di[áa]rio de 250 kms gr[áa]tis \(limite mensal de 4\.200 kms gratuitos\)/;
+
+/* Geometria por omissão do rodapé (medida no contrato-modelo; usada quando o PDF não tem nenhuma página de referência) */
+var FOOT_DEF = {
+  size: 8.44, assY: 69.6, cliX: 111.8, valX: 421.4, digX: 30.6, digY: 44.9,
+  lineY: 77.4, lineSegs: [[30.6, 243.7], [351.3, 564.4]],
+  pagRight: 565.0, pagY: 20.6, pagSize: 10
+};
+var RIGHT_MARGIN = 564.5;
+var LEFT_MARGIN = 31.2;
+
+var srcBytes = null, srcName = '', outBytes = null;
+var found = null;   /* PRODUTOS: { pageIndex, items:[{str,x,right,y,size}] } */
+var kms = null;     /* { status:'correto'|'errado'|'desconhecido', pageIndex, startX, startY, size, segs:[], scrubs:[], leftX, lineH } */
+var foot = null;    /* { pages:[{hasAss,hasPag}], ref:{...}|null, n } */
+var totalManual = false;
+
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = isErr ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function() { t.style.display = 'none'; }, isErr ? 7000 : 4500);
+}
+function showErr(msg) {
+  document.getElementById('errTxt').textContent = msg;
+  document.getElementById('errBanner').style.display = 'flex';
+}
+function hideErr() { document.getElementById('errBanner').style.display = 'none'; }
+function fmt(n) { return (Math.round(n * 100) / 100).toFixed(2); }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ================= Upload ================= */
+var drop = document.getElementById('drop');
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+});
+['dragover','dragenter'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.add('over'); }); });
+['dragleave','drop'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.remove('over'); }); });
+drop.addEventListener('drop', function(e) {
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(file) {
+  if (!/pdf$/i.test(file.name) && file.type !== 'application/pdf') { showErr('O ficheiro tem de ser um PDF.'); return; }
+  hideErr();
+  outBytes = null;
+  document.getElementById('dlBtn').style.display = 'none';
+  srcName = file.name;
+  var fr = new FileReader();
+  fr.onload = function() { srcBytes = new Uint8Array(fr.result); analisar(); };
+  fr.readAsArrayBuffer(file);
+}
+
+/* ================= Análise (pdf.js) ================= */
+function pageItems(page) {
+  return page.getTextContent().then(function(tc) {
+    return tc.items.map(function(it) {
+      return { str: it.str, x: it.transform[4], y: it.transform[5], w: it.width,
+               size: Math.abs(it.transform[3]) || Math.abs(it.transform[0]) || 8.44 };
+    });
+  });
+}
+function groupLines(items) {
+  var lines = [];
+  items.forEach(function(it) {
+    if (!it.str || !it.str.trim() && it.w === 0) return;
+    var ln = null;
+    for (var i = 0; i < lines.length; i++) if (Math.abs(lines[i].y - it.y) < 1.8) { ln = lines[i]; break; }
+    if (!ln) { ln = { y: it.y, items: [] }; lines.push(ln); }
+    ln.items.push(it);
+  });
+  lines.forEach(function(l) { l.items.sort(function(a, b) { return a.x - b.x; }); l.text = l.items.map(function(i) { return i.str; }).join(''); });
+  lines.sort(function(a, b) { return b.y - a.y; }); /* topo primeiro */
+  return lines;
+}
+
+function analisar() {
+  found = null; kms = null; foot = null;
+  pdfjsLib.getDocument({ data: srcBytes.slice() }).promise.then(function(doc) {
+    var pages = [];
+    var chain = Promise.resolve();
+    for (var p = 1; p <= doc.numPages; p++) {
+      (function(pn) {
+        chain = chain.then(function() {
+          return doc.getPage(pn).then(pageItems).then(function(items) { pages.push(items); });
+        });
+      })(p);
+    }
+    return chain.then(function() { return pages; });
+  }).then(function(pages) {
+    /* --- PRODUTOS --- */
+    for (var p = 0; p < pages.length; p++) {
+      var r = procuraLinha(pages[p], p);
+      if (r) { found = r; break; }
+    }
+    if (!found) {
+      document.getElementById('editCard').style.display = 'none';
+      document.getElementById('prevCard').style.display = 'none';
+      showErr('Não encontrei o quadro PRODUTOS com a linha "Diária / Rental Day" neste PDF. Confirma que é um contrato Valpirent no formato habitual.');
+      return;
+    }
+    /* --- KMS --- */
+    kms = analisaKms(pages);
+    /* --- Rodapés --- */
+    foot = analisaRodapes(pages);
+
+    /* UI */
+    document.getElementById('fileBadge').textContent = srcName;
+    document.getElementById('dropTitle').textContent = '✅ ' + srcName;
+    document.getElementById('dropHint').textContent = 'Clica para carregar outro contrato';
+    document.getElementById('inTaxa').value = parseFloat(found.items[0].str.replace(',', '.'));
+    document.getElementById('inQtd').value = parseInt(found.items[1].str, 10);
+    document.getElementById('inTotal').value = parseFloat(found.items[2].str.replace(',', '.'));
+    totalManual = false;
+
+    var semAss = foot.pages.filter(function(x) { return !x.hasAss; }).length;
+    var semPag = foot.pages.filter(function(x) { return !x.hasPag; }).length;
+    var h = 'Valores atuais (página ' + (found.pageIndex + 1) + '): Taxa Dia <strong>' + esc(found.items[0].str) + '</strong> · Quantidade <strong>' + esc(found.items[1].str) + '</strong> · Total <strong>' + esc(found.items[2].str) + '</strong><ul>';
+    if (kms.status === 'errado') h += '<li>Texto do limite de kms <strong>errado</strong> → será substituído por: <em>"' + esc(KMS_TEXT) + '"</em></li>';
+    else if (kms.status === 'correto') h += '<li>Texto do limite de kms ✔ já correto — não será alterado</li>';
+    else h += '<li>⚠️ Texto do limite de kms <strong>não reconhecido</strong> — não será alterado (verifica o documento)</li>';
+    h += semAss ? '<li>Assinaturas em falta em <strong>' + semAss + ' página(s)</strong> → serão adicionadas</li>' : '<li>Assinaturas ✔ presentes em todas as páginas</li>';
+    h += semPag ? '<li>Numeração em falta em <strong>' + semPag + ' página(s)</strong> → será adicionada ("Página X de ' + foot.n + '")</li>' : '<li>Numeração ✔ presente em todas as páginas</li>';
+    h += '</ul>';
+    document.getElementById('foundTxt').innerHTML = h;
+    document.getElementById('editCard').style.display = 'block';
+    document.getElementById('prevCard').style.display = 'none';
+    toast('Contrato lido e analisado.');
+  }).catch(function(e) {
+    console.error(e);
+    showErr('Erro ao ler o PDF: ' + (e && e.message ? e.message : e));
+  });
+}
+
+function procuraLinha(items, pageIndex) {
+  var anchor = null;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].str.indexOf('Rental') !== -1 || items[i].str.indexOf('Diária') !== -1 || items[i].str.indexOf('Diaria') !== -1) { anchor = items[i]; break; }
+  }
+  if (!anchor) return null;
+  var nums = items.filter(function(it) {
+    return Math.abs(it.y - anchor.y) < 2.5 && it.x > anchor.x &&
+           /^[0-9]+([.,][0-9]+)?$/.test(it.str.trim());
+  }).map(function(it) {
+    return { str: it.str.trim(), x: it.x, right: it.x + it.w, y: it.y, size: it.size };
+  }).sort(function(a, b) { return a.x - b.x; });
+  if (nums.length !== 3) return null;
+  return { pageIndex: pageIndex, items: nums };
+}
+
+function analisaKms(pages) {
+  for (var p = 0; p < pages.length; p++) {
+    var lines = groupLines(pages[p]);
+    var fullText = lines.map(function(l) { return l.text; }).join('\n');
+    if (KMS_OK_RE.test(fullText)) return { status: 'correto', pageIndex: p };
+    var li = -1, idxInLine = -1;
+    for (var i = 0; i < lines.length; i++) {
+      var k = lines[i].text.indexOf('Contrato com limite');
+      if (k !== -1) { li = i; idxInLine = k; break; }
+    }
+    if (li === -1) continue;
+
+    /* linha-âncora: descobrir o item e o offset onde começa 'Contrato' */
+    var line = lines[li];
+    var acc = 0, startX = null, startY = line.y, size = 8.44;
+    var scrubs = [], segs = [];
+    for (var j = 0; j < line.items.length; j++) {
+      var it = line.items[j];
+      if (acc + it.str.length > idxInLine && startX === null) {
+        var off = idxInLine - acc;
+        startX = it.x + (it.str.length ? it.w * (off / it.str.length) : 0);
+        size = it.size;
+        scrubs.push({ text: it.str.slice(off) });
+      } else if (startX !== null) {
+        scrubs.push({ text: it.str });
+      }
+      acc += it.str.length;
+    }
+    if (startX === null) continue;
+    var lineRight = Math.max.apply(null, line.items.map(function(i2) { return i2.x + i2.w; }));
+    segs.push({ x0: startX, x1: lineRight, y: line.y, size: size });
+
+    /* linhas seguintes até ao cabeçalho TERMOS (excluído) */
+    var leftX = LEFT_MARGIN, lineH = 8.06, count = 0;
+    for (var m = li + 1; m < lines.length && count < 6; m++) {
+      var L = lines[m];
+      if (/TERMOS/.test(L.text)) break;
+      var x0 = Math.min.apply(null, L.items.map(function(i3) { return i3.x; }));
+      var x1 = Math.max.apply(null, L.items.map(function(i3) { return i3.x + i3.w; }));
+      segs.push({ x0: x0, x1: x1, y: L.y, size: L.items[0].size });
+      L.items.forEach(function(i4) { scrubs.push({ text: i4.str }); });
+      leftX = Math.min(leftX, x0);
+      if (count === 0) lineH = line.y - L.y;
+      count++;
+    }
+    return { status: 'errado', pageIndex: p, startX: startX, startY: startY, size: size, segs: segs, scrubs: scrubs, leftX: leftX, lineH: lineH };
+  }
+  return { status: 'desconhecido', pageIndex: -1 };
+}
+
+function analisaRodapes(pages) {
+  var res = { pages: [], ref: null, n: pages.length };
+  pages.forEach(function(items) {
+    var txt = items.map(function(i) { return i.str; }).join(' ');
+    res.pages.push({ hasAss: txt.indexOf('(Ass.') !== -1, hasPag: /P[áa]gina\s+\d+\s+de\s+\d+/.test(txt) });
+  });
+  for (var p = 0; p < pages.length; p++) {
+    if (!res.pages[p].hasAss) continue;
+    var ass = pages[p].filter(function(i) { return i.str.indexOf('(Ass') !== -1; }).sort(function(a, b) { return a.x - b.x; });
+    if (ass.length >= 1) {
+      var ref = { size: ass[0].size, assY: ass[0].y, cliX: ass[0].x, valX: ass.length > 1 ? ass[ass.length - 1].x : FOOT_DEF.valX };
+      var dig = pages[p].filter(function(i) { return i.str.indexOf('Assinaturas digitais') !== -1; })[0]
+             || pages[p].filter(function(i) { return i.str.indexOf('Assinaturas') === 0 && i.y < ref.assY; })[0];
+      ref.digX = dig ? dig.x : FOOT_DEF.digX;
+      ref.digY = dig ? dig.y : FOOT_DEF.digY;
+      res.ref = ref;
+      break;
+    }
+  }
+  return res;
+}
+
+/* ================= Cálculo ================= */
+function recalcTotal() {
+  if (totalManual) return;
+  var taxa = parseFloat(document.getElementById('inTaxa').value);
+  var qtd = parseFloat(document.getElementById('inQtd').value);
+  if (!isNaN(taxa) && !isNaN(qtd)) document.getElementById('inTotal').value = fmt(taxa * qtd);
+}
+
+/* ================= Content stream: glifos =================
+   Fontes Type0/Identity-H, um glifo por Tj. Mapeamento Arial standard: GID = código ASCII - 29
+   ('0'→0x13, '.'→0x11, ','→0x0F, 'A'→0x24...). Acentuados usam wildcard. */
+function gidHex(ch) { return ('0000' + (ch.charCodeAt(0) - 29).toString(16).toUpperCase()).slice(-4); }
+function glyphPattern(s) {
+  var GAP = '(?:(?!BT)(?!ET)[^<])*';
+  return s.split('').map(function(ch) {
+    var c = ch.charCodeAt(0);
+    if (ch === ' ') return '(?:<0003>\\s*Tj' + GAP + ')?';
+    if (c >= 33 && c <= 126) return '<' + gidHex(ch) + '>\\s*Tj' + GAP;
+    return '<[0-9A-Fa-f]{4}>\\s*Tj' + GAP;
+  }).join('');
+}
+function matchAllPat(str, patSrc) {
+  var re = new RegExp(patSrc, 'g');
+  var ms = [], m;
+  while ((m = re.exec(str))) { ms.push({ start: m.index, end: m.index + m[0].length, text: m[0] }); re.lastIndex = m.index + 1; }
+  return ms;
+}
+function blankMatch(str, m) {
+  /* <gid> -> <> : string vazia mostra nada, mantém os Td (posições do resto do bloco intactas)
+     e não deixa carateres fantasma na extração/cópia de texto */
+  var repl = m.text.replace(/<[0-9A-Fa-f]{4}>/g, '<>');
+  return str.slice(0, m.start) + repl + str.slice(m.end);
+}
+function bytesToStr(bytes) {
+  var s = '', CH = 8192;
+  for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return s;
+}
+function strToBytes(str) {
+  var out = new Uint8Array(str.length);
+  for (var i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xFF;
+  return out;
+}
+function getStreamStr(doc, pageIndex) {
+  var page = doc.getPages()[pageIndex];
+  var ctx = doc.context;
+  var obj = ctx.lookup(page.node.get(PDFLib.PDFName.of('Contents')));
+  var parts = [];
+  if (obj instanceof PDFLib.PDFArray) { for (var i = 0; i < obj.size(); i++) parts.push(ctx.lookup(obj.get(i))); }
+  else parts.push(obj);
+  var chunks = parts.map(function(st) { return PDFLib.decodePDFRawStream(st).decode(); });
+  var total = chunks.reduce(function(a, c) { return a + c.length + 1; }, 0);
+  var bytes = new Uint8Array(total), off = 0;
+  chunks.forEach(function(c) { bytes.set(c, off); off += c.length; bytes[off++] = 10; });
+  return bytesToStr(bytes);
+}
+function setStreamStr(doc, pageIndex, str) {
+  var page = doc.getPages()[pageIndex];
+  var ctx = doc.context;
+  var newStream = ctx.flateStream(strToBytes(str));
+  page.node.set(PDFLib.PDFName.of('Contents'), ctx.register(newStream));
+}
+
+/* Remove os números antigos do quadro PRODUTOS (devolve a string alterada ou null) */
+function scrubProdutos(str) {
+  var sTaxa = found.items[0].str, sQtd = found.items[1].str, sTotal = found.items[2].str;
+  var m1, m3;
+  var mTaxaAll = matchAllPat(str, glyphPattern(sTaxa));
+  if (sTaxa === sTotal) {
+    if (mTaxaAll.length !== 2) return null;
+    m1 = mTaxaAll[0]; m3 = mTaxaAll[1];
+  } else {
+    var mTotalAll = matchAllPat(str, glyphPattern(sTotal));
+    if (mTaxaAll.length !== 1 || mTotalAll.length !== 1) return null;
+    m1 = mTaxaAll[0]; m3 = mTotalAll[0];
+  }
+  if (m3.start <= m1.end) return null;
+  var mid = str.slice(m1.end, m3.start);
+  var m2All = matchAllPat(mid, glyphPattern(sQtd));
+  if (m2All.length !== 1) return null;
+  var m2 = { start: m1.end + m2All[0].start, end: m1.end + m2All[0].end, text: m2All[0].text };
+  /* aplicar do fim para o início — a substituição altera o comprimento da string */
+  str = blankMatch(str, m3);
+  str = blankMatch(str, m2);
+  str = blankMatch(str, m1);
+  return str;
+}
+
+/* Remove o texto antigo dos kms (melhor esforço; devolve nº de fragmentos não removidos) */
+function scrubKms(strObj) {
+  var falhas = 0;
+  kms.scrubs.forEach(function(sc) {
+    var t = (sc.text || '').trim();
+    if (t.length < 2) return; /* fragmentos minúsculos ficam cobertos pelo retângulo */
+    var ms = matchAllPat(strObj.str, glyphPattern(sc.text));
+    if (ms.length === 1) strObj.str = blankMatch(strObj.str, ms[0]);
+    else falhas++;
+  });
+  return falhas;
+}
+
+/* ================= Geração ================= */
+function gerar() {
+  if (!srcBytes || !found) { toast('Carrega primeiro um contrato PDF.', true); return; }
+  var taxa = parseFloat(document.getElementById('inTaxa').value);
+  var qtd = parseFloat(document.getElementById('inQtd').value);
+  var total = parseFloat(document.getElementById('inTotal').value);
+  if (isNaN(taxa) || isNaN(qtd) || isNaN(total)) { toast('Preenche a Taxa Dia, a Quantidade e o Total.', true); return; }
+  if (qtd % 1 !== 0) { toast('A Quantidade deve ser um número inteiro de dias.', true); return; }
+
+  var novos = [fmt(taxa), String(qtd), fmt(total)];
+  var btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  var avisos = [];
+
+  PDFLib.PDFDocument.load(srcBytes.slice()).then(function(doc) {
+    return Promise.all([
+      doc.embedFont(PDFLib.StandardFonts.Helvetica),
+      doc.embedFont(PDFLib.StandardFonts.HelveticaBold),
+      doc.embedFont(PDFLib.StandardFonts.TimesRoman)
+    ]).then(function(fonts) {
+      var font = fonts[0], fontB = fonts[1], fontT = fonts[2];
+      var pages = doc.getPages();
+
+      /* ---- edição do content stream (página dos PRODUTOS + página dos kms) ---- */
+      var byPage = {};
+      byPage[found.pageIndex] = { str: null };
+      if (kms.status === 'errado') byPage[kms.pageIndex] = byPage[kms.pageIndex] || { str: null };
+
+      var scrubProdOk = false, kmsFalhas = 0;
+      Object.keys(byPage).forEach(function(pi) {
+        try { byPage[pi].str = getStreamStr(doc, +pi); } catch (e) { console.warn('stream', e); }
+      });
+      var sp = byPage[found.pageIndex];
+      if (sp && sp.str) {
+        var r = scrubProdutos(sp.str);
+        if (r) { sp.str = r; scrubProdOk = true; }
+      }
+      if (kms.status === 'errado') {
+        var sk = byPage[kms.pageIndex];
+        if (sk && sk.str) kmsFalhas = scrubKms(sk);
+        else kmsFalhas = kms.scrubs.length;
+      }
+      Object.keys(byPage).forEach(function(pi) {
+        if (byPage[pi].str) { try { setStreamStr(doc, +pi, byPage[pi].str); } catch (e) { console.warn(e); } }
+      });
+      if (!scrubProdOk) avisos.push('os valores antigos do quadro podem ficar selecionáveis por baixo da cobertura');
+
+      /* ---- 1. valores do quadro PRODUTOS ---- */
+      var pgProd = pages[found.pageIndex];
+      found.items.forEach(function(it, i) {
+        var size = it.size;
+        if (!scrubProdOk) {
+          pgProd.drawRectangle({ x: it.x - 30, y: it.y - 2, width: (it.right - it.x) + 32, height: size + 3.5, color: PDFLib.rgb(1, 1, 1) });
+        }
+        var txt = novos[i];
+        var w = font.widthOfTextAtSize(txt, size);
+        pgProd.drawText(txt, { x: it.right - w, y: it.y, size: size, font: font, color: PDFLib.rgb(0, 0, 0) });
+      });
+
+      /* ---- 2. texto do limite de kms ---- */
+      if (kms.status === 'errado') {
+        var pgK = pages[kms.pageIndex];
+        /* cobrir sempre a zona antiga (garante limpeza visual mesmo se o scrub falhou nalgum fragmento) */
+        kms.segs.forEach(function(sg) {
+          pgK.drawRectangle({ x: sg.x0 - 1, y: sg.y - 2, width: (sg.x1 - sg.x0) + 3, height: sg.size + 3.5, color: PDFLib.rgb(1, 1, 1) });
+        });
+        /* escrever o texto correto, a negrito, com quebra de linha nas linhas libertadas
+           (uma linha por drawText, para a extração/cópia de texto manter os espaços) */
+        var size = kms.size;
+        var linhas = [];
+        var cur = '', curX = kms.startX;
+        KMS_TEXT.split(' ').forEach(function(wd) {
+          var tentativa = cur ? cur + ' ' + wd : wd;
+          if (curX + fontB.widthOfTextAtSize(tentativa, size) > RIGHT_MARGIN && cur) {
+            linhas.push(cur); cur = wd; curX = kms.leftX;
+          } else cur = tentativa;
+        });
+        if (cur) linhas.push(cur);
+        linhas.forEach(function(ln, li) {
+          pgK.drawText(ln, {
+            x: li === 0 ? kms.startX : kms.leftX,
+            y: kms.startY - li * kms.lineH,
+            size: size, font: fontB, color: PDFLib.rgb(0, 0, 0)
+          });
+        });
+        if (kmsFalhas > 0) avisos.push('parte do texto antigo dos kms ficou apenas coberto (' + kmsFalhas + ' fragmento(s))');
+      }
+
+      /* ---- 3. rodapés: assinaturas + numeração ---- */
+      var ref = foot.ref || FOOT_DEF;
+      var lineY = foot.ref ? ref.assY + (FOOT_DEF.lineY - FOOT_DEF.assY) : FOOT_DEF.lineY;
+      for (var p = 0; p < pages.length; p++) {
+        var pg = pages[p];
+        if (!foot.pages[p].hasAss) {
+          FOOT_DEF.lineSegs.forEach(function(sg) {
+            pg.drawLine({ start: { x: sg[0], y: lineY }, end: { x: sg[1], y: lineY }, thickness: 0.55, color: PDFLib.rgb(0, 0, 0) });
+          });
+          pg.drawText('(Ass. Cliente)', { x: ref.cliX, y: ref.assY, size: ref.size, font: font, color: PDFLib.rgb(0, 0, 0) });
+          pg.drawText('(Ass. VALPI RENT)', { x: ref.valX, y: ref.assY, size: ref.size, font: font, color: PDFLib.rgb(0, 0, 0) });
+          pg.drawText('Assinaturas digitais em cumprimento da alínea 10, art. 9º, do D.L.47/2018', { x: ref.digX, y: ref.digY, size: ref.size, font: font, color: PDFLib.rgb(0, 0, 0) });
+        }
+        if (!foot.pages[p].hasPag) {
+          var ptxt = 'Página ' + (p + 1) + ' de ' + pages.length;
+          var pw = fontT.widthOfTextAtSize(ptxt, FOOT_DEF.pagSize);
+          pg.drawText(ptxt, { x: FOOT_DEF.pagRight - pw, y: FOOT_DEF.pagY, size: FOOT_DEF.pagSize, font: fontT, color: PDFLib.rgb(0, 0, 0) });
+        }
+      }
+
+      return doc.save();
+    });
+  }).then(function(bytes) {
+    outBytes = bytes;
+    document.getElementById('dlBtn').style.display = 'inline-flex';
+    if (avisos.length) toast('PDF gerado com avisos: ' + avisos.join('; ') + '.', true);
+    else toast('PDF corrigido — confirma na pré-visualização e descarrega.');
+    return preview(bytes);
+  }).catch(function(e) {
+    console.error(e);
+    toast('Erro ao gerar o PDF: ' + (e && e.message ? e.message : e), true);
+  }).then(function() { btn.disabled = false; });
+}
+
+function preview(bytes) {
+  var wrap = document.getElementById('prevWrap');
+  wrap.innerHTML = '';
+  document.getElementById('prevBadge').textContent = 'todas as páginas';
+  document.getElementById('prevCard').style.display = 'block';
+  return pdfjsLib.getDocument({ data: bytes.slice() }).promise.then(function(doc) {
+    var chain = Promise.resolve();
+    for (var p = 1; p <= doc.numPages; p++) {
+      (function(pn) {
+        chain = chain.then(function() {
+          return doc.getPage(pn).then(function(page) {
+            var vp = page.getViewport({ scale: 1.35 });
+            var canvas = document.createElement('canvas');
+            canvas.width = vp.width; canvas.height = vp.height;
+            wrap.appendChild(canvas);
+            return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+          });
+        });
+      })(p);
+    }
+    return chain;
+  }).then(function() {
+    document.getElementById('prevCard').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+function descarregar() {
+  if (!outBytes) return;
+  var base = srcName.replace(/\.pdf$/i, '');
+  var blob = new Blob([outBytes], { type: 'application/pdf' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = base + '_editado.pdf'; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+  toast('Descarregado: ' + base + '_editado.pdf');
+}
+
+function reiniciar() {
+  srcBytes = null; outBytes = null; found = null; kms = null; foot = null; srcName = ''; totalManual = false;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('editCard').style.display = 'none';
+  document.getElementById('prevCard').style.display = 'none';
+  document.getElementById('dlBtn').style.display = 'none';
+  document.getElementById('dropTitle').textContent = 'Carregar contrato PDF';
+  document.getElementById('dropHint').textContent = 'Clica ou arrasta o ficheiro para aqui (ex.: C26.25239_PT_E.pdf)';
+  hideErr();
+}
+</script>
+</body>
+</html>
