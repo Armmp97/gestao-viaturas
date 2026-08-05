@@ -2296,7 +2296,7 @@
         return isMobile() || isSafariOrMacWebKit();
     }
 
-    var msalLoginScopes = ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite', 'Mail.Send', 'Chat.ReadWrite'];
+    var msalLoginScopes = ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite', 'Mail.Send'];
 
     function initMsal() {
         try {
@@ -2770,7 +2770,7 @@
         formularios_nc:     { recipients: 'admins' },
         inspecoes_diarias:  { recipients: 'admins' },
         auditorias_internas:{ recipients: 'admins+coordenadores' },
-        auditorias_carrinhos:{ recipients: 'admins+coordenadores' },
+        auditorias_carrinhos:{ recipients: 'admins' },  // Ago 2026: antes 'admins+coordenadores' — coordenadores deixam de receber as auditorias uns dos outros
         avaliacoes_merito:  { recipients: 'admins' },
         rh_justificacoes:   { recipients: 'admins+rh' },
         rh_pedidos_formacao:{ recipients: 'admins' },
@@ -2789,73 +2789,45 @@
     function getNotifToken() {
         if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
         return msalInstance.acquireTokenSilent({
-            scopes: ['Mail.Send', 'Chat.ReadWrite'],
+            scopes: ['Mail.Send'],
             account: currentMsalUser
         }).catch(function() {
-            return acquireTokenInteractive(['Mail.Send', 'Chat.ReadWrite']);
+            return acquireTokenInteractive(['Mail.Send']);
         }).then(function(resp) { return resp.accessToken; });
     }
 
     function sendNotification(type, subject, bodyHtml) {
-        var recipients = getNotifRecipients(type);
-        var senderName = currentMsalUser ? currentMsalUser.name || currentMsalUser.username : 'Intranet DomusCar';
-        // Send email + Teams chat in parallel
+        // Ago 2026: notificações passam a ser APENAS por email (Teams removido a pedido do André)
+        // e o remetente é excluído da lista (evitava-se p.ex. o coordenador notificar-se a si próprio).
+        var senderEmail = currentMsalUser ? String(currentMsalUser.username || '').toLowerCase() : '';
+        var recipients = getNotifRecipients(type).filter(function(r) {
+            return String(r.email || '').toLowerCase() !== senderEmail;
+        });
+        if (!recipients.length) {
+            console.log('[Notif] Sem destinatários (para além do remetente) — nada a enviar.');
+            return Promise.resolve();
+        }
         return getNotifToken().then(function(token) {
-            var promises = [];
-            // 1. Send Email
-            var toRecipients = recipients.map(function(r) {
-                return { emailAddress: { address: r.email, name: r.name } };
-            });
             var emailPayload = {
                 message: {
                     subject: subject,
                     body: { contentType: 'HTML', content: bodyHtml },
-                    toRecipients: toRecipients
+                    toRecipients: recipients.map(function(r) {
+                        return { emailAddress: { address: r.email, name: r.name } };
+                    })
                 },
                 saveToSentItems: false
             };
-            promises.push(
-                fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(emailPayload)
-                }).then(function(r) {
-                    if (!r.ok) throw new Error('Email failed: ' + r.status);
-                    console.log('[Notif] Email enviado com sucesso');
-                }).catch(function(e) { console.warn('[Notif] Erro ao enviar email:', e); })
-            );
-            // 2. Send Teams Chat to each recipient individually
-            recipients.forEach(function(recipient) {
-                var chatPromise = fetch('https://graph.microsoft.com/v1.0/chats', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chatType: 'oneOnOne',
-                        members: [
-                            { '@odata.type': '#microsoft.graph.aadUserConversationMember', roles: ['owner'], 'user@odata.bind': 'https://graph.microsoft.com/v1.0/users/' + currentMsalUser.username },
-                            { '@odata.type': '#microsoft.graph.aadUserConversationMember', roles: ['owner'], 'user@odata.bind': 'https://graph.microsoft.com/v1.0/users/' + recipient.email }
-                        ]
-                    })
-                }).then(function(r) {
-                    if (!r.ok) throw new Error('Chat creation failed: ' + r.status);
-                    return r.json();
-                }).then(function(chat) {
-                    return fetch('https://graph.microsoft.com/v1.0/chats/' + chat.id + '/messages', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            body: { contentType: 'html', content: '<strong>📋 ' + subject + '</strong><br>' + bodyHtml }
-                        })
-                    });
-                }).then(function(r) {
-                    if (!r.ok) throw new Error('Teams message failed: ' + r.status);
-                    console.log('[Notif] Teams chat enviado para ' + recipient.name);
-                }).catch(function(e) { console.warn('[Notif] Erro Teams chat para ' + recipient.name + ':', e); });
-                promises.push(chatPromise);
+            return fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify(emailPayload)
+            }).then(function(r) {
+                if (!r.ok) throw new Error('Email failed: ' + r.status);
+                console.log('[Notif] Email enviado com sucesso para ' + recipients.length + ' destinatário(s)');
             });
-            return Promise.all(promises);
         }).catch(function(e) {
-            console.warn('[Notif] Erro geral notificações:', e);
+            console.warn('[Notif] Erro ao enviar notificação:', e);
         });
     }
 
