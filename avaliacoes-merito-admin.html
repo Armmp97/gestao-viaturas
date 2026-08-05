@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Avaliações de Mérito | Administração</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --navy-light: #00508F;
+  --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --warn: #D97706; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.6; }
+.page { max-width: 980px; margin: 0 auto; padding: 32px 24px 140px; }
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 26px 32px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.doc-header::after {
+  content: ''; position: absolute; top: -30%; right: -5%;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%);
+  border-radius: 50%;
+}
+.doc-header h1 { font-size: 1.3rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .82rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+.doc-header .doc-ref { font-size: .67rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .5; margin-top: 8px; position: relative; z-index: 2; }
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab {
+  padding: 11px 22px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200);
+  background: var(--white); cursor: pointer; font-family: inherit; font-size: .87rem;
+  font-weight: 700; color: var(--gray-600); transition: all .15s; display: inline-flex; align-items: center; gap: 8px;
+}
+.tab:hover { border-color: var(--accent-light); }
+.tab.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.tab .pill { background: var(--danger); color: #fff; border-radius: 50px; font-size: .68rem; font-weight: 800; padding: 1px 8px; min-width: 20px; text-align: center; }
+.view { display: none; }
+.view.active { display: block; }
+.meta-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.meta-chip { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px 14px; flex: 1; min-width: 170px; }
+.meta-chip .ml { font-size: .65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+.meta-chip input, .meta-chip select {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: .88rem; padding: 3px 0; color: var(--text-dark);
+  background: transparent; outline: none;
+}
+.meta-chip input:focus, .meta-chip select:focus { border-bottom-color: var(--accent); }
+.banner { border-radius: var(--radius-sm); padding: 13px 17px; margin-bottom: 14px; font-size: .84rem; display: flex; gap: 12px; align-items: flex-start; }
+.banner.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+.banner.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.banner.ok { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+.banner.err { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+.banner .bi { font-size: 1.05rem; line-height: 1.4; }
+.banner strong { font-weight: 800; }
+.wiz-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.wiz-head { padding: 13px 22px; background: var(--navy); color: var(--white); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wiz-head .wtipo { font-size: .68rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: rgba(255,255,255,.15); padding: 3px 10px; border-radius: 50px; }
+.wiz-head .wcount { font-size: .8rem; font-weight: 700; opacity: .85; margin-left: auto; }
+.wiz-progress { height: 5px; background: var(--gray-100); }
+.wiz-progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width .25s; }
+.wiz-body { padding: 20px 22px; }
+.wiz-nome { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); }
+.wiz-ind { font-size: .82rem; color: var(--gray-600); margin: 4px 0 16px; }
+.lvl { display: flex; gap: 14px; align-items: flex-start; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 12px 15px; margin-bottom: 8px; cursor: pointer; transition: all .12s; background: var(--white); }
+.lvl:hover { border-color: var(--accent-light); background: #F8FBFE; }
+.lvl .lvl-n { width: 38px; height: 38px; min-width: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.05rem; color: #fff; }
+.ln-1 { background: #DC2626; } .ln-2 { background: #F59E0B; } .ln-3 { background: #0284C7; } .ln-4 { background: #059669; } .ln-5 { background: #003B73; }
+.lvl .lvl-t { font-weight: 800; font-size: .84rem; color: var(--text-dark); }
+.lvl .lvl-a { font-size: .8rem; color: var(--text-body); margin-top: 1px; }
+.lvl.sel { border-width: 2px; }
+.lvl.sel.s-1 { border-color: #DC2626; background: rgba(220,38,38,.05); }
+.lvl.sel.s-2 { border-color: #F59E0B; background: rgba(245,158,11,.06); }
+.lvl.sel.s-3 { border-color: #0284C7; background: rgba(2,132,199,.06); }
+.lvl.sel.s-4 { border-color: #059669; background: rgba(5,150,105,.06); }
+.lvl.sel.s-5 { border-color: #003B73; background: rgba(0,59,115,.06); }
+.lvl .sel-mark { margin-left: auto; font-size: 1rem; display: none; }
+.lvl.sel .sel-mark { display: block; }
+.wiz-nav { display: flex; gap: 10px; align-items: center; padding: 14px 22px; border-top: 1px solid var(--gray-100); flex-wrap: wrap; }
+.wnav-btn { border: 1px solid var(--gray-200); background: var(--white); border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: .84rem; font-weight: 700; color: var(--text-dark); cursor: pointer; }
+.wnav-btn:hover:not(:disabled) { border-color: var(--accent-light); }
+.wnav-btn:disabled { opacity: .4; cursor: not-allowed; }
+.wiz-jump { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.jump-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--gray-200); cursor: pointer; border: none; padding: 0; }
+.jump-dot.done { background: var(--success); }
+.jump-dot.cur { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--accent); }
+.final-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.final-box { flex: 1; min-width: 150px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
+.final-box .l { font-size: .64rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-600); font-weight: 700; }
+.final-box .v { font-size: 1.6rem; font-weight: 900; color: var(--navy); }
+.final-box.niv { background: var(--navy); border-color: var(--navy); }
+.final-box.niv .l { color: rgba(255,255,255,.7); }
+.final-box.niv .v { color: #fff; }
+.obs-lab { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.wiz-body textarea { width: 100%; min-height: 90px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: .84rem; color: var(--text-body); outline: none; resize: vertical; }
+.wiz-body textarea:focus { border-color: var(--accent); }
+.result-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: var(--navy-deep); color: var(--white);
+  padding: 12px 18px; display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.18); font-size: .82rem;
+}
+.result-bar .rb-item { text-align: center; min-width: 88px; }
+.result-bar .rb-l { font-size: .62rem; letter-spacing: 1px; text-transform: uppercase; opacity: .65; font-weight: 700; }
+.result-bar .rb-v { font-size: 1.05rem; font-weight: 800; }
+.result-bar .nivel-badge { font-size: 1.05rem; font-weight: 900; padding: 3px 14px; border-radius: 50px; background: var(--accent); }
+.result-bar .nivel-badge.na { background: rgba(255,255,255,.15); }
+.save-btn { background: var(--success); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px 26px; font-family: inherit; font-size: .9rem; font-weight: 800; cursor: pointer; }
+.save-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.save-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+.hist-cards { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.hist-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px 22px; flex: 1; min-width: 260px; }
+.hist-card h3 { font-size: .92rem; color: var(--text-dark); font-weight: 800; margin-bottom: 10px; }
+.hist-card .hstat { display: flex; gap: 18px; flex-wrap: wrap; }
+.hist-card .hs { text-align: center; }
+.hist-card .hs .v { font-size: 1.4rem; font-weight: 900; color: var(--navy); }
+.hist-card .hs .v.bad { color: var(--danger); }
+.hist-card .hs .l { font-size: .66rem; text-transform: uppercase; letter-spacing: .8px; color: var(--gray-600); font-weight: 700; }
+table.matrix { width: 100%; border-collapse: collapse; background: var(--white); }
+.matrix-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow-x: auto; margin-bottom: 20px; }
+table.matrix th { font-size: .63rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); padding: 9px 8px; background: var(--gray-100); border-bottom: 1px solid var(--gray-200); text-align: center; white-space: nowrap; }
+table.matrix th:first-child { text-align: left; padding-left: 14px; }
+table.matrix td { padding: 8px; border-bottom: 1px solid var(--gray-100); font-size: .78rem; text-align: center; }
+table.matrix td:first-child { text-align: left; padding-left: 14px; font-weight: 600; color: var(--text-dark); white-space: nowrap; }
+.m-niv { display: inline-block; font-size: .68rem; font-weight: 800; padding: 2px 8px; border-radius: 50px; background: #E0F2FE; color: var(--navy); }
+.m-falta { color: var(--danger); font-weight: 800; }
+.m-fora { color: var(--gray-200); }
+table.hlist { width: 100%; border-collapse: collapse; background: var(--white); }
+.hlist-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow-x: auto; }
+table.hlist th { font-size: .63rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); padding: 10px 12px; background: var(--gray-100); border-bottom: 1px solid var(--gray-200); text-align: left; white-space: nowrap; }
+table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: .8rem; white-space: nowrap; }
+.del-btn { border: 1px solid var(--gray-200); background: var(--white); border-radius: 8px; padding: 4px 9px; cursor: pointer; font-size: .8rem; }
+.del-btn:hover { border-color: var(--danger); background: #FEF2F2; }
+.empty-state { padding: 40px 24px; text-align: center; color: var(--gray-400); font-size: .88rem; }
+#toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 99; background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: .84rem; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); display: none; max-width: 90vw; }
+#toast.err { background: var(--danger); }
+@media (max-width: 640px) {
+  .page { padding: 18px 12px 180px; }
+  .result-bar { gap: 10px; font-size: .74rem; }
+  .wiz-jump { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Avaliações de Mérito — <em>Administração</em></h1>
+    <p>Assessores de Vendas · Fiéis de Armazém · Coordenadores — escala 1–5, classificação 50% comportamental + 50% técnica</p>
+    <div class="doc-ref">DomusCar · acesso restrito à Administração</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabNova" onclick="showView('nova')">📝 Nova Avaliação</button>
+    <button class="tab" id="tabHist" onclick="showView('hist')">📚 Histórico <span class="pill" id="histPill" style="display:none;">0</span></button>
+  </div>
+
+  <div class="view active" id="viewNova">
+    <div class="meta-strip">
+      <div class="meta-chip">
+        <div class="ml">Função</div>
+        <select id="fFuncao" onchange="onFuncaoChange()"></select>
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Pessoa avaliada</div>
+        <select id="fPessoa" onchange="onFormChange()"></select>
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Mês avaliado</div>
+        <input type="month" id="fMes" onchange="onFormChange()">
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Data da avaliação</div>
+        <input type="date" id="fData" onchange="onFormChange()">
+      </div>
+      <div class="meta-chip">
+        <div class="ml">Avaliador</div>
+        <input type="text" id="fAvaliador" readonly>
+      </div>
+    </div>
+
+    <div class="banner err" id="dupBanner" style="display:none;"><span class="bi">🚫</span><div><strong id="dupInfo"></strong> Cada pessoa só pode ser avaliada uma vez por mês e por função. Para repetir, apaga primeiro o registo no Histórico (🗑).</div></div>
+
+    <div class="banner ok" id="resBanner" style="display:none;"><span class="bi">✅</span><div id="resBannerTxt"></div></div>
+
+    <div id="wizContainer"></div>
+  </div>
+
+  <div class="view" id="viewHist">
+    <div class="banner info" id="histLoading"><span class="bi">⏳</span><div>A carregar histórico do SharePoint...</div></div>
+    <div id="histContent"></div>
+  </div>
+
+</div>
+
+<div class="result-bar" id="resultBar">
+  <div class="rb-item"><div class="rb-l">Preenchidas</div><div class="rb-v" id="rbProg">—</div></div>
+  <div class="rb-item"><div class="rb-l">Comportamental</div><div class="rb-v" id="rbMC">—</div></div>
+  <div class="rb-item"><div class="rb-l">Técnica</div><div class="rb-v" id="rbMT">—</div></div>
+  <div class="rb-item"><div class="rb-l">Classificação</div><div class="rb-v" id="rbCF">—</div></div>
+  <div class="rb-item"><div class="rb-l">Nível</div><div class="nivel-badge na" id="rbNivel">—</div></div>
+  <button class="save-btn" id="saveBtn" onclick="guardar()">✔ Concluir e Arquivar</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================== DADOS (gerados a partir de "Matrizes de Competências AP.xlsx") ================== */
+var DATA = {"funcoes": {"Assessor de Vendas": {"comport": [{"nome": "Rigor e Qualidade", "ind": "Segue os procedimentos e normas internas, produz/corrige documentos (ORs, fichas, orçamentos, faturas) sem erros nem retrabalho.", "desc": "Trabalha com rigor, segue procedimentos e normas internas, minimiza erros e retrabalho nos processos administrativos e de atendimento."}, {"nome": "Responsabilidade", "ind": "Leva as tarefas até à conclusão sem ser relembrado, assume e corrige erros, e preocupa-se com o resultado e o cliente.", "desc": "Assume as tarefas atribuídas até à conclusão, responde pelos erros cometidos e demonstra preocupação com o resultado final e com o cliente."}, {"nome": "Trabalho em Equipa", "ind": "Partilha a informação necessária à oficina e colegas, apoia a equipa e trata todos com respeito.", "desc": "Coopera com colegas e com a oficina, partilha informação relevante e contribui para um ambiente de trabalho respeitador e colaborativo."}, {"nome": "Assiduidade e Pontualidade", "ind": "Cumpre os horários de forma consistente e comunica atempadamente atrasos ou ausências.", "desc": "Cumpre de forma consistente os horários definidos, demonstra compromisso com a presença e minimiza impactos operacionais por atrasos ou faltas."}, {"nome": "Segurança e Organização", "ind": "Mantém o posto e a documentação organizados/limpos, cumpre as normas de segurança e conserva ferramentas e equipamentos.", "desc": "Cumpre normas de segurança e mantém o posto de atendimento, documentação e ferramentas organizados, limpos e preservados."}], "tecnicas": [{"nome": "Receção e acolhimento do cliente", "ind": "Cumprimenta/reconhece a chegada do cliente e mantém contacto visual constante quando fala com o mesmo.", "desc": "Acolhe o cliente e reconhece a sua chegada, mantendo uma atitude atenta e disponível, mesmo que ocupado."}, {"nome": "Diagnóstico da necessidade e gestão da expectativa", "ind": "Identifica corretamente a real necessidade do cliente e consegue de imediato gerir a expectativa na receção da viatura/1º contacto.", "desc": "Identifica a real necessidade do cliente e alinha desde logo a expectativa do mesmo."}, {"nome": "Abertura de OR", "ind": "Abre a OR com dados corretos e completos, de acordo com as regras internas, sem atalhos.", "desc": "Abre ordens de reparação completas e corretas, atempadamente, de acordo com as regras internas, corrigindo se necessário fichas de clientes e viaturas. Passa de imediato a informação para a oficina."}, {"nome": "Elaboração de orçamentos", "ind": "Elabora os orçamentos em nunca mais de 24h (a maioria em 2h), com seguimento por telefone e email; verifica o histórico e propõe vendas adicionais pertinentes (distribuição, óleo de travões, óleo de caixa, etc.); baseia-se nos planos de manutenção oficiais do ESItronic.", "desc": "Orçamentos em 2horas, completos e baseados nos planos oficiais, com seguimento e propostas de valor."}, {"nome": "Atendimento telefónico e resposta a emails", "ind": "Atende o telefone em 5 toques ou menos e responde aos emails/mensagens/teams em até 2 horas.", "desc": "Atende telefones em 3 toques, ou menos, responde a mensagens e e-mails em menos de 1hora."}, {"nome": "Espírito de serviço e responsabilidade pelo cliente", "ind": "Independentemente do departamento a que o contacto ou pedido diga respeito, procura sempre ajudar e encaminhar a solução, assumindo o pedido como seu — nunca passa a bola.", "desc": "Assume cada contacto como sendo da empresa e leva-o até à solução, qualquer que seja o departamento."}, {"nome": "Conhecimento técnico automóvel", "ind": "Explica os serviços, adaptando a linguagem e compreende a reparação ao ponto de validar dúvidas com a oficina.", "desc": "Compreende as reparações para as explicar ao cliente e validar com a oficina, esclarece com a oficina ou pesquisa."}, {"nome": "Relação com seguradoras e peritagens", "ind": "Gere o processo de seguro/peritagem com documentação completa e prazos cumpridos, mantendo o cliente informado.", "desc": "Gere o processo com seguradoras, peritagens e documentação associada."}, {"nome": "Processo de venda e upselling responsável", "ind": "Conduz a venda de forma convincente e sugere serviços adicionais relevantes.", "desc": "Conduz a venda e propõe serviços adicionais necessários, de acordo com o plano do fabricante e regras da empresa, sempre com base no histórico."}, {"nome": "Gestão de carteira e pós-venda", "ind": "Fideliza o cliente no último contacto com o mesmo e gere corretamente as reclamações.", "desc": "Gere a carteira de clientes e marcações de forma proativa, antecipando necessidades futuras dos veiculos, promovendo agendamento de serviços, contribuindo para a sua fidelização. Gestão das reclamações."}, {"nome": "Ferramentas informáticas", "ind": "Usa o programa de faturação e demais ferramentas informáticas de forma correta e sem erros, tirando partido das funções de apoio à venda.", "desc": "Domina o sistema Officegest (Agenda Oficina, Ordens de serviço, Gestão de Entidades e Viaturas, Vendas, GT Motive), Esi-tronic, Planner, Intranet Domuscar e plataformas de clientes (Kinto, Ayvens, Fidelidade, etc.)"}], "pessoas": ["Ricardo Ferreira", "Pedro Pereira", "Ruben Nogueira", "Tomas Figueiredo", "Valter Borges"], "regua": [{"n": "A1", "min": 0}, {"n": "A2", "min": 1.5625}, {"n": "A3", "min": 2.1875}, {"n": "B1", "min": 2.625}, {"n": "B2", "min": 3.3125}, {"n": "B3", "min": 4}, {"n": "C1", "min": 4.6875}, {"n": "C2", "min": 4.85}, {"n": "C3", "min": 4.95}], "alvos": [1.5625, 2.1875, 2.625, 3.3125, 4, 4.6875, 5, 5, 5]}, "Fiel de Armazém": {"comport": [{"nome": "Rigor e Qualidade", "ind": "Segue os procedimentos e normas internas e produz documentos (encomendas, faturas, registos de stock) sem erros nem retrabalho.", "desc": "Segue os procedimentos e normas internas e produz documentos (encomendas, faturas, registos de stock) sem erros nem retrabalho."}, {"nome": "Responsabilidade", "ind": "Leva as tarefas até à conclusão sem ser relembrado, assume e corrige erros, e preocupa-se com o resultado e com quem serve (colega ou oficina).", "desc": "Leva as tarefas até à conclusão sem ser relembrado, assume e corrige erros, e preocupa-se com o resultado e com quem serve (colega ou oficina)."}, {"nome": "Trabalho em Equipa", "ind": "Partilha a informação necessária à oficina e colegas, apoia a equipa e trata todos com respeito.", "desc": "Partilha a informação necessária à oficina e colegas, apoia a equipa e trata todos com respeito."}, {"nome": "Assiduidade e Pontualidade", "ind": "Cumpre os horários de forma consistente e comunica atempadamente atrasos ou ausências.", "desc": "Cumpre os horários de forma consistente e comunica atempadamente atrasos ou ausências."}, {"nome": "Segurança e Organização", "ind": "Mantém o balcão e o armazém organizados, cumpre as normas de segurança e conserva equipamentos e zonas de armazenamento.", "desc": "Mantém o balcão e o armazém organizados, cumpre as normas de segurança e conserva equipamentos e zonas de armazenamento."}], "tecnicas": [{"nome": "Atendimento ao balcão", "ind": "Atende os mecânicos com rapidez e cortesia, percebendo corretamente o que é pedido e efetuando todo o processo.", "desc": "Atende os técnicos com rapidez e cortesia, percebendo corretamente o que é pedido e efetuando todo o processo."}, {"nome": "Identificação e pesquisa de peças", "ind": "Identifica a peça certa (catálogo, matrícula/VIN, referência), minimizando trocas e devoluções, sem pedir a outros para identificarem por si.", "desc": "Identifica a peça certa (catálogo, matrícula/VIN, referência), minimizando trocas e devoluções, sem pedir a outros para identificarem por si."}, {"nome": "Gestão de stock e organização do armazém", "ind": "Conhece os níveis de stock, localiza peças rapidamente e mantém o armazém organizado e o inventário fiável. Domina os stocks mínimos.", "desc": "Conhece os níveis de stock, localiza peças rapidamente e mantém o armazém organizado e o inventário fiável. Domina os stocks mínimos."}, {"nome": "Encomendas, receção e conferência", "ind": "Encomenda escolhendo bem o fornecedor (preço/prazo) e marca, confere a mercadoria contra a encomenda, registando-a no sistema.", "desc": "Encomenda escolhendo bem o fornecedor, tendo em consideração os acordos de rappel existentes, preço, prazo e marca, confere a mercadoria contra a encomenda, registando-a no sistema."}, {"nome": "Devoluções/garantias", "ind": "Gere correta e atempadamente devoluções e garantias dentro do processo.", "desc": "Gere correta e atempadamente devoluções e garantias dentro do processo."}, {"nome": "Venda e aconselhamento de peças", "ind": "Aconselha e propõe soluções/alternativas com vista ao crescimento da margem da empresa, nunca comprometendo a qualidade.", "desc": "Aconselha e propõe soluções/alternativas com vista ao crescimento da margem da empresa, nunca comprometendo a qualidade."}, {"nome": "Ferramentas informáticas", "ind": "Domina o módulo de peças do DMS e os catálogos/portais de fornecedores e outras ferramentas informáticas.", "desc": "Domina o sistema Officegest (Agenda Oficina, Ordens de serviço, Gestão de Entidades, Compras, Guias de Transporte, Stocks, Relatórios), TecDoc, Esi-tronic, GT Motive, Planner, Intranet Domuscar e plataformas de fornecedores (Bombóleo, Nors, Drive360, etc.)"}], "pessoas": ["Alicia Vieira", "Inês Peixinho", "André Gomes", "Gonçalo Faustino", "Pedro Carvalho"], "regua": [{"n": "A1", "min": 0}, {"n": "A2", "min": 1.5833}, {"n": "A3", "min": 2.1667}, {"n": "B1", "min": 2.75}, {"n": "B2", "min": 3.25}, {"n": "B3", "min": 4}, {"n": "C1", "min": 4.6667}, {"n": "C2", "min": 4.85}, {"n": "C3", "min": 4.95}], "alvos": [1.5833, 2.1667, 2.75, 3.25, 4, 4.6667, 5, 5, 5]}, "Coordenador": {"comport": [{"nome": "Rigor e Qualidade", "ind": "Faz seguir os procedimentos e normas internas na sua área e garante que os registos e documentos saem sem erros nem retrabalho.", "desc": "Trabalha e faz trabalhar com rigor, garantindo o cumprimento de procedimentos e normas e minimizando erros e retrabalho na sua área."}, {"nome": "Responsabilidade", "ind": "Responde pelos resultados da sua área, assume os problemas e age para os resolver, com foco no resultado e no cliente.", "desc": "Responde pelos resultados da sua área, assume os problemas e age para os resolver, com foco no resultado final e no cliente."}, {"nome": "Trabalho em Equipa", "ind": "Promove um bom ambiente, articula com os outros departamentos e trata a equipa com respeito, mesmo sob pressão.", "desc": "Promove a cooperação e um bom ambiente, articula entre departamentos e contribui para uma equipa respeitadora e colaborativa."}, {"nome": "Assiduidade e Pontualidade", "ind": "Cumpre e faz cumprir os horários, dá o exemplo e comunica atempadamente ausências, minimizando o impacto.", "desc": "Cumpre e faz cumprir os horários definidos, demonstra compromisso e minimiza impactos operacionais por atrasos ou faltas."}, {"nome": "Segurança e Organização", "ind": "Faz cumprir as normas de segurança e mantém a oficina, equipamentos e documentação organizados e conservados.", "desc": "Faz cumprir as normas de segurança e mantém a oficina, equipamentos e documentação organizados, limpos e preservados."}], "tecnicas": [{"nome": "Planeamento e distribuição do trabalho", "ind": "Planeia e distribui o trabalho de forma equilibrada, ajustando às prioridades e à carga da oficina.", "desc": "Planeia e distribui o trabalho pela equipa de forma equilibrada, ajustando às prioridades e à carga da oficina (Taxa de utilização)."}, {"nome": "Liderança e desenvolvimento da equipa", "ind": "Lidera e motiva a equipa, dá feedback e desenvolve as competências dos técnicos.", "desc": "Lidera, motiva e desenvolve a equipa, dá feedback e faz crescer as competências dos técnicos."}, {"nome": "Controlo de qualidade e retrabalho", "ind": "Garante a qualidade do trabalho entregue e atua para reduzir retrabalho e não-conformidades.", "desc": "Garante a qualidade do trabalho entregue e atua para reduzir o retrabalho e as não-conformidades (exemplo: checklist controlo qualidade)."}, {"nome": "Assegura prazos e produtividade", "ind": "Assegura o cumprimento dos prazos prometidos e acompanha a produtividade/ocupação da equipa.", "desc": "Assegura o cumprimento dos prazos prometidos e acompanha a produtividade/ocupação da equipa."}, {"nome": "Apresenta Resultados", "ind": "Cumpre a média trimestral de margem de 21%.", "desc": "Acompanha e garante o cumprimento da margem média trimestral (25%) definida para a oficina."}, {"nome": "Conhecimento técnico e apoio ao diagnóstico/execução de tarefa", "ind": "Domina tecnicamente as reparações ao ponto de apoiar o diagnóstico e desbloquear casos difíceis.", "desc": "Domina tecnicamente as reparações ao ponto de apoiar o diagnóstico/execução da tarefa e desbloquear casos difíceis."}, {"nome": "Articulação com receção e peças", "ind": "Articula com a receção/assessores e o departamento de peças para o trabalho fluir sem paragens.", "desc": "Articula e comunica com a receção/assessores e o departamento de peças para o trabalho fluir sem paragens."}, {"nome": "Gestão de processos, picagens e Officegest", "ind": "Garante o rigor dos processos, das picagens/registos de tempo e do uso do DMS na sua área.", "desc": "Garante o rigor dos processos, das picagens/registos de tempo e do uso do Officegest na sua área."}], "pessoas": ["Fábio Ramalho", "José Rodriguez", "Mário Perez", "Nuno Montes"], "regua": [{"n": "A1", "min": 0}, {"n": "A2", "min": 2}, {"n": "A3", "min": 2.6923}, {"n": "B1", "min": 3.1538}, {"n": "B2", "min": 3.7692}, {"n": "B3", "min": 4.1538}, {"n": "C1", "min": 4.8}, {"n": "C2", "min": 4.9}, {"n": "C3", "min": 4.97}], "alvos": [2, 2.6923, 3.1538, 3.7692, 4.1538, 5, 5, 5, 5]}}, "escala": [{"n": "1", "nome": "Insuficiente", "desc": "Nao corresponde ao esperado. Necessita de supervisao constante e correcao frequente.", "comp": "Demonstra comportamentos inadequados de forma frequente; necessita correção constante e impacta negativamente a equipa, cliente ou operação.", "tec": "Nao executa a tarefa de forma autonoma nem com qualidade aceitavel."}, {"n": "2", "nome": "Em desenvolvimento", "desc": "Corresponde parcialmente. Ainda precisa de apoio e validacao em situacoes correntes.", "comp": "Demonstra o comportamento esperado apenas em algumas situações; ainda necessita acompanhamento frequente para manter consistência.", "tec": "Executa tarefas simples com apoio; ainda comete erros em tarefas correntes."}, {"n": "3", "nome": "Cumpre o esperado", "desc": "Corresponde plenamente ao exigido para o nivel. Autonomo nas situacoes correntes.", "comp": "Demonstra de forma consistente os comportamentos esperados na função e mantém postura adequada nas situações correntes.", "tec": "Executa de forma autonoma e com qualidade as tarefas tipicas da funcao."}, {"n": "4", "nome": "Supera o esperado", "desc": "Vai alem do exigido. Resolve situacoes complexas e apoia colegas.", "comp": "Demonstra maturidade, iniciativa e influência positiva na equipa; contribui ativamente para a resolução de problemas e melhoria do ambiente operacional.", "tec": "Domina tarefas complexas, antecipa problemas e melhora processos."}, {"n": "5", "nome": "Referencia", "desc": "Nivel de excelencia. Referencia interna; forma e desenvolve outros.", "comp": "É uma referência comportamental dentro da equipa; influencia positivamente colegas, promove a cultura da empresa e eleva os padrões da operação.", "tec": "Especialista reconhecido; resolve os casos mais dificeis e forma a equipa."}]};
+var FUNCOES = DATA.funcoes;   /* {label: {comport, tecnicas, pessoas, regua, alvos}} */
+var ESCALA = DATA.escala;
+var FUNC_KEYS = Object.keys(FUNCOES);
+
+/* As avaliações começam em Julho/2026 (feitas no início do mês seguinte); o mês corrente não é cobrado. */
+var ALERT_START = '2026-07';
+var DRAFT_KEY = 'ama_draft_v1';
+
+/* ================== ESTADO ================== */
+var funcao = FUNC_KEYS[0];
+var ALL = [], TOTAL = 0, REGUA = [];
+var ratings = { C: {}, T: {} };
+var obsPer = { C: {}, T: {} };
+var obsValue = '';
+var pageIdx = 0;
+var histRows = [];
+var histLoaded = false;
+var currentUserEmail = '', currentUserName = '';
+var isAdmin = false;
+
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = isErr ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function() { t.style.display = 'none'; }, isErr ? 6000 : 4000);
+}
+function mesLabel(ym) {
+  if (!ym) return '';
+  var m = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var p = ym.split('-');
+  return m[parseInt(p[1],10)-1] + ' ' + p[0];
+}
+function nivelPara(nota) {
+  if (nota == null || isNaN(nota)) return null;
+  var nv = REGUA[0].n;
+  for (var i = 0; i < REGUA.length; i++) if (nota >= REGUA[i].min) nv = REGUA[i].n;
+  return nv;
+}
+function reguaTexto() {
+  return REGUA.map(function(r, i) {
+    return (i === 0 ? 'até ' + (REGUA[1].min - 0.01).toFixed(2).replace('.', ',') + ' → A1'
+                    : r.min.toFixed(2).replace('.', ',') + ' → ' + r.n);
+  }).join(' · ');
+}
+function keyOf(fn, mes, pessoa) { return fn + '||' + mes + '||' + pessoa; }
+function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+function getRating(item) { return ratings[item.tipo][item.idx]; }
+function getObsComp(item) { return obsPer[item.tipo][item.idx] || ''; }
+function setObsComp(v) {
+  var it = ALL[pageIdx];
+  if (!it) return;
+  if (v && v.trim()) obsPer[it.tipo][it.idx] = v; else delete obsPer[it.tipo][it.idx];
+  saveDraft();
+}
+
+/* ================== ARRANQUE ================== */
+(function init() {
+  try {
+    if (window.parent && window.parent !== window && window.parent.amGetUser) {
+      var u0 = window.parent.amGetUser();
+      currentUserEmail = u0.email || '';
+      currentUserName = u0.name || '';
+      isAdmin = u0.role === 'admin';
+    }
+  } catch (e) {}
+  document.getElementById('fAvaliador').value = currentUserName || '—';
+
+  var hoje = new Date();
+  document.getElementById('fData').value = hoje.toISOString().slice(0,10);
+  var prev = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  var prevYm = prev.getFullYear() + '-' + String(prev.getMonth()+1).padStart(2,'0');
+  document.getElementById('fMes').value = prevYm >= ALERT_START ? prevYm : ALERT_START;
+  document.getElementById('fMes').min = ALERT_START;
+
+  var selF = document.getElementById('fFuncao');
+  FUNC_KEYS.forEach(function(k) { var o = document.createElement('option'); o.value = k; o.textContent = k; selF.appendChild(o); });
+
+  restoreDraft();
+  setFuncao(document.getElementById('fFuncao').value || funcao, true);
+  loadHist();
+})();
+
+function setFuncao(fn, keepState) {
+  funcao = fn;
+  document.getElementById('fFuncao').value = fn;
+  var F = FUNCOES[fn];
+  REGUA = F.regua;
+  ALL = [];
+  F.comport.forEach(function(c, i) { ALL.push({ tipo: 'C', idx: i, c: c }); });
+  F.tecnicas.forEach(function(c, i) { ALL.push({ tipo: 'T', idx: i, c: c }); });
+  TOTAL = ALL.length;
+  if (!keepState) {
+    ratings = { C: {}, T: {} };
+    obsPer = { C: {}, T: {} };
+    obsValue = '';
+    pageIdx = 0;
+  }
+  rebuildPessoas();
+  renderWizard();
+  updateSummary();
+}
+
+function onFuncaoChange() {
+  var temDados = Object.keys(ratings.C).length || Object.keys(ratings.T).length;
+  if (temDados && !confirm('Mudar de função limpa as notas já preenchidas. Continuar?')) {
+    document.getElementById('fFuncao').value = funcao;
+    return;
+  }
+  hideResBanner();
+  setFuncao(document.getElementById('fFuncao').value, false);
+  checkDuplicate();
+  saveDraft();
+}
+
+function rebuildPessoas() {
+  var mes = document.getElementById('fMes').value;
+  var selP = document.getElementById('fPessoa');
+  var current = selP.value;
+  selP.innerHTML = '<option value="">— selecionar —</option>';
+  (FUNCOES[funcao].pessoas || []).forEach(function(p) {
+    var done = histLoaded && histRows.some(function(r) { return r.funcao === funcao && r.pessoa === p && r.mes === mes; });
+    var o = document.createElement('option');
+    o.value = p; o.textContent = p + (done ? ' — ✓ já avaliado' : '');
+    if (done) o.disabled = true;
+    selP.appendChild(o);
+  });
+  if (current && [].some.call(selP.options, function(o) { return o.value === current && !o.disabled; })) selP.value = current;
+}
+
+function onFormChange() {
+  hideResBanner();
+  rebuildPessoas();
+  checkDuplicate();
+  saveDraft();
+}
+
+function showResBanner(record) {
+  document.getElementById('resBannerTxt').innerHTML = 'Avaliação arquivada — <strong>' + esc(record.pessoa) + '</strong> (' + esc(record.funcao) + ', ' + mesLabel(record.mes) + '): ' +
+    'Comportamental <strong>' + record.mc.toFixed(2) + '</strong> · Técnica <strong>' + record.mt.toFixed(2) + '</strong> · ' +
+    'Classificação <strong>' + record.cf.toFixed(2) + '</strong> → Nível <strong>' + record.nivel + '</strong>';
+  document.getElementById('resBanner').style.display = 'flex';
+}
+function hideResBanner() {
+  var el = document.getElementById('resBanner');
+  if (el) el.style.display = 'none';
+}
+
+function checkDuplicate() {
+  var mes = document.getElementById('fMes').value;
+  var p = document.getElementById('fPessoa').value;
+  var ban = document.getElementById('dupBanner');
+  var blocked = false;
+  if (histLoaded && mes && p) {
+    var exist = histRows.filter(function(r) { return keyOf(r.funcao, r.mes, r.pessoa) === keyOf(funcao, mes, p); })[0];
+    if (exist) {
+      blocked = true;
+      document.getElementById('dupInfo').textContent = p + ' (' + funcao + ') já foi avaliado em ' + mesLabel(mes) + ' (' + (exist.nivel || '—') + ' · ' + (exist.cf != null ? exist.cf.toFixed(2) : '—') + ').';
+    }
+  }
+  ban.style.display = blocked ? 'flex' : 'none';
+  document.getElementById('saveBtn').disabled = blocked;
+  return blocked;
+}
+
+/* ================== WIZARD ================== */
+function countAnswered() {
+  var n = 0;
+  ALL.forEach(function(it) { if (getRating(it) !== undefined) n++; });
+  return n;
+}
+function nextUnanswered(from) {
+  for (var i = from; i < TOTAL; i++) if (getRating(ALL[i]) === undefined) return i;
+  for (var j = 0; j < TOTAL; j++) if (getRating(ALL[j]) === undefined) return j;
+  return -1;
+}
+
+function renderWizard() {
+  var c = document.getElementById('wizContainer');
+  var answered = countAnswered();
+  var pct = TOTAL ? Math.round(100 * answered / TOTAL) : 0;
+  if (pageIdx >= TOTAL) { c.innerHTML = finalPageHtml(pct); return; }
+
+  var item = ALL[pageIdx];
+  var comp = item.c;
+  var isC = item.tipo === 'C';
+  var num = (isC ? 'C' : 'T') + (item.idx + 1);
+  var sel = getRating(item);
+
+  var h = '<div class="wiz-card">';
+  h += '<div class="wiz-head"><span class="wtipo">' + (isC ? '🤝 Comportamental' : '🔧 Técnica') + '</span>' +
+       '<span style="font-weight:800;font-size:.85rem;">' + num + '</span>' +
+       '<span style="font-size:.75rem;opacity:.8;">' + esc(funcao) + '</span>' +
+       '<span class="wcount">' + (pageIdx + 1) + ' de ' + TOTAL + ' · ' + answered + ' respondidas</span></div>';
+  h += '<div class="wiz-progress"><div style="width:' + pct + '%"></div></div>';
+  h += '<div class="wiz-body">';
+  h += '<div class="wiz-nome">' + esc(comp.nome) + '</div>';
+  h += '<div class="wiz-ind">' + esc(comp.ind || comp.desc) + '</div>';
+
+  for (var n = 1; n <= 5; n++) {
+    var e2 = ESCALA[n-1];
+    var anc = isC ? (e2.comp || e2.desc) : (e2.tec || e2.desc);
+    var selCls = sel === n ? ' sel s-' + n : '';
+    h += '<div class="lvl' + selCls + '" id="lvl' + n + '" onclick="pickLevel(' + n + ')">' +
+      '<div class="lvl-n ln-' + n + '">' + n + '</div>' +
+      '<div style="flex:1;"><div class="lvl-t">' + esc(e2.nome) + '</div>' +
+      '<div class="lvl-a">' + esc(anc) + '</div></div>' +
+      '<div class="sel-mark">✔</div></div>';
+  }
+
+  h += '<div class="obs-lab" style="margin-top:14px;">Observações deste ponto (opcional)</div>';
+  h += '<textarea id="obsComp" style="min-height:52px;" placeholder="Evidência ou exemplo observado neste ponto..." oninput="setObsComp(this.value)">' + esc(getObsComp(item)) + '</textarea>';
+  h += '</div>';
+  h += '<div class="wiz-nav">';
+  h += '<button type="button" class="wnav-btn" onclick="goPrev()"' + (pageIdx === 0 ? ' disabled' : '') + '>← Anterior</button>';
+  h += '<button type="button" class="wnav-btn" style="background:var(--navy);border-color:var(--navy);color:#fff;" onclick="goNext()"' + (sel === undefined ? ' disabled' : '') + '>Seguinte →</button>';
+  h += '<div class="wiz-jump">' + jumpDots() + '</div>';
+  h += '</div></div>';
+  c.innerHTML = h;
+}
+
+function jumpDots() {
+  var h = '';
+  for (var i = 0; i < TOTAL; i++) {
+    var done = getRating(ALL[i]) !== undefined;
+    var cls = 'jump-dot' + (done ? ' done' : '') + (i === pageIdx ? ' cur' : '');
+    h += '<button type="button" class="' + cls + '" onclick="goTo(' + i + ')" title="' + (ALL[i].tipo === 'C' ? 'C' : 'T') + (ALL[i].idx + 1) + '"></button>';
+  }
+  var doneAll = countAnswered() === TOTAL;
+  h += '<button type="button" class="jump-dot' + (pageIdx >= TOTAL ? ' cur' : '') + (doneAll ? ' done' : '') + '" onclick="goTo(' + TOTAL + ')" title="Resumo" style="border-radius:4px;"></button>';
+  return h;
+}
+
+function finalPageHtml(pct) {
+  var r = calc();
+  var h = '<div class="wiz-card">';
+  h += '<div class="wiz-head"><span class="wtipo">🏁 Resumo</span><span style="font-size:.75rem;opacity:.8;">' + esc(funcao) + '</span><span class="wcount">' + countAnswered() + ' de ' + TOTAL + ' respondidas</span></div>';
+  h += '<div class="wiz-progress"><div style="width:' + pct + '%"></div></div>';
+  h += '<div class="wiz-body">';
+  if (!r.completo) {
+    var falta = [];
+    ALL.forEach(function(it, i) { if (getRating(it) === undefined) falta.push({ i: i, lbl: (it.tipo === 'C' ? 'C' : 'T') + (it.idx + 1) + ' — ' + it.c.nome }); });
+    h += '<div class="banner warn"><span class="bi">⚠️</span><div><strong>Faltam ' + falta.length + ' competência(s):</strong><br>';
+    falta.slice(0, 6).forEach(function(f) { h += '<a href="#" onclick="goTo(' + f.i + ');return false;" style="color:inherit;text-decoration:underline;">' + esc(f.lbl) + '</a><br>'; });
+    if (falta.length > 6) h += '… e mais ' + (falta.length - 6) + '.';
+    h += '</div></div>';
+  } else {
+    h += '<div class="final-grid">' +
+      '<div class="final-box"><div class="l">Média Comportamental</div><div class="v">' + r.mc.toFixed(2) + '</div></div>' +
+      '<div class="final-box"><div class="l">Média Técnica</div><div class="v">' + r.mt.toFixed(2) + '</div></div>' +
+      '<div class="final-box"><div class="l">Classificação Final</div><div class="v">' + r.cf.toFixed(2) + '</div></div>' +
+      '<div class="final-box niv"><div class="l">Nível enquadrado</div><div class="v">' + nivelPara(r.cf) + '</div></div>' +
+      '</div>';
+  }
+  h += '<div class="obs-lab">Observações gerais (opcional)</div>';
+  h += '<textarea id="fObs" placeholder="Evidências, plano de desenvolvimento, formação recomendada..." oninput="obsValue=this.value;saveDraft()">' + esc(obsValue) + '</textarea>';
+  h += '<div style="font-size:.77rem;color:var(--gray-600);margin-top:12px;">Régua (' + esc(funcao) + ') — atingir o perfil de um nível enquadra no seguinte: ' + esc(reguaTexto()) + '.</div>';
+  h += '</div>';
+  h += '<div class="wiz-nav">';
+  h += '<button type="button" class="wnav-btn" onclick="goPrev()">← Anterior</button>';
+  h += '<div style="margin-left:auto;font-size:.8rem;color:var(--gray-600);">' + (r.completo ? 'Tudo preenchido — usa <strong>✔ Concluir e Arquivar</strong> na barra abaixo.' : 'Completa as competências em falta para concluir.') + '</div>';
+  h += '</div></div>';
+  return h;
+}
+
+function pickLevel(n) {
+  hideResBanner();
+  var item = ALL[pageIdx];
+  var cur = getRating(item);
+  if (cur === n) { delete ratings[item.tipo][item.idx]; renderWizard(); updateSummary(); saveDraft(); return; }
+  ratings[item.tipo][item.idx] = n;
+  updateSummary(); saveDraft();
+  renderWizard();
+  setTimeout(function() {
+    var next = nextUnanswered(pageIdx + 1);
+    pageIdx = next !== -1 ? next : TOTAL;
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 260);
+}
+
+function goPrev() { if (pageIdx > 0) { pageIdx--; renderWizard(); } }
+function goNext() { if (pageIdx < TOTAL) { pageIdx++; renderWizard(); } }
+function goTo(i) { pageIdx = Math.max(0, Math.min(TOTAL, i)); renderWizard(); }
+
+/* ================== CÁLCULO ================== */
+function calc() {
+  var F = FUNCOES[funcao];
+  var somaC = 0, nC = 0, somaT = 0, nT = 0;
+  F.comport.forEach(function(_, i) { var v = ratings.C[i]; if (typeof v === 'number') { somaC += v; nC++; } });
+  F.tecnicas.forEach(function(_, i) { var v = ratings.T[i]; if (typeof v === 'number') { somaT += v; nT++; } });
+  var mc = nC ? somaC / nC : null;
+  var mt = nT ? somaT / nT : null;
+  var cf = (mc != null && mt != null) ? 0.5 * mc + 0.5 * mt : null;
+  return { mc: mc, mt: mt, cf: cf, nC: nC, nT: nT, completo: (nC === F.comport.length && nT === F.tecnicas.length) };
+}
+
+function updateSummary() {
+  var r = calc();
+  document.getElementById('rbProg').textContent = (r.nC + r.nT) + '/' + TOTAL;
+  document.getElementById('rbMC').textContent = r.mc != null ? r.mc.toFixed(2) : '—';
+  document.getElementById('rbMT').textContent = r.mt != null ? r.mt.toFixed(2) : '—';
+  document.getElementById('rbCF').textContent = r.cf != null ? r.cf.toFixed(2) : '—';
+  var nb = document.getElementById('rbNivel');
+  if (r.completo && r.cf != null) { nb.textContent = nivelPara(r.cf); nb.className = 'nivel-badge'; }
+  else { nb.textContent = '—'; nb.className = 'nivel-badge na'; }
+}
+
+/* ================== RASCUNHO ================== */
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      funcao: funcao,
+      pessoa: document.getElementById('fPessoa').value,
+      mes: document.getElementById('fMes').value,
+      data: document.getElementById('fData').value,
+      obs: obsValue, ratings: ratings, obsPer: obsPer
+    }));
+  } catch (e) {}
+}
+function restoreDraft() {
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) {}
+  if (!d) return;
+  if (d.funcao && FUNCOES[d.funcao]) { funcao = d.funcao; document.getElementById('fFuncao').value = d.funcao; }
+  if (d.mes && d.mes >= ALERT_START) document.getElementById('fMes').value = d.mes;
+  if (d.data) document.getElementById('fData').value = d.data;
+  if (d.obs) obsValue = d.obs;
+  if (d.ratings) {
+    ratings = { C: {}, T: {} };
+    Object.keys(d.ratings.C || {}).forEach(function(k) { var v = d.ratings.C[k]; if (typeof v === 'number') ratings.C[k] = v; });
+    Object.keys(d.ratings.T || {}).forEach(function(k) { var v = d.ratings.T[k]; if (typeof v === 'number') ratings.T[k] = v; });
+  }
+  if (d.obsPer) obsPer = { C: d.obsPer.C || {}, T: d.obsPer.T || {} };
+  if (d.pessoa) setTimeout(function() { document.getElementById('fPessoa').value = d.pessoa; }, 0);
+  var F = FUNCOES[funcao];
+  var total = F.comport.length + F.tecnicas.length;
+  var done = Object.keys(ratings.C).length + Object.keys(ratings.T).length;
+  pageIdx = done >= total ? total : 0;
+}
+
+/* ================== GRAVAÇÃO ================== */
+function guardar() {
+  var pessoa = document.getElementById('fPessoa').value;
+  var mes = document.getElementById('fMes').value;
+  var dataAv = document.getElementById('fData').value;
+  var obs = (obsValue || '').trim();
+
+  if (!isAdmin) { toast('Apenas administradores podem arquivar avaliações neste módulo.', true); return; }
+  if (!pessoa || !mes || !dataAv) { toast('Preenche a função, a pessoa, o mês e a data.', true); return; }
+  if (mes < ALERT_START) { toast('As avaliações começam em ' + mesLabel(ALERT_START) + '.', true); return; }
+  var r = calc();
+  if (!r.completo) {
+    var next = nextUnanswered(0);
+    if (next !== -1) { pageIdx = next; renderWizard(); }
+    toast('Faltam competências por avaliar (' + (r.nC + r.nT) + '/' + TOTAL + ').', true);
+    return;
+  }
+  if (checkDuplicate()) { toast(pessoa + ' já foi avaliado em ' + mesLabel(mes) + '. Apaga o registo no Histórico para repetir.', true); return; }
+
+  var nivel = nivelPara(r.cf);
+  var d = { funcao: funcao, pessoa: pessoa, mes: mes, data: dataAv, avaliador: currentUserName, obs: obs };
+  var filename = 'Avaliacao_Merito_' + slug(pessoa) + '_' + mes + '_' + slug(funcao) + '.html';
+  var html = buildReport(d, r, nivel);
+
+  var record = {
+    funcao: funcao, mes: mes, pessoa: pessoa, avaliador: currentUserName, dataAvaliacao: dataAv,
+    mc: +r.mc.toFixed(2), mt: +r.mt.toFixed(2), cf: +r.cf.toFixed(2), nivel: nivel,
+    ficheiro: filename, origem: 'intranet', criadoEm: new Date().toISOString()
+  };
+
+  var parentOk = false;
+  try { parentOk = !!(window.parent && window.parent !== window && window.parent.amUploadReport); } catch (e) {}
+  if (!parentOk) {
+    download(filename, html);
+    toast('Fora da intranet — ficheiro descarregado: ' + filename);
+    return;
+  }
+
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  toast('A arquivar a avaliação no SharePoint...');
+
+  window.parent.amUploadReport(filename, html).then(function() {
+    return appendToIndex(record);
+  }).then(function() {
+    if (window.parent.sendNotification) notify(d, record);
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    limparForm();
+    showResBanner(record);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast('Avaliação de ' + pessoa + ' (' + mesLabel(mes) + ') arquivada: ' + nivel + ' · ' + record.cf.toFixed(2));
+    rebuildPessoas(); renderHist(); updateHistPill(); checkDuplicate();
+  }).catch(function(err) {
+    toast('Erro ao guardar: ' + (err && err.message ? err.message : err), true);
+    download(filename, html);
+    btn.disabled = false;
+  });
+}
+
+function limparForm() {
+  ratings = { C: {}, T: {} };
+  obsPer = { C: {}, T: {} };
+  obsValue = '';
+  pageIdx = 0;
+  document.getElementById('fPessoa').value = '';
+  renderWizard();
+  updateSummary();
+}
+
+function appendToIndex(record) {
+  var loader = null, saver = null;
+  try { loader = window.parent.amaLoadIndex; saver = window.parent.amaSaveIndex; } catch (e) {}
+  if (!loader || !saver) return Promise.resolve();
+  return loader().then(function(idx) {
+    idx = idx || { updatedAt: null, rows: [] };
+    var k = keyOf(record.funcao, record.mes, record.pessoa);
+    idx.rows = (idx.rows || []).filter(function(x) { return keyOf(x.funcao, x.mes, x.pessoa) !== k; });
+    idx.rows.push(record);
+    idx.updatedAt = new Date().toISOString();
+    return saver(idx).then(function() { histRows = idx.rows; histLoaded = true; });
+  });
+}
+
+function notify(d, record) {
+  var subject = '⭐ Avaliação de Mérito (' + d.funcao + ') concluída — ' + d.pessoa + ' (' + mesLabel(d.mes) + ')';
+  var body = '<p><strong>Pessoa avaliada:</strong> ' + esc(d.pessoa) + '</p>' +
+    '<p><strong>Função:</strong> ' + esc(d.funcao) + '</p>' +
+    '<p><strong>Mês avaliado:</strong> ' + mesLabel(d.mes) + '</p>' +
+    '<p><strong>Avaliador:</strong> ' + esc(d.avaliador) + '</p>' +
+    '<p><strong>Data da avaliação:</strong> ' + esc(d.data) + '</p>' +
+    '<p><strong>Média comportamental:</strong> ' + record.mc.toFixed(2) + ' · <strong>Média técnica:</strong> ' + record.mt.toFixed(2) + '</p>' +
+    '<p><strong>Classificação final:</strong> ' + record.cf.toFixed(2) + ' → <strong>Nível ' + record.nivel + '</strong></p>';
+  var F = FUNCOES[funcao];
+  var baixas = [];
+  F.comport.forEach(function(c, i) { var v = ratings.C[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')' + (obsPer.C[i] ? ' — ' + obsPer.C[i] : '')); });
+  F.tecnicas.forEach(function(c, i) { var v = ratings.T[i]; if (typeof v === 'number' && v <= 2) baixas.push(c.nome + ' (' + v + ')' + (obsPer.T[i] ? ' — ' + obsPer.T[i] : '')); });
+  if (baixas.length) {
+    body += '<p><strong>Competências com nota ≤ 2:</strong></p><ul>';
+    baixas.forEach(function(b) { body += '<li>' + esc(b) + '</li>'; });
+    body += '</ul>';
+  }
+  if (d.obs) body += '<p><strong>Observações:</strong> ' + esc(d.obs) + '</p>';
+  body += '<p style="color:#888;font-size:12px;">Ficheiro: ' + esc(record.ficheiro) + ' — histórico em Intranet &gt; Administração &gt; Avaliações de Mérito.</p>';
+  window.parent.sendNotification('avaliacoes_merito', subject, body);
+}
+
+function download(filename, html) {
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+}
+
+/* ================== RELATÓRIO ARQUIVADO ================== */
+function buildReport(d, r, nivel) {
+  var stamp = new Date().toLocaleString('pt-PT');
+  var F = FUNCOES[funcao];
+  function linhas(arr, tipo) {
+    var h = '';
+    arr.forEach(function(c, i) {
+      var v = ratings[tipo][i];
+      var o = (obsPer[tipo][i] || '').trim();
+      h += '<tr><td class="idx">' + (tipo === 'C' ? 'C' : 'T') + (i+1) + '</td><td>' + esc(c.nome) + '</td>' +
+           '<td class="ind">' + esc(c.ind || c.desc) + '</td><td class="nota n' + v + '">' + v + '</td>' +
+           '<td class="ind">' + (o ? esc(o) : '—') + '</td></tr>';
+    });
+    return h;
+  }
+  return '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+  '<title>Avaliação de Mérito — ' + esc(d.pessoa) + ' — ' + esc(mesLabel(d.mes)) + '</title><style>' +
+  'body{font-family:Segoe UI,Arial,sans-serif;color:#1A2A3A;background:#fff;margin:0;padding:32px;line-height:1.5;}' +
+  '.head{background:linear-gradient(135deg,#002B55,#003B73);color:#fff;border-radius:14px;padding:24px 30px;margin-bottom:22px;}' +
+  '.head h1{margin:0;font-size:20px;} .head p{margin:6px 0 0;opacity:.8;font-size:13px;}' +
+  '.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}' +
+  '.chip{border:1px solid #DEE2E8;border-radius:10px;padding:10px 14px;min-width:150px;flex:1;}' +
+  '.chip .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#007BC0;font-weight:700;}' +
+  '.chip .v{font-size:14px;font-weight:600;}' +
+  'h2{font-size:14px;color:#003B73;border-left:4px solid #007BC0;padding-left:10px;margin:26px 0 10px;}' +
+  'table{width:100%;border-collapse:collapse;margin-bottom:8px;}' +
+  'th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#6B7280;text-align:left;padding:8px 10px;background:#EEF1F5;border-bottom:1px solid #DEE2E8;}' +
+  'td{padding:7px 10px;border-bottom:1px solid #EEF1F5;font-size:12.5px;vertical-align:top;}' +
+  'td.idx{color:#9CA3AF;font-weight:700;font-size:11px;width:34px;}' +
+  'td.ind{color:#6B7280;font-size:11.5px;}' +
+  'td.nota{font-weight:800;text-align:center;width:52px;}' +
+  '.n1{color:#DC2626;} .n2{color:#F59E0B;} .n3{color:#0284C7;} .n4{color:#059669;} .n5{color:#003B73;}' +
+  '.res{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0;}' +
+  '.res .r{border:1px solid #DEE2E8;border-radius:12px;padding:14px 20px;text-align:center;flex:1;min-width:140px;}' +
+  '.res .r .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6B7280;font-weight:700;}' +
+  '.res .r .v{font-size:22px;font-weight:900;color:#003B73;}' +
+  '.res .r.niv{background:#003B73;color:#fff;} .res .r.niv .l{color:rgba(255,255,255,.7);} .res .r.niv .v{color:#fff;font-size:26px;}' +
+  '.regua{font-size:11px;color:#6B7280;margin:10px 0 0;}' +
+  '.obs{border:1px solid #DEE2E8;border-radius:10px;padding:12px 16px;font-size:13px;white-space:pre-wrap;}' +
+  '.foot{margin-top:26px;font-size:11px;color:#9CA3AF;border-top:1px solid #DEE2E8;padding-top:10px;}' +
+  '@media print{body{padding:10mm;}}' +
+  '</style></head><body>' +
+  '<div class="head"><h1>Avaliação por Mérito — ' + esc(d.funcao) + '</h1><p>DomusCar — escala 1–5 · classificação 50% comportamental + 50% técnica</p></div>' +
+  '<div class="meta">' +
+  '<div class="chip"><div class="l">Pessoa avaliada</div><div class="v">' + esc(d.pessoa) + '</div></div>' +
+  '<div class="chip"><div class="l">Função</div><div class="v">' + esc(d.funcao) + '</div></div>' +
+  '<div class="chip"><div class="l">Mês avaliado</div><div class="v">' + esc(mesLabel(d.mes)) + '</div></div>' +
+  '<div class="chip"><div class="l">Data da avaliação</div><div class="v">' + esc(d.data) + '</div></div>' +
+  '<div class="chip"><div class="l">Avaliador</div><div class="v">' + esc(d.avaliador) + '</div></div>' +
+  '</div>' +
+  '<h2>Competências Comportamentais (peso 50%)</h2>' +
+  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th><th>Observações</th></tr></thead><tbody>' + linhas(F.comport, 'C') + '</tbody></table>' +
+  '<h2>Competências Técnicas (peso 50%)</h2>' +
+  '<table><thead><tr><th></th><th>Competência</th><th>Indicador observável</th><th>Nota</th><th>Observações</th></tr></thead><tbody>' + linhas(F.tecnicas, 'T') + '</tbody></table>' +
+  '<h2>Resultado</h2>' +
+  '<div class="res">' +
+  '<div class="r"><div class="l">Média Comportamental</div><div class="v">' + r.mc.toFixed(2) + '</div></div>' +
+  '<div class="r"><div class="l">Média Técnica</div><div class="v">' + r.mt.toFixed(2) + '</div></div>' +
+  '<div class="r"><div class="l">Classificação Final (50/50)</div><div class="v">' + r.cf.toFixed(2) + '</div></div>' +
+  '<div class="r niv"><div class="l">Nível enquadrado</div><div class="v">' + nivel + '</div></div>' +
+  '</div>' +
+  '<div class="regua">Régua de enquadramento (' + esc(d.funcao) + ') — atingir o perfil de um nível enquadra no seguinte: ' + esc(reguaTexto()) + '.</div>' +
+  (d.obs ? '<h2>Observações</h2><div class="obs">' + esc(d.obs) + '</div>' : '') +
+  '<div class="foot">Documento gerado pela Intranet DomusCar — módulo Avaliações de Mérito (Administração). ' + esc(stamp) + '</div>' +
+  '</body></html>';
+}
+
+/* ================== HISTÓRICO ================== */
+function loadHist() {
+  var loader = null;
+  try { if (window.parent && window.parent !== window && window.parent.amaLoadIndex) loader = window.parent.amaLoadIndex; } catch (e) {}
+  if (!loader) {
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    rebuildPessoas(); renderHist(); updateHistPill();
+    return;
+  }
+  loader().then(function(idx) {
+    histRows = (idx && idx.rows) || [];
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    rebuildPessoas(); renderHist(); updateHistPill(); checkDuplicate();
+  }).catch(function(e) {
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    document.getElementById('histContent').innerHTML = '<div class="banner warn"><span class="bi">⚠️</span><div>Não foi possível carregar o histórico: ' + esc(e && e.message ? e.message : e) + '</div></div>';
+    updateHistPill();
+  });
+}
+
+function mesesCobrados() {
+  var out = [];
+  var now = new Date();
+  var cur = ALERT_START;
+  var last = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  while (cur < last) {
+    out.push(cur);
+    var p = cur.split('-'); var y = +p[0], m = +p[1];
+    m++; if (m > 12) { m = 1; y++; }
+    cur = y + '-' + String(m).padStart(2, '0');
+  }
+  return out;
+}
+
+function emFalta() {
+  var meses = mesesCobrados();
+  var faltas = [];
+  FUNC_KEYS.forEach(function(fn) {
+    FUNCOES[fn].pessoas.forEach(function(p) {
+      meses.forEach(function(m) {
+        var tem = histRows.some(function(r) { return r.funcao === fn && r.pessoa === p && r.mes === m; });
+        if (!tem) faltas.push({ funcao: fn, pessoa: p, mes: m });
+      });
+    });
+  });
+  return faltas;
+}
+
+function updateHistPill() {
+  var n = emFalta().length;
+  var p = document.getElementById('histPill');
+  if (n > 0) { p.textContent = n; p.style.display = 'inline-block'; } else { p.style.display = 'none'; }
+}
+
+function renderHist() {
+  var c = document.getElementById('histContent');
+  if (!histLoaded) return;
+  var faltas = emFalta();
+  var ano = String(new Date().getFullYear());
+  var html = '';
+
+  if (faltas.length) {
+    html += '<div class="banner warn"><span class="bi">⚠️</span><div><strong>' + faltas.length + ' avaliação(ões) em falta</strong> (desde ' + mesLabel(ALERT_START) + '; o mês corrente não é cobrado).</div></div>';
+  } else {
+    html += '<div class="banner ok"><span class="bi">✅</span><div>Sem avaliações em falta desde ' + mesLabel(ALERT_START) + '.</div></div>';
+  }
+
+  html += '<div class="hist-cards">';
+  FUNC_KEYS.forEach(function(fn) {
+    var regs = histRows.filter(function(r) { return r.funcao === fn && r.mes.indexOf(ano) === 0; });
+    var f = faltas.filter(function(x) { return x.funcao === fn; }).length;
+    var med = regs.length ? (regs.reduce(function(s, r) { return s + (r.cf || 0); }, 0) / regs.length) : null;
+    html += '<div class="hist-card"><h3>' + esc(fn) + '</h3><div class="hstat">' +
+      '<div class="hs"><div class="v">' + regs.length + '</div><div class="l">Avaliações ' + ano + '</div></div>' +
+      '<div class="hs"><div class="v' + (f ? ' bad' : '') + '">' + f + '</div><div class="l">Em falta</div></div>' +
+      '<div class="hs"><div class="v">' + (med != null ? med.toFixed(2) : '—') + '</div><div class="l">Média ' + ano + '</div></div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+
+  var mLblAll = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var mesesAno = [];
+  for (var m = 1; m <= 12; m++) {
+    var ym = ano + '-' + String(m).padStart(2, '0');
+    if (ym >= ALERT_START) mesesAno.push({ ym: ym, lbl: mLblAll[m-1] });
+  }
+  var cobrados = mesesCobrados();
+
+  FUNC_KEYS.forEach(function(fn) {
+    html += '<div class="matrix-wrap"><table class="matrix"><thead><tr><th>' + esc(fn) + ' — ' + ano + '</th>';
+    mesesAno.forEach(function(mm) { html += '<th>' + mm.lbl + '</th>'; });
+    html += '</tr></thead><tbody>';
+    FUNCOES[fn].pessoas.forEach(function(p) {
+      html += '<tr><td>' + esc(p) + '</td>';
+      mesesAno.forEach(function(mm) {
+        var reg = histRows.filter(function(r) { return r.funcao === fn && r.pessoa === p && r.mes === mm.ym; })[0];
+        if (reg) {
+          html += '<td><span class="m-niv" title="Classificação ' + (reg.cf != null ? reg.cf.toFixed(2) : '') + '">' + esc(reg.nivel || '•') + '</span></td>';
+        } else {
+          var cobrado = cobrados.indexOf(mm.ym) !== -1;
+          html += '<td class="' + (cobrado ? 'm-falta' : 'm-fora') + '">' + (cobrado ? '✗' : '·') + '</td>';
+        }
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+
+  var vis = histRows.filter(function(r) { return r.mes >= ALERT_START; });
+  if (vis.length) {
+    var sorted = vis.slice().sort(function(a, b) { return (b.mes + b.pessoa).localeCompare(a.mes + a.pessoa); });
+    html += '<div class="hlist-wrap"><table class="hlist"><thead><tr><th>Mês</th><th>Pessoa</th><th>Função</th><th>Avaliador</th><th>Comport.</th><th>Técnica</th><th>Classif.</th><th>Nível</th><th>Data</th><th></th></tr></thead><tbody>';
+    sorted.forEach(function(r) {
+      html += '<tr><td>' + esc(mesLabel(r.mes)) + '</td><td>' + esc(r.pessoa) + '</td><td>' + esc(r.funcao) + '</td><td>' + esc(r.avaliador || '') + '</td>' +
+        '<td>' + (r.mc != null ? r.mc.toFixed(2) : '—') + '</td><td>' + (r.mt != null ? r.mt.toFixed(2) : '—') + '</td>' +
+        '<td><strong>' + (r.cf != null ? r.cf.toFixed(2) : '—') + '</strong></td><td><span class="m-niv">' + esc(r.nivel || '—') + '</span></td>' +
+        '<td>' + esc(r.dataAvaliacao || '') + '</td>' +
+        '<td><button type="button" class="del-btn" title="Apagar avaliação" onclick="apagarRegisto(\'' + esc(r.funcao) + '\',\'' + esc(r.mes) + '\',\'' + esc(r.pessoa) + '\')">🗑</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+  } else {
+    html += '<div class="hlist-wrap"><div class="empty-state">Ainda não há avaliações registadas.</div></div>';
+  }
+
+  c.innerHTML = html;
+}
+
+function apagarRegisto(fn, mes, pessoa) {
+  if (!isAdmin) { toast('Apenas administradores podem apagar avaliações.', true); return; }
+  if (!confirm('Apagar a avaliação de ' + pessoa + ' (' + fn + ', ' + mesLabel(mes) + ')?')) return;
+  var k = keyOf(fn, mes, pessoa);
+  var row = histRows.filter(function(r) { return keyOf(r.funcao, r.mes, r.pessoa) === k; })[0];
+  var delFile = Promise.resolve();
+  try {
+    if (row && row.ficheiro && window.parent.amDeleteReport) delFile = window.parent.amDeleteReport(row.ficheiro);
+  } catch (e) {}
+  toast('A apagar avaliação...');
+  delFile.catch(function(e) {
+    console.warn('[AMA] falha ao apagar o ficheiro no SP (registo removido do índice na mesma):', e);
+  }).then(function() {
+    var loader = window.parent.amaLoadIndex, saver = window.parent.amaSaveIndex;
+    if (!loader || !saver) throw new Error('Fora da intranet');
+    return loader().then(function(idx) {
+      idx = idx || { updatedAt: null, rows: [] };
+      idx.rows = (idx.rows || []).filter(function(x) { return keyOf(x.funcao, x.mes, x.pessoa) !== k; });
+      idx.updatedAt = new Date().toISOString();
+      return saver(idx).then(function() { histRows = idx.rows; });
+    });
+  }).then(function() {
+    toast('Avaliação apagada.');
+    rebuildPessoas(); renderHist(); updateHistPill(); checkDuplicate();
+  }).catch(function(e) {
+    toast('Erro ao apagar: ' + (e && e.message ? e.message : e), true);
+  });
+}
+
+/* ================== NAVEGAÇÃO ================== */
+function showView(v) {
+  document.getElementById('viewNova').className = 'view' + (v === 'nova' ? ' active' : '');
+  document.getElementById('viewHist').className = 'view' + (v === 'hist' ? ' active' : '');
+  document.getElementById('tabNova').className = 'tab' + (v === 'nova' ? ' active' : '');
+  document.getElementById('tabHist').className = 'tab' + (v === 'hist' ? ' active' : '');
+  document.getElementById('resultBar').style.display = v === 'nova' ? 'flex' : 'none';
+  if (v === 'hist') { renderHist(); }
+}
+</script>
+</body>
+</html>
