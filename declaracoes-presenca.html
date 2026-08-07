@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Declarações de Presença</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.6; }
+.page { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; }
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 24px 30px; margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.doc-header::after { content: ''; position: absolute; top: -30%; right: -5%; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%); border-radius: 50%; }
+.doc-header h1 { font-size: 1.25rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .8rem; opacity: .8; margin-top: 5px; position: relative; z-index: 2; }
+.cols { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.form-col { flex: 1; min-width: 340px; }
+.prev-col { flex: 1.3; min-width: 420px; position: sticky; top: 12px; }
+.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.card-head { padding: 13px 20px; background: var(--navy); color: var(--white); font-size: .86rem; font-weight: 700; }
+.card-body { padding: 18px 20px; }
+.lab { font-size: .65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin: 12px 0 5px; }
+.lab:first-child { margin-top: 0; }
+.card-body input, .card-body select {
+  width: 100%; border: none; border-bottom: 2px solid var(--gray-200);
+  font-family: inherit; font-size: .9rem; padding: 5px 0; color: var(--text-dark); background: transparent; outline: none;
+}
+.card-body input:focus, .card-body select:focus { border-bottom-color: var(--accent); }
+.card-body textarea { width: 100%; min-height: 64px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 9px 11px; font-family: inherit; font-size: .84rem; color: var(--text-body); outline: none; resize: vertical; }
+.card-body textarea:focus { border-color: var(--accent); }
+.row2 { display: flex; gap: 14px; }
+.row2 > div { flex: 1; }
+.hint { font-size: .73rem; color: var(--gray-600); margin-top: 4px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.btn { border: none; border-radius: var(--radius-sm); padding: 12px 24px; font-family: inherit; font-size: .88rem; font-weight: 800; cursor: pointer; }
+.btn.primary { background: var(--navy); color: #fff; }
+.btn.ghost { background: var(--white); color: var(--text-dark); border: 1px solid var(--gray-200); }
+.btn:hover { filter: brightness(1.08); }
+
+/* ===== Folha A4 (pré-visualização e impressão) ===== */
+.sheet-wrap { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px; overflow: auto; }
+.folha {
+  width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  padding: 16mm 18mm 10mm; position: relative;
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif; color: #1a1a1a;
+  display: flex; flex-direction: column;
+  transform-origin: top left;
+}
+.f-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.f-logo img { height: 17mm; display: block; }
+.f-logo .f-unidade { font-size: 14pt; font-weight: 800; color: #1F4E79; margin-top: 2mm; }
+.bosch-box { border: 1px solid #999; width: 34mm; text-align: center; }
+.bosch-red { background: #E30613; color: #fff; font-weight: 900; font-size: 15pt; font-family: Arial, sans-serif; letter-spacing: .5px; padding: 1mm 0 0; }
+.bosch-serv { background: #fff; color: #1a1a1a; font-weight: 700; font-size: 10.5pt; padding: 0 0 1mm; }
+.bosch-blue { background: #0a5ba8; color: #fff; font-size: 7.5pt; padding: .6mm 0; }
+.f-title { text-align: center; font-size: 19pt; font-weight: 800; color: #17375E; margin-top: 16mm; letter-spacing: .3px; }
+.f-sub { text-align: center; font-size: 10.5pt; font-weight: 700; margin-top: 5mm; }
+.f-body { margin-top: 14mm; font-size: 10.5pt; line-height: 1.75; }
+.f-body p { text-align: center; margin-bottom: 6mm; white-space: pre-wrap; }
+.f-body p.b { font-weight: 700; }
+.f-ass { margin-top: 22mm; font-size: 10.5pt; }
+.f-ass .a1 { font-weight: 800; }
+.f-ass .a2 { font-size: 10pt; }
+.f-ass .stamp { margin-top: 4mm; height: 28mm; color: #bbb; font-size: 8pt; display: flex; align-items: flex-end; }
+.f-footer { margin-top: auto; border-top: .4mm solid #17375E; padding-top: 3mm; font-size: 6.6pt; color: #333; line-height: 1.45; }
+.f-footer .cols4 { display: flex; gap: 4mm; justify-content: space-between; }
+.f-footer b { font-size: 6.9pt; }
+.f-footer .mid { text-align: center; margin-top: 2mm; color: #666; }
+#printArea { display: contents; }
+
+@media print {
+  .doc-header, .form-col { display: none !important; }
+  .page { padding: 0; max-width: none; }
+  .cols { display: block; }
+  .prev-col { position: static; min-width: 0; flex: none; }
+  .sheet-wrap { background: none; border: none; padding: 0; border-radius: 0; overflow: visible; }
+  .folha { box-shadow: none; margin: 0; width: auto; min-height: auto; padding: 12mm 18mm 8mm; }
+  @page { size: A4; margin: 0; }
+}
+@media screen and (max-width: 900px) { .prev-col { position: static; } .folha { transform: scale(.55); } .sheet-wrap { max-height: 500px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Declarações de <em>Presença</em></h1>
+    <p>Emissão de declaração de presença de cliente nas instalações — preenche, ajusta o texto se precisares e imprime (ou guarda em PDF no diálogo de impressão).</p>
+  </div>
+
+  <div class="cols">
+    <div class="form-col">
+      <div class="card">
+        <div class="card-head">📝 Dados da declaração</div>
+        <div class="card-body">
+          <div class="lab">Unidade emissora</div>
+          <select id="fUnidade" onchange="compor()">
+            <option value="cacem">Domus Car Cacém</option>
+            <option value="lisboa">Domus Car Lisboa</option>
+            <option value="colisao">Centro de Colisão DomusCar</option>
+          </select>
+
+          <div class="row2">
+            <div>
+              <div class="lab">Tratamento</div>
+              <select id="fTrat" onchange="compor()">
+                <option value="f">Sra.</option>
+                <option value="m">Sr.</option>
+              </select>
+            </div>
+            <div>
+              <div class="lab">Nome do cliente</div>
+              <input type="text" id="fNome" placeholder="Nome completo" oninput="compor()">
+            </div>
+          </div>
+
+          <div class="row2">
+            <div>
+              <div class="lab">Data da presença</div>
+              <input type="date" id="fData" onchange="compor()">
+            </div>
+            <div>
+              <div class="lab">Entrada</div>
+              <input type="time" id="fIni" value="09:00" onchange="compor()">
+            </div>
+            <div>
+              <div class="lab">Saída</div>
+              <input type="time" id="fFim" value="17:00" onchange="compor()">
+            </div>
+          </div>
+
+          <div class="lab">Motivo da presença</div>
+          <input type="text" id="fMotivo" value="acompanhamento de intervenção técnica da sua viatura" oninput="compor()">
+          <div class="hint">Entra na frase: "...esteve presente nas nossas instalações no dia X, para [motivo]."</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">✏️ Texto da declaração (editável)</div>
+        <div class="card-body">
+          <div class="lab">1º parágrafo</div>
+          <textarea id="tP1" oninput="edited.p1=true;render()"></textarea>
+          <div class="lab">2º parágrafo</div>
+          <textarea id="tP2" oninput="edited.p2=true;render()"></textarea>
+          <div class="lab">3º parágrafo</div>
+          <textarea id="tP3" oninput="edited.p3=true;render()"></textarea>
+          <div class="actions">
+            <button class="btn ghost" onclick="recompor()">↺ Repor texto automático</button>
+            <button class="btn primary" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prev-col">
+      <div class="sheet-wrap">
+        <div id="printArea">
+          <div class="folha" id="folha">
+            <div class="f-top">
+              <div class="f-logo">
+                <img src="DomusCar%20_%20Logo.png" alt="DomusCar" onerror="this.style.display='none'">
+                <div class="f-unidade" id="pUnidade">Domus Car Cacém</div>
+              </div>
+              <div class="bosch-box">
+                <div class="bosch-red">BOSCH</div>
+                <div class="bosch-serv">Service</div>
+                <div class="bosch-blue">Car Service</div>
+              </div>
+            </div>
+
+            <div class="f-title">DECLARAÇÃO DE PRESENÇA</div>
+            <div class="f-sub" id="pSub">Domus Car Cacém | Bosch Car Service</div>
+
+            <div class="f-body">
+              <p class="b" id="pP1"></p>
+              <p id="pP2"></p>
+              <p id="pP3"></p>
+            </div>
+
+            <div class="f-ass">
+              <div class="a1" id="pAssUnidade">Domus Car Cacém</div>
+              <div class="a2">Bosch Car Service</div>
+              <div class="stamp">(assinatura e carimbo)</div>
+            </div>
+
+            <div class="f-footer">
+              <div class="cols4">
+                <div><b>DomusCar (Walkingarage, Lda)</b><br>Nº Contrib.: 513281622<br><b>Sede:</b> Estrada de Paço de Arcos nº 167 Arm. C<br>2735-503 Agualva-Cacém · Capital Social: 5.000,00€</div>
+                <div><b>DomusCar Lisboa</b><br>Rua Augusto Gil nº 2B A/B<br>1000-066 Lisboa</div>
+                <div><b>DomusCar Cacém</b><br>Alto da Bela Vista, Pav.32<br>2735-340 Agualva-Cacém</div>
+                <div><b>Centro de Colisão</b><br>Alto da Bela Vista, Pav.30<br>2735-340 Agualva-Cacém</div>
+                <div style="text-align:right;"><b>+351 217 817 490</b><br>(Chamada para rede fixa nacional)<br>Qualidade Controlada Q1<br>Oficina com certificado de excelência</div>
+              </div>
+              <div class="mid">O consumidor pode recorrer ao Centro de Arbitragem do Sector Automóvel (CASA), com sede em www.arbitragemauto.pt e sede na Av. da República 44, 3º Esq. · Página 1/1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+var UNIDADES = {
+  cacem:   { nome: 'Domus Car Cacém',            corpo: 'A Domus Car Cacém, oficina integrante da rede Bosch Car Service' },
+  lisboa:  { nome: 'Domus Car Lisboa',           corpo: 'A Domus Car Lisboa, oficina integrante da rede Bosch Car Service' },
+  colisao: { nome: 'Centro de Colisão DomusCar', corpo: 'O Centro de Colisão DomusCar, oficina integrante da rede Bosch Car Service' }
+};
+var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+var edited = { p1: false, p2: false, p3: false };
+
+function dataExtenso(iso) {
+  if (!iso) return '____ de ____________ de ______';
+  var p = iso.split('-');
+  return ('0' + parseInt(p[2], 10)).slice(-2) + ' de ' + MESES[parseInt(p[1], 10) - 1] + ' de ' + p[0];
+}
+function horaFmt(t) {
+  if (!t) return '__h__';
+  var p = t.split(':');
+  return p[0] + 'h' + p[1];
+}
+function compor() {
+  var u = UNIDADES[document.getElementById('fUnidade').value];
+  var fem = document.getElementById('fTrat').value === 'f';
+  var trat = fem ? 'a Sra.' : 'o Sr.';
+  var cliente = fem ? 'a cliente' : 'o cliente';
+  var interessado = fem ? 'da interessada' : 'do interessado';
+  var nome = document.getElementById('fNome').value.trim() || '____________________';
+  var motivo = document.getElementById('fMotivo').value.trim() || 'acompanhamento de intervenção técnica da sua viatura';
+
+  if (!edited.p1) document.getElementById('tP1').value =
+    u.corpo + ', declara para os devidos efeitos que ' + trat + ' ' + nome +
+    ' esteve presente nas nossas instalações no dia ' + dataExtenso(document.getElementById('fData').value) +
+    ', para ' + motivo + '.';
+  if (!edited.p2) document.getElementById('tP2').value =
+    'Para os efeitos que entender convenientes, certifica-se que ' + cliente + ' permaneceu nas nossas instalações entre as ' +
+    horaFmt(document.getElementById('fIni').value) + ' e as ' + horaFmt(document.getElementById('fFim').value) + '.';
+  if (!edited.p3) document.getElementById('tP3').value =
+    'A presente declaração é emitida a pedido ' + interessado + '.';
+  render();
+}
+function recompor() { edited = { p1: false, p2: false, p3: false }; compor(); }
+function render() {
+  var u = UNIDADES[document.getElementById('fUnidade').value];
+  document.getElementById('pUnidade').textContent = u.nome;
+  document.getElementById('pSub').textContent = u.nome + ' | Bosch Car Service';
+  document.getElementById('pAssUnidade').textContent = u.nome;
+  document.getElementById('pP1').textContent = document.getElementById('tP1').value;
+  document.getElementById('pP2').textContent = document.getElementById('tP2').value;
+  document.getElementById('pP3').textContent = document.getElementById('tP3').value;
+}
+(function init() {
+  document.getElementById('fData').value = new Date().toISOString().slice(0, 10);
+  compor();
+})();
+</script>
+</body>
+</html>
