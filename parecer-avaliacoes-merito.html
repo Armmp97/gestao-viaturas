@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Parecer Avaliações Mérito Equipas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --warn: #D97706; --danger: #DC2626; --success: #059669;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.6; }
+.page { max-width: 940px; margin: 0 auto; padding: 32px 24px 80px; }
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 26px 32px; margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.doc-header::after { content: ''; position: absolute; top: -30%; right: -5%; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%); border-radius: 50%; }
+.doc-header h1 { font-size: 1.3rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .82rem; opacity: .8; margin-top: 6px; position: relative; z-index: 2; }
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab { padding: 11px 22px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200); background: var(--white); cursor: pointer; font-family: inherit; font-size: .87rem; font-weight: 700; color: var(--gray-600); transition: all .15s; }
+.tab:hover { border-color: var(--accent-light); }
+.tab.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.view { display: none; }
+.view.active { display: block; }
+.meta-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.meta-chip { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px 14px; flex: 1; min-width: 180px; }
+.meta-chip .ml { font-size: .65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+.meta-chip input, .meta-chip select { width: 100%; border: none; border-bottom: 2px solid var(--gray-200); font-family: inherit; font-size: .88rem; padding: 3px 0; color: var(--text-dark); background: transparent; outline: none; }
+.meta-chip input:focus, .meta-chip select:focus { border-bottom-color: var(--accent); }
+.banner { border-radius: var(--radius-sm); padding: 13px 17px; margin-bottom: 14px; font-size: .84rem; display: flex; gap: 12px; align-items: flex-start; }
+.banner.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+.banner.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.banner.ok { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+.banner.err { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+.banner .bi { font-size: 1.05rem; line-height: 1.4; }
+.banner strong { font-weight: 800; }
+.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 18px; }
+.card-head { padding: 14px 22px; background: var(--navy); color: var(--white); font-size: .88rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card-body { padding: 20px 22px; }
+.lab { font-size: .67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin: 14px 0 8px; }
+.lab:first-child { margin-top: 0; }
+.card-body textarea { width: 100%; min-height: 90px; border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: .85rem; color: var(--text-body); outline: none; resize: vertical; }
+.card-body textarea:focus { border-color: var(--accent); }
+.lvl { display: flex; gap: 14px; align-items: flex-start; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 7px; cursor: pointer; transition: all .12s; background: var(--white); }
+.lvl:hover { border-color: var(--accent-light); background: #F8FBFE; }
+.lvl .lvl-n { width: 34px; height: 34px; min-width: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; color: #fff; }
+.ln-1 { background: #DC2626; } .ln-2 { background: #F59E0B; } .ln-3 { background: #0284C7; } .ln-4 { background: #059669; } .ln-5 { background: #003B73; }
+.lvl .lvl-t { font-weight: 800; font-size: .82rem; color: var(--text-dark); }
+.lvl .lvl-a { font-size: .78rem; color: var(--text-body); }
+.lvl.sel { border-width: 2px; }
+.lvl.sel.s-1 { border-color: #DC2626; background: rgba(220,38,38,.05); }
+.lvl.sel.s-2 { border-color: #F59E0B; background: rgba(245,158,11,.06); }
+.lvl.sel.s-3 { border-color: #0284C7; background: rgba(2,132,199,.06); }
+.lvl.sel.s-4 { border-color: #059669; background: rgba(5,150,105,.06); }
+.lvl.sel.s-5 { border-color: #003B73; background: rgba(0,59,115,.06); }
+.lvl .sel-mark { margin-left: auto; display: none; }
+.lvl.sel .sel-mark { display: block; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.btn { border: none; border-radius: var(--radius-sm); padding: 12px 26px; font-family: inherit; font-size: .9rem; font-weight: 800; cursor: pointer; }
+.btn.success { background: var(--success); color: #fff; }
+.btn.success:hover:not(:disabled) { filter: brightness(1.08); }
+.btn:disabled { background: var(--gray-400); color: #fff; cursor: not-allowed; }
+.hist-cards { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.hist-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px 20px; flex: 1; min-width: 220px; }
+.hist-card h3 { font-size: .9rem; color: var(--text-dark); font-weight: 800; margin-bottom: 8px; }
+.hist-card .hs { display: flex; gap: 18px; }
+.hist-card .v { font-size: 1.4rem; font-weight: 900; color: var(--navy); }
+.hist-card .l { font-size: .66rem; text-transform: uppercase; letter-spacing: .8px; color: var(--gray-600); font-weight: 700; }
+table.hlist { width: 100%; border-collapse: collapse; background: var(--white); }
+.hlist-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow-x: auto; }
+table.hlist th { font-size: .63rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); padding: 10px 12px; background: var(--gray-100); border-bottom: 1px solid var(--gray-200); text-align: left; white-space: nowrap; }
+table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: .8rem; vertical-align: top; }
+.m-niv { display: inline-block; font-size: .72rem; font-weight: 800; padding: 2px 9px; border-radius: 50px; background: #E0F2FE; color: var(--navy); }
+.del-btn { border: 1px solid var(--gray-200); background: var(--white); border-radius: 8px; padding: 4px 9px; cursor: pointer; font-size: .8rem; }
+.del-btn:hover { border-color: var(--danger); background: #FEF2F2; }
+.empty-state { padding: 40px 24px; text-align: center; color: var(--gray-400); font-size: .88rem; }
+#toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 99; background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: .84rem; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); display: none; max-width: 90vw; }
+#toast.err { background: var(--danger); }
+@media (max-width: 640px) { .page { padding: 18px 12px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Parecer <em>Avaliações Mérito Equipas</em></h1>
+    <p>Parecer técnico dos coordenadores sobre os assessores de vendas e fiéis de armazém das suas unidades — registo interno de apoio às avaliações da Administração.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabNova" onclick="showView('nova')">📝 Novo Parecer</button>
+    <button class="tab" id="tabHist" onclick="showView('hist')">📚 Histórico</button>
+  </div>
+
+  <div class="view active" id="viewNova">
+    <div class="banner info" id="whoBanner" style="display:none;"><span class="bi">👤</span><div id="whoTxt"></div></div>
+    <div class="banner warn" id="adminBanner" style="display:none;"><span class="bi">ℹ️</span><div>Os pareceres são emitidos pelos coordenadores (Fábio Ramalho e José Rodriguez) sobre as suas equipas. Como administrador podes consultar e apagar registos no Histórico.</div></div>
+    <div class="banner err" id="dupBanner" style="display:none;"><span class="bi">🚫</span><div><strong id="dupInfo"></strong> Cada pessoa só tem um parecer por mês. Para substituir, um administrador tem de apagar o registo no Histórico (🗑).</div></div>
+    <div class="banner ok" id="resBanner" style="display:none;"><span class="bi">✅</span><div id="resBannerTxt"></div></div>
+
+    <div id="formCard" class="card" style="display:none;">
+      <div class="card-head">📋 Parecer técnico</div>
+      <div class="card-body">
+        <div class="meta-strip">
+          <div class="meta-chip">
+            <div class="ml">Pessoa da equipa</div>
+            <select id="fPessoa" onchange="onFormChange()"></select>
+          </div>
+          <div class="meta-chip">
+            <div class="ml">Mês de referência</div>
+            <input type="month" id="fMes" onchange="onFormChange()">
+          </div>
+          <div class="meta-chip">
+            <div class="ml">Data do parecer</div>
+            <input type="date" id="fData">
+          </div>
+        </div>
+
+        <div class="lab">Apreciação técnica global (1–5)</div>
+        <div id="lvlBox"></div>
+
+        <div class="lab">Parecer técnico (obrigatório)</div>
+        <textarea id="fParecer" placeholder="Descreve o desempenho técnico observado no mês: qualidade do trabalho, autonomia, situações concretas..."></textarea>
+
+        <div class="lab">Pontos fortes (opcional)</div>
+        <textarea id="fFortes" style="min-height:60px;" placeholder="O que se destacou pela positiva..."></textarea>
+
+        <div class="lab">Pontos a melhorar (opcional)</div>
+        <textarea id="fMelhorar" style="min-height:60px;" placeholder="Onde deve evoluir, necessidades de formação..."></textarea>
+
+        <div class="actions">
+          <button class="btn success" id="saveBtn" onclick="guardar()">✔ Guardar Parecer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="viewHist">
+    <div class="banner info" id="histLoading"><span class="bi">⏳</span><div>A carregar histórico do SharePoint...</div></div>
+    <div id="histContent"></div>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+/* ================== DADOS ================== */
+var ESCALA = [{"n": "1", "nome": "Insuficiente", "desc": "Nao corresponde ao esperado. Necessita de supervisao constante e correcao frequente.", "comp": "Demonstra comportamentos inadequados de forma frequente; necessita correção constante e impacta negativamente a equipa, cliente ou operação.", "tec": "Nao executa a tarefa de forma autonoma nem com qualidade aceitavel."}, {"n": "2", "nome": "Em desenvolvimento", "desc": "Corresponde parcialmente. Ainda precisa de apoio e validacao em situacoes correntes.", "comp": "Demonstra o comportamento esperado apenas em algumas situações; ainda necessita acompanhamento frequente para manter consistência.", "tec": "Executa tarefas simples com apoio; ainda comete erros em tarefas correntes."}, {"n": "3", "nome": "Cumpre o esperado", "desc": "Corresponde plenamente ao exigido para o nivel. Autonomo nas situacoes correntes.", "comp": "Demonstra de forma consistente os comportamentos esperados na função e mantém postura adequada nas situações correntes.", "tec": "Executa de forma autonoma e com qualidade as tarefas tipicas da funcao."}, {"n": "4", "nome": "Supera o esperado", "desc": "Vai alem do exigido. Resolve situacoes complexas e apoia colegas.", "comp": "Demonstra maturidade, iniciativa e influência positiva na equipa; contribui ativamente para a resolução de problemas e melhoria do ambiente operacional.", "tec": "Domina tarefas complexas, antecipa problemas e melhora processos."}, {"n": "5", "nome": "Referencia", "desc": "Nivel de excelencia. Referencia interna; forma e desenvolve outros.", "comp": "É uma referência comportamental dentro da equipa; influencia positivamente colegas, promove a cultura da empresa e eleva os padrões da operação.", "tec": "Especialista reconhecido; resolve os casos mais dificeis e forma a equipa."}];
+
+/* Equipas por coordenador — mapeamento do organigrama DomusCar */
+var EQUIPAS = {
+  'fabio.ramalho@domuscar.com': { coord: 'Fábio Ramalho', unidade: 'Mecânica Lisboa', pessoas: [
+    { n: 'Ricardo Ferreira', f: 'Assessor de Vendas' },
+    { n: 'Pedro Pereira',    f: 'Assessor de Vendas' },
+    { n: 'Pedro Carvalho',   f: 'Fiel de Armazém' },
+    { n: 'Gonçalo Faustino', f: 'Fiel de Armazém' }
+  ]},
+  'jose.rodriguez@domuscar.com': { coord: 'José Rodriguez', unidade: 'Mecânica Cacém', pessoas: [
+    { n: 'Tomas Figueiredo', f: 'Assessor de Vendas' },
+    { n: 'Inês Peixinho',    f: 'Fiel de Armazém' },
+    { n: 'Alicia Vieira',    f: 'Fiel de Armazém' },
+    { n: 'André Gomes',      f: 'Fiel de Armazém' }
+  ]}
+};
+
+var ALERT_START = '2026-07';
+var DRAFT_KEY = 'pm_draft_v1';
+
+var histRows = [], histLoaded = false;
+var currentUserEmail = '', currentUserName = '';
+var isAdmin = false, minhaEquipa = null;
+var apreciacao = undefined;
+
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = isErr ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function() { t.style.display = 'none'; }, isErr ? 6000 : 4000);
+}
+function mesLabel(ym) {
+  if (!ym) return '';
+  var m = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var p = ym.split('-');
+  return m[parseInt(p[1],10)-1] + ' ' + p[0];
+}
+function keyOf(mes, pessoa) { return mes + '||' + pessoa; }
+function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+function funcaoDe(nome) {
+  for (var em in EQUIPAS) {
+    var hit = EQUIPAS[em].pessoas.filter(function(p) { return p.n === nome; })[0];
+    if (hit) return hit.f;
+  }
+  return '';
+}
+
+/* ================== ARRANQUE ================== */
+(function init() {
+  try {
+    if (window.parent && window.parent !== window && window.parent.amGetUser) {
+      var u = window.parent.amGetUser();
+      currentUserEmail = u.email || '';
+      currentUserName = u.name || '';
+      isAdmin = u.role === 'admin';
+    }
+  } catch (e) {}
+  minhaEquipa = EQUIPAS[currentUserEmail] || null;
+
+  var hoje = new Date();
+  document.getElementById('fData').value = hoje.toISOString().slice(0,10);
+  var prev = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  var prevYm = prev.getFullYear() + '-' + String(prev.getMonth()+1).padStart(2,'0');
+  document.getElementById('fMes').value = prevYm >= ALERT_START ? prevYm : ALERT_START;
+  document.getElementById('fMes').min = ALERT_START;
+
+  if (minhaEquipa) {
+    document.getElementById('whoTxt').innerHTML = 'Sessão de <strong>' + esc(minhaEquipa.coord) + '</strong> — parecer sobre a equipa de <strong>' + esc(minhaEquipa.unidade) + '</strong> (assessores e fiéis de armazém).';
+    document.getElementById('whoBanner').style.display = 'flex';
+    document.getElementById('formCard').style.display = 'block';
+    rebuildPessoas();
+    renderLevels();
+    restoreDraft();
+  } else if (isAdmin) {
+    document.getElementById('adminBanner').style.display = 'flex';
+  } else {
+    document.getElementById('whoTxt').textContent = 'Este módulo destina-se aos coordenadores de Mecânica (Fábio Ramalho e José Rodriguez) e à Administração.';
+    document.getElementById('whoBanner').style.display = 'flex';
+  }
+  loadHist();
+})();
+
+function rebuildPessoas() {
+  if (!minhaEquipa) return;
+  var mes = document.getElementById('fMes').value;
+  var sel = document.getElementById('fPessoa');
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">— selecionar —</option>';
+  minhaEquipa.pessoas.forEach(function(p) {
+    var done = histLoaded && histRows.some(function(r) { return r.pessoa === p.n && r.mes === mes; });
+    var o = document.createElement('option');
+    o.value = p.n; o.textContent = p.n + ' (' + p.f + ')' + (done ? ' — ✓ já tem parecer' : '');
+    if (done) o.disabled = true;
+    sel.appendChild(o);
+  });
+  if (cur && [].some.call(sel.options, function(o) { return o.value === cur && !o.disabled; })) sel.value = cur;
+}
+
+function renderLevels() {
+  var h = '';
+  for (var n = 1; n <= 5; n++) {
+    var e2 = ESCALA[n-1];
+    h += '<div class="lvl' + (apreciacao === n ? ' sel s-' + n : '') + '" onclick="pickLevel(' + n + ')">' +
+      '<div class="lvl-n ln-' + n + '">' + n + '</div>' +
+      '<div style="flex:1;"><div class="lvl-t">' + esc(e2.nome) + '</div><div class="lvl-a">' + esc(e2.tec || e2.desc) + '</div></div>' +
+      '<div class="sel-mark">✔</div></div>';
+  }
+  document.getElementById('lvlBox').innerHTML = h;
+}
+function pickLevel(n) {
+  hideResBanner();
+  apreciacao = (apreciacao === n) ? undefined : n;
+  renderLevels();
+  saveDraft();
+}
+
+function onFormChange() {
+  hideResBanner();
+  rebuildPessoas();
+  checkDuplicate();
+  saveDraft();
+}
+function hideResBanner() { document.getElementById('resBanner').style.display = 'none'; }
+
+function checkDuplicate() {
+  var mes = document.getElementById('fMes').value;
+  var p = document.getElementById('fPessoa').value;
+  var ban = document.getElementById('dupBanner');
+  var blocked = false;
+  if (histLoaded && mes && p) {
+    var exist = histRows.filter(function(r) { return keyOf(r.mes, r.pessoa) === keyOf(mes, p); })[0];
+    if (exist) {
+      blocked = true;
+      document.getElementById('dupInfo').textContent = p + ' já tem parecer de ' + mesLabel(mes) + ' (' + (exist.coordenador || '') + ').';
+    }
+  }
+  ban.style.display = blocked ? 'flex' : 'none';
+  var btn = document.getElementById('saveBtn');
+  if (btn) btn.disabled = blocked;
+  return blocked;
+}
+
+/* ================== RASCUNHO ================== */
+function saveDraft() {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      pessoa: document.getElementById('fPessoa').value,
+      mes: document.getElementById('fMes').value,
+      apreciacao: apreciacao,
+      parecer: document.getElementById('fParecer').value,
+      fortes: document.getElementById('fFortes').value,
+      melhorar: document.getElementById('fMelhorar').value
+    }));
+  } catch (e) {}
+}
+function restoreDraft() {
+  var d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) {}
+  if (!d) return;
+  if (d.mes && d.mes >= ALERT_START) document.getElementById('fMes').value = d.mes;
+  rebuildPessoas();
+  if (d.pessoa) document.getElementById('fPessoa').value = d.pessoa;
+  if (typeof d.apreciacao === 'number') { apreciacao = d.apreciacao; renderLevels(); }
+  if (d.parecer) document.getElementById('fParecer').value = d.parecer;
+  if (d.fortes) document.getElementById('fFortes').value = d.fortes;
+  if (d.melhorar) document.getElementById('fMelhorar').value = d.melhorar;
+}
+['fParecer','fFortes','fMelhorar'].forEach(function(id) {
+  document.getElementById(id).addEventListener('input', saveDraft);
+});
+
+/* ================== GRAVAÇÃO ================== */
+function guardar() {
+  if (!minhaEquipa) { toast('Apenas os coordenadores emitem pareceres.', true); return; }
+  var pessoa = document.getElementById('fPessoa').value;
+  var mes = document.getElementById('fMes').value;
+  var dataP = document.getElementById('fData').value;
+  var parecer = document.getElementById('fParecer').value.trim();
+  var fortes = document.getElementById('fFortes').value.trim();
+  var melhorar = document.getElementById('fMelhorar').value.trim();
+
+  if (!pessoa || !mes || !dataP) { toast('Seleciona a pessoa, o mês e a data.', true); return; }
+  if (!apreciacao) { toast('Seleciona a apreciação técnica global (1–5).', true); return; }
+  if (!parecer) { toast('O parecer técnico é obrigatório.', true); return; }
+  if (checkDuplicate()) { toast(pessoa + ' já tem parecer para ' + mesLabel(mes) + '.', true); return; }
+
+  var d = { pessoa: pessoa, funcao: funcaoDe(pessoa), mes: mes, data: dataP,
+            coordenador: minhaEquipa.coord, unidade: minhaEquipa.unidade,
+            apreciacao: apreciacao, parecer: parecer, fortes: fortes, melhorar: melhorar };
+  var filename = 'Parecer_Merito_' + slug(pessoa) + '_' + mes + '.html';
+  var html = buildReport(d);
+
+  var record = {
+    mes: mes, pessoa: pessoa, funcao: d.funcao, coordenador: d.coordenador, unidade: d.unidade,
+    apreciacao: apreciacao, dataParecer: dataP, ficheiro: filename,
+    resumo: parecer.slice(0, 160), origem: 'intranet', criadoEm: new Date().toISOString()
+  };
+
+  var parentOk = false;
+  try { parentOk = !!(window.parent && window.parent !== window && window.parent.pmUploadReport); } catch (e) {}
+  if (!parentOk) { download(filename, html); toast('Fora da intranet — ficheiro descarregado: ' + filename); return; }
+
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  toast('A arquivar o parecer no SharePoint...');
+
+  window.parent.pmUploadReport(filename, html).then(function() {
+    return appendToIndex(record);
+  }).then(function() {
+    if (window.parent.sendNotification) notify(d, record);
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    limparForm();
+    document.getElementById('resBannerTxt').innerHTML = 'Parecer arquivado — <strong>' + esc(pessoa) + '</strong> (' + mesLabel(mes) + '): apreciação <strong>' + apreciacaoLbl(record.apreciacao) + '</strong>.';
+    document.getElementById('resBanner').style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast('Parecer de ' + pessoa + ' arquivado.');
+    rebuildPessoas(); renderHist(); checkDuplicate();
+  }).catch(function(err) {
+    toast('Erro ao guardar: ' + (err && err.message ? err.message : err), true);
+    download(filename, html);
+    btn.disabled = false;
+  });
+}
+function apreciacaoLbl(n) { var e2 = ESCALA[n-1]; return n + ' — ' + (e2 ? e2.nome : ''); }
+
+function limparForm() {
+  apreciacao = undefined;
+  renderLevels();
+  document.getElementById('fPessoa').value = '';
+  document.getElementById('fParecer').value = '';
+  document.getElementById('fFortes').value = '';
+  document.getElementById('fMelhorar').value = '';
+}
+
+function appendToIndex(record) {
+  var loader = null, saver = null;
+  try { loader = window.parent.pmLoadIndex; saver = window.parent.pmSaveIndex; } catch (e) {}
+  if (!loader || !saver) return Promise.resolve();
+  return loader().then(function(idx) {
+    idx = idx || { updatedAt: null, rows: [] };
+    var k = keyOf(record.mes, record.pessoa);
+    idx.rows = (idx.rows || []).filter(function(x) { return keyOf(x.mes, x.pessoa) !== k; });
+    idx.rows.push(record);
+    idx.updatedAt = new Date().toISOString();
+    return saver(idx).then(function() { histRows = idx.rows; histLoaded = true; });
+  });
+}
+
+function notify(d, record) {
+  var subject = '📋 Parecer técnico registado — ' + d.pessoa + ' (' + d.funcao + ', ' + mesLabel(d.mes) + ')';
+  var body = '<p><strong>Pessoa:</strong> ' + esc(d.pessoa) + ' (' + esc(d.funcao) + ')</p>' +
+    '<p><strong>Unidade:</strong> ' + esc(d.unidade) + ' · <strong>Coordenador:</strong> ' + esc(d.coordenador) + '</p>' +
+    '<p><strong>Mês de referência:</strong> ' + mesLabel(d.mes) + '</p>' +
+    '<p><strong>Apreciação técnica global:</strong> ' + apreciacaoLbl(d.apreciacao) + '</p>' +
+    '<p><strong>Parecer:</strong> ' + esc(d.parecer) + '</p>' +
+    (d.fortes ? '<p><strong>Pontos fortes:</strong> ' + esc(d.fortes) + '</p>' : '') +
+    (d.melhorar ? '<p><strong>Pontos a melhorar:</strong> ' + esc(d.melhorar) + '</p>' : '') +
+    '<p style="color:#888;font-size:12px;">Ficheiro: ' + esc(record.ficheiro) + ' — histórico em Intranet &gt; Coordenação &gt; Parecer Avaliações Mérito Equipas. Registo interno de apoio às avaliações de mérito.</p>';
+  window.parent.sendNotification('pareceres_merito', subject, body);
+}
+
+function download(filename, html) {
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+}
+
+/* ================== RELATÓRIO ================== */
+function buildReport(d) {
+  var stamp = new Date().toLocaleString('pt-PT');
+  return '<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+  '<title>Parecer Técnico — ' + esc(d.pessoa) + ' — ' + esc(mesLabel(d.mes)) + '</title><style>' +
+  'body{font-family:Segoe UI,Arial,sans-serif;color:#1A2A3A;background:#fff;margin:0;padding:32px;line-height:1.55;}' +
+  '.head{background:linear-gradient(135deg,#002B55,#003B73);color:#fff;border-radius:14px;padding:24px 30px;margin-bottom:22px;}' +
+  '.head h1{margin:0;font-size:20px;} .head p{margin:6px 0 0;opacity:.8;font-size:13px;}' +
+  '.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}' +
+  '.chip{border:1px solid #DEE2E8;border-radius:10px;padding:10px 14px;min-width:150px;flex:1;}' +
+  '.chip .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#007BC0;font-weight:700;}' +
+  '.chip .v{font-size:14px;font-weight:600;}' +
+  'h2{font-size:14px;color:#003B73;border-left:4px solid #007BC0;padding-left:10px;margin:24px 0 10px;}' +
+  '.box{border:1px solid #DEE2E8;border-radius:10px;padding:12px 16px;font-size:13.5px;white-space:pre-wrap;}' +
+  '.apr{display:inline-block;background:#003B73;color:#fff;border-radius:50px;padding:6px 18px;font-weight:900;font-size:16px;}' +
+  '.foot{margin-top:26px;font-size:11px;color:#9CA3AF;border-top:1px solid #DEE2E8;padding-top:10px;}' +
+  '@media print{body{padding:10mm;}}' +
+  '</style></head><body>' +
+  '<div class="head"><h1>Parecer Técnico — Avaliações de Mérito</h1><p>DomusCar — registo interno de apoio às avaliações da Administração</p></div>' +
+  '<div class="meta">' +
+  '<div class="chip"><div class="l">Pessoa</div><div class="v">' + esc(d.pessoa) + '</div></div>' +
+  '<div class="chip"><div class="l">Função</div><div class="v">' + esc(d.funcao) + '</div></div>' +
+  '<div class="chip"><div class="l">Unidade</div><div class="v">' + esc(d.unidade) + '</div></div>' +
+  '<div class="chip"><div class="l">Mês de referência</div><div class="v">' + esc(mesLabel(d.mes)) + '</div></div>' +
+  '<div class="chip"><div class="l">Coordenador</div><div class="v">' + esc(d.coordenador) + '</div></div>' +
+  '<div class="chip"><div class="l">Data</div><div class="v">' + esc(d.data) + '</div></div>' +
+  '</div>' +
+  '<h2>Apreciação técnica global</h2><p><span class="apr">' + apreciacaoLbl(d.apreciacao) + '</span></p>' +
+  '<h2>Parecer técnico</h2><div class="box">' + esc(d.parecer) + '</div>' +
+  (d.fortes ? '<h2>Pontos fortes</h2><div class="box">' + esc(d.fortes) + '</div>' : '') +
+  (d.melhorar ? '<h2>Pontos a melhorar</h2><div class="box">' + esc(d.melhorar) + '</div>' : '') +
+  '<div class="foot">Documento gerado pela Intranet DomusCar — módulo Parecer Avaliações Mérito Equipas. ' + esc(stamp) + '</div>' +
+  '</body></html>';
+}
+
+/* ================== HISTÓRICO ================== */
+function loadHist() {
+  var loader = null;
+  try { if (window.parent && window.parent !== window && window.parent.pmLoadIndex) loader = window.parent.pmLoadIndex; } catch (e) {}
+  if (!loader) {
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    rebuildPessoas(); renderHist();
+    return;
+  }
+  loader().then(function(idx) {
+    histRows = (idx && idx.rows) || [];
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    rebuildPessoas(); renderHist(); checkDuplicate();
+  }).catch(function(e) {
+    histLoaded = true;
+    document.getElementById('histLoading').style.display = 'none';
+    document.getElementById('histContent').innerHTML = '<div class="banner warn"><span class="bi">⚠️</span><div>Não foi possível carregar o histórico: ' + esc(e && e.message ? e.message : e) + '</div></div>';
+  });
+}
+
+function visiveis() {
+  /* admins veem tudo; coordenadores veem os pareceres da sua unidade */
+  if (isAdmin) return histRows;
+  if (minhaEquipa) return histRows.filter(function(r) { return r.unidade === minhaEquipa.unidade; });
+  return [];
+}
+
+function renderHist() {
+  var c = document.getElementById('histContent');
+  if (!histLoaded) return;
+  var rows = visiveis();
+  var ano = String(new Date().getFullYear());
+  var html = '';
+
+  html += '<div class="hist-cards">';
+  ['Mecânica Lisboa', 'Mecânica Cacém'].forEach(function(un) {
+    if (!isAdmin && minhaEquipa && minhaEquipa.unidade !== un) return;
+    var regs = rows.filter(function(r) { return r.unidade === un && r.mes.indexOf(ano) === 0; });
+    var med = regs.length ? (regs.reduce(function(s, r) { return s + (r.apreciacao || 0); }, 0) / regs.length) : null;
+    html += '<div class="hist-card"><h3>' + esc(un) + '</h3><div class="hs">' +
+      '<div><div class="v">' + regs.length + '</div><div class="l">Pareceres ' + ano + '</div></div>' +
+      '<div><div class="v">' + (med != null ? med.toFixed(1) : '—') + '</div><div class="l">Apreciação média</div></div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+
+  if (rows.length) {
+    var sorted = rows.slice().sort(function(a, b) { return (b.mes + b.pessoa).localeCompare(a.mes + a.pessoa); });
+    html += '<div class="hlist-wrap"><table class="hlist"><thead><tr><th>Mês</th><th>Pessoa</th><th>Função</th><th>Coordenador</th><th>Apreciação</th><th>Resumo</th><th>Data</th>' + (isAdmin ? '<th></th>' : '') + '</tr></thead><tbody>';
+    sorted.forEach(function(r) {
+      html += '<tr><td style="white-space:nowrap;">' + esc(mesLabel(r.mes)) + '</td><td style="white-space:nowrap;">' + esc(r.pessoa) + '</td><td style="white-space:nowrap;">' + esc(r.funcao || '') + '</td><td style="white-space:nowrap;">' + esc(r.coordenador || '') + '</td>' +
+        '<td><span class="m-niv">' + (r.apreciacao || '—') + '/5</span></td>' +
+        '<td style="min-width:220px;color:var(--gray-600);font-size:.76rem;">' + esc(r.resumo || '') + (r.resumo && r.resumo.length >= 160 ? '…' : '') + '</td>' +
+        '<td style="white-space:nowrap;">' + esc(r.dataParecer || '') + '</td>' +
+        (isAdmin ? '<td><button type="button" class="del-btn" title="Apagar parecer" onclick="apagarRegisto(\'' + esc(r.mes) + '\',\'' + esc(r.pessoa) + '\')">🗑</button></td>' : '') +
+        '</tr>';
+    });
+    html += '</tbody></table></div>';
+  } else {
+    html += '<div class="hlist-wrap"><div class="empty-state">Ainda não há pareceres registados.</div></div>';
+  }
+  c.innerHTML = html;
+}
+
+function apagarRegisto(mes, pessoa) {
+  if (!isAdmin) { toast('Apenas administradores podem apagar pareceres.', true); return; }
+  if (!confirm('Apagar o parecer de ' + pessoa + ' (' + mesLabel(mes) + ')?')) return;
+  var k = keyOf(mes, pessoa);
+  var row = histRows.filter(function(r) { return keyOf(r.mes, r.pessoa) === k; })[0];
+  var delFile = Promise.resolve();
+  try { if (row && row.ficheiro && window.parent.pmDeleteReport) delFile = window.parent.pmDeleteReport(row.ficheiro); } catch (e) {}
+  toast('A apagar parecer...');
+  delFile.catch(function(e) { console.warn('[PM] falha ao apagar ficheiro no SP:', e); }).then(function() {
+    var loader = window.parent.pmLoadIndex, saver = window.parent.pmSaveIndex;
+    if (!loader || !saver) throw new Error('Fora da intranet');
+    return loader().then(function(idx) {
+      idx = idx || { updatedAt: null, rows: [] };
+      idx.rows = (idx.rows || []).filter(function(x) { return keyOf(x.mes, x.pessoa) !== k; });
+      idx.updatedAt = new Date().toISOString();
+      return saver(idx).then(function() { histRows = idx.rows; });
+    });
+  }).then(function() {
+    toast('Parecer apagado.');
+    rebuildPessoas(); renderHist(); checkDuplicate();
+  }).catch(function(e) {
+    toast('Erro ao apagar: ' + (e && e.message ? e.message : e), true);
+  });
+}
+
+/* ================== NAVEGAÇÃO ================== */
+function showView(v) {
+  document.getElementById('viewNova').className = 'view' + (v === 'nova' ? ' active' : '');
+  document.getElementById('viewHist').className = 'view' + (v === 'hist' ? ' active' : '');
+  document.getElementById('tabNova').className = 'tab' + (v === 'nova' ? ' active' : '');
+  document.getElementById('tabHist').className = 'tab' + (v === 'hist' ? ' active' : '');
+  if (v === 'hist') renderHist();
+}
+</script>
+</body>
+</html>

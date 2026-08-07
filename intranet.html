@@ -1029,6 +1029,7 @@
             <li><a onclick="openModule('coord_inspecao_diaria')" id="navCoord_inspecao_diaria"><span class="nav-icon">✅</span> Inspeção Diária</a></li>
             <li><a onclick="openModule('coord_auditoria_carrinhos')" id="navCoord_auditoria_carrinhos"><span class="nav-icon">🧰</span> Auditorias Carrinhos Ferramentas Mensal</a></li>
             <li id="navAval_meritoLi"><a onclick="openModule('aval_merito')" id="navAval_merito"><span class="nav-icon">⭐</span> Avaliações de Mérito</a></li>
+            <li id="navParecer_meritoLi"><a onclick="openModule('parecer_merito')" id="navParecer_merito"><span class="nav-icon">📋</span> Parecer Avaliações Mérito Equipas</a></li>
             <li>
                 <a onclick="toggleDropdown('prepAuditoriasSubmenu','prepAuditoriasArrow')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span><span class="nav-icon">📋</span> Preparação Auditorias</span><span id="prepAuditoriasArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="prepAuditoriasSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
@@ -2096,19 +2097,19 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent','parecer_merito']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent','parecer_merito']
         },
         'mario.perez@domuscar.com': {
             role: 'coordenador', name: 'Mário Perez (Colisão Bela Vista)',
@@ -2502,6 +2503,9 @@
         // Avaliações de Mérito: visível só para quem tem o módulo 'aval_merito' (admins + coordenadores de Mecânica)
         var amLi = document.getElementById('navAval_meritoLi');
         if (amLi) amLi.style.display = (currentUserPermissions.modules && currentUserPermissions.modules.includes('aval_merito')) ? 'block' : 'none';
+        // Parecer Avaliações Mérito Equipas: idem (admins + Fábio + José)
+        var pmLi = document.getElementById('navParecer_meritoLi');
+        if (pmLi) pmLi.style.display = (currentUserPermissions.modules && currentUserPermissions.modules.includes('parecer_merito')) ? 'block' : 'none';
         // Calendário de Formação: visível só para admin, coordenador e RH
         var formacaoLi = document.getElementById('navFormacaoLi');
         if (formacaoLi) formacaoLi.style.display = (role === 'admin' || role === 'coordenador' || role === 'rh') ? 'block' : 'none';
@@ -2569,6 +2573,7 @@
             auditorias_carrinhos: 'Intranet/Auditorias_Carrinhos_Ferramentas',
             auditorias_carrinhos_fotos: 'Intranet/Auditorias_Carrinhos_Ferramentas/Fotos',
             avaliacoes_merito: 'Intranet/Avaliacoes_Merito',
+            pareceres_merito: 'Intranet/Avaliacoes_Merito/Pareceres',
             rh_justificacoes_faltas: 'Intranet/RH/Justificacoes_Faltas',
             rh_justificacoes_anexos: 'Intranet/RH/Justificacoes_Faltas_Anexos',
             rh_pedidos_formacao: 'Intranet/RH/Pedidos_Formacao',
@@ -2773,6 +2778,7 @@
         auditorias_internas:{ recipients: 'admins+coordenadores' },
         auditorias_carrinhos:{ recipients: 'admins' },  // Ago 2026: antes 'admins+coordenadores' — coordenadores deixam de receber as auditorias uns dos outros
         avaliacoes_merito:  { recipients: 'admins' },
+        pareceres_merito:   { recipients: 'admins' },
         rh_justificacoes:   { recipients: 'admins+rh' },
         rh_pedidos_formacao:{ recipients: 'admins' },
         termos_responsabilidade:{ recipients: 'admins+rh' }
@@ -3302,6 +3308,57 @@
             return deleteSharePointFile(hit.id);
         });
     };
+    // ==== Parecer Avaliações Mérito Equipas — parecer-avaliacoes-merito.html ====
+    // Relatórios em Intranet/Avaliacoes_Merito/Pareceres; índice em Dashboard_State/pareceres_merito_index.json.
+    // Leitura/escrita: admins e coordenadores. Apagar: apenas admins.
+    window.pmUploadReport = function(fileName, htmlContent) {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin' && role !== 'coordenador') {
+            return Promise.reject(new Error('Sem permissão (apenas administradores e coordenadores)'));
+        }
+        return uploadToSharePoint('pareceres_merito', fileName, htmlContent, 'text/html');
+    };
+    window.pmLoadIndex = function() {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin' && role !== 'coordenador') {
+            return Promise.reject(new Error('Sem permissão (apenas administradores e coordenadores)'));
+        }
+        return loadDashboardFromSP('pareceres_merito_index.json').then(function(data) {
+            return data || { updatedAt: null, rows: [] };
+        });
+    };
+    window.pmSaveIndex = function(data) {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin' && role !== 'coordenador') {
+            return Promise.reject(new Error('Sem permissão (apenas administradores e coordenadores)'));
+        }
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject(new Error('SharePoint não inicializado'));
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' +
+                  SP_CONFIG.folders.dashboard_state + '/pareceres_merito_index.json:/content';
+        return getGraphToken().then(function(token) {
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }).then(function(r) {
+            if (!r.ok) throw new Error('Falha ao gravar índice (' + r.status + ')');
+            console.log('[PM] pareceres_merito_index.json guardado (' + ((data.rows || []).length) + ' registos)');
+            return true;
+        });
+    };
+    window.pmDeleteReport = function(fileName) {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin') return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        return listSharePointFiles('pareceres_merito').then(function(res) {
+            var items = (res && res.value) || [];
+            var hit = items.filter(function(f) { return f.name === fileName; })[0];
+            if (!hit) { console.warn('[PM] ficheiro não encontrado no SP:', fileName); return true; }
+            return deleteSharePointFile(hit.id);
+        });
+    };
+
     // ==== Avaliações de Mérito (Equipas) — avaliacoes-merito-admin.html ====
     // Índice separado em Dashboard_State/avaliacoes_merito_admin_index.json.
     // Contém avaliações de coordenadores — leitura e escrita APENAS para admins.
@@ -3520,6 +3577,7 @@
             coord_auditoria_carrinhos: { title: 'Auditorias Carrinhos Ferramentas Mensal', url: 'auditoria-carrinhos-ferramentas.html' },
             aval_merito: { title: 'Avaliações de Mérito', url: 'avaliacoes-merito.html' },
             aval_merito_admin: { title: 'Avaliações de Mérito — Assessores, Fiéis de Armazém e Coordenadores', url: 'avaliacoes-merito-admin.html' },
+            parecer_merito: { title: 'Parecer Avaliações Mérito Equipas', url: 'parecer-avaliacoes-merito.html' },
             prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' },
             officegest_api: { title: 'API Officegest (Consola)', url: 'officegest-api-explorer.html' },
             fardas: { title: 'Gestão de Fardas', url: 'fardas.html' },
