@@ -125,7 +125,7 @@
             }
         }
 
-        .header-logo { height: 32px; cursor: pointer; }
+        .header-logo { height: 42px; cursor: pointer; }
         .header-divider {
             width: 1px; height: 28px;
             background: var(--border-color);
@@ -196,6 +196,40 @@
             .app-main {
                 left: 0 !important;
             }
+        }
+
+
+        /* ---- Sidebar mini (desktop): sempre minimizada, expande com hover ---- */
+        @media (min-width: 769px) {
+            .app-sidebar {
+                width: 68px;
+                overflow-x: hidden;
+                white-space: nowrap;
+                transition: width 0.22s ease, transform 0.3s ease;
+                scrollbar-width: none;
+            }
+            .app-sidebar::-webkit-scrollbar { display: none; }
+            .app-sidebar:hover {
+                width: var(--sidebar-width);
+                box-shadow: 10px 0 30px rgba(0,0,0,0.35);
+            }
+            .app-sidebar:not(:hover) .sidebar-section {
+                color: transparent;
+                border-top: 1px solid rgba(255,255,255,0.10);
+                margin-top: 6px;
+            }
+            .app-sidebar:not(:hover) .sidebar-footer { color: transparent; }
+            .app-sidebar:not(:hover) .badge-em-breve { opacity: 0; }
+            /* Minimizada: máscara com fade — o ícone (zona 0–44px) fica visível, o texto desvanece */
+            .app-sidebar:not(:hover) .sidebar-nav a {
+                -webkit-mask-image: linear-gradient(90deg, #000 42px, transparent 62px);
+                mask-image: linear-gradient(90deg, #000 42px, transparent 62px);
+            }
+            .sidebar-nav a { white-space: nowrap; }
+            /* main.app-main: especificidade superior à regra base .app-main (que aparece depois na folha) */
+            main.app-main { left: 68px; }
+            main.app-main.sidebar-hidden,
+            main.app-main.full { left: 0; }
         }
 
         .sidebar-overlay {
@@ -378,6 +412,75 @@
             border: none; border-radius: 6px;
             font-size: 13px; font-weight: 600;
             cursor: pointer;
+        }
+
+
+        /* ======== DASHBOARD REFRESH 2026-08 (hero + chips + margem v2 + kpi tiles) ======== */
+        .dh-hero { background: linear-gradient(120deg, #0a1628 0%, #13294a 55%, #1a73e8 135%); border-radius: 16px; color: #fff; padding: 28px 32px 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(10,22,40,.25); }
+        .dh-hero::after { content: ''; position: absolute; right: -60px; top: -90px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(77,168,218,.25), transparent 65%); pointer-events: none; }
+        .dh-hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -.3px; position: relative; z-index: 2; }
+        .dh-hero h1 span { color: #7ab8ff; }
+        .dh-hero .dh-sub { font-size: 13px; opacity: .75; margin-top: 4px; position: relative; z-index: 2; }
+        .dh-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; position: relative; z-index: 2; }
+        .dh-chips:empty { margin-top: 0; }
+        .dh-chip { background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; padding: 9px 15px; font-size: 12.5px; font-weight: 600; color: #eaf2fa; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: .15s; }
+        .dh-chip:hover { background: rgba(255,255,255,.2); transform: translateY(-1px); }
+        .dh-chip b { font-size: 15px; font-weight: 800; color: #fff; }
+        .dh-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .dh-dot.red { background: #ff7a7a; } .dh-dot.amb { background: #ffc46b; } .dh-dot.grn { background: #63e6a5; }
+        .dh-slim { background: #fff8ee; border: 1px solid #f3dfc0; border-left: 4px solid var(--warning); border-radius: 10px; padding: 10px 16px; font-size: 12.5px; display: flex; gap: 10px; align-items: center; color: var(--text-secondary); }
+        .dh-slim b { color: var(--text-primary); }
+        /* margem v2 */
+        .dh-mcard { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px 20px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: .15s; }
+        .dh-mcard.clickable { cursor: pointer; }
+        .dh-mcard.clickable:hover { box-shadow: 0 8px 24px rgba(15,40,80,.14); transform: translateY(-2px); }
+        .dh-mcard .dh-u { font-size: 13px; font-weight: 800; }
+        .dh-big { font-size: 36px; font-weight: 800; letter-spacing: -1px; line-height: 1; color: var(--text-primary); }
+        .dh-big.neg { color: var(--danger); }
+        .dh-patamar-pill { font-size: 11px; font-weight: 800; border-radius: 50px; padding: 3px 10px; }
+        .dh-kv { display: flex; gap: 14px; margin-top: 12px; font-size: 11.5px; color: var(--text-secondary); flex-wrap: wrap; }
+        .dh-kv div b { display: block; font-size: 13.5px; color: var(--text-primary); font-weight: 800; }
+        .dh-meter { margin-top: 14px; }
+        .dh-meter .dh-bar { position: relative; height: 10px; border-radius: 50px; background: var(--border-color); }
+        .dh-meter .dh-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 50px; background: linear-gradient(90deg, #4da8da, #1a73e8); }
+        .dh-meter .dh-fill.neg { background: repeating-linear-gradient(45deg, #f3b8b8, #f3b8b8 4px, #fdecec 4px, #fdecec 8px); width: 100%; }
+        .dh-meter .dh-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #fff; box-shadow: 0 0 0 1px #8a94a6; border-radius: 2px; }
+        .dh-meter .dh-labels { position: relative; font-size: 10px; color: var(--text-secondary); margin-top: 5px; font-weight: 700; height: 12px; }
+        .dh-meter .dh-labels span { position: absolute; transform: translateX(-50%); }
+        .dh-meter .dh-labels .hit { color: var(--success); }
+        .dh-metas { margin-top: 14px; font-size: 11.5px; display: flex; flex-direction: column; gap: 3px; }
+        .dh-metas .r { display: flex; justify-content: space-between; gap: 8px; }
+        .dh-metas .ok { color: var(--success); font-weight: 700; text-align: right; }
+        .dh-metas .ko { color: var(--danger); font-weight: 700; text-align: right; }
+        /* kpi tiles */
+        .dh-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+        .dh-tile { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); cursor: pointer; transition: .15s; }
+        .dh-tile:hover { box-shadow: 0 8px 24px rgba(15,40,80,.12); transform: translateY(-2px); }
+        .dh-tile .l { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; font-weight: 800; color: #8a94a6; }
+        .dh-tile .v { font-size: 28px; font-weight: 800; color: var(--text-primary); letter-spacing: -.6px; margin-top: 5px; }
+        .dh-tile .v.gd { color: var(--success); }
+        .dh-tile .v.bd { color: var(--danger); }
+        .dh-tile .d { font-size: 11.5px; margin-top: 3px; font-weight: 700; color: var(--text-secondary); }
+        .dh-tile .d.up { color: var(--success); } .dh-tile .d.dn { color: var(--danger); }
+        .dh-weeks { display: flex; gap: 5px; margin-top: 14px; align-items: flex-end; height: 38px; }
+        .dh-wb { flex: 1; background: #4da8da; border-radius: 4px 4px 0 0; opacity: .85; position: relative; min-height: 3px; }
+        .dh-wb.low { background: #f0b429; }
+        .dh-wb span { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #8a94a6; font-weight: 700; }
+        .dh-krow { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+        @media (min-width: 900px) { .dh-krow { grid-template-columns: 3fr 2fr; } }
+        .dh-kcard { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+        .dh-kcard h3 { font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
+        .dh-pod { display: flex; flex-direction: column; gap: 8px; }
+        .dh-pod .p { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-secondary); }
+        .dh-pod .p b { color: var(--text-primary); white-space: nowrap; }
+        .dh-pod .pbar { flex: 1; height: 8px; background: var(--border-color); border-radius: 50px; position: relative; min-width: 40px; }
+        .dh-pod .pbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 50px; background: var(--accent-blue); }
+        .dh-pod .val { font-weight: 800; color: var(--text-primary); font-size: 12px; min-width: 56px; text-align: right; }
+        .dh-detail-btn { margin-top: 16px; width: 100%; padding: 10px; background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--accent-blue); cursor: pointer; font-family: inherit; transition: background .15s; }
+        .dh-detail-btn:hover { background: #e4eaf3; }
+        @media (max-width: 640px) {
+            .dh-hero { padding: 22px 20px 20px; }
+            .dh-hero h1 { font-size: 24px; }
         }
 
         /* ---- KPI Section ---- */
@@ -1082,6 +1185,12 @@
     <main class="app-main" id="mainContent">
         <!-- Dashboard -->
         <div class="dashboard" id="dashboardView">
+            <!-- HERO (refresh 2026-08) -->
+            <div class="dh-hero" id="dashHero" style="display:none;">
+                <h1 id="dashHeroTitle">Bem-vindo 👋</h1>
+                <div class="dh-sub" id="dashHeroSub"></div>
+                <div class="dh-chips" id="dashHeroChips"></div>
+            </div>
             <!-- Margem Mensal Real (Indicadores & Objetivos) -->
             <div class="kpi-section" id="margemMensalBlock" style="padding:16px 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1718,21 +1827,193 @@
         renderKpiContent(tab);
     }
 
+    // ======== HISTÓRICO KPI 2026 (para deltas + sparkline do resumo) ========
+    // Fonte: indicadores_objetivos.html → KPIs Coordenação 2026.
+    // Colunas: [Horas Trabalhadas, Horas Vendidas, Horas Disponíveis, Ef. Produtiva %, Utilização %]
+    // MANUTENÇÃO: ao publicar um novo mês em Indicadores e Objetivos, acrescentar aqui o mês anterior
+    // (o mês corrente vem sempre do KPI_DATA dinâmico; o histórico serve para o delta e a linha de tendência).
+    var KPI_HIST_ANO = 2026;
+    var KPI_HIST = {
+        lisboa: [
+            [344.5, 575.83, 344.68, 138.62, 99.69],
+            [345.68, 561.24, 361.42, 160.05, 95.76],
+            [356.55, 611.89, 322.15, 157.87, 132.37],
+            [394.39, 713.79, 370.6, 167.22, 106.77],
+            [388.02, 517.55, 350.2, 138.73, 112.05],
+            [349.3, 704.77, 340, 176.63, 102.87],
+            [385.86, 635.47, 360.4, 123.76, 106.53]
+        ],
+        'cacém': [
+            [574.31, 722.18, 610.3, 130.52, 93.9],
+            [499.58, 559.37, 556.75, 130.89, 90.79],
+            [575.8, 757.06, 589.9, 141.31, 97.84],
+            [520.82, 693.82, 484.5, 144.65, 107.11],
+            [548.97, 899.41, 522.32, 169.74, 105.67],
+            [567.33, 739.29, 523.6, 148.24, 109.51],
+            [552.2, 911.23, 484.5, 217.85, 115.57]
+        ],
+        colisao: [
+            [1446.31, 1026.13, 1469.65, 92.29, 98.72],
+            [1094.26, 1085.52, 1388.05, 114.38, 86.89],
+            [1371.22, 1209.16, 1513, 98.56, 90.1],
+            [1288.56, 1160.87, 1201.05, 106.73, 105.71],
+            [1275.4, 1390.59, 1216.35, 113.71, 102.53],
+            [923.1, 1129.42, 948.6, 148.99, 97.27],
+            [969.18, 1063.4, 1067.6, 120.26, 92.83]
+        ]
+    };
+    var KPI_MES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    var KPI_BADGE_MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
+    // Devolve {mIdx, ano} a partir do badge (ex.: 'JUL 2026') ou null
+    function kpiBadgeInfo() {
+        var badge = String(KPI_DATA._monthBadge || '');
+        var parts = badge.trim().split(/\s+/);
+        if (parts.length < 2) return null;
+        var mIdx = KPI_BADGE_MESES.indexOf(parts[0].toUpperCase());
+        var ano = parseInt(parts[1], 10);
+        if (mIdx < 0 || !ano) return null;
+        return { mIdx: mIdx, ano: ano };
+    }
+
+    function kpiRowsFor(tab) {
+        if (tab === 'colisao') return (KPI_DATA.colisao && KPI_DATA.colisao.global) || [];
+        return (KPI_DATA[tab] && KPI_DATA[tab].kpis) || [];
+    }
+    function kpiFindRow(rows, name) {
+        for (var i = 0; i < rows.length; i++) { if (rows[i].kpi === name) return rows[i]; }
+        return null;
+    }
+    function dhFmt1(v) { return (v === null || v === undefined) ? '—' : (+v).toFixed(1).replace('.', ','); }
+
+    function dhTile(label, row, kind, tab, histCol) {
+        if (!row) return '';
+        var mes = row.mes;
+        var vTxt = mes === null || mes === undefined ? '—' : dhFmt1(mes) + (kind === 'pct' ? '%' : 'h');
+        var vCls = '';
+        if (kind === 'pct' && mes !== null && mes !== undefined) {
+            vCls = mes >= 100 ? ' gd' : (mes < 85 ? ' bd' : '');
+        }
+        // Delta vs mês anterior (histórico estático 2026)
+        var dHtml = '';
+        var info = kpiBadgeInfo();
+        if (info && info.ano === KPI_HIST_ANO && info.mIdx > 0 && KPI_HIST[tab] && KPI_HIST[tab][info.mIdx - 1] &&
+            mes !== null && mes !== undefined) {
+            var prev = KPI_HIST[tab][info.mIdx - 1][histCol];
+            if (prev !== null && prev !== undefined) {
+                var delta = mes - prev;
+                var up = delta >= 0;
+                var unit = kind === 'pct' ? ' pp' : 'h';
+                dHtml = '<div class="d ' + (up ? 'up' : 'dn') + '">' + (up ? '▲ +' : '▼ −') +
+                        dhFmt1(Math.abs(delta)) + unit + ' vs ' + KPI_MES_ABREV[info.mIdx - 1] + '</div>';
+            }
+        }
+        // Mini-barras semanais S1–S5
+        var weeks = ['s1', 's2', 's3', 's4', 's5'].map(function(k) { return row[k]; });
+        var maxV = 0;
+        weeks.forEach(function(v) { if (v !== null && v !== undefined && v > maxV) maxV = v; });
+        var wHtml = '';
+        if (maxV > 0) {
+            wHtml = '<div class="dh-weeks">' + weeks.map(function(v, i) {
+                if (v === null || v === undefined) return '<div class="dh-wb" style="height:3px;opacity:.25;"><span>S' + (i + 1) + '</span></div>';
+                var h = Math.max(6, v / maxV * 100);
+                var low = kind === 'pct' && v < 100 ? ' low' : '';
+                return '<div class="dh-wb' + low + '" style="height:' + h.toFixed(0) + '%" title="S' + (i + 1) + ': ' + dhFmt1(v) + (kind === 'pct' ? '%' : 'h') + '"><span>S' + (i + 1) + '</span></div>';
+            }).join('') + '</div>';
+        }
+        return '<div class="dh-tile" onclick="toggleKpiDetail()" title="Ver detalhe completo">' +
+            '<div class="l">' + label + '</div>' +
+            '<div class="v' + vCls + '">' + vTxt + '</div>' +
+            dHtml + wHtml + '</div>';
+    }
+
+    function dhRankingCard(tab) {
+        var key = tab === 'colisao' ? 'colisao' : tab;
+        var rk = (KPI_DATA[key] && KPI_DATA[key].ranking_hf) || [];
+        if (!rk.length) return '';
+        var top = rk.slice(0, 5);
+        var maxV = top[0].value || 1;
+        var rows = top.map(function(r) {
+            var tag = r.medal || (r.rank + 'º');
+            return '<div class="p">' + tag + ' <b>' + r.name + '</b>' +
+                '<div class="pbar"><i style="width:' + Math.max(4, r.value / maxV * 100).toFixed(0) + '%"></i></div>' +
+                '<span class="val">' + r.value.toFixed(1).replace('.', ',') + ' h</span></div>';
+        }).join('');
+        return '<div class="dh-kcard"><h3>🏆 Ranking Horas Faturadas — ' + (KPI_DATA._monthBadge || '') + '</h3><div class="dh-pod">' + rows + '</div></div>';
+    }
+
+    function dhSparkCard(tab) {
+        var info = kpiBadgeInfo();
+        var rows = kpiRowsFor(tab);
+        var epRow = kpiFindRow(rows, 'Eficiência Produtiva');
+        if (!info || info.ano !== KPI_HIST_ANO || !KPI_HIST[tab] || !epRow || epRow.mes === null) return '';
+        // Série: histórico até ao mês anterior + valor corrente do KPI_DATA
+        var serie = [];
+        for (var i = 0; i < info.mIdx && i < KPI_HIST[tab].length; i++) {
+            var m = KPI_HIST[tab][i];
+            if (m && m[3] !== null && m[3] !== undefined) serie.push({ label: KPI_MES_ABREV[i], v: m[3] });
+        }
+        serie.push({ label: KPI_MES_ABREV[info.mIdx], v: epRow.mes });
+        serie = serie.slice(-6);
+        if (serie.length < 2) return '';
+        var vals = serie.map(function(p) { return p.v; });
+        var lo = Math.min.apply(null, vals.concat([100])), hi = Math.max.apply(null, vals.concat([100]));
+        var pad = (hi - lo) * 0.15 || 10; lo -= pad; hi += pad;
+        var W = 300, H = 120, x0 = 14, x1 = 288, yTop = 14, yBot = 96;
+        function X(i) { return x0 + (x1 - x0) * (serie.length === 1 ? 0 : i / (serie.length - 1)); }
+        function Y(v) { return yBot - (v - lo) / (hi - lo) * (yBot - yTop); }
+        var path = serie.map(function(p, i) { return (i === 0 ? 'M' : 'L') + X(i).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ');
+        var y100 = Y(100);
+        var last = serie[serie.length - 1];
+        var labels = serie.map(function(p, i) {
+            return '<text x="' + X(i).toFixed(0) + '" y="115" font-size="9" fill="#8a94a6" text-anchor="middle">' + p.label + '</text>';
+        }).join('');
+        return '<div class="dh-kcard"><h3>Eficiência Produtiva — últimos ' + serie.length + ' meses</h3>' +
+            '<svg width="100%" height="120" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+            '<line x1="0" y1="' + y100.toFixed(1) + '" x2="' + W + '" y2="' + y100.toFixed(1) + '" stroke="#e3e8ef" stroke-width="1"/>' +
+            '<text x="4" y="' + (y100 - 4).toFixed(1) + '" font-size="9" fill="#8a94a6">100%</text>' +
+            '<path d="' + path + '" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<circle cx="' + X(serie.length - 1).toFixed(1) + '" cy="' + Y(last.v).toFixed(1) + '" r="3.5" fill="#1a73e8"/>' +
+            '<text x="' + X(serie.length - 1).toFixed(1) + '" y="' + (Y(last.v) - 8).toFixed(1) + '" font-size="11" font-weight="800" fill="#1a1a2e" text-anchor="end">' + dhFmt1(last.v) + '%</text>' +
+            labels + '</svg></div>';
+    }
+
+    var _kpiCurrentTab = 'colisao';
+
     function renderKpiContent(tab) {
         const content = document.getElementById('kpiContent');
-        let html = '';
-
-        if (tab === 'colisao') {
-            html = renderColisaoTab();
-        } else if (tab === 'cacém') {
-            html = renderCacémTab();
-        } else if (tab === 'lisboa') {
-            html = renderLisboaTab();
-        } else if (tab === 'comparacao') {
-            html = renderComparacaoTab();
-        }
-
+        if (!content) return;
+        _kpiCurrentTab = tab;
+        if (tab === 'comparacao') { content.innerHTML = renderComparacaoTab(); return; }
+        var rows = kpiRowsFor(tab);
+        var tiles =
+            dhTile('Eficiência Produtiva', kpiFindRow(rows, 'Eficiência Produtiva'), 'pct', tab, 3) +
+            dhTile('Taxa de Utilização', kpiFindRow(rows, 'Taxa de Utilização'), 'pct', tab, 4) +
+            dhTile('Horas Vendidas', kpiFindRow(rows, 'Horas Vendidas'), 'h', tab, 1) +
+            dhTile('Horas Trabalhadas', kpiFindRow(rows, 'Horas Trabalhadas'), 'h', tab, 0);
+        var html = '<div class="dh-tiles">' + tiles + '</div>';
+        var krow = dhRankingCard(tab) + dhSparkCard(tab);
+        if (krow) html += '<div class="dh-krow">' + krow + '</div>';
+        html += '<button class="dh-detail-btn" id="kpiDetailBtn" onclick="toggleKpiDetail()">Ver detalhe completo ▼</button>';
+        html += '<div id="kpiDetailWrap" style="display:none;margin-top:14px;"></div>';
         content.innerHTML = html;
+    }
+
+    function toggleKpiDetail() {
+        var wrap = document.getElementById('kpiDetailWrap');
+        var btn = document.getElementById('kpiDetailBtn');
+        if (!wrap) return;
+        if (wrap.style.display === 'none') {
+            if (!wrap.innerHTML) {
+                wrap.innerHTML = _kpiCurrentTab === 'colisao' ? renderColisaoTab() :
+                                 _kpiCurrentTab === 'cacém' ? renderCacémTab() : renderLisboaTab();
+            }
+            wrap.style.display = 'block';
+            if (btn) btn.textContent = 'Ocultar detalhe completo ▲';
+        } else {
+            wrap.style.display = 'none';
+            if (btn) btn.textContent = 'Ver detalhe completo ▼';
+        }
     }
 
     function renderColisaoTab() {
@@ -2405,6 +2686,7 @@
         loadEquipamentos();
         renderMargemMensalReal();
         updateGreeting();
+        renderHero();
         // Hide breadcrumb on home
         document.getElementById('breadcrumb').style.display = 'none';
         // Set dashboard as grid
@@ -3536,6 +3818,7 @@
         loadFormacaoEventos();
         loadEquipamentos();
         renderMargemMensalReal();
+        renderHero();
     }
 
     function openDashboard(type) {
@@ -3693,6 +3976,197 @@
 
     function clearActiveNav() {
         document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    }
+
+
+    // ======== HERO DASHBOARD (refresh 2026-08) ========
+    // Contagens de pendências esperadas por mês.
+    // MANUTENÇÃO: manter em sincronia com os módulos —
+    //   avaliacoes-merito.html (TECNICOS) · auditoria-carrinhos-ferramentas.html (TECNICOS)
+    //   parecer-avaliacoes-merito.html (EQUIPAS)
+    var HERO_CFG = {
+        avalStart: '2026-07',
+        avalTecnicos: { 'Mecânica Lisboa': 5, 'Mecânica Cacém': 4 },
+        acfStart: '2026-06',
+        acfTecnicos: { 'Mecânica Lisboa': 3, 'Mecânica Cacém': 4 },
+        parecerStart: '2026-07',
+        parecerEquipas: { 'fabio.ramalho@domuscar.com': 4, 'jose.rodriguez@domuscar.com': 4 },
+        coordUnit: {
+            'fabio.ramalho@domuscar.com':  { aval: 'Mecânica Lisboa', acf: 'Mecânica Lisboa', divPend: 'div_lisboa_pendente' },
+            'jose.rodriguez@domuscar.com': { aval: 'Mecânica Cacém',  acf: 'Mecânica Cacém',  divPend: 'div_cacem_pendente' },
+            'mario.perez@domuscar.com':    { divPend: 'div_colisao_belavista_pendente' },
+            'nuno.montes@domuscar.com':    { divPend: 'div_colisao_taguspark_pendente' }
+        },
+        divPendAll: ['div_colisao_belavista_pendente', 'div_colisao_taguspark_pendente', 'div_lisboa_pendente', 'div_cacem_pendente'],
+        femaleNames: ['vanessa', 'inês', 'ines', 'alícia', 'alicia', 'olesya']
+    };
+
+    function heroPrevMes() {
+        var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+    function heroMesNome(ym) {
+        var nomes = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+        var m = parseInt(String(ym).split('-')[1], 10);
+        return nomes[m - 1] || ym;
+    }
+    function dashScrollTo(id) {
+        var el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    var _heroSeq = 0;
+
+    function renderHero() {
+        var hero = document.getElementById('dashHero');
+        if (!hero) return;
+        if (!currentMsalUser) { hero.style.display = 'none'; return; }
+        hero.style.display = 'block';
+        var name = (currentUserPermissions && currentUserPermissions.name) || currentMsalUser.name || currentMsalUser.username || '';
+        var first = name.split(' ')[0] || 'Utilizador';
+        var fLower = first.toLowerCase();
+        var female = HERO_CFG.femaleNames.indexOf(fLower) > -1 || /a$/.test(fLower);
+        document.getElementById('dashHeroTitle').innerHTML =
+            (female ? 'Bem-vinda' : 'Bem-vindo') + ', <span>' + first + '</span> 👋';
+        var dataStr = new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('dashHeroSub').textContent = dataStr + ' · Intranet DomusCar';
+        renderHeroChips();
+    }
+
+    function heroChip(dot, icon, label, value, onclickJs, title) {
+        return '<div class="dh-chip" onclick="' + onclickJs + '"' + (title ? ' title="' + title + '"' : '') + '>' +
+            (dot ? '<span class="dh-dot ' + dot + '"></span>' : (icon ? icon + ' ' : '')) +
+            label + (value !== null && value !== undefined ? ' <b>' + value + '</b>' : '') + '</div>';
+    }
+
+    function heroParseEuro(s) {
+        if (typeof s === 'number') return s;
+        if (!s) return NaN;
+        var t = String(s).replace(/[€\s]/g, '').replace(/\./g, '').replace(',', '.').replace('−', '-');
+        return parseFloat(t);
+    }
+
+    function renderHeroChips() {
+        var wrap = document.getElementById('dashHeroChips');
+        if (!wrap) return;
+        var seq = ++_heroSeq;
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        var email = currentMsalUser ? String(currentMsalUser.username || '').toLowerCase() : '';
+        var mods = (currentUserPermissions && currentUserPermissions.modules) || [];
+        var cu = HERO_CFG.coordUnit[email] || null;
+        var mesRef = heroPrevMes(); // pendências referem-se ao mês anterior (fechado)
+        var mesNome = heroMesNome(mesRef);
+        var chips = [];
+        function paint() {
+            if (seq !== _heroSeq) return;
+            chips.sort(function(a, b) { return a.o - b.o; });
+            wrap.innerHTML = chips.map(function(c) { return c.h; }).join('');
+        }
+
+        // ---- Chips imediatos (informativos, todos os perfis) ----
+        // Margem global provisória (a partir da cache local)
+        var mg = null;
+        try { var s = localStorage.getItem('intranet_margemDashboard'); if (s) mg = JSON.parse(s); } catch (e) {}
+        if (!mg) mg = MARGEM_FALLBACK_DATA;
+        if (mg && mg.departments && mg.departments.length) {
+            var tv = 0, tr = 0, okSum = true;
+            mg.departments.forEach(function(d) {
+                var v = heroParseEuro(d.vendas), r = heroParseEuro(d.resultado);
+                if (isNaN(v) || isNaN(r)) { okSum = false; return; }
+                tv += v; tr += r;
+            });
+            if (okSum && tv > 0) {
+                var gPct = tr / tv * 100;
+                var gDot = gPct >= 21 ? 'grn' : (gPct >= 0 ? 'amb' : 'red');
+                var perLabel = mg.periodo ? String(mg.periodo).split(' ')[0] : '';
+                chips.push({ o: 50, h: heroChip(gDot, null, 'Margem global ' + perLabel, gPct.toFixed(1).replace('.', ',') + '%', "dashScrollTo('margemDashboardBlock')", 'Ver margem provisória') });
+            }
+        }
+        // Atalho KPIs
+        chips.push({ o: 60, h: heroChip(null, '📊', 'KPIs ' + (KPI_DATA._monthBadge || 'Oficinas'), null, "dashScrollTo('kpiDashboardBlock')", 'Ver KPIs das oficinas') });
+        // Colaborador: atalho RH
+        if (role !== 'admin' && role !== 'coordenador') {
+            chips.push({ o: 70, h: heroChip(null, '👥', 'Recursos Humanos →', null, "openModule('recursos_humanos')", 'Abrir Recursos Humanos') });
+        }
+        paint();
+
+        // ---- Chips assíncronos (pendências, consoante o perfil) ----
+        var isAdmin = role === 'admin';
+        var isCoord = role === 'coordenador';
+        if (!isAdmin && !isCoord) return;
+
+        function safe(promiseFactory, fn) {
+            // Espera pelo SharePoint estar inicializado; falhas são silenciosas (chip omitido)
+            var run = function() { promiseFactory().then(fn).catch(function(e) { console.warn('[Hero] chip:', e && e.message); }); };
+            if (typeof getDriveId === 'function' && getDriveId()) { run(); }
+            else { setTimeout(run, 3500); }
+        }
+
+        // Avaliações de mérito (mecatrónicos) em falta — admins + Fábio/José
+        if (mods.includes('aval_merito') && mesRef >= HERO_CFG.avalStart) {
+            safe(function() { return window.amLoadIndex(); }, function(idx) {
+                var rows = (idx && idx.rows) || [];
+                var unitF = isCoord ? (cu && cu.aval) : null;
+                if (isCoord && !unitF) return;
+                var expected = 0;
+                Object.keys(HERO_CFG.avalTecnicos).forEach(function(u) {
+                    if (!unitF || u === unitF) expected += HERO_CFG.avalTecnicos[u];
+                });
+                var done = rows.filter(function(r) { return r.mes === mesRef && (!unitF || r.local === unitF); }).length;
+                var falta = Math.max(0, expected - done);
+                chips.push({ o: 10, h: heroChip(falta > 0 ? 'red' : 'grn', null, 'Avaliações de mérito ' + mesNome + ' em falta', falta, "openModule('aval_merito')", 'Abrir Avaliações de Mérito') });
+                paint();
+            });
+        }
+        // Auditorias carrinhos em falta — admins + Fábio/José
+        if (mods.includes('coord_auditoria_carrinhos') && (isAdmin || (cu && cu.acf)) && mesRef >= HERO_CFG.acfStart) {
+            safe(function() { return window.acfLoadIndex(); }, function(idx) {
+                var rows = (idx && idx.rows) || [];
+                var unitF = isCoord ? (cu && cu.acf) : null;
+                var expected = 0;
+                Object.keys(HERO_CFG.acfTecnicos).forEach(function(u) {
+                    if (!unitF || u === unitF) expected += HERO_CFG.acfTecnicos[u];
+                });
+                var done = rows.filter(function(r) { return r.mes === mesRef && (!unitF || r.local === unitF); }).length;
+                var falta = Math.max(0, expected - done);
+                chips.push({ o: 20, h: heroChip(falta > 0 ? 'amb' : 'grn', null, 'Auditorias carrinhos ' + mesNome + ' em falta', falta, "openModule('coord_auditoria_carrinhos')", 'Abrir Auditorias Carrinhos Ferramentas') });
+                paint();
+            });
+        }
+        // Divergências por validar — pastas Pendente (admin: todas; coordenador: a sua)
+        var divKeys = isAdmin ? HERO_CFG.divPendAll : (cu && cu.divPend ? [cu.divPend] : []);
+        if (divKeys.length && mods.includes('coord_divergencias')) {
+            safe(function() {
+                return Promise.all(divKeys.map(function(k) {
+                    return listSharePointFiles(k).then(function(res) { return ((res && res.value) || []).length; }).catch(function() { return 0; });
+                }));
+            }, function(counts) {
+                var total = counts.reduce(function(a, b) { return a + b; }, 0);
+                chips.push({ o: 30, h: heroChip(total > 0 ? 'amb' : 'grn', null, 'Divergências por validar', total, "openModule('coord_divergencias')", 'Abrir Divergências Picagens') });
+                paint();
+            });
+        }
+        // Pareceres mérito equipas — admins (X/8) e Fábio/José (X/4)
+        if (mods.includes('parecer_merito') && mesRef >= HERO_CFG.parecerStart) {
+            safe(function() { return window.pmLoadIndex(); }, function(idx) {
+                var rows = (idx && idx.rows) || [];
+                var total = 0;
+                if (isAdmin) {
+                    Object.keys(HERO_CFG.parecerEquipas).forEach(function(k) { total += HERO_CFG.parecerEquipas[k]; });
+                } else {
+                    total = HERO_CFG.parecerEquipas[email] || 0;
+                }
+                if (!total) return;
+                // Nomes exatamente como o módulo parecer-avaliacoes-merito.html grava em record.coordenador
+                var coordNomes = { 'fabio.ramalho@domuscar.com': 'Fábio Ramalho', 'jose.rodriguez@domuscar.com': 'José Rodriguez' };
+                var done = rows.filter(function(r) {
+                    return r.mes === mesRef && (isAdmin || r.coordenador === coordNomes[email]);
+                }).length;
+                done = Math.min(done, total);
+                chips.push({ o: 40, h: heroChip(done >= total ? 'grn' : 'amb', '⭐', 'Pareceres ' + mesNome, done + '/' + total, "openModule('parecer_merito')", 'Abrir Parecer Avaliações Mérito Equipas') });
+                paint();
+            });
+        }
     }
 
     function updateGreeting() {
@@ -3877,11 +4351,7 @@
             var provNum = parsePeriodoToNum(margemProvData.periodo);
             var realNum = parsePeriodoToNum(realPeriodo);
             if (provNum > 0 && realNum > 0 && provNum > realNum) {
-                content.innerHTML = '<div style="text-align:center;padding:32px 24px;color:var(--text-secondary);font-size:14px;">' +
-                    '<div style="font-size:28px;margin-bottom:10px;">🏦</div>' +
-                    '<div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">Aguarda Validação de Dados pelo Departamento Financeiro</div>' +
-                    '<div style="font-size:12px;color:#aaa;">Já existe margem provisória de <strong>' + margemProvData.periodo + '</strong>.<br>A margem mensal real será atualizada após validação financeira.</div>' +
-                    '</div>';
+                content.innerHTML = '<div class="dh-slim">🏛️ <span><b>Margem mensal real</b> aguarda validação do Departamento Financeiro — a margem provisória de <b>' + margemProvData.periodo + '</b> já está disponível abaixo.</span></div>';
                 return;
             }
         }
@@ -3898,7 +4368,7 @@
             var cor = margemRealColor(pct);
             var border = isEmpresa ? 'border:1.5px solid ' + cor + ';' : '';
             var nameColor = isEmpresa ? 'color:' + cor + ';font-weight:700;' : 'color:var(--text-secondary);font-weight:600;';
-            return '<div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;' + border + '">' +
+            return '<div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;cursor:pointer;' + border + '" onclick="openModule(\'indicadores_obj\')" title="Abrir Indicadores e Objetivos">' +
                 '<div style="font-size:11px;' + nameColor + 'margin-bottom:4px;">' + nome + '</div>' +
                 '<div style="font-size:16px;font-weight:800;color:' + cor + ';">' + pct.toFixed(2).replace('.', ',') + '%</div>' +
                 '<div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>' +
@@ -4126,67 +4596,71 @@
         updateDiv.textContent = periodoText + 'Atualizado: ' + (data.timestamp || '—');
         cardsDiv.innerHTML = '';
         var colors = { colisao: '#e8710a', cacem: '#1a73e8', lisboa: '#0d904f' };
+        // Cartões clicáveis: admins abrem o gerador de Margem (Gerar Relatórios → Margem)
+        var mgClickable = !!(currentUserPermissions && currentUserPermissions.role === 'admin');
         var sorted = data.departments.slice().sort(function(a, b) { return (b.margem || 0) - (a.margem || 0); });
         sorted.forEach(function(dept) {
             var color = colors[dept.key] || '#333';
-            var mpVal = dept.margem !== null && dept.margem !== undefined ? (dept.margem * 100).toFixed(1) + '%' : '—';
-            var mpPct = dept.margem ? dept.margem * 100 : 0;
-            var mpColor, mpLabel;
-            if (mpPct >= 35) {
-                mpColor = '#0a6e2e'; mpLabel = '3.º patamar atingido';
-            } else if (mpPct >= 28) {
-                mpColor = '#0d904f'; mpLabel = '2.º patamar atingido';
-            } else if (mpPct >= 21) {
-                mpColor = '#34a853'; mpLabel = '1.º patamar atingido';
-            } else {
-                if (mpPct < 0) { mpColor = '#d93025'; mpLabel = ''; }
-                else { mpColor = '#d4a017'; mpLabel = ''; }
+            var mgPct = (dept.margem !== null && dept.margem !== undefined) ? dept.margem * 100 : null;
+            var mpVal = mgPct !== null ? mgPct.toFixed(1).replace('.', ',') + '%' : '—';
+            var isNeg = mgPct !== null && mgPct < 0;
+            var pillHtml = '';
+            if (mgPct !== null) {
+                if (mgPct >= 35)      pillHtml = '<span class="dh-patamar-pill" style="color:#0a6e2e;background:rgba(13,144,79,.1);">3.º patamar atingido</span>';
+                else if (mgPct >= 28) pillHtml = '<span class="dh-patamar-pill" style="color:#0d904f;background:rgba(13,144,79,.1);">2.º patamar atingido</span>';
+                else if (mgPct >= 21) pillHtml = '<span class="dh-patamar-pill" style="color:#34a853;background:rgba(52,168,83,.12);">1.º patamar atingido</span>';
+                else if (mgPct < 0)   pillHtml = '<span class="dh-patamar-pill" style="color:#d93025;background:rgba(217,48,37,.08);">Margem negativa</span>';
+                else                  pillHtml = '<span class="dh-patamar-pill" style="color:#d4a017;background:rgba(212,160,23,.12);">Abaixo do 1.º patamar</span>';
             }
-            // Bloco de patamares de prémio (21% / 28% / 35%)
-            // Só renderiza se o payload os trouxer — mantém retrocompatibilidade com JSON antigo.
-            var patamaresHtml = '';
+            // Meter de patamares numa escala 0–40%: 21% → 52.5% | 28% → 70% | 35% → 87.5%
+            var fillW = mgPct !== null ? Math.max(0, Math.min(100, mgPct / 40 * 100)) : 0;
+            var meterHtml =
+                '<div class="dh-meter"><div class="dh-bar">' +
+                    (isNeg ? '<div class="dh-fill neg"></div>' : '<div class="dh-fill" style="width:' + fillW.toFixed(1) + '%"></div>') +
+                    '<div class="dh-tick" style="left:52.5%"></div><div class="dh-tick" style="left:70%"></div><div class="dh-tick" style="left:87.5%"></div>' +
+                '</div><div class="dh-labels">' +
+                    '<span class="' + (mgPct !== null && mgPct >= 21 ? 'hit' : '') + '" style="left:52.5%">21%</span>' +
+                    '<span class="' + (mgPct !== null && mgPct >= 28 ? 'hit' : '') + '" style="left:70%">28%</span>' +
+                    '<span class="' + (mgPct !== null && mgPct >= 35 ? 'hit' : '') + '" style="left:87.5%">35%</span>' +
+                '</div></div>';
+            var metasHtml = '';
             if (dept.patamares && dept.patamares.length) {
-                var linhas = dept.patamares.map(function(p) {
-                    var col = p.hit ? '#0a6e2e' : '#d93025';
-                    var prefixo = p.hit ? '✓ Excedente: +' : 'Falta: ';
-                    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;font-size:11px;border-top:1px solid #eaecef;">' +
-                             '<span style="color:#555;font-weight:600;">Meta ' + p.meta + '</span>' +
-                             '<span style="color:' + col + ';font-weight:700;">' + prefixo + p.valor + '</span>' +
-                           '</div>';
-                }).join('');
-                patamaresHtml =
-                    '<div style="margin-top:12px;padding:8px 12px 10px 12px;background:#f8f9fa;border-radius:8px;">' +
-                        '<div style="font-size:10px;color:#666;text-align:center;margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Patamares de Prémio</div>' +
-                        linhas +
-                    '</div>';
+                metasHtml = '<div class="dh-metas">' + dept.patamares.map(function(p) {
+                    return '<div class="r"><span>Meta ' + p.meta + '</span>' +
+                        (p.hit ? '<span class="ok">✓ atingida (+' + p.valor + ')</span>'
+                               : '<span class="ko">falta ' + p.valor + '</span>') +
+                        '</div>';
+                }).join('') + '</div>';
             }
             var card = document.createElement('div');
-            card.style.cssText = 'background:white;border-radius:12px;padding:20px;border-left:4px solid ' + color + ';box-shadow:0 1px 3px rgba(0,0,0,.1);';
+            card.className = 'dh-mcard clickable';
+            card.style.borderTop = '4px solid ' + color;
+            if (mgClickable) {
+                card.title = 'Abrir Gerar Relatórios → Margem';
+                card.onclick = function() { openModule('margem'); };
+            } else {
+                card.title = 'Abrir Indicadores e Objetivos';
+                card.onclick = function() { openModule('indicadores_obj'); };
+            }
             card.innerHTML =
-                '<div style="font-size:14px;font-weight:600;color:' + color + ';margin-bottom:12px;">' + dept.label + '</div>' +
-                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
-                        '<div style="font-size:11px;color:#888;">Margem</div>' +
-                        '<div style="font-size:20px;font-weight:700;color:' + mpColor + ';">' + mpVal + '</div>' +
-                        (mpLabel ? '<div style="font-size:10px;font-weight:600;color:' + mpColor + ';margin-top:2px;">' + mpLabel + '</div>' : '') +
-                    '</div>' +
-                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
-                        '<div style="font-size:11px;color:#888;">Vendas</div>' +
-                        '<div style="font-size:16px;font-weight:600;color:#333;">' + (dept.vendas || '—') + '</div>' +
-                    '</div>' +
-                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
-                        '<div style="font-size:11px;color:#888;">Custos</div>' +
-                        '<div style="font-size:16px;font-weight:600;color:#333;">' + (dept.custos || '—') + '</div>' +
-                    '</div>' +
-                    '<div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:8px;">' +
-                        '<div style="font-size:11px;color:#888;">Resultado</div>' +
-                        '<div style="font-size:16px;font-weight:600;color:' + mpColor + ';">' + (dept.resultado || '—') + '</div>' +
-                    '</div>' +
+                '<div class="dh-u" style="color:' + color + ';">' + dept.label + '</div>' +
+                '<div style="display:flex;align-items:flex-end;gap:12px;margin-top:8px;flex-wrap:wrap;">' +
+                    '<div class="dh-big' + (isNeg ? ' neg' : '') + '">' + mpVal + '</div>' +
+                    '<div style="margin-bottom:4px;">' + pillHtml + '</div>' +
                 '</div>' +
-                patamaresHtml +
-                '<div style="text-align:center;font-size:10px;color:#999;font-style:italic;margin-top:10px;">Aguarda validação de dados pelo departamento financeiro</div>';
+                '<div class="dh-kv">' +
+                    '<div>Vendas<b>' + (dept.vendas || '—') + '</b></div>' +
+                    '<div>Custos<b>' + (dept.custos || '—') + '</b></div>' +
+                    '<div>Resultado<b style="color:' + (isNeg ? 'var(--danger)' : 'var(--success)') + ';">' + (dept.resultado || '—') + '</b></div>' +
+                '</div>' +
+                meterHtml + metasHtml;
             cardsDiv.appendChild(card);
         });
+        // Nota única (em vez de repetida por cartão)
+        var note = document.createElement('div');
+        note.style.cssText = 'grid-column:1/-1;text-align:center;font-size:10px;color:#999;font-style:italic;';
+        note.textContent = 'Valores provisórios — aguardam validação do departamento financeiro';
+        cardsDiv.appendChild(note);
     }
 
     // ============================================
