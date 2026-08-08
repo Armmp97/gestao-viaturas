@@ -3323,7 +3323,30 @@ body {
   function getHashParam(name){var h=window.location.hash||'';var m=h.match(new RegExp('[#&]'+name+'=([^&]+)'));return m?decodeURIComponent(m[1]):null;}
   function highlightInPage(query){if(!query)return;var q=query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();if(q.length<2)return;function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}var sels=['.cat-card','h2','h3','h4','.card','.unit-card','p','li','td'];var target=null;for(var s=0;s<sels.length&&!target;s++){var nodes=document.querySelectorAll(sels[s]);for(var i=0;i<nodes.length;i++){if(nodes[i].offsetParent===null)continue;var t=norm(nodes[i].textContent||'');if(t.indexOf(q)!==-1){target=nodes[i];break;}}}if(!target)return;var block=target.closest('.cat-card, .card, .unit-card, section, article')||target;setTimeout(function(){block.scrollIntoView({behavior:'smooth',block:'center'});block.classList.add('dc-search-highlight');setTimeout(function(){block.classList.remove('dc-search-highlight');},2500);},250);}
   (function(){if(document.getElementById('dc-search-highlight-style'))return;var st=document.createElement('style');st.id='dc-search-highlight-style';st.textContent='@keyframes dcSearchFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,200,0,0);background-color:transparent}30%{box-shadow:0 0 0 6px rgba(255,200,0,.55);background-color:#fff8a3}}.dc-search-highlight{animation:dcSearchFlash 2.4s ease-out;border-radius:12px}';document.head.appendChild(st);})();
-  function applyDeepLinkFromHash(){var sub=getHashParam('sub');var q=getHashParam('q');var didNav=false;if(sub){var isExternal=EXTERNAL_CARDS.some(function(e){return e.id===sub;});var isCategory=CATEGORIES.some(function(c){return c.id===sub;});if(isExternal){openExternal(sub);didNav=true;}else if(isCategory){navigate(sub);didNav=true;}}if(q)setTimeout(function(){highlightInPage(q);},500);return didNav;}
+  function applyDeepLinkFromHash(){
+    var sub=getHashParam('sub');var q=getHashParam('q');
+    var unit=getHashParam('unit');var year=parseInt(getHashParam('year'),10)||null;
+    var didNav=false;
+    if(sub){
+      // sub pode vir como 'categoria:unidade' (deep-link dos cartões do dashboard da intranet)
+      var parts=sub.split(':');var cat=parts[0];
+      if(!unit&&parts[1])unit=parts[1];
+      var isExternal=EXTERNAL_CARDS.some(function(e){return e.id===cat;});
+      var isCategory=CATEGORIES.some(function(c){return c.id===cat;});
+      if(isExternal){openExternal(cat);didNav=true;}
+      else if(isCategory){
+        var validUnit=unit&&UNITS.some(function(u){return u.id===unit;});
+        if(validUnit){
+          var y=year||YEARS[YEARS.length-1];
+          if(cat==='ticket'){navigate('ticket',y,'mensal',unit);}
+          else{navigate(cat,y,unit);}
+        }else{navigate(cat);}
+        didNav=true;
+      }
+    }
+    if(q)setTimeout(function(){highlightInPage(q);},500);
+    return didNav;
+  }
   if(!applyDeepLinkFromHash())navigate();
   window.addEventListener('hashchange',function(){applyDeepLinkFromHash();});
 

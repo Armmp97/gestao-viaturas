@@ -421,8 +421,8 @@
         /* ======== DASHBOARD REFRESH 2026-08 (hero + chips + margem v2 + kpi tiles) ======== */
         /* Fundos suaves nas secções do dashboard (família de azuis do hero, muito claros) */
         #dashboardView .kpi-section {
-            background: linear-gradient(165deg, #fafcff 0%, #edf3fb 100%);
-            border: 1px solid #dfe8f4;
+            background: linear-gradient(165deg, #d9e5f6 0%, #b4cdec 100%);
+            border: 1px solid #a3c0e4;
         }
         #dashboardView { background: transparent; }
         .dh-hero { background: linear-gradient(120deg, #0a1628 0%, #13294a 55%, #1a73e8 135%); border-radius: 16px; color: #fff; padding: 28px 32px 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(10,22,40,.25); }
@@ -1267,7 +1267,7 @@
                     <span style="font-size:11px;color:var(--text-secondary);">Jan–Jun 2026 acumulado · Fonte: Indicadores e Objetivos</span>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
-                    <div class="dh-mcard clickable" style="border-top:4px solid #1a73e8;" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                    <div class="dh-mcard clickable" style="border-top:4px solid #1a73e8;" onclick="openModule('indicadores_obj', 'ticket:mecanica_cacem')" title="Abrir Indicadores e Objetivos → Ticket Médio (Mecânica Cacém)">
                         <div class="dh-u" style="color:#1a73e8;">Mecânica Cacém</div>
                         <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
                             <div class="dh-big" style="font-size:30px;">456,61 €</div>
@@ -1288,7 +1288,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dh-mcard clickable" style="border-top:4px solid #0d904f;" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                    <div class="dh-mcard clickable" style="border-top:4px solid #0d904f;" onclick="openModule('indicadores_obj', 'ticket:mecanica_lisboa')" title="Abrir Indicadores e Objetivos → Ticket Médio (Mecânica Lisboa)">
                         <div class="dh-u" style="color:#0d904f;">Mecânica Lisboa</div>
                         <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
                             <div class="dh-big" style="font-size:30px;">375,16 €</div>
@@ -1309,7 +1309,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dh-mcard clickable" style="border-top:4px solid #e8710a;" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                    <div class="dh-mcard clickable" style="border-top:4px solid #e8710a;" onclick="openModule('indicadores_obj', 'ticket:colisao')" title="Abrir Indicadores e Objetivos → Ticket Médio (Colisão)">
                         <div class="dh-u" style="color:#e8710a;">Colisão</div>
                         <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
                             <div class="dh-big" style="font-size:30px;">651,00 €</div>
@@ -1330,7 +1330,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dh-mcard clickable" style="border-top:4px solid #1a73e8;border:1.5px solid var(--accent-blue);border-top:4px solid var(--accent-blue);" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                    <div class="dh-mcard clickable" style="border-top:4px solid #1a73e8;border:1.5px solid var(--accent-blue);border-top:4px solid var(--accent-blue);" onclick="openModule('indicadores_obj', 'ticket')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
                         <div class="dh-u" style="color:#1a73e8;">DomusCar (Empresa)</div>
                         <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
                             <div class="dh-big" style="font-size:30px;">468,87 €</div>
@@ -1966,7 +1966,8 @@
                 return '<div class="dh-wb' + low + '" style="height:' + h.toFixed(0) + '%" title="S' + (i + 1) + ': ' + dhFmt1(v) + (kind === 'pct' ? '%' : 'h') + '"><span>S' + (i + 1) + '</span></div>';
             }).join('') + '</div>';
         }
-        return '<div class="dh-tile" onclick="toggleKpiDetail()" title="Ver detalhe completo">' +
+        var tileUnit = tab === 'lisboa' ? 'mecanica_lisboa' : tab === 'cacém' ? 'mecanica_cacem' : 'colisao';
+        return '<div class="dh-tile" onclick="openModule(\'indicadores_obj\', \'kpis:' + tileUnit + '\')" title="Abrir Indicadores e Objetivos → KPIs da unidade">' +
             '<div class="l">' + label + '</div>' +
             '<div class="v' + vCls + '">' + vTxt + '</div>' +
             dHtml + wHtml + '</div>';
@@ -4172,8 +4173,6 @@
                 chips.push({ o: 55, h: heroChip(accDot, null, 'Margem 2026 acumulada', accPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj')", 'Margem real acumulada (' + accMeses + ' meses validados) — abrir Indicadores e Objetivos') });
             }
         }
-        // Atalho KPIs
-        chips.push({ o: 60, h: heroChip(null, '📊', 'KPIs ' + (KPI_DATA._monthBadge || 'Oficinas'), null, "dashScrollTo('kpiDashboardBlock')", 'Ver KPIs das oficinas') });
         // Colaborador: atalho RH
         if (role !== 'admin' && role !== 'coordenador') {
             chips.push({ o: 70, h: heroChip(null, '👥', 'Recursos Humanos →', null, "openModule('recursos_humanos')", 'Abrir Recursos Humanos') });
@@ -4454,8 +4453,11 @@
             if (pct >= 21) return '#34a853';
             return '#d4a017';
         }
+        var MR_UNIT_MAP = { 'Mecânica Cacém': 'mecanica_cacem', 'Mecânica Lisboa': 'mecanica_lisboa', 'Colisão': 'colisao' };
         function buildCard(nome, pct, resultado, vendas, isEmpresa) {
             var cor = margemRealColor(pct);
+            var mrUnit = isEmpresa ? 'domuscar' : (MR_UNIT_MAP[nome] || '');
+            var mrSub = mrUnit ? 'margem:' + mrUnit : 'margem';
             var pill = '';
             if (pct >= 35)      pill = '3.º patamar atingido';
             else if (pct >= 28) pill = '2.º patamar atingido';
@@ -4463,7 +4465,7 @@
             else if (pct < 0)   pill = 'Margem negativa';
             else                pill = 'Abaixo do 1.º patamar';
             var border = isEmpresa ? 'border:1.5px solid ' + cor + ';border-top:4px solid ' + cor + ';' : 'border-top:4px solid ' + cor + ';';
-            return '<div class="dh-mcard clickable" style="' + border + '" onclick="openModule(\'indicadores_obj\')" title="Abrir Indicadores e Objetivos">' +
+            return '<div class="dh-mcard clickable" style="' + border + '" onclick="openModule(\'indicadores_obj\', \'' + mrSub + '\')" title="Abrir Indicadores e Objetivos → Margem Mensal (' + nome + ')">' +
                 '<div class="dh-u" style="color:' + (isEmpresa ? cor : 'var(--text-secondary)') + ';">' + nome + '</div>' +
                 '<div style="display:flex;align-items:flex-end;gap:12px;margin-top:8px;flex-wrap:wrap;">' +
                     '<div class="dh-big" style="font-size:30px;color:' + cor + ';">' + pct.toFixed(2).replace('.', ',') + '%</div>' +
@@ -4694,8 +4696,8 @@
         updateDiv.textContent = periodoText + 'Atualizado: ' + (data.timestamp || '—');
         cardsDiv.innerHTML = '';
         var colors = { colisao: '#e8710a', cacem: '#1a73e8', lisboa: '#0d904f' };
-        // Cartões clicáveis: admins abrem o gerador de Margem (Gerar Relatórios → Margem)
-        var mgClickable = !!(currentUserPermissions && currentUserPermissions.role === 'admin');
+        // Cartões clicáveis → Indicadores e Objetivos → Margem Mensal da unidade
+        var MG_UNIT_MAP = { cacem: 'mecanica_cacem', lisboa: 'mecanica_lisboa', colisao: 'colisao' };
         var sorted = data.departments.slice().sort(function(a, b) { return (b.margem || 0) - (a.margem || 0); });
         sorted.forEach(function(dept) {
             var color = colors[dept.key] || '#333';
@@ -4733,13 +4735,10 @@
             var card = document.createElement('div');
             card.className = 'dh-mcard clickable';
             card.style.borderTop = '4px solid ' + color;
-            if (mgClickable) {
-                card.title = 'Abrir Gerar Relatórios → Margem';
-                card.onclick = function() { openModule('margem'); };
-            } else {
-                card.title = 'Abrir Indicadores e Objetivos';
-                card.onclick = function() { openModule('indicadores_obj'); };
-            }
+            card.title = 'Abrir Indicadores e Objetivos → Margem Mensal (' + dept.label + ')';
+            (function(unitId) {
+                card.onclick = function() { openModule('indicadores_obj', unitId ? 'margem:' + unitId : 'margem'); };
+            })(MG_UNIT_MAP[dept.key]);
             card.innerHTML =
                 '<div class="dh-u" style="color:' + color + ';">' + dept.label + '</div>' +
                 '<div style="display:flex;align-items:flex-end;gap:12px;margin-top:8px;flex-wrap:wrap;">' +
