@@ -2190,8 +2190,8 @@
             });
             html += '</tbody></table>';
             html += '<div class="kpi-tecnico-summary colisao-theme">';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(1) + '%</span></div>';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(1) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + (tec.ep !== null && tec.ep !== undefined ? tec.ep.toFixed(1) + '%' : '—') + '</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + (tec.ut !== null && tec.ut !== undefined ? tec.ut.toFixed(1) + '%' : '—') + '</span></div>';
             html += '</div></div>';
         });
         html += '</div></div>';
@@ -2272,8 +2272,8 @@
             });
             html += '</tbody></table>';
             html += '<div class="kpi-tecnico-summary cacém-theme">';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(1) + '%</span></div>';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(1) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + (tec.ep !== null && tec.ep !== undefined ? tec.ep.toFixed(1) + '%' : '—') + '</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + (tec.ut !== null && tec.ut !== undefined ? tec.ut.toFixed(1) + '%' : '—') + '</span></div>';
             html += '</div></div>';
         });
         html += '</div></div>';
@@ -2354,8 +2354,8 @@
             });
             html += '</tbody></table>';
             html += '<div class="kpi-tecnico-summary lisboa-theme">';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + tec.ep.toFixed(1) + '%</span></div>';
-            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + tec.ut.toFixed(1) + '%</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">EF. PRODUTIVA</span><span class="kpi-tecnico-summary-value">' + (tec.ep !== null && tec.ep !== undefined ? tec.ep.toFixed(1) + '%' : '—') + '</span></div>';
+            html += '<div class="kpi-tecnico-summary-item"><span class="kpi-tecnico-summary-label">UTILIZAÇÃO</span><span class="kpi-tecnico-summary-value">' + (tec.ut !== null && tec.ut !== undefined ? tec.ut.toFixed(1) + '%' : '—') + '</span></div>';
             html += '</div></div>';
         });
         html += '</div></div>';

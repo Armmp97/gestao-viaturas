@@ -1880,19 +1880,22 @@
                 </tr>`;
             }
 
+            // Sem picagens no mês → EP/Utilização individuais não têm base de cálculo válida
+            const semPicagens = techSemPicagens(tech);
             html += `
                         </tbody>
                     </table>
                     <div class="badges-row">
-                        <div class="badge ${getEfficiencyClass(tech.eficienciaProdutiva)}">
+                        <div class="badge ${semPicagens ? '' : getEfficiencyClass(tech.eficienciaProdutiva)}">
                             <div class="badge-label">Ef. Produtiva</div>
-                            <div class="badge-value">${formatPercentage(tech.eficienciaProdutiva)}</div>
+                            <div class="badge-value">${semPicagens ? '—' : formatPercentage(tech.eficienciaProdutiva)}</div>
                         </div>
-                        <div class="badge ${getUtilizationClass(tech.utilizationMonthly)}">
+                        <div class="badge ${semPicagens ? '' : getUtilizationClass(tech.utilizationMonthly)}">
                             <div class="badge-label">Utilização</div>
-                            <div class="badge-value">${formatPercentage(tech.utilizationMonthly)}</div>
+                            <div class="badge-value">${semPicagens ? '—' : formatPercentage(tech.utilizationMonthly)}</div>
                         </div>
                     </div>
+                    ${semPicagens ? '<div style="font-size:0.68rem;color:#a0aec0;margin-top:6px;">Sem picagens registadas este mês — indicadores individuais disponíveis quando houver horas picadas.</div>' : ''}
                 </div>
             `;
 
@@ -2041,8 +2044,10 @@
                 allTechs.push({...tech, workshop: 'CO', workshopColor: '#e53e3e', workshopLabel: 'CO'});
             }
 
-            const byEff = [...allTechs].sort((a, b) => (parseFloat(b.eficienciaProdutiva) || 0) - (parseFloat(a.eficienciaProdutiva) || 0));
-            const byUtil = [...allTechs].sort((a, b) => (parseFloat(b.utilizationMonthly) || 0) - (parseFloat(a.utilizationMonthly) || 0));
+            // Técnicos sem picagens no mês ficam fora dos rankings de EP/Utilização (sem base de cálculo)
+            const comPicagens = allTechs.filter(t => !techSemPicagens(t));
+            const byEff = [...comPicagens].sort((a, b) => (parseFloat(b.eficienciaProdutiva) || 0) - (parseFloat(a.eficienciaProdutiva) || 0));
+            const byUtil = [...comPicagens].sort((a, b) => (parseFloat(b.utilizationMonthly) || 0) - (parseFloat(a.utilizationMonthly) || 0));
             const byHF = [...allTechs].filter(t => t.hf).sort((a, b) => (parseFloat(b.hf) || 0) - (parseFloat(a.hf) || 0));
             const byEuro = [...allTechs].filter(t => t.totalFaturado).sort((a, b) => (parseFloat(b.totalFaturado) || 0) - (parseFloat(a.totalFaturado) || 0));
 
@@ -2332,6 +2337,21 @@
             return html;
         }
 
+        // Último dia do mês com picagens reais (qualquer técnico com horas produtivas > 0).
+        // Pedido do André (Ago/2026): as médias/disponíveis do resumo devem ficar CIRCUNSCRITAS
+        // aos dias já decorridos com dados — senão, no início do mês, o denominador usa o mês
+        // inteiro e as médias ficam ridiculamente baixas (ex.: 47h ÷ 21 dias = 2,25h/dia
+        // quando só passou 1 semana; o correto é 47h ÷ 5 dias = 9,46h/dia).
+        function ultimoDiaComDados(d) {
+            var last = 0;
+            (d.technicians || []).forEach(function(t) {
+                for (var day = 1; day <= d.lastDay; day++) {
+                    if ((t.produtivos[day] || 0) > 0 && day > last) last = day;
+                }
+            });
+            return last > 0 ? last : d.lastDay;
+        }
+
         function renderHorasPicadasResume(d, type) {
             let html = `<table class="resumo-table">
                 <thead>
@@ -2347,21 +2367,23 @@
                 <tbody>
             `;
 
+            // Circunscrever ao período já decorrido com picagens (ver nota em ultimoDiaComDados)
+            const diaLimite = ultimoDiaComDados(d);
             for (const tech of d.technicians) {
                 let totalProd = 0, totalDisp = 0, totalFerias = 0, totalFaltas = 0;
 
-                for (let day = 1; day <= d.lastDay; day++) {
+                for (let day = 1; day <= diaLimite; day++) {
                     totalProd += tech.produtivos[day] || 0;
                     totalDisp += tech.disponiveis[day] || 0;
                     totalFerias += tech.ferias[day] || 0;
                     totalFaltas += tech.faltas[day] || 0;
                 }
 
-                // Dias úteis = dias em que o técnico esteve presente (disponíveis ou produtivos picados).
-                // Dias de férias/faltas completos têm disponíveis = 0, logo já ficam excluídos —
-                // não se subtrai nada (a fórmula antiga subtraía-os outra vez, dando médias a 0 ou infladas).
+                // Dias úteis = dias em que o técnico esteve presente (disponíveis ou produtivos picados),
+                // contados APENAS até ao último dia com picagens. Dias de férias/faltas completos têm
+                // disponíveis = 0, logo já ficam excluídos automaticamente.
                 let daysWithWork = 0;
-                for (let day = 1; day <= d.lastDay; day++) {
+                for (let day = 1; day <= diaLimite; day++) {
                     if ((tech.disponiveis[day] || 0) > 0 || (tech.produtivos[day] || 0) > 0) daysWithWork++;
                 }
                 const avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
@@ -2379,7 +2401,7 @@
             }
 
             html += `</tbody></table>
-                <div class="nota-minima">Mínimo diário para 100% utilização: 6.8h</div>`;
+                <div class="nota-minima">Mínimo diário para 100% utilização: 6.8h · Totais e média circunscritos ao período já decorrido — até ao dia ${diaLimite} (último dia com picagens registadas).</div>`;
 
             return html;
         }
@@ -2855,17 +2877,19 @@
 
         // All technicians with office info
         var allTechs = [];
-        lxTechs.forEach(function(t) { allTechs.push({name: t.name, office: t.notCountsForKpis ? 'LX*' : 'LX', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
-        caTechs.forEach(function(t) { allTechs.push({name: t.name, office: 'CA', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
+        lxTechs.forEach(function(t) { allTechs.push({name: t.name, office: t.notCountsForKpis ? 'LX*' : 'LX', sem: techSemPicagens(t), ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
+        caTechs.forEach(function(t) { allTechs.push({name: t.name, office: 'CA', sem: techSemPicagens(t), ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0}); });
         coTechs.forEach(function(t) {
-            allTechs.push({name: t.name, office: 'CO', ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0});
+            allTechs.push({name: t.name, office: 'CO', sem: techSemPicagens(t), ep: pctRound(t.eficienciaProdutiva), ut: pctRound(t.utilizationMonthly), hf: t.hf ? parseFloat(t.hf) : 0, euro: t.totalFaturado ? parseFloat(t.totalFaturado) : 0});
         });
 
         var medals = ['🥇', '🥈', '🥉'];
-        var ranking_ef = allTechs.slice().sort(function(a, b) { return b.ep - a.ep; }).map(function(t, i) {
+        // Rankings de EP/Utilização excluem técnicos sem picagens (EPs sem base de cálculo);
+        // rankings de HF/€ mantêm todos (horas faturadas são reais).
+        var ranking_ef = allTechs.filter(function(t) { return !t.sem; }).sort(function(a, b) { return b.ep - a.ep; }).map(function(t, i) {
             return { rank: i + 1, name: t.name, office: t.office, value: t.ep, medal: i < 3 ? medals[i] : undefined };
         });
-        var ranking_ut = allTechs.slice().sort(function(a, b) { return b.ut - a.ut; }).map(function(t, i) {
+        var ranking_ut = allTechs.filter(function(t) { return !t.sem; }).sort(function(a, b) { return b.ut - a.ut; }).map(function(t, i) {
             return { rank: i + 1, name: t.name, office: t.office, value: t.ut, medal: i < 3 ? medals[i] : undefined };
         });
         var ranking_hf = allTechs.filter(function(t) { return t.hf > 0; }).sort(function(a, b) { return b.hf - a.hf; }).map(function(t, i) {
@@ -2876,6 +2900,13 @@
         });
 
         return { resumo_oficinas: resumo_oficinas, ranking_ef: ranking_ef, ranking_ut: ranking_ut, ranking_hf: ranking_hf, ranking_eur: ranking_eur };
+    }
+
+    // Técnico sem picagens no mês (HT <= 0): as EPs/Utilizações individuais vindas do Excel
+    // não fazem sentido (bases nulas ou negativas) — mostram-se como "—" até haver picagens.
+    function techSemPicagens(t) {
+        var ht = parseFloat(t && t.htMonthly);
+        return !(isFinite(ht) && ht > 0);
     }
 
     // Helper functions for payload building
@@ -2914,8 +2945,8 @@
                         u: t.utilization && t.utilization[i] !== null && t.utilization[i] !== undefined ? pctRound(t.utilization[i]) : null
                     };
                 }),
-                ep: pctRound(t.eficienciaProdutiva) || 0,
-                ut: pctRound(t.utilizationMonthly) || 0
+                ep: techSemPicagens(t) ? null : (pctRound(t.eficienciaProdutiva) || 0),
+                ut: techSemPicagens(t) ? null : (pctRound(t.utilizationMonthly) || 0)
             };
         });
     }
@@ -2934,8 +2965,8 @@
                         u: t.utilization && t.utilization[i] !== null && t.utilization[i] !== undefined ? pctRound(t.utilization[i]) : null
                     };
                 }),
-                ep: pctRound(t.eficienciaProdutiva) || 0,
-                ut: pctRound(t.utilizationMonthly) || 0
+                ep: techSemPicagens(t) ? null : (pctRound(t.eficienciaProdutiva) || 0),
+                ut: techSemPicagens(t) ? null : (pctRound(t.utilizationMonthly) || 0)
             };
         });
     }
@@ -2944,18 +2975,19 @@
         var horasKey = type + 'Horas';
         var horasData = data[horasKey];
         if (!horasData || !horasData.technicians) return [];
+        // Mesma regra do relatório: circunscrever ao último dia com picagens (ver ultimoDiaComDados)
+        var diaLimiteHP = ultimoDiaComDados(horasData);
         return horasData.technicians.map(function(tech) {
             var totalProd = 0, totalDisp = 0, totalFerias = 0, totalFaltas = 0;
-            for (var day = 1; day <= horasData.lastDay; day++) {
+            for (var day = 1; day <= diaLimiteHP; day++) {
                 totalProd += tech.produtivos[day] || 0;
                 totalDisp += tech.disponiveis[day] || 0;
                 totalFerias += tech.ferias[day] || 0;
                 totalFaltas += tech.faltas[day] || 0;
             }
-            // Dias úteis = dias com presença (disponíveis ou produtivos > 0); férias/faltas completas
-            // já têm disponíveis = 0 e ficam excluídas automaticamente — não subtrair outra vez.
+            // Dias úteis = dias com presença (disponíveis ou produtivos > 0) até ao último dia com dados
             var daysWithWork = 0;
-            for (var day = 1; day <= horasData.lastDay; day++) {
+            for (var day = 1; day <= diaLimiteHP; day++) {
                 if ((tech.disponiveis[day] || 0) > 0 || (tech.produtivos[day] || 0) > 0) daysWithWork++;
             }
             var avgPerDay = daysWithWork > 0 ? totalProd / daysWithWork : 0;
