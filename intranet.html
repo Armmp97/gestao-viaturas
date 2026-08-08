@@ -209,9 +209,9 @@
                 scrollbar-width: none;
             }
             .app-sidebar::-webkit-scrollbar { display: none; }
-            .app-sidebar:hover {
+            .app-sidebar:hover,
+            .app-sidebar:focus-within {
                 width: var(--sidebar-width);
-                box-shadow: 10px 0 30px rgba(0,0,0,0.35);
             }
             .app-sidebar:not(:hover) .sidebar-section {
                 color: transparent;
@@ -227,9 +227,12 @@
             }
             .sidebar-nav a { white-space: nowrap; }
             /* main.app-main: especificidade superior à regra base .app-main (que aparece depois na folha) */
-            main.app-main { left: 68px; }
+            main.app-main { left: 68px; transition: left 0.22s ease; }
             main.app-main.sidebar-hidden,
             main.app-main.full { left: 0; }
+            /* Hover na sidebar EMPURRA o conteúdo (em vez de sobrepor) */
+            .app-sidebar:hover ~ main.app-main:not(.full):not(.sidebar-hidden),
+            .app-sidebar:focus-within ~ main.app-main:not(.full):not(.sidebar-hidden) { left: var(--sidebar-width); }
         }
 
         .sidebar-overlay {
@@ -416,6 +419,12 @@
 
 
         /* ======== DASHBOARD REFRESH 2026-08 (hero + chips + margem v2 + kpi tiles) ======== */
+        /* Fundos suaves nas secções do dashboard (família de azuis do hero, muito claros) */
+        #dashboardView .kpi-section {
+            background: linear-gradient(165deg, #fafcff 0%, #edf3fb 100%);
+            border: 1px solid #dfe8f4;
+        }
+        #dashboardView { background: transparent; }
         .dh-hero { background: linear-gradient(120deg, #0a1628 0%, #13294a 55%, #1a73e8 135%); border-radius: 16px; color: #fff; padding: 28px 32px 24px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(10,22,40,.25); }
         .dh-hero::after { content: ''; position: absolute; right: -60px; top: -90px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(77,168,218,.25), transparent 65%); pointer-events: none; }
         .dh-hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -.3px; position: relative; z-index: 2; }
@@ -467,21 +476,58 @@
         .dh-wb.low { background: #f0b429; }
         .dh-wb span { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #8a94a6; font-weight: 700; }
         .dh-krow { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
-        @media (min-width: 900px) { .dh-krow { grid-template-columns: 3fr 2fr; } }
+        @media (min-width: 900px) { .dh-krow { grid-template-columns: 1fr 1fr; } }
         .dh-kcard { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
         .dh-kcard h3 { font-size: 12.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
-        .dh-pod { display: flex; flex-direction: column; gap: 8px; }
-        .dh-pod .p { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-secondary); }
-        .dh-pod .p b { color: var(--text-primary); white-space: nowrap; }
-        .dh-pod .pbar { flex: 1; height: 8px; background: var(--border-color); border-radius: 50px; position: relative; min-width: 40px; }
-        .dh-pod .pbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 50px; background: var(--accent-blue); }
-        .dh-pod .val { font-weight: 800; color: var(--text-primary); font-size: 12px; min-width: 56px; text-align: right; }
+        .dh-pod { display: flex; flex-direction: column; gap: 11px; }
+        .dh-pod .p { display: grid; grid-template-columns: 30px minmax(120px, 175px) 1fr 72px; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); }
+        .dh-pod .p b { color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dh-pod .pbar { height: 10px; background: var(--border-color); border-radius: 50px; position: relative; }
+        .dh-pod .pbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 50px; background: linear-gradient(90deg, #4da8da, #1a73e8); }
+        .dh-pod .val { font-weight: 800; color: var(--text-primary); font-size: 12.5px; text-align: right; }
+        .dh-spark-svg { width: 100%; height: auto; display: block; }
         .dh-detail-btn { margin-top: 16px; width: 100%; padding: 10px; background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--accent-blue); cursor: pointer; font-family: inherit; transition: background .15s; }
         .dh-detail-btn:hover { background: #e4eaf3; }
         @media (max-width: 640px) {
             .dh-hero { padding: 22px 20px 20px; }
             .dh-hero h1 { font-size: 24px; }
         }
+        /* -- Detalhe completo dos KPIs: visual moderno sobre as tabelas existentes -- */
+        .kpi-content .kpi-report { background: transparent; }
+        .kpi-content .kpi-page-header {
+            border-radius: 12px;
+            font-size: 15px;
+            padding: 12px 18px;
+            letter-spacing: 1.4px;
+            box-shadow: 0 4px 14px rgba(10,22,40,.18);
+        }
+        .kpi-content .kpi-subsection {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+            overflow-x: auto;
+        }
+        .kpi-content .kpi-subsection-header {
+            border-left: none;
+            padding-left: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-blue-light);
+            color: #33475e;
+            font-size: 12px;
+        }
+        .kpi-content .kpi-table thead,
+        .kpi-content .kpi-ranking-table thead {
+            background: #f2f6fc;
+            color: #41546b;
+        }
+        .kpi-content .kpi-table th,
+        .kpi-content .kpi-ranking-table th { color: #41546b; }
+        .kpi-content .kpi-table tbody tr:nth-child(even) { background: #f8fafd; }
+        .kpi-content .kpi-ranking-table tbody tr:nth-child(odd) { background: #f8fafd; }
+        .kpi-content .kpi-tecnico-grid .kpi-tecnico-card { border-radius: 10px; }
 
         /* ---- KPI Section ---- */
         .kpi-section {
@@ -1216,92 +1262,91 @@
             </div>
             <!-- Ticket Médio por Tipo de Cliente (Jan-Jun 2026 acumulado) -->
             <div class="kpi-section" id="ticketMedioBlock" style="padding:16px 20px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:14px;font-weight:700;color:var(--text-primary);">Ticket Médio por Tipo de Cliente</span>
-                    </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                    <span style="font-size:16px;font-weight:700;color:var(--text-primary);">Ticket Médio por Tipo de Cliente</span>
+                    <span style="font-size:11px;color:var(--text-secondary);">Jan–Jun 2026 acumulado · Fonte: Indicadores e Objetivos</span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
-                    <!-- Mecânica Cacém -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border-left:3px solid #059669;">
-                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
-                            <div style="font-size:11px;color:var(--text-secondary);font-weight:700;">Mecânica Cacém</div>
-                            <div style="font-size:14px;font-weight:800;color:var(--text-primary);">456,61 € <span style="font-size:9px;color:var(--text-secondary);font-weight:600;">global</span></div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+                    <div class="dh-mcard clickable" style="border-top:4px solid #1a73e8;" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                        <div class="dh-u" style="color:#1a73e8;">Mecânica Cacém</div>
+                        <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
+                            <div class="dh-big" style="font-size:30px;">456,61 €</div>
+                            <div style="font-size:10px;color:var(--text-secondary);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">global / OS</div>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(217,119,6,.06);border-radius:4px;">
-                                <span style="color:#d97706;font-weight:700;">Leaseplan + FleetCover</span>
+                        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;margin-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(217,119,6,.07);border-radius:8px;">
+                                <span style="color:#b45309;font-weight:700;">Leaseplan + FleetCover</span>
                                 <span style="font-weight:800;color:var(--text-primary);">428,78 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(5,150,105,.06);border-radius:4px;">
-                                <span style="color:#059669;font-weight:700;">Empresa</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(5,150,105,.07);border-radius:8px;">
+                                <span style="color:#047857;font-weight:700;">Empresa</span>
                                 <span style="font-weight:800;color:var(--text-primary);">486,54 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(124,58,237,.06);border-radius:4px;">
-                                <span style="color:#7c3aed;font-weight:700;">Particular</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(124,58,237,.07);border-radius:8px;">
+                                <span style="color:#6d28d9;font-weight:700;">Particular</span>
                                 <span style="font-weight:800;color:var(--text-primary);">422,17 €</span>
                             </div>
                         </div>
                     </div>
-                    <!-- Mecânica Lisboa -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border-left:3px solid var(--accent-blue);">
-                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
-                            <div style="font-size:11px;color:var(--text-secondary);font-weight:700;">Mecânica Lisboa</div>
-                            <div style="font-size:14px;font-weight:800;color:var(--text-primary);">375,16 € <span style="font-size:9px;color:var(--text-secondary);font-weight:600;">global</span></div>
+                    <div class="dh-mcard clickable" style="border-top:4px solid #0d904f;" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                        <div class="dh-u" style="color:#0d904f;">Mecânica Lisboa</div>
+                        <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
+                            <div class="dh-big" style="font-size:30px;">375,16 €</div>
+                            <div style="font-size:10px;color:var(--text-secondary);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">global / OS</div>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(217,119,6,.06);border-radius:4px;">
-                                <span style="color:#d97706;font-weight:700;">Leaseplan + FleetCover</span>
+                        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;margin-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(217,119,6,.07);border-radius:8px;">
+                                <span style="color:#b45309;font-weight:700;">Leaseplan + FleetCover</span>
                                 <span style="font-weight:800;color:var(--text-primary);">313,64 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(5,150,105,.06);border-radius:4px;">
-                                <span style="color:#059669;font-weight:700;">Empresa</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(5,150,105,.07);border-radius:8px;">
+                                <span style="color:#047857;font-weight:700;">Empresa</span>
                                 <span style="font-weight:800;color:var(--text-primary);">383,80 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(124,58,237,.06);border-radius:4px;">
-                                <span style="color:#7c3aed;font-weight:700;">Particular</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(124,58,237,.07);border-radius:8px;">
+                                <span style="color:#6d28d9;font-weight:700;">Particular</span>
                                 <span style="font-weight:800;color:var(--text-primary);">451,49 €</span>
                             </div>
                         </div>
                     </div>
-                    <!-- Colisão -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border-left:3px solid #e37400;">
-                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
-                            <div style="font-size:11px;color:var(--text-secondary);font-weight:700;">Colisão</div>
-                            <div style="font-size:14px;font-weight:800;color:var(--text-primary);">651,00 € <span style="font-size:9px;color:var(--text-secondary);font-weight:600;">global</span></div>
+                    <div class="dh-mcard clickable" style="border-top:4px solid #e8710a;" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                        <div class="dh-u" style="color:#e8710a;">Colisão</div>
+                        <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
+                            <div class="dh-big" style="font-size:30px;">651,00 €</div>
+                            <div style="font-size:10px;color:var(--text-secondary);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">global / OS</div>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(217,119,6,.06);border-radius:4px;">
-                                <span style="color:#d97706;font-weight:700;">Leaseplan + FleetCover</span>
+                        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;margin-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(217,119,6,.07);border-radius:8px;">
+                                <span style="color:#b45309;font-weight:700;">Leaseplan + FleetCover</span>
                                 <span style="font-weight:800;color:var(--text-primary);">931,73 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(5,150,105,.06);border-radius:4px;">
-                                <span style="color:#059669;font-weight:700;">Empresa</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(5,150,105,.07);border-radius:8px;">
+                                <span style="color:#047857;font-weight:700;">Empresa</span>
                                 <span style="font-weight:800;color:var(--text-primary);">581,74 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(124,58,237,.06);border-radius:4px;">
-                                <span style="color:#7c3aed;font-weight:700;">Particular</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(124,58,237,.07);border-radius:8px;">
+                                <span style="color:#6d28d9;font-weight:700;">Particular</span>
                                 <span style="font-weight:800;color:var(--text-primary);">426,97 €</span>
                             </div>
                         </div>
                     </div>
-                    <!-- DomusCar (Empresa) -->
-                    <div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;border:1.5px solid var(--accent-blue);border-left:3px solid var(--accent-blue);">
-                        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
-                            <div style="font-size:11px;color:var(--accent-blue);font-weight:700;">DomusCar (Empresa)</div>
-                            <div style="font-size:14px;font-weight:800;color:var(--accent-blue);">468,87 € <span style="font-size:9px;color:var(--text-secondary);font-weight:600;">global</span></div>
+                    <div class="dh-mcard clickable" style="border-top:4px solid #1a73e8;border:1.5px solid var(--accent-blue);border-top:4px solid var(--accent-blue);" onclick="openModule('indicadores_obj')" title="Abrir Indicadores e Objetivos → Ticket Médio 2026">
+                        <div class="dh-u" style="color:#1a73e8;">DomusCar (Empresa)</div>
+                        <div style="display:flex;align-items:flex-end;gap:8px;margin-top:8px;">
+                            <div class="dh-big" style="font-size:30px;">468,87 €</div>
+                            <div style="font-size:10px;color:var(--text-secondary);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">global / OS</div>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(217,119,6,.08);border-radius:4px;">
-                                <span style="color:#d97706;font-weight:700;">Leaseplan + FleetCover</span>
+                        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;margin-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(217,119,6,.07);border-radius:8px;">
+                                <span style="color:#b45309;font-weight:700;">Leaseplan + FleetCover</span>
                                 <span style="font-weight:800;color:var(--text-primary);">466,42 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(5,150,105,.08);border-radius:4px;">
-                                <span style="color:#059669;font-weight:700;">Empresa</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(5,150,105,.07);border-radius:8px;">
+                                <span style="color:#047857;font-weight:700;">Empresa</span>
                                 <span style="font-weight:800;color:var(--text-primary);">498,66 €</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:rgba(124,58,237,.08);border-radius:4px;">
-                                <span style="color:#7c3aed;font-weight:700;">Particular</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(124,58,237,.07);border-radius:8px;">
+                                <span style="color:#6d28d9;font-weight:700;">Particular</span>
                                 <span style="font-weight:800;color:var(--text-primary);">435,59 €</span>
                             </div>
                         </div>
@@ -1935,7 +1980,7 @@
         var maxV = top[0].value || 1;
         var rows = top.map(function(r) {
             var tag = r.medal || (r.rank + 'º');
-            return '<div class="p">' + tag + ' <b>' + r.name + '</b>' +
+            return '<div class="p"><span style="text-align:center;">' + tag + '</span><b>' + r.name + '</b>' +
                 '<div class="pbar"><i style="width:' + Math.max(4, r.value / maxV * 100).toFixed(0) + '%"></i></div>' +
                 '<span class="val">' + r.value.toFixed(1).replace('.', ',') + ' h</span></div>';
         }).join('');
@@ -1958,24 +2003,30 @@
         if (serie.length < 2) return '';
         var vals = serie.map(function(p) { return p.v; });
         var lo = Math.min.apply(null, vals.concat([100])), hi = Math.max.apply(null, vals.concat([100]));
-        var pad = (hi - lo) * 0.15 || 10; lo -= pad; hi += pad;
-        var W = 300, H = 120, x0 = 14, x1 = 288, yTop = 14, yBot = 96;
+        var pad = (hi - lo) * 0.22 || 10; lo -= pad; hi += pad + 8;
+        // ViewBox largo com aspeto preservado — nada encolhe nem distorce
+        var W = 620, H = 200, x0 = 44, x1 = 600, yTop = 26, yBot = 164;
         function X(i) { return x0 + (x1 - x0) * (serie.length === 1 ? 0 : i / (serie.length - 1)); }
         function Y(v) { return yBot - (v - lo) / (hi - lo) * (yBot - yTop); }
         var path = serie.map(function(p, i) { return (i === 0 ? 'M' : 'L') + X(i).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ');
+        var area = path + ' L' + X(serie.length - 1).toFixed(1) + ' ' + yBot + ' L' + x0 + ' ' + yBot + ' Z';
         var y100 = Y(100);
-        var last = serie[serie.length - 1];
-        var labels = serie.map(function(p, i) {
-            return '<text x="' + X(i).toFixed(0) + '" y="115" font-size="9" fill="#8a94a6" text-anchor="middle">' + p.label + '</text>';
-        }).join('');
+        var dots = '', vLabels = '', mLabels = '';
+        serie.forEach(function(p, i) {
+            var isLast = i === serie.length - 1;
+            dots += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(p.v).toFixed(1) + '" r="' + (isLast ? 5 : 3.5) + '" fill="' + (isLast ? '#1a73e8' : '#fff') + '" stroke="#1a73e8" stroke-width="2"/>';
+            var anchor = i === 0 ? 'start' : (isLast ? 'end' : 'middle');
+            vLabels += '<text x="' + X(i).toFixed(1) + '" y="' + (Y(p.v) - 10).toFixed(1) + '" font-size="' + (isLast ? 13 : 10.5) + '" font-weight="' + (isLast ? 800 : 600) + '" fill="' + (isLast ? '#1a1a2e' : '#8a94a6') + '" text-anchor="' + anchor + '">' + dhFmt1(p.v) + '%</text>';
+            mLabels += '<text x="' + X(i).toFixed(1) + '" y="188" font-size="11" font-weight="600" fill="#8a94a6" text-anchor="middle">' + p.label + '</text>';
+        });
         return '<div class="dh-kcard"><h3>Eficiência Produtiva — últimos ' + serie.length + ' meses</h3>' +
-            '<svg width="100%" height="120" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
-            '<line x1="0" y1="' + y100.toFixed(1) + '" x2="' + W + '" y2="' + y100.toFixed(1) + '" stroke="#e3e8ef" stroke-width="1"/>' +
-            '<text x="4" y="' + (y100 - 4).toFixed(1) + '" font-size="9" fill="#8a94a6">100%</text>' +
-            '<path d="' + path + '" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-            '<circle cx="' + X(serie.length - 1).toFixed(1) + '" cy="' + Y(last.v).toFixed(1) + '" r="3.5" fill="#1a73e8"/>' +
-            '<text x="' + X(serie.length - 1).toFixed(1) + '" y="' + (Y(last.v) - 8).toFixed(1) + '" font-size="11" font-weight="800" fill="#1a1a2e" text-anchor="end">' + dhFmt1(last.v) + '%</text>' +
-            labels + '</svg></div>';
+            '<svg class="dh-spark-svg" viewBox="0 0 ' + W + ' ' + H + '">' +
+            '<defs><linearGradient id="dhSparkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a73e8" stop-opacity=".14"/><stop offset="100%" stop-color="#1a73e8" stop-opacity="0"/></linearGradient></defs>' +
+            '<line x1="' + x0 + '" y1="' + y100.toFixed(1) + '" x2="' + x1 + '" y2="' + y100.toFixed(1) + '" stroke="#c9d6e8" stroke-width="1" stroke-dasharray="4 4"/>' +
+            '<text x="6" y="' + (y100 + 4).toFixed(1) + '" font-size="10.5" font-weight="600" fill="#8a94a6">100%</text>' +
+            '<path d="' + area + '" fill="url(#dhSparkFill)"/>' +
+            '<path d="' + path + '" fill="none" stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+            dots + vLabels + mLabels + '</svg></div>';
     }
 
     var _kpiCurrentTab = 'colisao';
@@ -3580,6 +3631,9 @@
             role: currentUserPermissions ? currentUserPermissions.role : null
         };
     };
+    // Permissões para o widget de pesquisa (currentUserPermissions é 'let' → window.currentUserPermissions
+    // era sempre undefined e a pesquisa NÃO filtrava por permissões — este helper fecha sobre a variável)
+    window.getPermsForSearch = function() { return currentUserPermissions; };
     // Apagar relatório arquivado (apenas admins) — usado pelo botão 🗑 do histórico do módulo
     window.amDeleteReport = function(fileName) {
         var role = currentUserPermissions ? currentUserPermissions.role : null;
@@ -3998,8 +4052,18 @@
             'nuno.montes@domuscar.com':    { divPend: 'div_colisao_taguspark_pendente' }
         },
         divPendAll: ['div_colisao_belavista_pendente', 'div_colisao_taguspark_pendente', 'div_lisboa_pendente', 'div_cacem_pendente'],
-        femaleNames: ['vanessa', 'inês', 'ines', 'alícia', 'alicia', 'olesya']
+        femaleNames: ['vanessa', 'inês', 'ines', 'alícia', 'alicia', 'olesya'],
+        // Margem real DomusCar (empresa) por mês de 2026 — fonte: indicadores_objetivos.html → MARGEM_DATA[2026].domuscar
+        // MANUTENÇÃO: acrescentar [vendas, margem€] quando um novo mês real for validado nos Indicadores.
+        margemReal2026: [
+            [270430.98, 37813.86],
+            [237277.05, 10225.48],
+            [293835.82, 65250.82],
+            [293970.37, 59000.27],
+            [299557, 46728]
+        ]
     };
+    var HERO_MESES_PT = { 'janeiro': 1, 'fevereiro': 2, 'março': 3, 'marco': 3, 'abril': 4, 'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 };
 
     function heroPrevMes() {
         var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
@@ -4080,6 +4144,32 @@
                 var gDot = gPct >= 21 ? 'grn' : (gPct >= 0 ? 'amb' : 'red');
                 var perLabel = mg.periodo ? String(mg.periodo).split(' ')[0] : '';
                 chips.push({ o: 50, h: heroChip(gDot, null, 'Margem global ' + perLabel, gPct.toFixed(1).replace('.', ',') + '%', "dashScrollTo('margemDashboardBlock')", 'Ver margem provisória') });
+            }
+        }
+        // Margem global acumulada 2026 (real validada) — apenas admins
+        if (role === 'admin') {
+            var accV = 0, accR = 0, accMeses = HERO_CFG.margemReal2026.length;
+            HERO_CFG.margemReal2026.forEach(function(m) { accV += m[0]; accR += m[1]; });
+            // Se a margem real carregada (SP) for de um mês posterior ao embebido, soma-o também
+            try {
+                var rd = MARGEM_REAL_DATA || MARGEM_REAL_FALLBACK_DATA;
+                if (rd && rd.periodo && rd.unidades) {
+                    var rParts = String(rd.periodo).toLowerCase().trim().split(/\s+/);
+                    var rMes = HERO_MESES_PT[rParts[0]] || 0;
+                    var rAno = parseInt(rParts[1], 10) || 0;
+                    if (rAno === 2026 && rMes > accMeses) {
+                        var emp = rd.unidades.filter(function(u) { return u.empresa; })[0];
+                        if (emp) {
+                            var eV = heroParseEuro(emp.vendas), eR = heroParseEuro(emp.resultado);
+                            if (!isNaN(eV) && !isNaN(eR) && eV > 0) { accV += eV; accR += eR; accMeses = rMes; }
+                        }
+                    }
+                }
+            } catch (e) {}
+            if (accV > 0) {
+                var accPct = accR / accV * 100;
+                var accDot = accPct >= 21 ? 'grn' : (accPct >= 0 ? 'amb' : 'red');
+                chips.push({ o: 55, h: heroChip(accDot, null, 'Margem 2026 acumulada', accPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj')", 'Margem real acumulada (' + accMeses + ' meses validados) — abrir Indicadores e Objetivos') });
             }
         }
         // Atalho KPIs
@@ -4366,23 +4456,29 @@
         }
         function buildCard(nome, pct, resultado, vendas, isEmpresa) {
             var cor = margemRealColor(pct);
-            var border = isEmpresa ? 'border:1.5px solid ' + cor + ';' : '';
-            var nameColor = isEmpresa ? 'color:' + cor + ';font-weight:700;' : 'color:var(--text-secondary);font-weight:600;';
-            return '<div style="background:var(--content-bg);border-radius:8px;padding:10px 12px;text-align:center;cursor:pointer;' + border + '" onclick="openModule(\'indicadores_obj\')" title="Abrir Indicadores e Objetivos">' +
-                '<div style="font-size:11px;' + nameColor + 'margin-bottom:4px;">' + nome + '</div>' +
-                '<div style="font-size:16px;font-weight:800;color:' + cor + ';">' + pct.toFixed(2).replace('.', ',') + '%</div>' +
-                '<div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.2px;margin-top:1px;">Margem</div>' +
-                '<div style="display:flex;justify-content:center;gap:12px;margin-top:6px;">' +
-                    '<div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">' + resultado + '</div><div style="font-size:9px;color:var(--text-secondary);">Resultado</div></div>' +
-                    '<div style="width:1px;background:var(--border-color);"></div>' +
-                    '<div><div style="font-size:12px;font-weight:700;color:var(--text-primary);">' + vendas + '</div><div style="font-size:9px;color:var(--text-secondary);">Vendas s/IVA</div></div>' +
+            var pill = '';
+            if (pct >= 35)      pill = '3.º patamar atingido';
+            else if (pct >= 28) pill = '2.º patamar atingido';
+            else if (pct >= 21) pill = '1.º patamar atingido';
+            else if (pct < 0)   pill = 'Margem negativa';
+            else                pill = 'Abaixo do 1.º patamar';
+            var border = isEmpresa ? 'border:1.5px solid ' + cor + ';border-top:4px solid ' + cor + ';' : 'border-top:4px solid ' + cor + ';';
+            return '<div class="dh-mcard clickable" style="' + border + '" onclick="openModule(\'indicadores_obj\')" title="Abrir Indicadores e Objetivos">' +
+                '<div class="dh-u" style="color:' + (isEmpresa ? cor : 'var(--text-secondary)') + ';">' + nome + '</div>' +
+                '<div style="display:flex;align-items:flex-end;gap:12px;margin-top:8px;flex-wrap:wrap;">' +
+                    '<div class="dh-big" style="font-size:30px;color:' + cor + ';">' + pct.toFixed(2).replace('.', ',') + '%</div>' +
+                    '<div style="margin-bottom:4px;"><span class="dh-patamar-pill" style="color:' + cor + ';background:rgba(13,144,79,.08);">' + pill + '</span></div>' +
+                '</div>' +
+                '<div class="dh-kv">' +
+                    '<div>Resultado<b style="color:' + cor + ';">' + resultado + '</b></div>' +
+                    '<div>Vendas s/IVA<b>' + vendas + '</b></div>' +
                 '</div></div>';
         }
         var cardsHtml = (realData.unidades || []).map(function(u) {
             var pctNum = (typeof u.pct === 'number') ? u.pct : parseFloat(String(u.pct).replace(',', '.'));
             return buildCard(u.label, isNaN(pctNum) ? 0 : pctNum, u.resultado || '—', u.vendas || '—', !!u.empresa);
         }).join('');
-        content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">' + cardsHtml + '</div>';
+        content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">' + cardsHtml + '</div>';
     }
 
     // ======== SAVE / LOAD MARGEM REAL (dinâmico) ========
@@ -4579,6 +4675,7 @@
                     '<div style="font-size:12px;color:#aaa;">A margem mensal real de <strong>' + MARGEM_REAL_ULTIMO_MES + '</strong> já foi carregada.<br>A margem provisória será atualizada quando houver dados do próximo período.</div>' +
                     '</div>';
                 updateDiv.textContent = data.periodo + ' | Atualizado: ' + (data.timestamp || '—');
+                var n1 = document.getElementById('margemProvNote'); if (n1) n1.style.display = 'none';
                 return;
             }
         }
@@ -4590,6 +4687,7 @@
                 cardsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-secondary);font-size:14px;"><div style="margin-bottom:8px;">📊</div>Sem dados de margem provisória disponíveis.<br><span style="font-size:12px;color:#aaa;">Os dados serão atualizados quando um administrador gerar o relatório mensal.</span></div>';
             }
             updateDiv.textContent = '';
+            var n2 = document.getElementById('margemProvNote'); if (n2) n2.style.display = 'none';
             return;
         }
         var periodoText = data.periodo ? data.periodo + ' | ' : '';
@@ -4656,11 +4754,17 @@
                 meterHtml + metasHtml;
             cardsDiv.appendChild(card);
         });
-        // Nota única (em vez de repetida por cartão)
-        var note = document.createElement('div');
-        note.style.cssText = 'grid-column:1/-1;text-align:center;font-size:10px;color:#999;font-style:italic;';
+        // Nota única FORA da grelha (dentro da grelha impedia o auto-fit de colapsar colunas vazias
+        // e os cartões não preenchiam a linha)
+        var note = document.getElementById('margemProvNote');
+        if (!note) {
+            note = document.createElement('div');
+            note.id = 'margemProvNote';
+            note.style.cssText = 'text-align:center;font-size:10px;color:#999;font-style:italic;margin-top:10px;';
+            cardsDiv.parentNode.appendChild(note);
+        }
         note.textContent = 'Valores provisórios — aguardam validação do departamento financeiro';
-        cardsDiv.appendChild(note);
+        note.style.display = 'block';
     }
 
     // ============================================
@@ -4949,7 +5053,7 @@
 
 
 <!-- ======== MOTOR DE BUSCA INTRANET ======== -->
-<script src="search-index.js?v=2026052701"></script>
+<script src="search-index.js?v=2026080801"></script>
 <script>
 /* === search-widget.js EMBUTIDO INLINE === */
 /* ============================================================
@@ -5088,12 +5192,23 @@
     var terms = normalize(query).split(/\s+/).filter(function(t){return t.length >= 2;});
     if(!terms.length) return [];
 
-    var perm = window.currentUserPermissions;
+    var perm = (typeof window.getPermsForSearch === 'function') ? window.getPermsForSearch() : window.currentUserPermissions;
     var allowed = perm && Array.isArray(perm.modules) ? perm.modules : null;
-
+    // Módulos cujo acesso é por ROLE (não constam das listas modules[] do USER_PERMISSIONS)
+    var ROLE_GATED = {
+      formacao: ['admin', 'coordenador', 'rh'],
+      equipamentos: ['admin', 'coordenador'],
+      aval_merito_admin: ['admin'],
+      coord_estatisticas: ['admin', 'coordenador'],
+      coord_auditoria_carrinhos: ['admin', 'coordenador']
+    };
     var hits = [];
     index.forEach(function(item){
-      if(allowed && allowed.indexOf(item.id) === -1) return;
+      if(allowed){
+        var rg = ROLE_GATED[item.id];
+        if(rg){ if(!perm || rg.indexOf(perm.role) === -1) return; }
+        else if(allowed.indexOf(item.id) === -1) return;
+      }
       var nTitle = normalize(item.title);
       var nSection = normalize(item.section);
       var nHeadings = normalize((item.headings||[]).join(' | '));
