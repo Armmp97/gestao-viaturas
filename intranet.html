@@ -1875,36 +1875,38 @@
     // ======== HISTÓRICO KPI 2026 (para deltas + sparkline do resumo) ========
     // Fonte: indicadores_objetivos.html → KPIs Coordenação 2026.
     // Colunas: [Horas Trabalhadas, Horas Vendidas, Horas Disponíveis, Ef. Produtiva %, Utilização %]
+    // EP e Utilização na REGRA ÚNICA (EP=HV÷HT, Util=HT÷HD — rácios dos totais do mês),
+    // recalculadas em Ago/2026 a partir dos Excels mensais originais.
     // MANUTENÇÃO: ao publicar um novo mês em Indicadores e Objetivos, acrescentar aqui o mês anterior
     // (o mês corrente vem sempre do KPI_DATA dinâmico; o histórico serve para o delta e a linha de tendência).
     var KPI_HIST_ANO = 2026;
     var KPI_HIST = {
         lisboa: [
-            [344.5, 575.83, 344.68, 138.62, 99.69],
-            [345.68, 561.24, 361.42, 160.05, 95.76],
-            [356.55, 611.89, 322.15, 157.87, 132.37],
-            [394.39, 713.79, 370.6, 167.22, 106.77],
-            [388.02, 517.55, 350.2, 138.73, 112.05],
-            [349.3, 704.77, 340, 176.63, 102.87],
-            [385.86, 635.47, 360.4, 123.76, 106.53]
+            [344.5, 575.83, 344.68, 167.15, 99.95],
+            [345.68, 561.24, 361.42, 162.36, 95.64],
+            [356.55, 611.89, 322.15, 171.61, 110.68],
+            [394.39, 713.79, 370.6, 180.99, 106.42],
+            [388.02, 517.55, 350.2, 133.38, 110.8],
+            [349.3, 704.77, 340, 201.76, 102.74],
+            [385.86, 635.47, 360.4, 164.69, 107.06]
         ],
         'cacém': [
-            [574.31, 722.18, 610.3, 130.52, 93.9],
-            [499.58, 559.37, 556.75, 130.89, 90.79],
-            [575.8, 757.06, 589.9, 141.31, 97.84],
-            [520.82, 693.82, 484.5, 144.65, 107.11],
-            [548.97, 899.41, 522.32, 169.74, 105.67],
-            [567.33, 739.29, 523.6, 148.24, 109.51],
-            [552.2, 911.23, 484.5, 217.85, 115.57]
+            [574.31, 722.18, 610.3, 125.75, 94.1],
+            [499.58, 559.37, 556.75, 111.97, 89.73],
+            [575.8, 757.06, 589.9, 131.48, 97.61],
+            [520.82, 693.82, 484.5, 133.22, 107.5],
+            [548.97, 899.41, 522.33, 163.84, 105.1],
+            [567.33, 739.29, 523.6, 130.31, 108.35],
+            [552.2, 911.23, 484.5, 165.02, 113.97]
         ],
         colisao: [
-            [1446.31, 1026.13, 1469.65, 92.29, 98.72],
-            [1094.26, 1085.52, 1388.05, 114.38, 86.89],
-            [1371.22, 1209.16, 1513, 98.56, 90.1],
-            [1288.56, 1160.87, 1201.05, 106.73, 105.71],
-            [1275.4, 1390.59, 1216.35, 113.71, 102.53],
-            [923.1, 1129.42, 948.6, 148.99, 97.27],
-            [969.18, 1063.4, 1067.6, 120.26, 92.83]
+            [1446.31, 1026.13, 1469.65, 70.95, 98.41],
+            [1094.27, 1085.52, 1388.05, 99.2, 78.83],
+            [1371.22, 1209.16, 1513, 88.18, 90.63],
+            [1288.56, 1160.87, 1201.05, 90.09, 107.29],
+            [1275.4, 1390.59, 1216.35, 109.03, 104.85],
+            [923.1, 1129.42, 948.6, 122.35, 97.31],
+            [969.18, 1063.4, 1067.6, 109.72, 90.78]
         ]
     };
     var KPI_MES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -2044,6 +2046,12 @@
             dhTile('Horas Vendidas', kpiFindRow(rows, 'Horas Vendidas'), 'h', tab, 1) +
             dhTile('Horas Trabalhadas', kpiFindRow(rows, 'Horas Trabalhadas'), 'h', tab, 0);
         var html = '<div class="dh-tiles">' + tiles + '</div>';
+        // Legenda de leitura (regra única definida com o André, Ago/2026)
+        html += '<div style="font-size:11px;color:var(--text-secondary);margin-top:10px;line-height:1.6;background:rgba(255,255,255,.55);border-radius:8px;padding:8px 12px;">' +
+            '💡 <b>Como ler:</b> <b>Eficiência Produtiva</b> = Horas Vendidas ÷ Horas Trabalhadas · ' +
+            '<b>Taxa de Utilização</b> = Horas Trabalhadas ÷ Horas Disponíveis. ' +
+            'Mesma fórmula às semanas e ao mês (totais da oficina). Acima de 100% = a oficina vende mais horas do que as que trabalha.' +
+            '</div>';
         var krow = dhRankingCard(tab) + dhSparkCard(tab);
         if (krow) html += '<div class="dh-krow">' + krow + '</div>';
         html += '<button class="dh-detail-btn" id="kpiDetailBtn" onclick="toggleKpiDetail()">Ver detalhe completo ▼</button>';
@@ -2145,7 +2153,7 @@
             }
             html += '</tr>';
         });
-        html += '</tbody></table></div>';
+        html += '</tbody></table>' + '<div style="font-size:11px;color:#718096;margin:-8px 0 12px;line-height:1.55;">💡 <b>Como ler:</b> Eficiência Produtiva = Horas Vendidas ÷ Horas Trabalhadas · Taxa de Utilização = Horas Trabalhadas ÷ Horas Disponíveis — a mesma fórmula em todas as semanas e no mês (rácio dos totais da oficina).</div>' + '</div>';
 
         // Ranking HF
         html += '<div class="kpi-subsection">';
@@ -2170,6 +2178,7 @@
         // Técnicos Individuais
         html += '<div class="kpi-subsection">';
         html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
+        html += '<div style="font-size:11px;color:#718096;margin:-4px 0 10px;line-height:1.55;">💡 A <b>EF. PRODUTIVA individual</b> de cada técnico compara as horas faturadas dele com as horas que gastou em trabalho <i>já faturado</i> — é uma métrica pessoal e não soma para a Eficiência Produtiva da oficina (essa usa os totais).</div>';
         html += '<div class="kpi-tecnico-grid">';
         KPI_DATA.colisao.tecnicos.forEach(tec => {
             html += '<div class="kpi-tecnico-card colisao-border">';
@@ -2227,7 +2236,7 @@
             }
             html += '</tr>';
         });
-        html += '</tbody></table></div>';
+        html += '</tbody></table>' + '<div style="font-size:11px;color:#718096;margin:-8px 0 12px;line-height:1.55;">💡 <b>Como ler:</b> Eficiência Produtiva = Horas Vendidas ÷ Horas Trabalhadas · Taxa de Utilização = Horas Trabalhadas ÷ Horas Disponíveis — a mesma fórmula em todas as semanas e no mês (rácio dos totais da oficina).</div>' + '</div>';
 
         // Ranking HF
         html += '<div class="kpi-subsection">';
@@ -2251,6 +2260,7 @@
         // Técnicos Individuais
         html += '<div class="kpi-subsection">';
         html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
+        html += '<div style="font-size:11px;color:#718096;margin:-4px 0 10px;line-height:1.55;">💡 A <b>EF. PRODUTIVA individual</b> de cada técnico compara as horas faturadas dele com as horas que gastou em trabalho <i>já faturado</i> — é uma métrica pessoal e não soma para a Eficiência Produtiva da oficina (essa usa os totais).</div>';
         html += '<div class="kpi-tecnico-grid">';
         KPI_DATA.cacém.tecnicos.forEach(tec => {
             html += '<div class="kpi-tecnico-card cacém-border">';
@@ -2308,7 +2318,7 @@
             }
             html += '</tr>';
         });
-        html += '</tbody></table></div>';
+        html += '</tbody></table>' + '<div style="font-size:11px;color:#718096;margin:-8px 0 12px;line-height:1.55;">💡 <b>Como ler:</b> Eficiência Produtiva = Horas Vendidas ÷ Horas Trabalhadas · Taxa de Utilização = Horas Trabalhadas ÷ Horas Disponíveis — a mesma fórmula em todas as semanas e no mês (rácio dos totais da oficina).</div>' + '</div>';
 
         // Ranking HF
         html += '<div class="kpi-subsection">';
@@ -2332,6 +2342,7 @@
         // Técnicos Individuais
         html += '<div class="kpi-subsection">';
         html += '<div class="kpi-subsection-header">Técnicos Individuais</div>';
+        html += '<div style="font-size:11px;color:#718096;margin:-4px 0 10px;line-height:1.55;">💡 A <b>EF. PRODUTIVA individual</b> de cada técnico compara as horas faturadas dele com as horas que gastou em trabalho <i>já faturado</i> — é uma métrica pessoal e não soma para a Eficiência Produtiva da oficina (essa usa os totais).</div>';
         html += '<div class="kpi-tecnico-grid">';
         KPI_DATA.lisboa.tecnicos.forEach(tec => {
             html += '<div class="kpi-tecnico-card lisboa-border">';

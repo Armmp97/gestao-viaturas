@@ -1203,6 +1203,36 @@
             return getMonthFromFilename();
         }
 
+        // ============================================================
+        // REGRA ÚNICA DOS KPIs MENSAIS (definida com o André, Ago/2026):
+        //   Eficiência Produtiva (mês) = Horas Vendidas (mês) ÷ Horas Trabalhadas (mês)
+        //   Taxa de Utilização   (mês) = Horas Trabalhadas (mês) ÷ Horas Disponíveis (mês)
+        // — exatamente a mesma conta que o Excel já faz às semanas, aplicada aos totais.
+        // As EPs INDIVIDUAIS dos técnicos (HF ÷ horas em trabalho já faturado) não mudam:
+        // continuam a ser lidas do Excel e mostradas nos cartões/rankings individuais.
+        // ============================================================
+        function applyMonthlyRatioRule(gk) {
+            if (!gk || !gk.items || gk.items.length < 3) return;
+            var ht = parseFloat(gk.items[0].monthly); // Horas Trabalhadas
+            var hv = parseFloat(gk.items[1].monthly); // Horas Vendidas
+            var hd = parseFloat(gk.items[2].monthly); // Horas Disponíveis
+            if (gk.efficiency && isFinite(ht) && ht > 0 && isFinite(hv)) {
+                gk.efficiency.monthly = hv / ht;
+            }
+            if (gk.utilization && isFinite(hd) && hd > 0 && isFinite(ht)) {
+                gk.utilization.monthly = ht / hd;
+            }
+            // Semanas ainda sem horas trabalhadas: mostrar "—" em vez do 0% vermelho
+            // (a célula do Excel devolve 0 via IFERROR nas semanas futuras)
+            for (var i = 0; i < 5; i++) {
+                var htW = parseFloat(gk.items[0].weeks && gk.items[0].weeks[i]);
+                if (!(isFinite(htW) && htW > 0)) {
+                    if (gk.efficiency && gk.efficiency.weeks) gk.efficiency.weeks[i] = null;
+                    if (gk.utilization && gk.utilization.weeks) gk.utilization.weeks[i] = null;
+                }
+            }
+        }
+
         function parseLXCA(ws, type) {
             const arr = XLSX.utils.sheet_to_json(ws, {header: 1, defval: null});
             const month = resolveMonth();
@@ -1238,6 +1268,12 @@
                     monthly: arr[9][7]
                 };
             }
+            // REGRA ÚNICA (validada pelo André, Ago/2026): os valores MENSAIS de Eficiência
+            // Produtiva e Utilização são recalculados a partir dos TOTAIS do mês — a mesma
+            // fórmula das semanas. A célula mensal do Excel (média das EPs individuais dos
+            // técnicos) NÃO é espelhada: mistura bases diferentes e rebenta com técnicos
+            // sem picagens (EPs negativas) e horas faturadas órfãs.
+            applyMonthlyRatioRule(data[type].generalKPIs);
 
             // ====== DETEÇÃO DINÂMICA DE TÉCNICOS (LX/CA) ======
             // Mapeamento de primeiro nome → nome completo para display
@@ -1342,6 +1378,8 @@
                 if (arr[9]) {
                     target.utilization = { weeks: wk.map(c => arr[9][c]), monthly: arr[9][mo] };
                 }
+                // Mesma regra única dos rácios mensais (ver nota em parseLXCA)
+                applyMonthlyRatioRule(target);
             }
 
             const prepLabels = ['Horas Trabalhadas', 'Horas Vendidas', 'Horas Disponiveis', 'Horas Faltas', 'Horas Férias'];
@@ -1777,6 +1815,14 @@
             </tr>
             </tbody>
             </table>`;
+
+            // Nota de leitura — pedida pelo André para máxima clareza
+            html += `<div style="font-size:0.72rem;color:#718096;margin:6px 2px 14px;line-height:1.5;">
+                <strong>Como ler:</strong> Eficiência Produtiva = Horas Vendidas ÷ Horas Trabalhadas ·
+                Taxa de Utilização = Horas Trabalhadas ÷ Horas Disponíveis.
+                A mesma fórmula em todas as semanas e no mês (rácio dos totais da oficina).
+                Acima de 100% = a oficina vende mais horas do que as horas picadas.
+            </div>`;
 
             return html;
         }
