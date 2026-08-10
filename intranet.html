@@ -4180,7 +4180,7 @@
                 var gPct = tr / tv * 100;
                 var gDot = gPct >= 21 ? 'grn' : (gPct >= 0 ? 'amb' : 'red');
                 var perLabel = mg.periodo ? String(mg.periodo).split(' ')[0] : '';
-                chips.push({ o: 50, h: heroChip(gDot, null, 'Margem global ' + perLabel, gPct.toFixed(1).replace('.', ',') + '%', "dashScrollTo('margemDashboardBlock')", 'Ver margem provisória') });
+                chips.push({ o: 50, h: heroChip(gDot, null, 'Margem global ' + perLabel, gPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj', 'margem:domuscar')", 'Abrir Indicadores → Margem Mensal → DomusCar (Empresa) — mostra sempre o último mês real validado') });
             }
         }
         // Margem global acumulada 2026 (real validada) — apenas admins
@@ -4206,7 +4206,7 @@
             if (accV > 0) {
                 var accPct = accR / accV * 100;
                 var accDot = accPct >= 21 ? 'grn' : (accPct >= 0 ? 'amb' : 'red');
-                chips.push({ o: 55, h: heroChip(accDot, null, 'Margem 2026 acumulada', accPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj')", 'Margem real acumulada (' + accMeses + ' meses validados) — abrir Indicadores e Objetivos') });
+                chips.push({ o: 55, h: heroChip(accDot, null, 'Margem 2026 acumulada', accPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj', 'margem:domuscar')", 'Margem real acumulada (' + accMeses + ' meses validados) — abrir Indicadores → Margem Mensal → DomusCar (Empresa)') });
             }
         }
         // Colaborador: atalho RH
@@ -4732,8 +4732,9 @@
         updateDiv.textContent = periodoText + 'Atualizado: ' + (data.timestamp || '—');
         cardsDiv.innerHTML = '';
         var colors = { colisao: '#e8710a', cacem: '#1a73e8', lisboa: '#0d904f' };
-        // Cartões clicáveis → Indicadores e Objetivos → Margem Mensal da unidade
-        var MG_UNIT_MAP = { cacem: 'mecanica_cacem', lisboa: 'mecanica_lisboa', colisao: 'colisao' };
+        // Cartões da margem PROVISÓRIA não são clicáveis (decisão do André, Ago/2026):
+        // são valores ainda não validados — não há página de destino que faça sentido.
+        // (Os cartões da margem REAL, esses sim, abrem Indicadores → Margem Mensal → unidade.)
         var sorted = data.departments.slice().sort(function(a, b) { return (b.margem || 0) - (a.margem || 0); });
         sorted.forEach(function(dept) {
             var color = colors[dept.key] || '#333';
@@ -4769,12 +4770,8 @@
                 }).join('') + '</div>';
             }
             var card = document.createElement('div');
-            card.className = 'dh-mcard clickable';
+            card.className = 'dh-mcard';
             card.style.borderTop = '4px solid ' + color;
-            card.title = 'Abrir Indicadores e Objetivos → Margem Mensal (' + dept.label + ')';
-            (function(unitId) {
-                card.onclick = function() { openModule('indicadores_obj', unitId ? 'margem:' + unitId : 'margem'); };
-            })(MG_UNIT_MAP[dept.key]);
             card.innerHTML =
                 '<div class="dh-u" style="color:' + color + ';">' + dept.label + '</div>' +
                 '<div style="display:flex;align-items:flex-end;gap:12px;margin-top:8px;flex-wrap:wrap;">' +
