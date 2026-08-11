@@ -178,7 +178,8 @@ function toast(msg, isErr) {
   clearTimeout(t._h); t._h = setTimeout(function() { t.style.display = 'none'; }, isErr ? 7000 : 4500);
 }
 function showErr(msg) {
-  document.getElementById('errTxt').textContent = msg;
+  /* aceita HTML (mensagens com sugestão de solução em várias linhas) */
+  document.getElementById('errTxt').innerHTML = msg;
   document.getElementById('errBanner').style.display = 'flex';
 }
 function hideErr() { document.getElementById('errBanner').style.display = 'none'; }
@@ -252,7 +253,24 @@ function analisar() {
     if (!found) {
       document.getElementById('editCard').style.display = 'none';
       document.getElementById('prevCard').style.display = 'none';
-      showErr('Não encontrei o quadro PRODUTOS com a linha "Diária / Rental Day" neste PDF. Confirma que é um contrato Valpirent no formato habitual.');
+      /* Distinguir as 2 causas possíveis:
+         (a) PDF SEM CAMADA DE TEXTO — o contrato foi digitalizado ou reimpresso
+             (ex.: "Microsoft Print to PDF" / "Guardar como PDF" a partir do visualizador),
+             o que converte as letras em desenhos. O editor precisa do texto real para
+             localizar e substituir os valores, por isso não consegue trabalhar o ficheiro.
+         (b) PDF com texto, mas de outro formato/documento. */
+      var totalChars = 0;
+      pages.forEach(function(pg) {
+        pg.forEach(function(it) { if (it.str) totalChars += it.str.trim().length; });
+      });
+      if (totalChars < 40) {
+        showErr('<strong>Este PDF não tem texto — é só imagem.</strong><br>' +
+          'O ficheiro foi digitalizado ou reimpresso (por exemplo com "Microsoft Print to PDF" ou "Guardar como PDF" a partir do visualizador), ' +
+          'o que transforma as letras em desenho. O editor precisa do texto original para localizar e substituir os valores.<br><br>' +
+          '<strong>Solução:</strong> usa o PDF original tal como vem da Valpirent (o anexo do email / a transferência do sistema), sem o reimprimir nem o digitalizar.');
+      } else {
+        showErr('Não encontrei o quadro PRODUTOS com a linha "Diária / Rental Day" neste PDF. Confirma que é um contrato Valpirent no formato habitual.');
+      }
       return;
     }
     /* --- KMS --- */
