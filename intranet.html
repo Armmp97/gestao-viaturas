@@ -3809,6 +3809,38 @@
             return true;
         });
     };
+    // Mover um relatório de divergências de "Respondido" de volta para "Pendente" (apenas admins).
+    // Usado pelo botão "↩ Reenviar p/ Responder" do módulo coord_divergencias.html.
+    window.divMoveBackToPending = function(unit, fileId) {
+        if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
+            return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        }
+        var info = DIV_COORD_MAP[unit];
+        if (!info) return Promise.reject(new Error('Unidade desconhecida: ' + unit));
+        var driveId = getDriveId();
+        var destPath = SP_CONFIG.folders[info.pendente];
+        return getGraphToken().then(function(token) {
+            // 1) obter o id da pasta Pendente da unidade
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + destPath, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(function(r) {
+                if (!r.ok) throw new Error('Pasta Pendente não encontrada (' + r.status + ')');
+                return r.json();
+            }).then(function(folder) {
+                // 2) mover o ficheiro (Graph: PATCH parentReference)
+                return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/items/' + fileId, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parentReference: { id: folder.id } })
+                });
+            }).then(function(r) {
+                if (!r.ok) throw new Error('Falha ao mover o ficheiro (' + r.status + ')');
+                console.log('[DivCoord] Reenviado para Pendente:', fileId, '→', destPath);
+                return true;
+            });
+        });
+    };
+
     window.deleteDivCoordFile = function(fileId) {
         // deleteSharePointFile já tem _requireAdminForDelete embutido, mas duplicamos aqui
         // para que a verificação aconteça MESMO se a função for chamada do iframe coord.

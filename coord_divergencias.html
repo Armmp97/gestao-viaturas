@@ -487,12 +487,15 @@ body {
             return;
         }
 
+        var isAdminResp = (currentUnit === 'admin');
         var html = '';
         respondedFiles.forEach(function(f, i) {
             var date = formatDate(f.lastModifiedDateTime);
             var unitLabel = f._coordName ? ' · ' + f._coordName : '';
             var refDate = extractRefDate(f.name);
             var refBadge = refDate ? '<span style="display:inline-block;background:#e6f4ea;color:#0d904f;font-weight:700;font-size:.75rem;padding:3px 8px;border-radius:4px;margin-left:6px;">📅 ' + refDate + '</span>' : '';
+            // Admin: reenviar o relatório para "Por Responder" (move o ficheiro de volta para a pasta Pendente)
+            var backBtn = isAdminResp ? '<button class="btn btn-sm" style="background:#e37400;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;" onclick="event.stopPropagation(); resendToPending(' + i + ', this)">↩ Reenviar p/ Responder</button>' : '';
             html += '<div class="file-card responded" onclick="openFile(' + i + ', \'responded\')">' +
                 '<div class="file-card-header">' +
                     '<div>' +
@@ -503,11 +506,34 @@ body {
                 '</div>' +
                 '<div class="file-card-actions">' +
                     '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openFile(' + i + ', \'responded\')">👁️ Visualizar</button>' +
+                    backBtn +
                 '</div>' +
             '</div>';
         });
         container.innerHTML = html;
     }
+
+    // ======== Reenviar respondido para "Por Responder" (apenas admins) ========
+    window.resendToPending = function(i, btn) {
+        var f = respondedFiles[i];
+        if (!f) return;
+        if (!confirm('Reenviar este relatório para "Por Responder"?\n\nFicheiro: ' + f.name + '\n\nO ficheiro volta à lista de pendentes do coordenador, com as respostas anteriores pré-preenchidas — ele pode corrigi-las e validar de novo.')) return;
+        btn.disabled = true; btn.textContent = 'A mover...';
+        var fn = null;
+        try { fn = window.parent.divMoveBackToPending; } catch (e) {}
+        if (!fn) {
+            showToast('Função indisponível fora da intranet.', 'error');
+            btn.disabled = false; btn.textContent = '↩ Reenviar p/ Responder';
+            return;
+        }
+        fn(f._unit, f.id).then(function() {
+            showToast('Relatório reenviado para "Por Responder".', 'success');
+            if (currentUnit === 'admin') { loadAllUnits(); } else { loadUnitFiles(currentUnit); }
+        }).catch(function(e) {
+            showToast('Erro ao mover: ' + (e && e.message ? e.message : e), 'error');
+            btn.disabled = false; btn.textContent = '↩ Reenviar p/ Responder';
+        });
+    };
 
     // ======== Tab switching ========
     window.switchTab = function(tab) {
