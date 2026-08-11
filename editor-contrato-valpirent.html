@@ -97,7 +97,7 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
 
   <div class="doc-header">
     <h1>Editor Contrato <em>Valpirent</em></h1>
-    <p>Carrega o contrato PDF: o módulo corrige os valores do quadro PRODUTOS, o texto do limite de quilómetros e acrescenta assinaturas e numeração nas páginas onde faltarem — tudo o resto fica exatamente igual.</p>
+    <p>Carrega o contrato PDF: o módulo corrige os valores do quadro PRODUTOS, o texto do limite de quilómetros e acrescenta assinaturas e numeração nas páginas onde faltarem — tudo o resto fica exatamente igual.<br><span style="font-size:.92em;opacity:.85;">Aceita os dois formatos: contratos com texto (correção automática completa) e contratos sem texto/digitalizados (deteta o quadro pelo desenho da tabela e pede-te os valores).</span></p>
   </div>
 
   <div class="drop" id="drop" onclick="document.getElementById('fileInput').click()">
@@ -113,6 +113,13 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
     <div class="card-head">✏️ Correções ao contrato <span class="badge" id="fileBadge"></span></div>
     <div class="card-body">
       <div class="banner info" id="foundBanner"><span class="bi">🔎</span><div id="foundTxt"></div></div>
+      <div id="imgZoom" style="display:none;margin-bottom:16px;">
+        <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:6px;">Quadro PRODUTOS detetado — confirma que é este:</div>
+        <div style="border:1px solid var(--gray-200);border-radius:10px;overflow:auto;background:var(--gray-100);padding:10px;text-align:center;">
+          <canvas id="imgZoomCanvas" style="max-width:100%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.10);"></canvas>
+        </div>
+        <div style="font-size:.74rem;color:var(--gray-600);margin-top:6px;">As zonas a azul são as três células que vão ser substituídas pelos valores que indicares abaixo.</div>
+      </div>
       <div class="vals">
         <div class="val-chip">
           <div class="vl">Taxa Dia c/ IVA Normal (€)</div>
@@ -172,6 +179,18 @@ var kms = null;     /* { status:'correto'|'errado'|'desconhecido', pageIndex, st
 var foot = null;    /* { pages:[{hasAss,hasPag}], ref:{...}|null, n } */
 var totalManual = false;
 
+/* ===== MODO IMAGEM (contratos sem camada de texto — ex.: C26.26175) =====
+   Alguns contratos Valpirent chegam com o texto convertido em desenho vetorial.
+   Nesses, não há texto para procurar/substituir, mas a GEOMETRIA do quadro
+   PRODUTOS (as linhas da tabela) continua lá — e é por ela que nos guiamos:
+   detetamos as células, tapamo-las e escrevemos os valores novos por cima.
+   As assinaturas e a numeração continuam a ser desenhadas normalmente. */
+var imgMode = false;
+var imgProd = null;   /* { pageIndex, cells:[{x0,x1,yBot,yTop}], size, baseline } */
+var CELL_PAD_DIR = 1.9;      /* distância do valor à borda direita da célula (pt) */
+var RATIO_SIZE = 0.787;      /* tamanho da letra ≈ 78.7% da altura da linha */
+var RATIO_BASE = 0.307;      /* baseline ≈ 30.7% da altura da linha, a contar de baixo */
+
 function toast(msg, isErr) {
   var t = document.getElementById('toast');
   t.textContent = msg; t.className = isErr ? 'err' : ''; t.style.display = 'block';
@@ -184,6 +203,8 @@ function showErr(msg) {
 }
 function hideErr() { document.getElementById('errBanner').style.display = 'none'; }
 function fmt(n) { return (Math.round(n * 100) / 100).toFixed(2); }
+/* No PDF os valores seguem a notação do contrato (vírgula decimal): 55,50 */
+function fmtPt(n) { return fmt(n).replace('.', ','); }
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* ================= Upload ================= */
@@ -201,6 +222,8 @@ function loadFile(file) {
   if (!/pdf$/i.test(file.name) && file.type !== 'application/pdf') { showErr('O ficheiro tem de ser um PDF.'); return; }
   hideErr();
   outBytes = null;
+  imgMode = false; imgProd = null;
+  document.getElementById('imgZoom').style.display = 'none';
   document.getElementById('dlBtn').style.display = 'none';
   srcName = file.name;
   var fr = new FileReader();
@@ -217,6 +240,129 @@ function pageItems(page) {
     });
   });
 }
+/* ---- Geometria: extrai linhas finas (bordas de tabela, linhas de assinatura) ---- */
+function pageGeom(page) {
+  return page.getOperatorList().then(function(ol) {
+    var OPS = pdfjsLib.OPS;
+    function mul(a, b) {
+      return [a[0]*b[0]+a[1]*b[2], a[0]*b[1]+a[1]*b[3], a[2]*b[0]+a[3]*b[2],
+              a[2]*b[1]+a[3]*b[3], a[4]*b[0]+a[5]*b[2]+b[4], a[4]*b[1]+a[5]*b[3]+b[5]];
+    }
+    function ap(m, x, y) { return [m[0]*x + m[2]*y + m[4], m[1]*x + m[3]*y + m[5]]; }
+    var ctm = [1,0,0,1,0,0], stack = [], lines = [], marks = [];
+    for (var i = 0; i < ol.fnArray.length; i++) {
+      var fn = ol.fnArray[i], a = ol.argsArray[i];
+      if (fn === OPS.save) stack.push(ctm.slice());
+      else if (fn === OPS.restore) ctm = stack.pop() || [1,0,0,1,0,0];
+      else if (fn === OPS.transform) ctm = mul(a, ctm);
+      else if (fn === OPS.constructPath) {
+        /* Percorrer SUBPATHS um a um: o pdf.js junta vários desenhos num só
+           constructPath e a bounding-box global esconderia as linhas. */
+        var ops = a[0], co = a[1];
+        if (!ops || !co) continue;
+        var k = 0, cur = null;
+        var push = function(sp) {
+          if (!sp || !sp.n) return;
+          var x0 = sp.minx, x1 = sp.maxx, y0 = sp.miny, y1 = sp.maxy, w = x1 - x0, h = y1 - y0;
+          marks.push({ x0: x0, x1: x1, y0: y0, y1: y1 });
+          if ((w < 2.5 && h > 3) || (h < 2.5 && w > 10)) lines.push({ x0: x0, x1: x1, y0: y0, y1: y1, w: w, h: h, vert: w < h });
+        };
+        var add = function(x, y) {
+          var q = ap(ctm, x, y);
+          if (!cur) cur = { minx: q[0], maxx: q[0], miny: q[1], maxy: q[1], n: 0 };
+          if (q[0] < cur.minx) cur.minx = q[0];
+          if (q[0] > cur.maxx) cur.maxx = q[0];
+          if (q[1] < cur.miny) cur.miny = q[1];
+          if (q[1] > cur.maxy) cur.maxy = q[1];
+          cur.n++;
+        };
+        for (var oi = 0; oi < ops.length; oi++) {
+          var op = ops[oi];
+          if (op === OPS.moveTo) { push(cur); cur = null; add(co[k], co[k+1]); k += 2; }
+          else if (op === OPS.lineTo) { add(co[k], co[k+1]); k += 2; }
+          else if (op === OPS.curveTo) { add(co[k], co[k+1]); add(co[k+2], co[k+3]); add(co[k+4], co[k+5]); k += 6; }
+          else if (op === OPS.curveTo2 || op === OPS.curveTo3) { add(co[k], co[k+1]); add(co[k+2], co[k+3]); k += 4; }
+          else if (op === OPS.rectangle) {
+            push(cur); cur = null;
+            var rx = co[k], ry = co[k+1], rw = co[k+2], rh = co[k+3]; k += 4;
+            add(rx, ry); add(rx + rw, ry); add(rx + rw, ry + rh); add(rx, ry + rh);
+            push(cur); cur = null;
+          }
+        }
+        push(cur); cur = null;
+      }
+    }
+    return { lines: lines, marks: marks };
+  });
+}
+
+/* ---- Deteta o quadro PRODUTOS pela grelha da tabela ---- */
+function detectTabelaProdutos(g) {
+  var hors = g.lines.filter(function(l) { return !l.vert && l.w > 15; });
+  var grupos = [];
+  hors.forEach(function(l) {
+    var f = null;
+    for (var i = 0; i < grupos.length; i++) if (Math.abs(grupos[i].y - l.y0) < 1.6) { f = grupos[i]; break; }
+    if (!f) { f = { y: l.y0, x0: l.x0, x1: l.x1 }; grupos.push(f); }
+    f.x0 = Math.min(f.x0, l.x0); f.x1 = Math.max(f.x1, l.x1);
+  });
+  /* candidatos: níveis horizontais com largura de tabela e junto à margem esquerda */
+  var cand = grupos.filter(function(G) { var w = G.x1 - G.x0; return w > 150 && w < 460 && G.x0 < 80; })
+                   .sort(function(a, b) { return b.y - a.y; });
+  for (var i = 0; i + 2 < cand.length; i++) {
+    var A = cand[i], B = cand[i+1], C = cand[i+2];   /* topo, divisória, base */
+    var alinhado = Math.abs(A.x0 - B.x0) < 4 && Math.abs(A.x1 - B.x1) < 4 &&
+                   Math.abs(B.x0 - C.x0) < 4 && Math.abs(B.x1 - C.x1) < 4;
+    var hCab = A.y - B.y, hLin = B.y - C.y;
+    if (!alinhado || hCab < 5 || hCab > 30 || hLin < 5 || hLin > 30) continue;
+    /* colunas = verticais que atravessam toda a linha de dados */
+    var vs = g.lines.filter(function(l) { return l.vert && l.y0 <= C.y + 1.5 && l.y1 >= B.y - 1.5; });
+    var cols = [];
+    vs.forEach(function(v) {
+      var c = (v.x0 + v.x1) / 2;
+      for (var j = 0; j < cols.length; j++) if (Math.abs(cols[j] - c) < 2.5) return;
+      cols.push(c);
+    });
+    cols.sort(function(a, b) { return a - b; });
+    if (cols.length < 4) continue;
+    /* as 3 células a editar são as 3 últimas (Taxa Dia · Quantidade · TOTAL) */
+    var last4 = cols.slice(-4);
+    var cells = [
+      { x0: last4[0], x1: last4[1] },
+      { x0: last4[1], x1: last4[2] },
+      { x0: last4[2], x1: last4[3] }
+    ];
+    var larguras = cells.map(function(c) { return c.x1 - c.x0; });
+    if (larguras.some(function(w) { return w < 15 || w > 200; })) continue;
+    return {
+      cells: cells.map(function(c) { return { x0: c.x0, x1: c.x1, yBot: C.y, yTop: B.y }; }),
+      size: Math.max(6, Math.min(10, hLin * RATIO_SIZE)),
+      baseline: C.y + hLin * RATIO_BASE,
+      tabTop: A.y, tabBot: C.y, tabX0: A.x0, tabX1: A.x1
+    };
+  }
+  return null;
+}
+
+/* ---- Assinaturas: duas linhas longas ao mesmo nível (esquerda + direita) ---- */
+function detectAssinaturaImg(g) {
+  var hors = g.lines.filter(function(l) { return !l.vert && l.w > 150; });
+  var by = {};
+  hors.forEach(function(l) { var k = Math.round(l.y0); (by[k] = by[k] || []).push(l); });
+  for (var k in by) {
+    var arr = by[k];
+    var esq = arr.some(function(l) { return l.x0 < 50 && l.x1 > 180; });
+    var dir = arr.some(function(l) { return l.x0 > 320 && l.x1 > 530; });
+    if (esq && dir) return +k;
+  }
+  return null;
+}
+
+/* ---- Numeração: existe algo desenhado no canto inferior direito? ---- */
+function detectNumeracaoImg(g) {
+  return g.marks.some(function(m) { return m.x0 > 470 && m.y1 < 45 && m.y0 > 5; });
+}
+
 function groupLines(items) {
   var lines = [];
   items.forEach(function(it) {
@@ -259,18 +405,23 @@ function analisar() {
              o que converte as letras em desenhos. O editor precisa do texto real para
              localizar e substituir os valores, por isso não consegue trabalhar o ficheiro.
          (b) PDF com texto, mas de outro formato/documento. */
-      var totalChars = 0;
+      /* Deteção robusta: um contrato Valpirent com camada de texto contém sempre
+         várias destas palavras. Contar caracteres não chega — PDFs "achatados"
+         mantêm alguns fragmentos soltos (o logótipo, o rodapé), o que dava um
+         total enganador e caía na mensagem errada. */
+      var todoTexto = '';
       pages.forEach(function(pg) {
-        pg.forEach(function(it) { if (it.str) totalChars += it.str.trim().length; });
+        pg.forEach(function(it) { if (it.str) todoTexto += it.str + ' '; });
       });
-      if (totalChars < 40) {
-        showErr('<strong>Este PDF não tem texto — é só imagem.</strong><br>' +
-          'O ficheiro foi digitalizado ou reimpresso (por exemplo com "Microsoft Print to PDF" ou "Guardar como PDF" a partir do visualizador), ' +
-          'o que transforma as letras em desenho. O editor precisa do texto original para localizar e substituir os valores.<br><br>' +
-          '<strong>Solução:</strong> usa o PDF original tal como vem da Valpirent (o anexo do email / a transferência do sistema), sem o reimprimir nem o digitalizar.');
-      } else {
-        showErr('Não encontrei o quadro PRODUTOS com a linha "Diária / Rental Day" neste PDF. Confirma que é um contrato Valpirent no formato habitual.');
+      todoTexto = todoTexto.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      var PALAVRAS = ['CONTRATO', 'PRODUTOS', 'LOCATARIO', 'LOCADORA', 'VEICULO', 'RENTAL',
+                      'DIARIA', 'OBSERVACOES', 'CONDUTOR', 'REQUISITANTE', 'ALUGUER', 'TERMOS'];
+      var encontradas = PALAVRAS.filter(function(w) { return todoTexto.indexOf(w) > -1; }).length;
+      if (encontradas < 2) {
+        /* Sem texto: tentar o MODO IMAGEM (deteção pela geometria da tabela) */
+        return analisarImagem();
       }
+      showErr('Não encontrei o quadro PRODUTOS com a linha "Diária / Rental Day" neste PDF. Confirma que é um contrato Valpirent no formato habitual.');
       return;
     }
     /* --- KMS --- */
@@ -303,6 +454,116 @@ function analisar() {
   }).catch(function(e) {
     console.error(e);
     showErr('Erro ao ler o PDF: ' + (e && e.message ? e.message : e));
+  });
+}
+
+/* ================= Análise: MODO IMAGEM ================= */
+function analisarImagem() {
+  imgMode = true; imgProd = null;
+  return pdfjsLib.getDocument({ data: srcBytes.slice() }).promise.then(function(doc) {
+    var geoms = [];
+    var chain = Promise.resolve();
+    for (var p = 1; p <= doc.numPages; p++) {
+      (function(pn) {
+        chain = chain.then(function() {
+          return doc.getPage(pn).then(pageGeom).then(function(g) { geoms.push(g); });
+        });
+      })(p);
+    }
+    return chain.then(function() { return { doc: doc, geoms: geoms }; });
+  }).then(function(res) {
+    var geoms = res.geoms;
+    /* 1. quadro PRODUTOS */
+    var tab = null, tabPage = -1;
+    for (var i = 0; i < geoms.length; i++) {
+      var t = detectTabelaProdutos(geoms[i]);
+      if (t) { tab = t; tabPage = i; break; }
+    }
+    if (!tab) {
+      imgMode = false;
+      document.getElementById('editCard').style.display = 'none';
+      document.getElementById('prevCard').style.display = 'none';
+      showErr('<strong>Este PDF não tem texto e também não consegui reconhecer o quadro PRODUTOS pelo desenho da tabela.</strong><br>' +
+        'Se for mesmo um contrato Valpirent, envia-o ao André para o formato ser acrescentado ao editor.');
+      return;
+    }
+    imgProd = { pageIndex: tabPage, cells: tab.cells, size: tab.size, baseline: tab.baseline, tab: tab };
+
+    /* 2. rodapés (assinaturas + numeração) por geometria */
+    foot = { pages: [], ref: null, n: geoms.length };
+    geoms.forEach(function(g) {
+      foot.pages.push({ hasAss: detectAssinaturaImg(g) !== null, hasPag: detectNumeracaoImg(g) });
+    });
+
+    /* 3. kms: sem texto não é possível verificar */
+    kms = { status: 'desconhecido', pageIndex: 0, scrubs: [], segs: [] };
+    found = null;
+
+    /* 4. UI */
+    document.getElementById('fileBadge').textContent = srcName;
+    document.getElementById('dropTitle').textContent = '✅ ' + srcName;
+    document.getElementById('dropHint').textContent = 'Clica para carregar outro contrato';
+    document.getElementById('inTaxa').value = '';
+    document.getElementById('inQtd').value = '';
+    document.getElementById('inTotal').value = '';
+    totalManual = false;
+
+    var semAss = foot.pages.filter(function(x) { return !x.hasAss; }).length;
+    var semPag = foot.pages.filter(function(x) { return !x.hasPag; }).length;
+    var h = '<strong>Contrato sem camada de texto</strong> — reconhecido pelo desenho da tabela (página ' + (tabPage + 1) + ').' +
+            ' Como não há texto para ler, os valores atuais não podem ser lidos automaticamente: <strong>vê-os na imagem aqui em baixo e escreve os novos</strong>.<ul>' +
+            '<li>As três células serão tapadas e reescritas com os valores que indicares.</li>' +
+            '<li>⚠️ O <strong>texto do limite de quilómetros não é verificado</strong> neste formato — confirma-o a olho no contrato.</li>';
+    if (semAss > 0) h += '<li>Assinaturas em falta em <strong>' + semAss + '</strong> página(s) → serão acrescentadas.</li>';
+    else h += '<li>Todas as páginas já têm assinaturas.</li>';
+    if (semPag > 0) h += '<li>Numeração em falta em <strong>' + semPag + '</strong> página(s) → será acrescentada.</li>';
+    else h += '<li>Todas as páginas já têm numeração.</li>';
+    h += '</ul>';
+    document.getElementById('foundTxt').innerHTML = h;
+    document.getElementById('editCard').style.display = 'block';
+    document.getElementById('prevCard').style.display = 'none';
+    hideErr();
+
+    return desenhaZoomTabela(res.doc, tabPage, tab);
+  }).catch(function(e) {
+    console.error(e);
+    imgMode = false;
+    showErr('Não consegui analisar este PDF: ' + (e && e.message ? e.message : e));
+  });
+}
+
+/* Recorte da zona da tabela com as células a substituir realçadas */
+function desenhaZoomTabela(doc, pageIndex, tab) {
+  return doc.getPage(pageIndex + 1).then(function(page) {
+    var scale = 2.6;
+    var vp = page.getViewport({ scale: scale });
+    var tmp = document.createElement('canvas');
+    tmp.width = Math.ceil(vp.width); tmp.height = Math.ceil(vp.height);
+    return page.render({ canvasContext: tmp.getContext('2d'), viewport: vp }).promise.then(function() {
+      var mx = 12; /* margem em pt à volta da tabela */
+      var cx0 = Math.max(0, (tab.tabX0 - mx) * scale);
+      var cx1 = Math.min(tmp.width, (tab.tabX1 + mx) * scale);
+      var cyTop = Math.max(0, (vp.height / scale - tab.tabTop - mx) * scale);
+      var cyBot = Math.min(tmp.height, (vp.height / scale - tab.tabBot + mx) * scale);
+      var cv = document.getElementById('imgZoomCanvas');
+      cv.width = Math.max(1, Math.round(cx1 - cx0));
+      cv.height = Math.max(1, Math.round(cyBot - cyTop));
+      var ctx = cv.getContext('2d');
+      ctx.drawImage(tmp, cx0, cyTop, cv.width, cv.height, 0, 0, cv.width, cv.height);
+      /* realçar as 3 células */
+      ctx.fillStyle = 'rgba(0,123,192,.20)';
+      ctx.strokeStyle = 'rgba(0,80,143,.85)';
+      ctx.lineWidth = 1.5;
+      tab.cells.forEach(function(c) {
+        var x = c.x0 * scale - cx0;
+        var y = (vp.height / scale - c.yTop) * scale - cyTop;
+        var w = (c.x1 - c.x0) * scale;
+        var hh = (c.yTop - c.yBot) * scale;
+        ctx.fillRect(x, y, w, hh);
+        ctx.strokeRect(x, y, w, hh);
+      });
+      document.getElementById('imgZoom').style.display = 'block';
+    });
   });
 }
 
@@ -497,14 +758,14 @@ function scrubKms(strObj) {
 
 /* ================= Geração ================= */
 function gerar() {
-  if (!srcBytes || !found) { toast('Carrega primeiro um contrato PDF.', true); return; }
+  if (!srcBytes || (!found && !imgProd)) { toast('Carrega primeiro um contrato PDF.', true); return; }
   var taxa = parseFloat(document.getElementById('inTaxa').value);
   var qtd = parseFloat(document.getElementById('inQtd').value);
   var total = parseFloat(document.getElementById('inTotal').value);
   if (isNaN(taxa) || isNaN(qtd) || isNaN(total)) { toast('Preenche a Taxa Dia, a Quantidade e o Total.', true); return; }
   if (qtd % 1 !== 0) { toast('A Quantidade deve ser um número inteiro de dias.', true); return; }
 
-  var novos = [fmt(taxa), String(qtd), fmt(total)];
+  var novos = [fmtPt(taxa), String(qtd), fmtPt(total)];
   var btn = document.getElementById('genBtn');
   btn.disabled = true;
   var avisos = [];
@@ -517,6 +778,44 @@ function gerar() {
     ]).then(function(fonts) {
       var font = fonts[0], fontB = fonts[1], fontT = fonts[2];
       var pages = doc.getPages();
+
+      /* ===== MODO IMAGEM: tapar as células e escrever os valores novos ===== */
+      if (imgMode && imgProd) {
+        var pgI = pages[imgProd.pageIndex];
+        imgProd.cells.forEach(function(c, i) {
+          /* tapar o interior da célula (sem comer as bordas da tabela) */
+          pgI.drawRectangle({
+            x: c.x0 + 0.9, y: c.yBot + 0.9,
+            width: (c.x1 - c.x0) - 1.8, height: (c.yTop - c.yBot) - 1.8,
+            color: PDFLib.rgb(1, 1, 1)
+          });
+          var txt = novos[i];
+          var w = font.widthOfTextAtSize(txt, imgProd.size);
+          pgI.drawText(txt, {
+            x: c.x1 - CELL_PAD_DIR - w, y: imgProd.baseline,
+            size: imgProd.size, font: font, color: PDFLib.rgb(0, 0, 0)
+          });
+        });
+        /* rodapés (mesma lógica do modo normal) */
+        for (var pi = 0; pi < pages.length; pi++) {
+          var pgi = pages[pi];
+          if (!foot.pages[pi].hasAss) {
+            FOOT_DEF.lineSegs.forEach(function(sg) {
+              pgi.drawLine({ start: { x: sg[0], y: FOOT_DEF.lineY }, end: { x: sg[1], y: FOOT_DEF.lineY }, thickness: 0.55, color: PDFLib.rgb(0, 0, 0) });
+            });
+            pgi.drawText('(Ass. Cliente)', { x: FOOT_DEF.cliX, y: FOOT_DEF.assY, size: FOOT_DEF.size, font: font, color: PDFLib.rgb(0, 0, 0) });
+            pgi.drawText('(Ass. VALPI RENT)', { x: FOOT_DEF.valX, y: FOOT_DEF.assY, size: FOOT_DEF.size, font: font, color: PDFLib.rgb(0, 0, 0) });
+            pgi.drawText('Assinaturas digitais em cumprimento da alínea 10, art. 9º, do D.L.47/2018', { x: FOOT_DEF.digX, y: FOOT_DEF.digY, size: FOOT_DEF.size, font: font, color: PDFLib.rgb(0, 0, 0) });
+          }
+          if (!foot.pages[pi].hasPag) {
+            var pt = 'Página ' + (pi + 1) + ' de ' + pages.length;
+            var pwd = fontT.widthOfTextAtSize(pt, FOOT_DEF.pagSize);
+            pgi.drawText(pt, { x: FOOT_DEF.pagRight - pwd, y: FOOT_DEF.pagY, size: FOOT_DEF.pagSize, font: fontT, color: PDFLib.rgb(0, 0, 0) });
+          }
+        }
+        avisos.push('formato sem texto: o limite de quilómetros não foi verificado — confirma-o no PDF');
+        return doc.save();
+      }
 
       /* ---- edição do content stream (página dos PRODUTOS + página dos kms) ---- */
       var byPage = {};
@@ -657,6 +956,8 @@ function descarregar() {
 
 function reiniciar() {
   srcBytes = null; outBytes = null; found = null; kms = null; foot = null; srcName = ''; totalManual = false;
+  imgMode = false; imgProd = null;
+  document.getElementById('imgZoom').style.display = 'none';
   document.getElementById('fileInput').value = '';
   document.getElementById('editCard').style.display = 'none';
   document.getElementById('prevCard').style.display = 'none';
