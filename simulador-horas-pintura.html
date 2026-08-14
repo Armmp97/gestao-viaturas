@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Simulador de Horas de Pintura</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --in-bg: #FFF9DB; --in-br: #E8D98A;        /* amarelo = valores a preencher */
+  --out-bg: #E8F3E4; --out-br: #A8CC9C;      /* verde = valores a levar para a OSV */
+  --danger: #DC2626;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.55; }
+.page { max-width: 1180px; margin: 0 auto; padding: 24px 20px 70px; }
+
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 22px 28px; margin-bottom: 16px; position: relative; overflow: hidden;
+}
+.doc-header::after { content: ''; position: absolute; top: -30%; right: -5%; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%); border-radius: 50%; }
+.doc-header h1 { font-size: 1.25rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .8rem; opacity: .85; margin-top: 5px; position: relative; z-index: 2; max-width: 760px; }
+
+.legenda { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; font-size: .78rem; }
+.lg { display: flex; align-items: center; gap: 7px; font-weight: 700; color: var(--text-dark); }
+.sw { width: 15px; height: 15px; border-radius: 4px; border: 1px solid; }
+.sw.in { background: var(--in-bg); border-color: var(--in-br); }
+.sw.out { background: var(--out-bg); border-color: var(--out-br); }
+.lg .spacer { flex: 1; }
+.reset { margin-left: auto; }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+
+.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.card-head { padding: 12px 20px; background: var(--navy); color: var(--white); font-size: .85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.card-head .step { background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 10px; font-size: .68rem; font-weight: 800; }
+.card-body { padding: 16px 20px; }
+
+.lin { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--gray-100); }
+.lin:last-child { border-bottom: none; }
+.lin .k { flex: 1; font-size: .84rem; color: var(--text-body); }
+.lin .k b { color: var(--text-dark); font-weight: 700; }
+.lin .k small { display: block; font-size: .71rem; color: var(--gray-400); }
+.lin .v { display: flex; align-items: center; gap: 6px; }
+
+input.n {
+  font-family: inherit; font-size: .92rem; font-weight: 700; color: var(--text-dark);
+  border: 1px solid var(--gray-200); border-radius: 8px; padding: 7px 10px; width: 108px; text-align: right; outline: none;
+}
+input.n:focus { border-color: var(--accent); }
+input.n.in { background: var(--in-bg); border-color: var(--in-br); }
+.unid { font-size: .78rem; color: var(--gray-600); font-weight: 700; width: 22px; }
+
+.out { background: var(--out-bg); border: 1px solid var(--out-br); border-radius: 8px; padding: 7px 12px; font-size: .95rem; font-weight: 800; color: #1F5230; min-width: 108px; text-align: right; }
+.calc { font-size: .95rem; font-weight: 800; color: var(--navy); min-width: 108px; text-align: right; }
+
+.destaque { margin-top: 14px; background: linear-gradient(135deg, #F3F8FD, #FFFFFF); border: 1.5px solid var(--navy); border-radius: var(--radius-sm); padding: 14px 16px; }
+.destaque .t { font-size: .66rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--navy); margin-bottom: 8px; }
+
+table.conv { width: 100%; border-collapse: collapse; font-size: .85rem; }
+table.conv th { background: var(--gray-100); color: var(--navy); font-size: .66rem; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; padding: 8px 10px; text-align: right; }
+table.conv th:first-child { text-align: left; }
+table.conv td { padding: 9px 10px; border-bottom: 1px solid var(--gray-100); text-align: right; font-weight: 700; color: var(--text-dark); }
+table.conv td:first-child { text-align: left; font-weight: 500; color: var(--text-body); }
+table.conv tr:last-child td { border-bottom: none; }
+table.conv tr.tot td { background: #F7FAFD; color: var(--navy); font-weight: 800; }
+table.conv td.hm { color: var(--accent); }
+
+.aviso { font-size: .78rem; padding: 9px 13px; border-radius: 8px; background: #FEF6E7; color: #B45309; border: 1px solid #F5E0BC; margin-top: 12px; }
+.nota { font-size: .76rem; color: var(--gray-600); margin-top: 10px; line-height: 1.65; }
+.nota b { color: var(--text-dark); }
+
+.btn { border: none; border-radius: var(--radius-sm); padding: 9px 16px; font-family: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
+.btn.ghost { background: var(--white); color: var(--text-dark); border: 1px solid var(--gray-200); }
+.btn.primary { background: var(--navy); color: #fff; }
+.btn:hover { filter: brightness(1.06); }
+
+.copiado { position: fixed; right: 18px; bottom: 18px; background: var(--navy); color: #fff; padding: 11px 18px; border-radius: var(--radius-sm); font-size: .82rem; font-weight: 700; opacity: 0; transform: translateY(8px); transition: .25s; z-index: 99; pointer-events: none; }
+.copiado.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Simulador de Horas de <em>Pintura</em></h1>
+    <p>A partir do valor da pintura, calcula as horas de mão de obra a lançar na OSV e no orçamento, separadas entre preparação e pintura. Nada fica guardado — sempre que voltares a entrar, os valores estão como no original.</p>
+  </div>
+
+  <div class="legenda">
+    <span class="lg"><span class="sw in"></span> Valores a preencher</span>
+    <span class="lg"><span class="sw out"></span> Valores a levar para a OSV / orçamento</span>
+    <button class="btn ghost reset" onclick="reporOriginal()">↺ Repor valores originais</button>
+  </div>
+
+  <div class="cols">
+
+    <!-- ══════ Coluna esquerda: do valor para as horas ══════ -->
+    <div>
+      <div class="card">
+        <div class="card-head"><span>💶 Valor da pintura</span><span class="step">1</span></div>
+        <div class="card-body">
+          <div class="lin">
+            <div class="k"><b>Valor Total Pintura</b><small>o que vem da peritagem / orçamento</small></div>
+            <div class="v"><input class="n in" id="iTotal" type="number" step="0.01" min="0" oninput="calcular()"><span class="unid">€</span></div>
+          </div>
+          <div class="lin">
+            <div class="k"><b>% Valor MOP</b><small>mão de obra de pintura; o resto é tinta</small></div>
+            <div class="v"><input class="n in" id="iPctMop" type="number" step="1" min="0" max="100" oninput="pctMop()"><span class="unid">%</span></div>
+          </div>
+          <div class="lin">
+            <div class="k">% Valor Tinta (MPI)</div>
+            <div class="v"><input class="n in" id="iPctTinta" type="number" step="1" min="0" max="100" oninput="pctTinta()"><span class="unid">%</span></div>
+          </div>
+          <div class="lin">
+            <div class="k"><b>Valor Tinta (MPI)</b></div>
+            <div class="v"><span class="out" id="oTinta">—</span></div>
+          </div>
+          <div class="lin">
+            <div class="k"><b>Valor MOP</b></div>
+            <div class="v"><span class="out" id="oMop">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span>⏱️ Do valor para as horas</span><span class="step">2</span></div>
+        <div class="card-body">
+          <div class="lin">
+            <div class="k"><b>Valor Hora</b><small>preço/hora de mão de obra</small></div>
+            <div class="v"><input class="n in" id="iValorHora" type="number" step="0.01" min="0.01" oninput="calcular()"><span class="unid">€</span></div>
+          </div>
+          <div class="lin">
+            <div class="k"><b>Total Horas MOP</b><small>Valor MOP ÷ Valor Hora</small></div>
+            <div class="v"><span class="calc" id="oHorasMop">—</span><span class="unid">h</span></div>
+          </div>
+          <div class="lin">
+            <div class="k"><b>% Preparação</b></div>
+            <div class="v"><input class="n in" id="iPctPrep" type="number" step="1" min="0" max="100" oninput="pctPrep()"><span class="unid">%</span></div>
+          </div>
+          <div class="lin">
+            <div class="k"><b>% Pintura</b></div>
+            <div class="v"><input class="n in" id="iPctPint" type="number" step="1" min="0" max="100" oninput="pctPint()"><span class="unid">%</span></div>
+          </div>
+
+          <div class="destaque">
+            <div class="t">Horas a lançar na OSV / orçamento</div>
+            <div class="lin">
+              <div class="k"><b>Preparação</b></div>
+              <div class="v"><span class="out" id="oHprep">—</span><span class="unid">h</span></div>
+            </div>
+            <div class="lin">
+              <div class="k"><b>Pintura</b></div>
+              <div class="v"><span class="out" id="oHpint">—</span><span class="unid">h</span></div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn primary" onclick="copiarResumo()">📋 Copiar resumo</button>
+            </div>
+          </div>
+          <div id="avisoPct"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ Coluna direita: horas das intervenções ══════ -->
+    <div>
+      <div class="card">
+        <div class="card-head"><span>🔧 Horas das intervenções</span><span class="step">3</span></div>
+        <div class="card-body">
+          <div class="lin">
+            <div class="k"><b>Horas das Intervenções</b><small>total de horas a repartir pela mesma proporção</small></div>
+            <div class="v"><input class="n in" id="iHorasInt" type="number" step="0.01" min="0" oninput="calcular()"><span class="unid">h</span></div>
+          </div>
+          <table class="conv" style="margin-top:8px;">
+            <thead><tr><th>Linha</th><th>Horas</th><th>h:mm</th><th>Minutos</th></tr></thead>
+            <tbody>
+              <tr class="tot"><td>Total das intervenções</td><td id="tiH">—</td><td class="hm" id="tiHM">—</td><td id="tiM">—</td></tr>
+              <tr><td>Preparação (<span id="lblPrep">60</span>%)</td><td id="tpH">—</td><td class="hm" id="tpHM">—</td><td id="tpM">—</td></tr>
+              <tr><td>Pintura (<span id="lblPint">40</span>%)</td><td id="tqH">—</td><td class="hm" id="tqHM">—</td><td id="tqM">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span>🔁 Conversor rápido</span></div>
+        <div class="card-body">
+          <div class="lin">
+            <div class="k"><b>Horas em decimal</b><small>converte para h:mm e minutos</small></div>
+            <div class="v"><input class="n in" id="iConv" type="number" step="0.01" min="0" oninput="calcular()"><span class="unid">h</span></div>
+          </div>
+          <table class="conv">
+            <thead><tr><th>Horas</th><th>h:mm</th><th>Minutos</th></tr></thead>
+            <tbody><tr><td id="cvH">—</td><td class="hm" id="cvHM">—</td><td id="cvM">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span>ℹ️ Como funciona</span></div>
+        <div class="card-body">
+          <div class="nota">
+            <b>1.</b> O valor total da pintura divide-se em tinta (MPI) e mão de obra (MOP).<br>
+            <b>2.</b> As horas de mão de obra saem de <b>Valor MOP ÷ Valor Hora</b>.<br>
+            <b>3.</b> Essas horas repartem-se por preparação e pintura, na proporção definida.<br>
+            <b>4.</b> A caixa das intervenções aplica a mesma proporção a um total de horas já conhecido.<br><br>
+            As percentagens de cada par estão ligadas: ao mexer numa, a outra ajusta-se para somarem 100%.<br><br>
+            <b>Nada é guardado.</b> Podes mexer à vontade nos valores e nas percentagens — ao sair e voltar a entrar, fica tudo como no original.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="copiado" id="toast"></div>
+
+<script>
+'use strict';
+
+/* Valores originais — iguais aos do ficheiro "Simulador de Horas_OSVs.xlsx".
+   Nada é guardado: a cada abertura o simulador arranca sempre daqui. */
+var ORIGINAL = {
+  total: 190,        // Valor Total Pintura (€)
+  pctMop: 70,        // % do valor que é mão de obra de pintura
+  pctTinta: 30,      // % do valor que é tinta (MPI)
+  valorHora: 50,     // Valor Hora (€)
+  pctPrep: 60,       // % das horas MOP para preparação
+  pctPint: 40,       // % das horas MOP para pintura
+  horasInt: 12.9,    // Horas das Intervenções
+  conv: 2.4          // conversor rápido
+};
+
+function $(id) { return document.getElementById(id); }
+function num(id) { var v = parseFloat($(id).value); return isNaN(v) ? 0 : v; }
+function eur(n) { return (Math.round(n * 100) / 100).toFixed(2).replace('.', ',') + ' €'; }
+function dec(n, c) { return (Math.round(n * Math.pow(10, c)) / Math.pow(10, c)).toFixed(c).replace('.', ','); }
+
+/* h:mm e minutos saem sempre do MESMO número de minutos arredondado,
+   para os dois nunca se contradizerem. */
+function minutos(h) { return Math.round(h * 60); }
+function hm(h) {
+  var m = minutos(h);
+  return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0');
+}
+
+/* Percentagens ligadas aos pares (somam sempre 100) */
+function pctMop()   { var v = clamp(num('iPctMop'));   $('iPctTinta').value = arred(100 - v); calcular(); }
+function pctTinta() { var v = clamp(num('iPctTinta')); $('iPctMop').value   = arred(100 - v); calcular(); }
+function pctPrep()  { var v = clamp(num('iPctPrep'));  $('iPctPint').value  = arred(100 - v); calcular(); }
+function pctPint()  { var v = clamp(num('iPctPint'));  $('iPctPrep').value  = arred(100 - v); calcular(); }
+function clamp(v) { return Math.min(100, Math.max(0, v)); }
+function arred(v) { return Math.round(v * 100) / 100; }
+
+function calcular() {
+  var total = num('iTotal'), pctMopV = num('iPctMop'), vh = num('iValorHora');
+  var pctPrepV = num('iPctPrep'), pctPintV = num('iPctPint');
+  var horasInt = num('iHorasInt'), conv = num('iConv');
+
+  var vMop = total * (pctMopV / 100);
+  var vTinta = total - vMop;
+  $('oTinta').textContent = eur(vTinta);
+  $('oMop').textContent = eur(vMop);
+
+  var horasMop = vh > 0 ? vMop / vh : 0;
+  $('oHorasMop').textContent = vh > 0 ? dec(horasMop, 4) : '—';
+
+  var hPrep = Math.round(horasMop * (pctPrepV / 100) * 100) / 100;
+  var hPint = Math.round(horasMop * (pctPintV / 100) * 100) / 100;
+  $('oHprep').textContent = vh > 0 ? dec(hPrep, 2) : '—';
+  $('oHpint').textContent = vh > 0 ? dec(hPint, 2) : '—';
+
+  $('lblPrep').textContent = dec(pctPrepV, 0);
+  $('lblPint').textContent = dec(pctPintV, 0);
+
+  var iPrep = horasInt * (pctPrepV / 100), iPint = horasInt * (pctPintV / 100);
+  linha('ti', horasInt); linha('tp', iPrep); linha('tq', iPint);
+
+  $('cvH').textContent = dec(conv, 2);
+  $('cvHM').textContent = hm(conv);
+  $('cvM').textContent = minutos(conv);
+
+  var soma = pctPrepV + pctPintV;
+  $('avisoPct').innerHTML = (Math.abs(soma - 100) > 0.01)
+    ? '<div class="aviso">⚠ Preparação + Pintura somam ' + dec(soma, 0) + '% — as horas repartidas não vão dar o total.</div>' : '';
+}
+function linha(pref, h) {
+  $(pref + 'H').textContent = dec(h, 2);
+  $(pref + 'HM').textContent = hm(h);
+  $(pref + 'M').textContent = minutos(h);
+}
+
+function reporOriginal() {
+  $('iTotal').value = ORIGINAL.total;
+  $('iPctMop').value = ORIGINAL.pctMop;
+  $('iPctTinta').value = ORIGINAL.pctTinta;
+  $('iValorHora').value = ORIGINAL.valorHora;
+  $('iPctPrep').value = ORIGINAL.pctPrep;
+  $('iPctPint').value = ORIGINAL.pctPint;
+  $('iHorasInt').value = ORIGINAL.horasInt;
+  $('iConv').value = ORIGINAL.conv;
+  calcular();
+}
+
+function copiarResumo() {
+  var t = 'Simulador de horas de pintura\n' +
+    'Valor total pintura: ' + eur(num('iTotal')) + '\n' +
+    'Valor Tinta (MPI): ' + $('oTinta').textContent + '\n' +
+    'Valor MOP: ' + $('oMop').textContent + '\n' +
+    'Valor hora: ' + eur(num('iValorHora')) + '\n' +
+    'Total horas MOP: ' + $('oHorasMop').textContent + ' h\n' +
+    'Preparação: ' + $('oHprep').textContent + ' h\n' +
+    'Pintura: ' + $('oHpint').textContent + ' h';
+  function ok() { var e = $('toast'); e.textContent = 'Resumo copiado.'; e.className = 'copiado show'; setTimeout(function(){ e.className = 'copiado'; }, 2200); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(ok, fallback);
+  } else { fallback(); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); ok(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+}
+
+reporOriginal();
+</script>
+</body>
+</html>

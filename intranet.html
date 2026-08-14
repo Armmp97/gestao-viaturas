@@ -1167,6 +1167,7 @@
             <li><a onclick="openModule('relatorio_tecnico')" id="navRelatorio_tecnico"><span class="nav-icon">📄</span> Relatórios Técnicos</a></li>
             <li><a onclick="openModule('editor_valpirent')" id="navEditor_valpirent"><span class="nav-icon">✏️</span> Editor Contrato Valpirent</a></li>
             <li><a onclick="openModule('declaracoes_presenca')" id="navDeclaracoes_presenca"><span class="nav-icon">🖨️</span> Declarações de Presença</a></li>
+            <li><a onclick="openModule('simulador_horas')" id="navSimulador_horas"><span class="nav-icon">🎨</span> Simulador Horas de Pintura</a></li>
         </ul>
 
         <div class="sidebar-section">Ongoing Onboarding</div>
@@ -2468,167 +2469,167 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca','registo_horas']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca','registo_horas','simulador_horas']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca','registo_horas']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca','registo_horas','simulador_horas']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent','parecer_merito','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent','parecer_merito','declaracoes_presenca','simulador_horas']
         },
         'jose.rodriguez@domuscar.com': {
             role: 'coordenador', name: 'José Rodriguez',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent','parecer_merito','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','aval_merito','editor_valpirent','parecer_merito','declaracoes_presenca','simulador_horas']
         },
         'mario.perez@domuscar.com': {
             role: 'coordenador', name: 'Mário Perez (Colisão Bela Vista)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'nuno.montes@domuscar.com': {
             role: 'coordenador', name: 'Nuno Montes (Colisão Tagus Park)',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','coord_divergencias','coord_estatisticas','coord_inspecao_diaria','coord_auditoria_carrinhos','prep_auditoria_sqa_bcs','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'diogolj009@gmail.com': {
             role: 'colaborador', name: 'Diogo Henrique Gomes Fernandes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'shahajay724@gmail.com': {
             role: 'colaborador', name: 'Ajay Kumar Shah',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'vladyne00@gmail.com': {
             role: 'colaborador', name: 'Edmilson Jorge Pereira Fernandes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'arnaldo.a4@gmail.com': {
             role: 'colaborador', name: 'Arnaldo José Carvalho Brites da Cruz',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'serginhonekas@gmail.com': {
             role: 'colaborador', name: 'Sérgio Fernando Migueis Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'montez1993@hotmail.com': {
             role: 'colaborador', name: 'Nuno Alexandre Carvalho Montês',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'jorge_silverado@hotmail.com': {
             role: 'colaborador', name: 'Jorge Miguel Alves Silva',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'eduardomacedo624@gmail.com': {
             role: 'colaborador', name: 'Eduardo Macedo',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'filipejose.reisbonifacio@gmail.com': {
             role: 'colaborador', name: 'Filipe José Reis Bonifácio',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'carlos__antunes@hotmail.com': {
             role: 'colaborador', name: 'Carlos Miguel Fernandes Gonçalves Antunes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'eaoag-junior@hotmail.com': {
             role: 'colaborador', name: 'Emanuel Antonio de Oliveira Alves Gonçalves',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'vitorsoutilha@hotmail.com': {
             role: 'colaborador', name: 'Vitor Manuel Vilarinho Soutilha',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'jjborges23@hotmail.com': {
             role: 'colaborador', name: 'José João Ferreira Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'goncalo.myguel@gmail.com': {
             role: 'colaborador', name: 'Gonçalo Miguel Palrinhas Matos',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'henupaneru@gmail.com': {
             role: 'colaborador', name: 'Gyanu Pujara',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'curentcha@gmail.com': {
             role: 'colaborador', name: 'José Avelino da Cruz Fernandes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'pedrojana30@gmail.com': {
             role: 'colaborador', name: 'Pedro Filipe de Castro Jana',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'paulo_bizz@hotmail.com': {
             role: 'colaborador', name: 'João Paulo São Pedro Bizarro',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'xavierjoli2@gmail.com': {
             role: 'colaborador', name: 'Xavier Oliveira Jorge',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'pedro.pereira@domuscar.com': {
             role: 'colaborador', name: 'Pedro Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'ricardo.ferreira@domuscar.com': {
             role: 'colaborador', name: 'Ricardo Ferreira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'fernando.couto@domuscar.com': {
             role: 'colaborador', name: 'Fernando Couto',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'ruben.nogueira@domuscar.com': {
             role: 'colaborador', name: 'Rúben Nogueira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'tomas.figueiredo@domuscar.com': {
             role: 'colaborador', name: 'Tomás Figueiredo',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'pedro.carvalho@domuscar.com': {
             role: 'colaborador', name: 'Pedro Carvalho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'goncalo.faustino@domuscar.com': {
             role: 'colaborador', name: 'Gonçalo Faustino',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'ines.peixinho@domuscar.com': {
             role: 'colaborador', name: 'Inês Peixinho',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'alicia.vieira@domuscar.com': {
             role: 'colaborador', name: 'Alícia Vieira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'andre.gomes@domuscar.com': {
             role: 'colaborador', name: 'André Gomes',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'valter.borges@domuscar.com': {
             role: 'colaborador', name: 'Valter Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas','simulador_horas']
         },
         'paulo.ferreira@domuscar.com': {
             role: 'colaborador', name: 'Paulo Ferreira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'asgomesw@gmail.com': {
             role: 'colaborador', name: 'Convidado Externo',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         },
         'claudia.pedro@domuscar.com': {
             role: 'rh', name: 'Cláudia Pedro',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas','simulador_horas']
         },
         'marta.marques@domuscar.com': {
             role: 'rh', name: 'Marta Marques',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas','simulador_horas']
         },
         '_default': {
             role: 'user', name: '',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','simulador_horas']
         }
     };
 
@@ -3992,6 +3993,7 @@
             editor_valpirent: { title: 'Editor Contrato Valpirent', url: 'editor-contrato-valpirent.html' },
             declaracoes_presenca: { title: 'Declarações de Presença', url: 'declaracoes-presenca.html' },
             registo_horas: { title: 'Registo de Horas — Movimentação de Viaturas', url: 'registo-horas-movimentacao.html' },
+            simulador_horas: { title: 'Simulador de Horas de Pintura', url: 'simulador-horas-pintura.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
@@ -5021,6 +5023,7 @@
             avaliacoes_merito: '⭐ Avaliações de Mérito',
             termos_responsabilidade: '📄 Termos de Responsabilidade',
             registo_horas: '🕘 Registo de Horas (Movimentação)',
+            simulador_horas: '🎨 Simulador Horas de Pintura',
             auditorias_internas: '🔍 Auditorias Internas',
             inspecoes_diarias: '✅ Inspeções Diárias',
             gv_fotos_levantamento: '📷 Fotos Levantamento',
@@ -5145,7 +5148,7 @@
 
 
 <!-- ======== MOTOR DE BUSCA INTRANET ======== -->
-<script src="search-index.js?v=2026081401"></script>
+<script src="search-index.js?v=2026081402"></script>
 <script>
 /* === search-widget.js EMBUTIDO INLINE === */
 /* ============================================================
