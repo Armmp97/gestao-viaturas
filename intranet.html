@@ -1158,6 +1158,7 @@
         <ul class="sidebar-nav">
             <li><a onclick="openModule('recursos_humanos')" id="navRecursos_humanos"><span class="nav-icon">👥</span> Recursos Humanos</a></li>
             <li id="navFormacaoLi"><a onclick="openModule('formacao')" id="navFormacao"><span class="nav-icon">🎓</span> Calendário de Formação</a></li>
+            <li id="navRegistoHorasLi" style="display:none;"><a onclick="openModule('registo_horas')" id="navRegisto_horas"><span class="nav-icon">🕘</span> Registo de Horas (Movimentação)</a></li>
         </ul>
 
         <div class="sidebar-section">Operações</div>
@@ -2467,11 +2468,11 @@
     const USER_PERMISSIONS = {
         'andre.pereira@domuscar.com': {
             role: 'admin', name: 'André Pereira',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca','registo_horas']
         },
         'vanessa.borges@domuscar.com': {
             role: 'admin', name: 'Vanessa Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','definicoes','kpis','margem','divergencias','kpis_coord','verificador_garantias','verificador_orcamentos','analisador_os','google_reviews','questionario_satisfacao','coord_divergencias','coord_estatisticas','coord_inspecoes','coord_inspecao_diaria','prep_auditoria_sqa_bcs','officegest_api','fardas','conferencia_faturas','conferencia_os_orc','auditoria_oficina','coord_auditoria_carrinhos','termos_responsabilidade','aval_merito','editor_valpirent','aval_merito_admin','parecer_merito','declaracoes_presenca','registo_horas']
         },
         'fabio.ramalho@domuscar.com': {
             role: 'coordenador', name: 'Fábio Ramalho',
@@ -2607,7 +2608,7 @@
         },
         'valter.borges@domuscar.com': {
             role: 'colaborador', name: 'Valter Borges',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas']
         },
         'paulo.ferreira@domuscar.com': {
             role: 'colaborador', name: 'Paulo Ferreira',
@@ -2619,11 +2620,11 @@
         },
         'claudia.pedro@domuscar.com': {
             role: 'rh', name: 'Cláudia Pedro',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas']
         },
         'marta.marques@domuscar.com': {
             role: 'rh', name: 'Marta Marques',
-            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca']
+            modules: ['visao_missao','estrutura_org','normas_regras','qualidade_seguranca','doc_tecnica','sistemas_ferramentas','recursos_humanos','indicadores_obj','sugestoes_melhoria','caixa_sugestoes','formulario_nc','processos_op','relatorio_tecnico','viaturas','kpis','margem','editor_valpirent','declaracoes_presenca','registo_horas']
         },
         '_default': {
             role: 'user', name: '',
@@ -2880,6 +2881,9 @@
         // Calendário de Formação: visível só para admin, coordenador e RH
         var formacaoLi = document.getElementById('navFormacaoLi');
         if (formacaoLi) formacaoLi.style.display = (role === 'admin' || role === 'coordenador' || role === 'rh') ? 'block' : 'none';
+        // Registo de Horas (Movimentação de Viaturas): admins + RH + Valter Borges (por módulo)
+        var rhLi = document.getElementById('navRegistoHorasLi');
+        if (rhLi) rhLi.style.display = (currentUserPermissions.modules && currentUserPermissions.modules.includes('registo_horas')) ? 'block' : 'none';
     }
 
     function renderFeed() {
@@ -2952,6 +2956,7 @@
             fardas_termos: 'Intranet/RH/Fardas/Termos',
             fardas_arquivo: 'Intranet/RH/Fardas/Arquivo',
             termos_responsabilidade: 'Intranet/RH/Termos_Responsabilidade',
+            registo_horas: 'Intranet/RH/Registo_Horas_Movimentacao',
             equipamentos_docs: 'Intranet/Equipamentos/Documentos',
             relatorios_tecnicos_gerados: 'Intranet/Relatorios_Tecnicos/Gerados'
         }
@@ -3288,6 +3293,25 @@
         var path = SP_CONFIG.folders.fardas + '/fardas_state.json';
         function reply(payload){ try { event.source.postMessage(Object.assign({ type:'fardasLoadStateResult', correlationId:cid }, payload), '*'); } catch(e){} }
         if (!driveId) { reply({ success:false, error:'SharePoint não inicializado' }); return; }
+        getGraphToken().then(function(token){
+            return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + path + ':/content', { headers: { 'Authorization': 'Bearer ' + token } });
+        }).then(function(resp){
+            if (resp.status === 404) { reply({ success:true, data:null }); return null; }
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            return resp.text().then(function(txt){ reply({ success:true, data:txt }); });
+        }).catch(function(err){ reply({ success:false, error: err && err.message ? err.message : String(err) }); });
+    });
+
+    // ===== RH: ler um JSON de uma pasta do SharePoint (folderKey + fileName) =====
+    window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'rhLoadJson') return;
+        var cid = event.data.correlationId || null;
+        function reply(payload){ try { event.source.postMessage(Object.assign({ type:'rhLoadJsonResult', correlationId:cid }, payload), '*'); } catch(e){} }
+        var driveId = getDriveId();
+        var folder = SP_CONFIG.folders[event.data.folderKey];
+        if (!driveId) { reply({ success:false, error:'SharePoint não inicializado' }); return; }
+        if (!folder) { reply({ success:false, error:'Pasta desconhecida: ' + event.data.folderKey }); return; }
+        var path = folder + '/' + event.data.fileName;
         getGraphToken().then(function(token){
             return fetch('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + path + ':/content', { headers: { 'Authorization': 'Bearer ' + token } });
         }).then(function(resp){
@@ -3967,6 +3991,7 @@
             relatorio_tecnico: { title: 'Gerador de Relatórios Técnicos', url: 'relatorio-tecnico.html' },
             editor_valpirent: { title: 'Editor Contrato Valpirent', url: 'editor-contrato-valpirent.html' },
             declaracoes_presenca: { title: 'Declarações de Presença', url: 'declaracoes-presenca.html' },
+            registo_horas: { title: 'Registo de Horas — Movimentação de Viaturas', url: 'registo-horas-movimentacao.html' },
             margem: { title: 'Cálculo Margem Provisória Mensal', url: 'margem-provisoria.html' },
             divergencias: { title: 'Cálculo Divergências Picagens OG vs 2Smart', url: 'divergencias-picagens.html' },
             kpis_coord: { title: 'Gerador Relatórios KPIs Coordenação', url: 'gerador-kpis.html' },
@@ -4995,6 +5020,7 @@
             auditorias_carrinhos: '🧰 Auditorias Carrinhos de Ferramenta',
             avaliacoes_merito: '⭐ Avaliações de Mérito',
             termos_responsabilidade: '📄 Termos de Responsabilidade',
+            registo_horas: '🕘 Registo de Horas (Movimentação)',
             auditorias_internas: '🔍 Auditorias Internas',
             inspecoes_diarias: '✅ Inspeções Diárias',
             gv_fotos_levantamento: '📷 Fotos Levantamento',
@@ -5119,7 +5145,7 @@
 
 
 <!-- ======== MOTOR DE BUSCA INTRANET ======== -->
-<script src="search-index.js?v=2026080801"></script>
+<script src="search-index.js?v=2026081401"></script>
 <script>
 /* === search-widget.js EMBUTIDO INLINE === */
 /* ============================================================

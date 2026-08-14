@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomusCar — Registo de Horas · Movimentação de Viaturas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --navy: #003B73; --navy-deep: #002B55; --accent: #007BC0; --accent-light: #4DA8DA;
+  --white: #FFFFFF; --off-white: #F5F7FA;
+  --gray-100: #EEF1F5; --gray-200: #DEE2E8; --gray-300: #CBD2DB; --gray-400: #9CA3AF; --gray-600: #6B7280;
+  --text-dark: #1A2A3A; --text-body: #475569;
+  --radius: 16px; --radius-sm: 12px;
+  --danger: #DC2626; --success: #059669; --warn: #B45309; --warn-bg: #FEF6E7;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--off-white); color: var(--text-body); line-height: 1.55; }
+.page { max-width: 1280px; margin: 0 auto; padding: 24px 20px 70px; }
+
+.doc-header {
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+  color: var(--white); border-radius: var(--radius); padding: 22px 28px; margin-bottom: 18px; position: relative; overflow: hidden;
+}
+.doc-header::after { content: ''; position: absolute; top: -30%; right: -5%; width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,123,192,.15), transparent 70%); border-radius: 50%; }
+.doc-header h1 { font-size: 1.25rem; font-weight: 800; position: relative; z-index: 2; }
+.doc-header h1 em { font-style: normal; color: var(--accent-light); }
+.doc-header p { font-size: .8rem; opacity: .85; margin-top: 5px; position: relative; z-index: 2; }
+.hdr-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; position: relative; z-index: 2; }
+.badge { font-size: .68rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.22); }
+.badge.on { background: rgba(5,150,105,.28); border-color: rgba(5,150,105,.5); }
+.badge.off { background: rgba(220,38,38,.24); border-color: rgba(220,38,38,.45); }
+.badge.lock { background: rgba(180,83,9,.30); border-color: rgba(180,83,9,.5); }
+
+.card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.card-head { padding: 12px 20px; background: var(--navy); color: var(--white); font-size: .85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.card-head .sub { font-weight: 500; opacity: .8; font-size: .75rem; }
+.card-body { padding: 16px 20px; }
+
+.toolbar { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.fld { display: flex; flex-direction: column; gap: 4px; }
+.lab { font-size: .64rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--accent); }
+select, input[type=text], input[type=time], textarea {
+  font-family: inherit; font-size: .88rem; color: var(--text-dark); background: var(--white);
+  border: 1px solid var(--gray-200); border-radius: 8px; padding: 7px 10px; outline: none;
+}
+select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+textarea { width: 100%; min-height: 70px; resize: vertical; font-size: .85rem; }
+.spacer { flex: 1; }
+
+.btn { border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: .84rem; font-weight: 800; cursor: pointer; }
+.btn.primary { background: var(--navy); color: #fff; }
+.btn.accent { background: var(--accent); color: #fff; }
+.btn.ok { background: var(--success); color: #fff; }
+.btn.warn { background: var(--warn); color: #fff; }
+.btn.ghost { background: var(--white); color: var(--text-dark); border: 1px solid var(--gray-200); }
+.btn:hover:not(:disabled) { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ===== Tabela de dias ===== */
+.tbl-wrap { overflow-x: auto; }
+table.dias { width: 100%; border-collapse: collapse; font-size: .84rem; }
+table.dias th {
+  background: var(--gray-100); color: var(--navy); font-size: .66rem; font-weight: 800;
+  letter-spacing: .5px; text-transform: uppercase; padding: 9px 8px; text-align: left;
+  border-bottom: 2px solid var(--gray-200); white-space: nowrap; position: sticky; top: 0; z-index: 2;
+}
+table.dias td { padding: 4px 8px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+table.dias tr.fds { background: #FAFBFC; color: var(--gray-400); }
+table.dias tr.hoje td { background: #EAF4FC; }
+table.dias tr.alerta td { background: var(--warn-bg); }
+table.dias td.dia { font-weight: 800; color: var(--text-dark); width: 34px; text-align: right; }
+table.dias td.sem { color: var(--gray-600); font-size: .76rem; width: 46px; text-transform: capitalize; }
+table.dias input[type=time] { width: 104px; padding: 5px 6px; font-size: .82rem; }
+table.dias input.desc { width: 100%; min-width: 220px; border: 1px solid transparent; background: transparent; padding: 5px 6px; font-size: .82rem; }
+table.dias input.desc:hover { border-color: var(--gray-200); }
+table.dias input.desc:focus { border-color: var(--accent); background: #fff; }
+table.dias td.tot { font-weight: 800; color: var(--navy); text-align: right; width: 74px; white-space: nowrap; }
+table.dias td.tot .raw { font-weight: 500; color: var(--gray-400); font-size: .72rem; }
+table.dias td.val { text-align: center; width: 62px; }
+table.dias input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--success); cursor: pointer; }
+.flag { display: inline-block; font-size: .64rem; font-weight: 800; color: var(--warn); margin-left: 6px; white-space: nowrap; }
+
+/* ===== Totais ===== */
+.tot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.tot-card { border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 13px 15px; background: var(--white); }
+.tot-card.hi { border-color: var(--navy); background: linear-gradient(135deg, #F3F8FD, #FFFFFF); }
+.tot-card .k { font-size: .64rem; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; color: var(--gray-600); }
+.tot-card .v { font-size: 1.5rem; font-weight: 800; color: var(--navy); margin-top: 3px; }
+.tot-card .n { font-size: .7rem; color: var(--gray-600); margin-top: 2px; }
+
+.avisos { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.aviso { font-size: .78rem; padding: 8px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); border: 1px solid #F5E0BC; }
+.aviso.info { background: #EAF4FC; color: #12557F; border-color: #CBE4F7; }
+.regras { font-size: .75rem; color: var(--gray-600); line-height: 1.7; }
+.regras b { color: var(--text-dark); }
+
+.toast { position: fixed; right: 18px; bottom: 18px; background: var(--navy); color: #fff; padding: 11px 18px; border-radius: var(--radius-sm); font-size: .82rem; font-weight: 700; opacity: 0; transform: translateY(8px); transition: .25s; z-index: 99; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.err { background: var(--danger); }
+
+/* ===== Folha A4 para impressão ===== */
+#printArea { display: none; }
+.folha { width: 210mm; min-height: 297mm; background: #fff; padding: 12mm 14mm 8mm; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; color: #1a1a1a; display: flex; flex-direction: column; }
+.p-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.p-logo img { height: 15mm; display: block; }
+.bosch-box { border: 1px solid #999; width: 30mm; text-align: center; }
+.bosch-red { background: #E30613; color: #fff; font-weight: 900; font-size: 13pt; font-family: Arial, sans-serif; padding: 1mm 0 0; }
+.bosch-serv { background: #fff; color: #1a1a1a; font-weight: 700; font-size: 9pt; padding: 0 0 1mm; }
+.bosch-blue { background: #0a5ba8; color: #fff; font-size: 6.5pt; padding: .5mm 0; }
+.p-title { text-align: center; font-size: 15pt; font-weight: 800; color: #17375E; margin-top: 8mm; }
+.p-sub { text-align: center; font-size: 9.5pt; font-weight: 700; margin-top: 2mm; color: #333; }
+.p-ident { margin-top: 6mm; font-size: 8.5pt; border: .3mm solid #999; }
+.p-ident div.r { display: flex; border-bottom: .2mm solid #ccc; }
+.p-ident div.r:last-child { border-bottom: none; }
+.p-ident span { padding: 1.5mm 2.5mm; }
+.p-ident span.k { width: 26mm; font-weight: 700; background: #F2F5F8; }
+.p-ident span.v { flex: 1; }
+table.p-dias { width: 100%; border-collapse: collapse; font-size: 7.6pt; margin-top: 5mm; }
+table.p-dias th { background: #17375E; color: #fff; padding: 1.4mm 1.5mm; text-align: left; font-size: 7pt; }
+table.p-dias td { padding: 1.1mm 1.5mm; border-bottom: .2mm solid #DDD; }
+table.p-dias tr.f td { background: #F7F8FA; color: #999; }
+table.p-dias td.n { text-align: right; }
+table.p-dias td.c { text-align: center; }
+.p-tot { margin-top: 4mm; display: flex; justify-content: flex-end; }
+.p-tot table { border-collapse: collapse; font-size: 8.5pt; }
+.p-tot td { padding: 1.4mm 4mm; border: .2mm solid #BBB; }
+.p-tot td.k { font-weight: 700; background: #F2F5F8; }
+.p-tot tr.big td { font-weight: 800; font-size: 9.5pt; background: #EAF1F8; }
+.p-notas { margin-top: 5mm; font-size: 8pt; }
+.p-notas .k { font-weight: 700; color: #17375E; }
+.p-notas .box { border: .3mm solid #999; min-height: 14mm; padding: 2mm; margin-top: 1.5mm; white-space: pre-wrap; }
+.p-ass { margin-top: auto; padding-top: 14mm; display: flex; justify-content: space-between; font-size: 8.5pt; }
+.p-ass div { width: 70mm; text-align: center; border-top: .3mm solid #333; padding-top: 1.5mm; }
+.p-foot { margin-top: 6mm; border-top: .3mm solid #17375E; padding-top: 2mm; font-size: 6.2pt; color: #444; text-align: center; }
+
+@media print {
+  .page { display: none !important; }
+  #printArea { display: block !important; }
+  .folha { width: auto; min-height: auto; padding: 10mm 12mm 6mm; }
+  @page { size: A4 portrait; margin: 0; }
+  table.p-dias { page-break-inside: auto; }
+  table.p-dias tr { page-break-inside: avoid; }
+}
+@media (max-width: 720px) {
+  .page { padding: 16px 12px 60px; }
+  table.dias input.desc { min-width: 150px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>Registo de Horas — <em>Movimentação de Viaturas</em></h1>
+    <p>Prestação de serviços ao abrigo do contrato com a Walkingarage, Lda. Preenche o dia a dia; no fim do mês valida, imprime e exporta para juntar à fatura-recibo.</p>
+    <div class="hdr-badges">
+      <span class="badge" id="bUser">—</span>
+      <span class="badge off" id="bSp">SharePoint: a ligar…</span>
+      <span class="badge" id="bEstado">Em preenchimento</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span>📅 Mês e prestador</span>
+      <span class="sub" id="hdrSaved">—</span>
+    </div>
+    <div class="card-body">
+      <div class="toolbar">
+        <div class="fld">
+          <span class="lab">Mês</span>
+          <select id="selMes" onchange="mudarMes()"></select>
+        </div>
+        <div class="fld">
+          <span class="lab">Prestador</span>
+          <select id="selPrest" onchange="mudarPrestador()"></select>
+        </div>
+        <div class="fld">
+          <span class="lab">NIF</span>
+          <input type="text" id="fNif" readonly style="width:120px;background:var(--gray-100);">
+        </div>
+        <div class="fld">
+          <span class="lab">Valor / hora</span>
+          <input type="text" id="fVh" readonly style="width:110px;background:var(--gray-100);">
+        </div>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnGuardar" onclick="guardar(true)">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span>🕘 Registo diário</span>
+      <span class="sub" id="hdrMes">—</span>
+    </div>
+    <div class="tbl-wrap">
+      <table class="dias">
+        <thead>
+          <tr>
+            <th>Dia</th><th>Sem.</th><th>Início</th><th>Fim</th><th>Pausa</th>
+            <th style="text-align:right;">Total (h)</th>
+            <th>Descrição da movimentação / observações</th>
+            <th style="text-align:center;">Validado</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span>💶 Totais do mês</span></div>
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:700;color:var(--text-dark);cursor:pointer;">
+          <input type="checkbox" id="chkArred" onchange="toggleArred()" style="width:17px;height:17px;accent-color:var(--navy);">
+          Arredondar às frações de 30 minutos (Cláusula Sexta)
+        </label>
+        <span style="font-size:.75rem;color:var(--gray-600);" id="arredNota"></span>
+      </div>
+      <div class="tot-grid">
+        <div class="tot-card"><div class="k">Dias com registo</div><div class="v" id="tDias">0</div><div class="n" id="tDiasN">—</div></div>
+        <div class="tot-card"><div class="k">Total de horas</div><div class="v" id="tHoras">0,00</div><div class="n" id="tHorasN">—</div></div>
+        <div class="tot-card"><div class="k">Subtotal (s/ IVA)</div><div class="v" id="tSub">0,00 €</div><div class="n" id="tSubN">—</div></div>
+        <div class="tot-card"><div class="k">IVA (23%)</div><div class="v" id="tIva">0,00 €</div><div class="n">à taxa legal, se aplicável</div></div>
+        <div class="tot-card hi"><div class="k">Total c/ IVA</div><div class="v" id="tTot">0,00 €</div><div class="n">valor a faturar</div></div>
+      </div>
+      <div class="avisos" id="avisos"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span>📝 Notas / observações do mês</span></div>
+    <div class="card-body">
+      <textarea id="fNotas" placeholder="Notas gerais do mês (ex.: dias em que o serviço foi exclusivo de um centro de custo, ausências, ajustes acordados)…" oninput="marcarSujo()"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button class="btn primary" onclick="imprimir()">🖨️ Imprimir / Guardar PDF</button>
+        <button class="btn accent" onclick="exportarExcel()">📊 Exportar Excel</button>
+        <button class="btn ghost" onclick="emailContabilidade()">✉️ Email para a contabilidade</button>
+        <div class="spacer"></div>
+        <button class="btn ok" id="btnFechar" onclick="fecharMes()">🔒 Validar e fechar o mês</button>
+        <button class="btn warn" id="btnReabrir" onclick="reabrirMes()" style="display:none;">🔓 Reabrir mês</button>
+      </div>
+      <div style="margin-top:14px;" class="regras">
+        <b>Regras-base do contrato (Cláusulas Sexta e Sétima):</b><br>
+        • Valor/hora: € 9,25 + IVA à taxa legal em vigor, quando aplicável.<br>
+        • Horas em frações de 30 minutos, arredondadas à fração superior.<br>
+        • Disponibilidade mínima: 4h/dia em dias úteis.<br>
+        • Pagamento até ao dia 10 do mês seguinte, por transferência para o IBAN do prestador.<br>
+        • Enviar para <b>contabilidade@domuscar.com</b> até ao 4.º dia útil do mês seguinte, acompanhado da fatura-recibo.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Folha A4 (só impressão) ===== -->
+<div id="printArea"><div class="folha" id="folha"></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ═══════════ Configuração ═══════════ */
+// Para acrescentar um prestador: juntar aqui uma entrada. Cada prestador tem a sua folha por mês.
+var PRESTADORES = [
+  { id: 'gilson', nome: 'Gilson Barbosa de Almeida', nif: '327754050', valorHora: 9.25, iva: 23 }
+];
+var CONTRATANTE = { nome: 'WALKINGARAGE, LDA.', nipc: '513281622' };
+var SP_FOLDER = 'registo_horas';
+var EMAIL_CONTAB = 'contabilidade@domuscar.com';
+
+var DIAS_SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+var MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+/* ═══════════ Estado ═══════════ */
+var USER = { email: '', name: '', role: null };
+var podeValidar = false;         // admin + rh
+var spReady = false;
+var sujo = false;
+var mesAtual = '';               // 'YYYY-MM'
+var prestAtual = PRESTADORES[0].id;
+var DADOS = null;                // folha do mês corrente
+var saveTimer = null;
+
+function novaFolha(mes, prest) {
+  return { mes: mes, prestador: prest, dias: {}, notas: '', arredondar: false,
+           fechado: false, fechadoPor: '', fechadoEm: '', atualizadoPor: '', atualizadoEm: '' };
+}
+
+/* ═══════════ Ponte com a intranet ═══════════ */
+var _pending = {};
+window.addEventListener('message', function(ev) {
+  var d = ev.data; if (!d || !d.correlationId) return;
+  var p = _pending[d.correlationId]; if (!p) return;
+  if (d.type === p.expect) { delete _pending[d.correlationId]; p.resolve(d); }
+});
+function callParent(type, payload, expect) {
+  return new Promise(function(resolve) {
+    if (!window.parent || window.parent === window) { resolve({ success: false, error: 'sem parent' }); return; }
+    var cid = type + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    _pending[cid] = { resolve: resolve, expect: expect };
+    window.parent.postMessage(Object.assign({ type: type, correlationId: cid }, payload), '*');
+    setTimeout(function() { if (_pending[cid]) { delete _pending[cid]; resolve({ success: false, error: 'timeout' }); } }, 30000);
+  });
+}
+function spSave(fileName, json) {
+  var b64 = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(json)));
+  return callParent('saveToSharePoint', { folderKey: SP_FOLDER, fileName: fileName, fileContent: b64, contentType: 'application/json' }, 'saveToSharePointResult');
+}
+function spLoad(fileName) {
+  return callParent('rhLoadJson', { folderKey: SP_FOLDER, fileName: fileName }, 'rhLoadJsonResult');
+}
+
+/* ═══════════ Utilitários ═══════════ */
+function esc(s) { return (s == null ? '' : String(s)).replace(/[&<>"]/g, function(c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+function eur(n) { return (Math.round(n * 100) / 100).toFixed(2).replace('.', ',') + ' €'; }
+function hh(n) { return (Math.round(n * 100) / 100).toFixed(2).replace('.', ','); }
+function hm2min(t) { if (!t) return null; var p = String(t).split(':'); var h = parseInt(p[0], 10), m = parseInt(p[1] || '0', 10); if (isNaN(h) || isNaN(m)) return null; return h * 60 + m; }
+function diasNoMes(ym) { var p = ym.split('-'); return new Date(+p[0], +p[1], 0).getDate(); }
+function ficheiro(mes, prest) { return 'registo_' + mes + '_' + prest + '.json'; }
+function lsKey(mes, prest) { return 'registo_horas_' + mes + '_' + prest; }
+function prestador() { for (var i = 0; i < PRESTADORES.length; i++) if (PRESTADORES[i].id === prestAtual) return PRESTADORES[i]; return PRESTADORES[0]; }
+function toast(msg, err) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(t._h); t._h = setTimeout(function() { t.className = 'toast'; }, 2800);
+}
+function hojeYm() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+
+/* Horas de um dia, em decimal. Sem arredondamento — é o valor cru. */
+function horasCruas(d) {
+  if (!d) return 0;
+  var i = hm2min(d.ini), f = hm2min(d.fim);
+  if (i === null || f === null) return 0;
+  var p = hm2min(d.pausa) || 0;
+  var min = f - i - p;
+  if (min <= 0) return 0;
+  return min / 60;
+}
+/* Valor faturável do dia: cru ou arredondado à fração de 30 min superior. */
+function horasDia(d) {
+  var h = horasCruas(d);
+  if (!h) return 0;
+  return DADOS && DADOS.arredondar ? Math.ceil(h * 2) / 2 : h;
+}
+function bloqueado() { return !!(DADOS && DADOS.fechado); }
+
+/* ═══════════ Arranque ═══════════ */
+(function init() {
+  try {
+    if (window.parent && window.parent !== window && window.parent.amGetUser) {
+      var u = window.parent.amGetUser();
+      if (u) USER = u;
+    }
+  } catch (e) {}
+  podeValidar = (USER.role === 'admin' || USER.role === 'rh');
+  document.getElementById('bUser').textContent = (USER.name || 'Utilizador') + (podeValidar ? ' · pode validar' : ' · registo');
+
+  // selector de meses: 12 meses para trás e 1 para a frente
+  var sel = document.getElementById('selMes'), hoje = new Date(), opts = [];
+  for (var k = 1; k >= -12; k--) {
+    var d = new Date(hoje.getFullYear(), hoje.getMonth() + k, 1);
+    var ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    opts.push('<option value="' + ym + '">' + MESES_PT[d.getMonth()] + ' de ' + d.getFullYear() + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+  sel.value = hojeYm();
+  mesAtual = sel.value;
+
+  var sp = document.getElementById('selPrest');
+  sp.innerHTML = PRESTADORES.map(function(p) { return '<option value="' + p.id + '">' + esc(p.nome) + '</option>'; }).join('');
+  sp.value = prestAtual;
+  if (PRESTADORES.length < 2) sp.disabled = true;
+
+  document.getElementById('btnFechar').style.display = podeValidar ? '' : 'none';
+
+  window.addEventListener('beforeunload', function(e) { if (sujo) { e.preventDefault(); e.returnValue = ''; } });
+  carregar();
+})();
+
+/* ═══════════ Carregar / guardar ═══════════ */
+function carregar() {
+  var p = prestador();
+  document.getElementById('fNif').value = p.nif;
+  document.getElementById('fVh').value = eur(p.valorHora);
+  document.getElementById('hdrMes').textContent = nomeMes(mesAtual) + ' · ' + p.nome;
+
+  DADOS = novaFolha(mesAtual, prestAtual);
+  render();
+
+  spLoad(ficheiro(mesAtual, prestAtual)).then(function(r) {
+    if (r && r.success) {
+      spReady = true;
+      if (r.data) { try { DADOS = normaliza(JSON.parse(r.data)); } catch (e) {} }
+      else { lerLocal(); }
+    } else {
+      lerLocal();
+    }
+    setSpBadge();
+    sujo = false;
+    render();
+  });
+}
+function normaliza(o) {
+  var base = novaFolha(mesAtual, prestAtual);
+  if (!o || typeof o !== 'object') return base;
+  base.dias = o.dias && typeof o.dias === 'object' ? o.dias : {};
+  base.notas = o.notas || '';
+  base.arredondar = !!o.arredondar;
+  base.fechado = !!o.fechado;
+  base.fechadoPor = o.fechadoPor || ''; base.fechadoEm = o.fechadoEm || '';
+  base.atualizadoPor = o.atualizadoPor || ''; base.atualizadoEm = o.atualizadoEm || '';
+  return base;
+}
+function lerLocal() {
+  try { var ls = localStorage.getItem(lsKey(mesAtual, prestAtual)); if (ls) DADOS = normaliza(JSON.parse(ls)); } catch (e) {}
+}
+function setSpBadge() {
+  var b = document.getElementById('bSp');
+  if (spReady) { b.className = 'badge on'; b.textContent = 'SharePoint: ligado'; }
+  else { b.className = 'badge off'; b.textContent = 'SharePoint: indisponível — guardado só neste computador'; }
+}
+function marcarSujo() {
+  if (bloqueado()) return;
+  DADOS.notas = document.getElementById('fNotas').value;
+  sujo = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() { guardar(false); }, 1500);
+}
+function guardar(manual) {
+  clearTimeout(saveTimer);
+  DADOS.notas = document.getElementById('fNotas').value;
+  DADOS.atualizadoPor = USER.name || USER.email || '';
+  DADOS.atualizadoEm = new Date().toISOString();
+  var json = JSON.stringify(DADOS, null, 1);
+  try { localStorage.setItem(lsKey(mesAtual, prestAtual), json); } catch (e) {}
+  return spSave(ficheiro(mesAtual, prestAtual), json).then(function(r) {
+    if (r && r.success) {
+      spReady = true; sujo = false;
+      if (manual) toast('Guardado.');
+      carimbo();
+    } else {
+      spReady = false;
+      if (manual) toast('Não deu para guardar no SharePoint. Ficou guardado neste computador.', true);
+    }
+    setSpBadge();
+    return r;
+  });
+}
+function carimbo() {
+  var el = document.getElementById('hdrSaved');
+  if (!DADOS.atualizadoEm) { el.textContent = '—'; return; }
+  var d = new Date(DADOS.atualizadoEm);
+  el.textContent = 'Última alteração: ' + String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear() +
+                   ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') +
+                   (DADOS.atualizadoPor ? ' · ' + DADOS.atualizadoPor : '');
+}
+function mudarMes() {
+  if (sujo && !confirm('Há alterações por guardar neste mês. Mudar de mês na mesma?')) {
+    document.getElementById('selMes').value = mesAtual; return;
+  }
+  mesAtual = document.getElementById('selMes').value;
+  carregar();
+}
+function mudarPrestador() {
+  if (sujo && !confirm('Há alterações por guardar. Mudar de prestador na mesma?')) {
+    document.getElementById('selPrest').value = prestAtual; return;
+  }
+  prestAtual = document.getElementById('selPrest').value;
+  carregar();
+}
+function nomeMes(ym) { var p = ym.split('-'); return MESES_PT[+p[1] - 1] + ' de ' + p[0]; }
+
+/* ═══════════ Render ═══════════ */
+function render() {
+  var n = diasNoMes(mesAtual), ano = +mesAtual.split('-')[0], mes = +mesAtual.split('-')[1];
+  var hoje = new Date(), ehMesCorrente = (hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes);
+  var lock = bloqueado();
+  var html = '';
+
+  for (var i = 1; i <= n; i++) {
+    var dt = new Date(ano, mes - 1, i), ws = dt.getDay();
+    var fds = (ws === 0 || ws === 6);
+    var d = DADOS.dias[i] || {};
+    var hCru = horasCruas(d), h = horasDia(d);
+    var alerta = (!fds && hCru > 0 && hCru < 4);
+    var cls = [];
+    if (fds) cls.push('fds');
+    if (alerta) cls.push('alerta');
+    if (ehMesCorrente && hoje.getDate() === i) cls.push('hoje');
+
+    html += '<tr class="' + cls.join(' ') + '">' +
+      '<td class="dia">' + i + '</td>' +
+      '<td class="sem">' + DIAS_SEM[ws] + '</td>' +
+      '<td><input type="time" value="' + esc(d.ini || '') + '" ' + (lock ? 'disabled' : '') + ' onchange="setCampo(' + i + ',\'ini\',this.value)"></td>' +
+      '<td><input type="time" value="' + esc(d.fim || '') + '" ' + (lock ? 'disabled' : '') + ' onchange="setCampo(' + i + ',\'fim\',this.value)"></td>' +
+      '<td><input type="time" value="' + esc(d.pausa || '') + '" ' + (lock ? 'disabled' : '') + ' onchange="setCampo(' + i + ',\'pausa\',this.value)"></td>' +
+      '<td class="tot">' + (h ? hh(h) : '—') +
+        (h && DADOS.arredondar && Math.abs(h - hCru) > 0.001 ? '<br><span class="raw">real ' + hh(hCru) + '</span>' : '') +
+        (alerta ? '<span class="flag" title="Dia útil abaixo da disponibilidade mínima de 4h">&lt;4h</span>' : '') +
+      '</td>' +
+      '<td><input class="desc" type="text" value="' + esc(d.desc || '') + '" ' + (lock ? 'disabled' : '') + ' placeholder="origem → destino, viatura/matrícula" onchange="setCampo(' + i + ',\'desc\',this.value)"></td>' +
+      '<td class="val"><input type="checkbox" ' + (d.val ? 'checked' : '') + ' ' + (podeValidar && !lock ? '' : 'disabled') + ' onchange="setCampo(' + i + ',\'val\',this.checked)" title="' + (podeValidar ? 'Validar este dia' : 'Só admin/RH podem validar') + '"></td>' +
+      '</tr>';
+  }
+  document.getElementById('tbody').innerHTML = html;
+  document.getElementById('fNotas').value = DADOS.notas || '';
+  document.getElementById('fNotas').disabled = lock;
+  document.getElementById('chkArred').checked = !!DADOS.arredondar;
+  document.getElementById('chkArred').disabled = lock;
+  document.getElementById('btnGuardar').disabled = lock;
+
+  var be = document.getElementById('bEstado');
+  if (lock) {
+    be.className = 'badge lock';
+    be.textContent = 'Mês fechado' + (DADOS.fechadoPor ? ' por ' + DADOS.fechadoPor : '');
+  } else { be.className = 'badge'; be.textContent = 'Em preenchimento'; }
+  document.getElementById('btnFechar').style.display = (podeValidar && !lock) ? '' : 'none';
+  document.getElementById('btnReabrir').style.display = (podeValidar && lock) ? '' : 'none';
+
+  totais();
+  carimbo();
+}
+function setCampo(dia, campo, valor) {
+  if (bloqueado()) return;
+  var d = DADOS.dias[dia] || (DADOS.dias[dia] = {});
+  d[campo] = valor;
+  if (campo !== 'val' && campo !== 'desc') {
+    // se o dia ficou vazio, limpar para não guardar lixo
+    if (!d.ini && !d.fim && !d.pausa && !d.desc && !d.val) delete DADOS.dias[dia];
+  }
+  sujo = true;
+  render();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() { guardar(false); }, 1500);
+}
+function toggleArred() {
+  if (bloqueado()) return;
+  DADOS.arredondar = document.getElementById('chkArred').checked;
+  sujo = true; render();
+  clearTimeout(saveTimer); saveTimer = setTimeout(function() { guardar(false); }, 1000);
+}
+
+function calcula() {
+  var n = diasNoMes(mesAtual), ano = +mesAtual.split('-')[0], mes = +mesAtual.split('-')[1];
+  var r = { dias: 0, horas: 0, horasCruas: 0, validados: 0, curtos: [], uteisSem: [], porValidar: 0 };
+  for (var i = 1; i <= n; i++) {
+    var d = DADOS.dias[i], ws = new Date(ano, mes - 1, i).getDay(), fds = (ws === 0 || ws === 6);
+    var hc = horasCruas(d), h = horasDia(d);
+    if (h > 0) {
+      r.dias++; r.horas += h; r.horasCruas += hc;
+      if (d && d.val) r.validados++; else r.porValidar++;
+      if (!fds && hc < 4) r.curtos.push(i);
+    } else if (!fds) { r.uteisSem.push(i); }
+  }
+  var p = prestador();
+  r.sub = r.horas * p.valorHora;
+  r.iva = r.sub * (p.iva / 100);
+  r.total = r.sub + r.iva;
+  return r;
+}
+function totais() {
+  var r = calcula(), p = prestador();
+  document.getElementById('tDias').textContent = r.dias;
+  document.getElementById('tDiasN').textContent = r.validados + ' validado' + (r.validados === 1 ? '' : 's') + ' · ' + r.porValidar + ' por validar';
+  document.getElementById('tHoras').textContent = hh(r.horas);
+  document.getElementById('tHorasN').textContent = DADOS.arredondar
+    ? 'reais ' + hh(r.horasCruas) + ' h (+' + hh(r.horas - r.horasCruas) + ' de arredondamento)'
+    : 'sem arredondamento';
+  document.getElementById('tSub').textContent = eur(r.sub);
+  document.getElementById('tSubN').textContent = hh(r.horas) + ' h × ' + eur(p.valorHora);
+  document.getElementById('tIva').textContent = eur(r.iva);
+  document.getElementById('tTot').textContent = eur(r.total);
+
+  var dif = r.horas - r.horasCruas;
+  document.getElementById('arredNota').textContent = DADOS.arredondar
+    ? '(a somar ' + hh(dif) + ' h ao mês, ' + eur(dif * p.valorHora) + ')'
+    : '(o Excel atual não arredonda — ligar isto sobe o mês em ' + hh(Math.ceil(r.horasCruas * 2) / 2 - r.horasCruas) + ' h)';
+
+  var av = [];
+  if (r.curtos.length) av.push('<div class="aviso">⚠ Dia' + (r.curtos.length > 1 ? 's' : '') + ' útil' + (r.curtos.length > 1 ? 'eis' : '') + ' abaixo das 4h de disponibilidade mínima: ' + r.curtos.join(', ') + '.</div>');
+  if (r.uteisSem.length) av.push('<div class="aviso info">ℹ Dias úteis sem registo: ' + r.uteisSem.join(', ') + '. Se foram férias, feriado ou ausência, convém deixar nota abaixo.</div>');
+  if (r.porValidar && podeValidar && !bloqueado()) av.push('<div class="aviso info">ℹ Há ' + r.porValidar + ' dia(s) com horas ainda por validar.</div>');
+  document.getElementById('avisos').innerHTML = av.join('');
+}
+
+/* ═══════════ Fechar / reabrir ═══════════ */
+function fecharMes() {
+  if (!podeValidar) { toast('Só administradores e recursos humanos podem fechar o mês.', true); return; }
+  var r = calcula();
+  if (!r.dias) { toast('Não há dias com horas neste mês.', true); return; }
+  var msg = 'Fechar ' + nomeMes(mesAtual) + '?\n\n' + r.dias + ' dias · ' + hh(r.horas) + ' h · ' + eur(r.total) + ' c/ IVA';
+  if (r.porValidar) msg += '\n\nAtenção: ' + r.porValidar + ' dia(s) ainda sem visto de validado.';
+  msg += '\n\nDepois de fechado, o mês fica bloqueado (só admin/RH o podem reabrir).';
+  if (!confirm(msg)) return;
+  DADOS.fechado = true;
+  DADOS.fechadoPor = USER.name || USER.email || '';
+  DADOS.fechadoEm = new Date().toISOString();
+  guardar(false).then(function() { render(); toast('Mês fechado.'); });
+}
+function reabrirMes() {
+  if (!podeValidar) return;
+  if (!confirm('Reabrir ' + nomeMes(mesAtual) + ' para edição?')) return;
+  DADOS.fechado = false; DADOS.fechadoPor = ''; DADOS.fechadoEm = '';
+  guardar(false).then(function() { render(); toast('Mês reaberto.'); });
+}
+
+/* ═══════════ Impressão ═══════════ */
+function imprimir() { montarFolha(); setTimeout(function() { window.print(); }, 60); }
+function montarFolha() {
+  var p = prestador(), r = calcula();
+  var n = diasNoMes(mesAtual), ano = +mesAtual.split('-')[0], mes = +mesAtual.split('-')[1];
+  var linhas = '';
+  for (var i = 1; i <= n; i++) {
+    var ws = new Date(ano, mes - 1, i).getDay(), fds = (ws === 0 || ws === 6);
+    var d = DADOS.dias[i] || {}, h = horasDia(d);
+    linhas += '<tr' + (fds && !h ? ' class="f"' : '') + '>' +
+      '<td class="n">' + i + '</td><td>' + DIAS_SEM[ws] + '</td>' +
+      '<td class="c">' + esc(d.ini || '') + '</td><td class="c">' + esc(d.fim || '') + '</td><td class="c">' + esc(d.pausa || '') + '</td>' +
+      '<td class="n">' + (h ? hh(h) : '') + '</td>' +
+      '<td>' + esc(d.desc || '') + '</td>' +
+      '<td class="c">' + (d.val ? '✓' : '') + '</td></tr>';
+  }
+  document.getElementById('folha').innerHTML =
+    '<div class="p-top">' +
+      '<div class="p-logo"><img src="DomusCar%20_%20Logo.png" alt="DomusCar" onerror="this.style.display=\'none\'"></div>' +
+      '<div class="bosch-box"><div class="bosch-red">BOSCH</div><div class="bosch-serv">Service</div><div class="bosch-blue">Car Service</div></div>' +
+    '</div>' +
+    '<div class="p-title">REGISTO MENSAL DE HORAS</div>' +
+    '<div class="p-sub">Prestação de Serviços de Movimentação de Viaturas</div>' +
+    '<div class="p-ident">' +
+      '<div class="r"><span class="k">Prestador</span><span class="v">' + esc(p.nome) + '</span><span class="k">NIF</span><span class="v">' + esc(p.nif) + '</span></div>' +
+      '<div class="r"><span class="k">Contratante</span><span class="v">' + esc(CONTRATANTE.nome) + '</span><span class="k">NIPC</span><span class="v">' + esc(CONTRATANTE.nipc) + '</span></div>' +
+      '<div class="r"><span class="k">Mês / Ano</span><span class="v">' + nomeMes(mesAtual) + '</span><span class="k">Valor/hora</span><span class="v">' + eur(p.valorHora) + ' (+ IVA, se aplicável)</span></div>' +
+    '</div>' +
+    '<table class="p-dias"><thead><tr><th>Dia</th><th>Sem.</th><th>Início</th><th>Fim</th><th>Pausa</th><th>Total (h)</th><th>Descrição da movimentação / observações</th><th>Val.</th></tr></thead><tbody>' + linhas + '</tbody></table>' +
+    '<div class="p-tot"><table>' +
+      '<tr><td class="k">Dias com registo</td><td class="n">' + r.dias + '</td></tr>' +
+      '<tr><td class="k">Total de horas</td><td class="n">' + hh(r.horas) + ' h</td></tr>' +
+      '<tr><td class="k">Valor/hora</td><td class="n">' + eur(p.valorHora) + '</td></tr>' +
+      '<tr><td class="k">Subtotal (s/ IVA)</td><td class="n">' + eur(r.sub) + '</td></tr>' +
+      '<tr><td class="k">IVA (' + p.iva + '%)</td><td class="n">' + eur(r.iva) + '</td></tr>' +
+      '<tr class="big"><td class="k">TOTAL c/ IVA</td><td class="n">' + eur(r.total) + '</td></tr>' +
+    '</table></div>' +
+    '<div class="p-notas"><span class="k">NOTAS / OBSERVAÇÕES</span><div class="box">' + esc(DADOS.notas || '') + '</div>' +
+      (DADOS.arredondar ? '<div style="margin-top:2mm;font-size:7pt;color:#666;">Horas arredondadas às frações de 30 minutos (Cláusula Sexta). Horas reais: ' + hh(r.horasCruas) + ' h.</div>' : '') +
+      (DADOS.fechado ? '<div style="margin-top:2mm;font-size:7pt;color:#666;">Mês validado e fechado por ' + esc(DADOS.fechadoPor) + ' em ' + new Date(DADOS.fechadoEm).toLocaleDateString('pt-PT') + '.</div>' : '') +
+    '</div>' +
+    '<div class="p-ass"><div>O Prestador</div><div>A Contratante</div></div>' +
+    '<div class="p-foot">DomusCar (Walkingarage, Lda) · NIPC 513281622 · Estrada de Paço de Arcos nº 167 Arm. C, 2735-503 Agualva-Cacém · Enviar para ' + EMAIL_CONTAB + ' até ao 4.º dia útil do mês seguinte, com a fatura-recibo.</div>';
+}
+
+/* ═══════════ Exportar Excel ═══════════ */
+function exportarExcel() {
+  if (typeof XLSX === 'undefined') { toast('Biblioteca de Excel não carregou. Verifica a ligação à internet.', true); return; }
+  var p = prestador(), r = calcula();
+  var n = diasNoMes(mesAtual), ano = +mesAtual.split('-')[0], mes = +mesAtual.split('-')[1];
+
+  var aoa = [];
+  aoa.push(['REGISTO MENSAL DE HORAS']);
+  aoa.push(['Prestação de Serviços de Movimentação de Viaturas']);
+  aoa.push([]);
+  aoa.push(['Prestador:', p.nome, null, null, 'NIF:', p.nif]);
+  aoa.push(['Contratante:', CONTRATANTE.nome, null, null, 'NIPC:', CONTRATANTE.nipc]);
+  aoa.push(['Mês / Ano:', nomeMes(mesAtual), null, null, 'Valor/hora:', '€ ' + hh(p.valorHora) + ' (+ IVA, se aplicável)']);
+  aoa.push([]);
+  aoa.push(['Dia', 'Dia da semana', 'Hora início', 'Hora fim', 'Pausa (h:mm)', 'Total (h)', 'Descrição da movimentação / observações', 'Validado']);
+  for (var i = 1; i <= n; i++) {
+    var ws = new Date(ano, mes - 1, i).getDay();
+    var d = DADOS.dias[i] || {}, h = horasDia(d);
+    aoa.push([i, DIAS_SEM[ws], d.ini || null, d.fim || null, d.pausa || null,
+              h ? Math.round(h * 100) / 100 : null, d.desc || null, d.val ? 'Sim' : null]);
+  }
+  aoa.push([]);
+  aoa.push(['TOTAIS', null, null, null, null, Math.round(r.horas * 100) / 100, 'Total de horas no mês']);
+  aoa.push([]);
+  aoa.push(['VALOR A FATURAR', null, 'Valor/hora (€)', p.valorHora, 'Subtotal (s/ IVA)', Math.round(r.sub * 100) / 100, '(Total horas × valor/hora)']);
+  aoa.push([null, null, null, null, 'IVA (' + p.iva + '%)', Math.round(r.iva * 100) / 100]);
+  aoa.push([null, null, null, null, 'TOTAL c/ IVA', Math.round(r.total * 100) / 100]);
+  aoa.push([]);
+  aoa.push(['NOTAS / OBSERVAÇÕES']);
+  aoa.push([DADOS.notas || '']);
+  if (DADOS.arredondar) aoa.push(['Horas arredondadas às frações de 30 minutos (Cláusula Sexta). Horas reais: ' + hh(r.horasCruas) + ' h.']);
+  if (DADOS.fechado) aoa.push(['Mês validado e fechado por ' + DADOS.fechadoPor + ' em ' + new Date(DADOS.fechadoEm).toLocaleDateString('pt-PT') + '.']);
+  aoa.push([]);
+  aoa.push([null, '____________________________', null, null, null, null, '_______________________________________']);
+  aoa.push([null, 'O Prestador', null, null, null, null, 'A Contratante']);
+
+  var ws1 = XLSX.utils.aoa_to_sheet(aoa);
+  ws1['!cols'] = [{ wch: 6 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 13 }, { wch: 10 }, { wch: 52 }, { wch: 10 }];
+
+  var inst = [['INSTRUÇÕES DE PREENCHIMENTO'], [],
+    ['1. Esta folha é gerada pela intranet (Registo de Horas — Movimentação de Viaturas).'],
+    ['2. O preenchimento diário faz-se na intranet; este ficheiro é a cópia para arquivo e para juntar à fatura-recibo.'],
+    ['3. Após o último dia do mês, validar conjuntamente as horas e assinar.'],
+    ['4. Enviar para ' + EMAIL_CONTAB + ' até ao 4.º dia útil do mês seguinte, acompanhado da fatura-recibo.'], [],
+    ['REGRAS-BASE (Cláusula Sexta e Sétima do Contrato):'],
+    ['• Valor/hora: € 9,25 + IVA à taxa legal em vigor, quando aplicável.'],
+    ['• Horas em frações de 30 minutos, arredondadas à fração superior.'],
+    ['• Disponibilidade mínima: 4h/dia em dias úteis.'],
+    ['• Pagamento: até ao dia 10 do mês seguinte, por transferência para o IBAN do prestador.']];
+  var ws2 = XLSX.utils.aoa_to_sheet(inst);
+  ws2['!cols'] = [{ wch: 110 }];
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws2, 'Instruções');
+  XLSX.utils.book_append_sheet(wb, ws1, 'Registo de Horas');
+  XLSX.writeFile(wb, 'Registo_Horas_' + mesAtual + '_' + p.nome.split(' ')[0] + '.xlsx');
+  toast('Excel exportado.');
+}
+
+/* ═══════════ Email ═══════════ */
+function emailContabilidade() {
+  var p = prestador(), r = calcula();
+  var assunto = 'Registo de horas — ' + p.nome + ' — ' + nomeMes(mesAtual);
+  var corpo = 'Boa tarde,\n\nSegue o registo de horas de movimentação de viaturas referente a ' + nomeMes(mesAtual) + '.\n\n' +
+    'Prestador: ' + p.nome + ' (NIF ' + p.nif + ')\n' +
+    'Dias com registo: ' + r.dias + '\n' +
+    'Total de horas: ' + hh(r.horas) + ' h\n' +
+    'Valor/hora: ' + eur(p.valorHora) + '\n' +
+    'Subtotal (s/ IVA): ' + eur(r.sub) + '\n' +
+    'IVA (' + p.iva + '%): ' + eur(r.iva) + '\n' +
+    'Total c/ IVA: ' + eur(r.total) + '\n\n' +
+    'Anexo a folha assinada e a fatura-recibo.\n\nCumprimentos,\n' + (USER.name || '');
+  var url = 'mailto:' + EMAIL_CONTAB + '?subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'openUrl', url: url }, '*');
+  } else { window.location.href = url; }
+  toast('A abrir o email…');
+}
+</script>
+</body>
+</html>
