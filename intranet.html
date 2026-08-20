@@ -4151,14 +4151,18 @@
         femaleNames: ['vanessa', 'inês', 'ines', 'alícia', 'alicia', 'olesya'],
         // Margem real DomusCar (empresa) por mês de 2026 — fonte: indicadores_objetivos.html → MARGEM_DATA[2026].domuscar
         // MANUTENÇÃO: acrescentar [vendas, margem€] quando um novo mês real for validado nos Indicadores.
+        // DomusCar (Empresa) = Mecânica Cacém + Mecânica Lisboa + Colisão.
+        // NÃO usar a coluna "Total" do mapa da financeira: inclui o DC Geral Servelec
+        // (faturação sem custos imputados), o que empolava a margem e divergia dos
+        // Indicadores. Fonte: indicadores_objetivos.html → MARGEM_DATA[2026].domuscar.
         margemReal2026: [
             [270430.98, 37813.86],
             [237277.05, 10225.48],
             [293835.82, 65250.82],
-            [293970.37, 59000.27],
-            [299557, 46728],
-            [289821, 25300],
-            [319873, 64040]
+            [291647.87, 56677.77],
+            [294725, 41896],
+            [285022, 20502],
+            [314362, 58530]
         ]
     };
     var HERO_MESES_PT = { 'janeiro': 1, 'fevereiro': 2, 'março': 3, 'marco': 3, 'abril': 4, 'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 };
@@ -4226,24 +4230,25 @@
         }
 
         // ---- Chips imediatos (informativos, todos os perfis) ----
-        // Margem global provisória (a partir da cache local)
-        var mg = null;
-        try { var s = localStorage.getItem('intranet_margemDashboard'); if (s) mg = JSON.parse(s); } catch (e) {}
-        if (!mg) mg = MARGEM_FALLBACK_DATA;
-        if (mg && mg.departments && mg.departments.length) {
-            var tv = 0, tr = 0, okSum = true;
-            mg.departments.forEach(function(d) {
-                var v = heroParseEuro(d.vendas), r = heroParseEuro(d.resultado);
-                if (isNaN(v) || isNaN(r)) { okSum = false; return; }
-                tv += v; tr += r;
+        // Margem global do último mês REAL validado (soma das 3 unidades).
+        // Antes este chip mostrava a margem PROVISÓRIA com o rótulo de margem global, o que
+        // dava um número diferente do dos cartões logo abaixo e do módulo de Indicadores.
+        (function chipMargemReal() {
+            var rd = MARGEM_REAL_DATA || MARGEM_REAL_FALLBACK_DATA;
+            if (!rd || !rd.unidades || !rd.unidades.length) return;
+            var tv = 0, tr = 0, n = 0;
+            rd.unidades.forEach(function(u) {
+                if (u.empresa) return;                       // a linha da empresa inclui o Servelec
+                var v = heroParseEuro(u.vendas), r = heroParseEuro(u.resultado);
+                if (isNaN(v) || isNaN(r)) return;
+                tv += v; tr += r; n++;
             });
-            if (okSum && tv > 0) {
-                var gPct = tr / tv * 100;
-                var gDot = gPct >= 21 ? 'grn' : (gPct >= 0 ? 'amb' : 'red');
-                var perLabel = mg.periodo ? String(mg.periodo).split(' ')[0] : '';
-                chips.push({ o: 50, h: heroChip(gDot, null, 'Margem global ' + perLabel, gPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj', 'margem:domuscar')", 'Abrir Indicadores → Margem Mensal → DomusCar (Empresa) — mostra sempre o último mês real validado') });
-            }
-        }
+            if (n < 3 || tv <= 0) return;
+            var gPct = tr / tv * 100;
+            var gDot = gPct >= 21 ? 'grn' : (gPct >= 0 ? 'amb' : 'red');
+            var perLabel = rd.periodo ? String(rd.periodo).split(' ')[0] : '';
+            chips.push({ o: 50, h: heroChip(gDot, null, 'Margem global ' + perLabel, gPct.toFixed(1).replace('.', ',') + '%', "openModule('indicadores_obj', 'margem:domuscar')", 'Abrir Indicadores → Margem Mensal → DomusCar (Empresa) — último mês real validado, soma das três unidades') });
+        })();
         // Margem global acumulada 2026 (real validada) — apenas admins
         if (role === 'admin') {
             var accV = 0, accR = 0, accMeses = HERO_CFG.margemReal2026.length;
@@ -4255,12 +4260,19 @@
                     var rParts = String(rd.periodo).toLowerCase().trim().split(/\s+/);
                     var rMes = HERO_MESES_PT[rParts[0]] || 0;
                     var rAno = parseInt(rParts[1], 10) || 0;
-                    if (rAno === 2026 && rMes > accMeses) {
-                        var emp = rd.unidades.filter(function(u) { return u.empresa; })[0];
-                        if (emp) {
-                            var eV = heroParseEuro(emp.vendas), eR = heroParseEuro(emp.resultado);
-                            if (!isNaN(eV) && !isNaN(eR) && eV > 0) { accV += eV; accR += eR; accMeses = rMes; }
-                        }
+                    // só somar se for exatamente o mês a seguir ao último embebido; se saltar
+                    // um mês (ex.: embebido até Julho e o SharePoint já em Setembro), somar
+                    // Setembro daria um acumulado sem Agosto — nesse caso mantém-se o embebido.
+                    if (rAno === 2026 && rMes === accMeses + 1) {
+                        // somar as 3 unidades, não a linha 'empresa' (essa inclui o DC Geral Servelec)
+                        var eV = 0, eR = 0, eN = 0;
+                        rd.unidades.forEach(function(u) {
+                            if (u.empresa) return;
+                            var v = heroParseEuro(u.vendas), r = heroParseEuro(u.resultado);
+                            if (isNaN(v) || isNaN(r)) return;
+                            eV += v; eR += r; eN++;
+                        });
+                        if (eN >= 3 && eV > 0) { accV += eV; accR += eR; accMeses = rMes; }
                     }
                 }
             } catch (e) {}
@@ -4518,6 +4530,10 @@
     }
 
     // ======== RENDER MARGEM MENSAL REAL ========
+    // "118.844 €" — mesmo formato dos valores publicados nos cartões da margem real
+    function fmtEurCurto(n) {
+        return Math.round(n).toLocaleString('pt-PT').replace(/\u00A0/g, '.').replace(/,/g, '.') + ' €';
+    }
     function renderMargemMensalReal() {
         var badge = document.getElementById('margemMensalBadge');
         var content = document.getElementById('margemMensalContent');
@@ -4573,7 +4589,27 @@
                     '<div>Vendas s/IVA<b>' + vendas + '</b></div>' +
                 '</div></div>';
         }
-        var cardsHtml = (realData.unidades || []).map(function(u) {
+        // O DomusCar publicado vem da coluna "Total" do mapa da financeira, que inclui o
+        // DC Geral Servelec e não bate com a soma dos três cartões ao lado. Recalcular aqui
+        // garante que o cartão da empresa é sempre exatamente a soma das três unidades.
+        var unidadesReal = (realData.unidades || []).slice();
+        (function recalcEmpresa() {
+            var somaV = 0, somaR = 0, n = 0;
+            unidadesReal.forEach(function(u) {
+                if (u.empresa) return;
+                var v = heroParseEuro(u.vendas), r = heroParseEuro(u.resultado);
+                if (isNaN(v) || isNaN(r)) return;
+                somaV += v; somaR += r; n++;
+            });
+            if (n < 3 || somaV <= 0) return;   // só quando as três unidades estão disponíveis
+            unidadesReal = unidadesReal.map(function(u) {
+                if (!u.empresa) return u;
+                return { key: u.key, label: u.label, empresa: true,
+                         pct: somaR / somaV * 100,
+                         resultado: fmtEurCurto(somaR), vendas: fmtEurCurto(somaV) };
+            });
+        })();
+        var cardsHtml = unidadesReal.map(function(u) {
             var pctNum = (typeof u.pct === 'number') ? u.pct : parseFloat(String(u.pct).replace(',', '.'));
             return buildCard(u.label, isNaN(pctNum) ? 0 : pctNum, u.resultado || '—', u.vendas || '—', !!u.empresa);
         }).join('');
