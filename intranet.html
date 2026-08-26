@@ -1224,6 +1224,7 @@
             <li><a onclick="openModule('fardas')" id="navFardas"><span class="nav-icon">👕</span> Gestão de Fardas</a></li>
             <li><a onclick="openModule('termos_responsabilidade')" id="navTermos_responsabilidade"><span class="nav-icon">📄</span> Termos de Responsabilidade</a></li>
             <li><a onclick="openModule('aval_merito_admin')" id="navAval_merito_admin"><span class="nav-icon">⭐</span> Avaliações de Mérito (Equipas)</a></li>
+            <li><a onclick="openModule('guiao_entrevista')" id="navGuiao_entrevista"><span class="nav-icon">🎙️</span> Guião de Entrevista (Enquadramento)</a></li>
             <li id="navGerarRelatoriosLi">
                 <a onclick="toggleRelatoriosSubmenu()" id="navGerarRelatorios" style="display:flex;justify-content:space-between;align-items:center;"><span><span class="nav-icon">📋</span> Gerar Relatórios</span><span id="relatoriosArrow" style="font-size:10px;transition:transform 0.2s;">▼</span></a>
                 <ul id="relatoriosSubmenu" class="sidebar-nav" style="display:none;padding-left:24px;margin:4px 0 0 0;">
@@ -4012,6 +4013,7 @@
             coord_auditoria_carrinhos: { title: 'Auditorias Carrinhos Ferramentas Mensal', url: 'auditoria-carrinhos-ferramentas.html' },
             aval_merito: { title: 'Avaliações de Mérito', url: 'avaliacoes-merito.html' },
             aval_merito_admin: { title: 'Avaliações de Mérito — Assessores, Fiéis de Armazém e Coordenadores', url: 'avaliacoes-merito-admin.html' },
+            guiao_entrevista: { title: 'Guião de Entrevista — Enquadramento de Técnicos', url: 'guiao-entrevista-enquadramento.html' },
             parecer_merito: { title: 'Parecer Avaliações Mérito Equipas', url: 'parecer-avaliacoes-merito.html' },
             prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' },
             officegest_api: { title: 'API Officegest (Consola)', url: 'officegest-api-explorer.html' },
@@ -4033,6 +4035,13 @@
             // Avaliações de Mérito (Equipas): apenas Administração
             var rAM = currentUserPermissions ? currentUserPermissions.role : null;
             if (rAM !== 'admin') {
+                alert('Não tem permissão para aceder a este módulo');
+                return;
+            }
+        } else if (id === 'guiao_entrevista') {
+            // Guião de Entrevista (Enquadramento de Técnicos): apenas Administração
+            var rGE = currentUserPermissions ? currentUserPermissions.role : null;
+            if (rGE !== 'admin') {
                 alert('Não tem permissão para aceder a este módulo');
                 return;
             }
@@ -5330,6 +5339,7 @@
       formacao: ['admin', 'coordenador', 'rh'],
       equipamentos: ['admin', 'coordenador'],
       aval_merito_admin: ['admin'],
+      guiao_entrevista: ['admin'],
       coord_estatisticas: ['admin', 'coordenador'],
       coord_auditoria_carrinhos: ['admin', 'coordenador']
     };
