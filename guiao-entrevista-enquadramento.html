@@ -64,6 +64,43 @@ body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text
 .flags li::before{content:'✕';position:absolute;left:2px;font-weight:900;font-size:.72rem;top:5px}
 .doc-ask{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 14px;margin-top:10px;font-size:.82rem;color:#92400E}
 .doc-ask b{font-weight:800}
+/* ---- campos de resposta ---- */
+.ans{width:100%;border:1px solid var(--gray-200);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:.83rem;color:var(--text-dark);outline:none;resize:vertical;background:#fff;line-height:1.45}
+.ans:focus{border-color:var(--accent);background:#FCFDFF}
+.ans.filled{border-color:#BFE3C9;background:#FCFEFD}
+.ans.big{min-height:64px;margin-top:8px}
+.ans.sm{min-height:42px;margin-top:6px}
+.qlist li .ans{margin-left:-26px;width:calc(100% + 26px)}
+.ansl{font-size:.6rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-top:8px}
+.qlist li .ansl{margin-left:-26px}
+/* ---- sinais de alarme clicáveis ---- */
+.flags .fl-t{display:flex;align-items:center;gap:8px}
+.flags .fl-h{font-size:.66rem;font-weight:700;color:#B45309;text-transform:none;letter-spacing:0;margin-left:auto}
+.flags ul{list-style:none;display:grid;grid-template-columns:1fr;gap:2px}
+@media(min-width:820px){.flags ul{grid-template-columns:1fr 1fr;gap:2px 16px}}
+.flags li{padding:0}
+.flags li::before{content:none}
+.flag{display:flex;gap:8px;align-items:flex-start;font-size:.8rem;color:#7F1D1D;padding:4px 6px;border-radius:7px;cursor:pointer;line-height:1.4}
+.flag:hover{background:rgba(220,38,38,.06)}
+.flag input{margin-top:4px;accent-color:#DC2626;cursor:pointer;flex:0 0 auto}
+.flag.on{background:#DC2626;color:#fff;font-weight:700}
+.blk-head .bflag{font-size:.72rem;font-weight:800;background:#DC2626;color:#fff;padding:3px 10px;border-radius:50px;display:none}
+.blk-head .bflag.on{display:inline-block}
+.rbar .flagcount{background:#DC2626;border-radius:9px;padding:4px 12px;font-size:.85rem;font-weight:900;display:none}
+.rbar .flagcount.on{display:block}
+.flagbox{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px 17px;margin-bottom:14px}
+.flagbox h3{color:#991B1B!important;margin-top:0!important}
+.flagbox ul{list-style:none;margin-top:6px}
+.flagbox li{font-size:.83rem;color:#7F1D1D;padding:4px 0 4px 20px;position:relative}
+.flagbox li::before{content:'✕';position:absolute;left:2px;top:5px;font-weight:900;font-size:.72rem}
+.flagbox li b{color:#991B1B}
+/* ---- registo de respostas no resumo ---- */
+.rq{border-left:3px solid var(--gray-200);padding:2px 0 2px 12px;margin:10px 0}
+.rq .rq-q{font-size:.82rem;font-weight:700;color:var(--text-dark)}
+.rq .rq-a{font-size:.83rem;color:var(--text-body);white-space:pre-wrap;margin-top:2px}
+.rq.vazio{border-left-color:#FDE68A}
+.rq.vazio .rq-a{color:#B45309;font-style:italic}
+.rbl{font-size:.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin:18px 0 2px;border-top:1px solid var(--gray-100);padding-top:12px}
 .cot{margin-top:14px;border-top:2px solid var(--gray-100);padding-top:12px}
 .cot-t{font-size:.64rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--navy);margin-bottom:8px}
 .crow{border:1px solid var(--gray-200);border-radius:10px;padding:9px 12px;margin-bottom:7px;background:#fff}
@@ -167,6 +204,7 @@ table.gap td.c{text-align:center;font-weight:800}
   </div>
 
   <div class="banner info"><div class="bi">&#9432;</div><div><strong>Regra de ouro dos 25 minutos:</strong> não perguntes competência a competência — são 31. Faz a pergunta de abertura de cada bloco, deixa falar 60–90 s, e cota <em>enquanto ele fala</em> as 3–4 competências desse bloco. As perguntas-cravo servem só para desempatar quando ficares na dúvida entre dois níveis.</div></div>
+  <div class="banner ok"><div class="bi">&#9998;</div><div><strong>Escreve à medida que ele fala.</strong> Cada pergunta tem campo de resposta próprio e tudo fica registado — o resumo no fim junta as respostas todas, prontas a copiar para email ou a imprimir. Nos <strong>sinais de alarme</strong>, clica no que observares: os marcados aparecem destacados no resultado e são o que mais pesa quando revires a decisão daqui a uma semana.</div></div>
   <div class="banner warn"><div class="bi">&#9888;</div><div><strong>Limites legais (art. 17.º do Código do Trabalho):</strong> não perguntes sobre saúde, gravidez, vida familiar, convicções políticas ou religiosas nem filiação sindical. Nas faltas, pergunta apenas se comunicava e com que antecedência — nunca o motivo. Esta ficha contém dados pessoais: guarda-a no processo de recrutamento e elimina as candidaturas não retidas no prazo definido.</div></div>
 
   <div id="blocos"></div>
@@ -192,6 +230,8 @@ table.gap td.c{text-align:center;font-weight:800}
     </ul>
     <h3>Como distinguir o 3 do 4</h3>
     <p>O <b>3</b> é autonomia no trabalho corrente. O <b>4</b> exige que resolva o que os outros não resolvem: avarias intermitentes, casos complexos, ou que ajude colegas. Se ele descreve o caso difícil na primeira pessoa e com método, é 4. Se descreve o caso difícil mas quem o resolveu foi outro, é 3.</p>
+    <h3>Sinais de alarme</h3>
+    <p>Cada bloco tem entre 10 e 13 sinais listados. Não são para ler ao candidato nem para percorrer um a um: <b>lê-os antes da entrevista</b> e clica só nos que observares. Um sinal isolado raramente decide alguma coisa — três ou quatro no mesmo bloco já são um padrão, e os de segurança (alta tensão sem formação, SRS com ignição ligada, gases fluorados sem certificado) valem por si sós, independentemente da cotação.</p>
     <h3>Nunca sabe = 1, não faz = 1</h3>
     <p>Se nunca fez ADAS, alta tensão ou programação, marca <b>1</b> — não deixes em branco. Um técnico A3 tem legitimamente vários 1 nestas competências; o escalão de entrada absorve isso. Deixar em branco é que impede o cálculo.</p>
     <h3>Como o escalão é calculado</h3>
@@ -220,6 +260,7 @@ table.gap td.c{text-align:center;font-weight:800}
   <div class="rb"><span class="l">Técnicas</span><span class="v" id="rbT">—</span></div>
   <div class="rb"><span class="l">Final</span><span class="v" id="rbF">—</span></div>
   <div class="niv-badge off" id="rbNiv">—</div>
+  <div class="flagcount" id="rbFlags">⚠ 0</div>
   <div class="rb"><span class="l">Tempo</span><span class="v tmr" id="rbTmr">00:00</span></div>
   <button class="btn" id="btTmr">Iniciar</button>
   <button class="btn p" id="btRes">Ver resultado</button>
@@ -229,87 +270,183 @@ var DATA = {"comportamentais": [{"nome": "Rigor e Qualidade", "desc": "Trabalha 
 var COMPORT = DATA.comportamentais, TECNICAS = DATA.tecnicas, ESCALA = DATA.escala;
 var REGUA = [{n:'A1',min:0},{n:'A2',min:1.32},{n:'A3',min:1.94},{n:'B1',min:2.48},{n:'B2',min:3.06},{n:'B3',min:3.87},{n:'C1',min:4.74},{n:'C2',min:4.85},{n:'C3',min:4.95}];
 
-/* ================== GUIÃO: blocos, tempos e perguntas ================== */
+/* ================== GUIÃO: blocos, tempos, perguntas e sinais de alarme ================== */
 var BLOCOS = [
 {
   t:'Abertura e enquadramento', sub:'Preparar o terreno — sem cotação', tempo:'0–3 min', itens:[],
   main:'Antes de começarmos: nós temos uma grelha de competências com nove escalões. Esta conversa serve para perceber em que ponto está, não para o apanhar em falso. Se não fizer alguma coisa, diga que não faz — não conta contra si, só coloca o escalão no sítio certo.',
   qs:[
    {q:'Fale-me do seu percurso: que oficinas, quantos anos em cada e que tipo de trabalho fazia lá.', h:'Ouve o <em>tipo</em> de oficina: marca, multimarca, rápida ou de bairro. Uma oficina rápida durante 10 anos raramente dá níveis 4 em diagnóstico, por muitos anos que sejam.'},
-   {q:'Que marcas trabalhava mais? E que máquina de diagnóstico tinha à mão?', h:'Guarda a resposta — vais usá-la no bloco 2 para verificar se o que diz sobre diagnóstico bate certo com o equipamento a que tinha acesso.'},
+   {q:'Que marcas trabalhava mais? E que máquina de diagnóstico tinha à mão?', h:'Guarda a resposta — vais usá-la no bloco 3 para verificar se o que diz sobre diagnóstico bate certo com o equipamento a que tinha acesso.'},
    {q:'O que o fez sair / o que procura agora?', h:'Não é cotável, mas cruza depois com assiduidade e trabalho em equipa.'},
-   {q:'Trabalhava sozinho na viatura ou com quem?', h:'Distingue autonomia real de trabalho sempre apoiado — vale para todas as competências técnicas.'}
+   {q:'Trabalhava sozinho na viatura ou com quem?', h:'Distingue autonomia real de trabalho sempre apoiado — vale para todas as competências técnicas.'},
+   {q:'Que formação técnica tem? Escola profissional, IEFP, formações de marca?', h:'Anota os anos. Formação de marca recente vale mais do que um curso antigo sem prática associada.'}
   ],
-  flags:['Não consegue nomear uma avaria concreta dos últimos meses.','Descreve tudo na primeira pessoa do plural (fazíamos, íamos ver) e nunca no singular.']
+  flags:[
+   'Não consegue nomear uma avaria concreta dos últimos meses.',
+   'Descreve tudo na primeira pessoa do plural (fazíamos, íamos ver) e nunca no singular.',
+   'Não sabe dizer quanto tempo esteve em cada oficina; as datas não fecham.',
+   'Três ou mais saídas em menos de dois anos sem explicação consistente.',
+   'Fala mal do empregador anterior logo na abertura.',
+   'Não sabe dizer que máquina de diagnóstico usava — numa oficina atual é implausível.',
+   'Pedes o percurso completo e só nomeia serviço rápido: óleo, pneus e travões.',
+   'Diz que faz tudo em todas as marcas antes de qualquer pergunta técnica.',
+   'Períodos em branco no percurso que evita explicar.',
+   'Pergunta o salário antes de saber o que é a função.'
+  ]
 },
 {
   t:'Manutenção e serviço base', sub:'Revisões, binários, pneus e entrega', tempo:'3–7 min', itens:[{tipo:'T',idx:0},{tipo:'T',idx:1},{tipo:'T',idx:2},{tipo:'T',idx:25}],
   main:'Descreva-me uma revisão completa numa viatura que nunca viu, do momento em que entra na baia até à entrega ao cliente.',
   qs:[
-   {q:'Onde vai buscar o plano e os intervalos dessa viatura?', h:'<em>2:</em> faz de cabeça ou pelo livrete. <em>3:</em> consulta o plano do construtor na base de dados. <em>4:</em> refere que aproveita a revisão para detetar e orçamentar o que vem a seguir.'},
-   {q:'Que binário dá às rodas e onde o vai buscar? E numa cabeça de motor, qual é o procedimento?', h:'<em>3:</em> consulta valores e usa dinamométrica por rotina. <em>4:</em> fala em aperto angular, parafusos de uso único e sequência. <em>Cravo:</em> se responde só com um número de memória para todas as viaturas, é 2.'},
+   {q:'Onde vai buscar o plano e os intervalos dessa viatura?', h:'<em>2:</em> faz de cabeça ou pelo livrete. <em>3:</em> consulta o plano do construtor na base de dados. <em>4:</em> aproveita a revisão para detetar e orçamentar o que vem a seguir.'},
+   {q:'Que binário dá às rodas e onde o vai buscar? E numa cabeça de motor, qual é o procedimento?', h:'<em>3:</em> consulta valores e usa dinamométrica por rotina. <em>4:</em> fala em aperto angular, parafusos de uso único e sequência. <em>Cravo:</em> se responde com um número de memória igual para todas as viaturas, é 2.'},
+   {q:'Que óleo mete e como decide? E o que faz se a viatura exigir uma especificação que não tem em stock?', h:'<em>3:</em> escolhe pela especificação do construtor, não pela viscosidade. Quem responde 5W30 para tudo está em 2.'},
    {q:'Faz geometria? De que eixos? E sensores de pressão dos pneus, já teve de os programar?', h:'<em>3:</em> convergência do primeiro eixo. <em>4:</em> alinhamento completo, lê os desvios para diagnosticar suspensão e resolve TPMS.'},
-   {q:'Como é que o carro vai para o cliente no fim?', h:'Se ele próprio menciona capas, tapetes, volante e limpeza sem lhe perguntar, é 3 ou mais. Se só responde depois de puxares, é 2.'}
+   {q:'Como é que o carro vai para o cliente no fim?', h:'Se menciona capas, tapetes, volante e limpeza sem lhe perguntares, é 3 ou mais. Se só responde depois de puxares, é 2.'}
   ],
-  flags:['Aperta à pistola e depois dá um toque com a dinamométrica.','Não sabe o que é o reset do indicador de serviço.','Trata a limpeza e as proteções como perda de tempo.']
+  flags:[
+   'Aperta à pistola e depois dá um toque com a dinamométrica.',
+   'Usa um binário de roda de memória, igual para todas as viaturas.',
+   'Não distingue parafuso de aperto angular de parafuso reutilizável.',
+   'Não consulta o plano do construtor — vai pelo livrete ou pelo que se costuma fazer.',
+   'Não sabe o que é o reset do indicador de serviço.',
+   'Escolhe o óleo pela viscosidade e não pela especificação.',
+   'Diz que não vale a pena verificar travagem e suspensão numa revisão.',
+   'Nunca usou dinamométrica em jantes de alumínio; desconhece as consequências do sobreaperto.',
+   'Não verifica pressões nem faz reset ao TPMS.',
+   'Não regista o que encontra a mais — resolve ou ignora, mas não reporta.',
+   'Trata a limpeza e as proteções como perda de tempo.',
+   'Considera a geometria coisa do alinhador e não sabe ler os valores.'
+  ]
 },
 {
   t:'Diagnóstico — método e ferramenta', sub:'O bloco que mais separa escalões', tempo:'7–12 min', itens:[{tipo:'T',idx:3},{tipo:'T',idx:4},{tipo:'T',idx:5},{tipo:'T',idx:6}],
   main:'Chega-lhe um carro com a luz de motor acesa e falta de potência que aparece e desaparece. Leve-me passo a passo pelo que faz, desde que abre a porta.',
   qs:[
    {q:'Na máquina, fica-se pela memória de avarias ou trabalha com dados em tempo real?', h:'<em>2:</em> lê e apaga códigos. <em>3:</em> lê parâmetros em tempo real e anexa o relatório à OSV. <em>4:</em> testes de atuadores, valores congelados e gráficos.'},
-   {q:'Conte-me uma avaria em que o código apontava para um lado e a causa estava noutro.', h:'Esta é a pergunta mais reveladora da entrevista. <em>Sem resposta: máximo 2 em causa-raiz.</em> Com um caso detalhado e método (hipótese, medição, confirmação), 3 ou 4.'},
+   {q:'Conte-me uma avaria em que o código apontava para um lado e a causa estava noutro.', h:'A pergunta mais reveladora da entrevista. <em>Sem resposta: máximo 2 em causa-raiz.</em> Com caso detalhado e método (hipótese, medição, confirmação), 3 ou 4.'},
    {q:'Usa osciloscópio? Para medir o quê, em concreto?', h:'<em>3:</em> multímetro e esquemas, sem osciloscópio. <em>4:</em> nomeia sinais reais — sonda lambda, CKP/CMP, linha CAN, injetor.'},
    {q:'Já apanhou uma falha de comunicação CAN? Como confirmou que era a rede e não alimentação ou massa?', h:'<em>2:</em> viu o erro de sem comunicação e ficou por aí. <em>3:</em> localizou o troço. <em>4:</em> identificou o módulo que derrubava a linha, fala em terminadores e resistência do barramento.'},
-   {q:'Quando não consegue resolver, o que faz?', h:'Boa resposta a qualquer nível: consulta documentação técnica, fóruns de marca, linha de apoio. Má resposta: vai trocando peças.'}
+   {q:'Quando não consegue resolver, o que faz?', h:'Boa resposta a qualquer nível: documentação técnica, fóruns de marca, linha de apoio, pedir ajuda cedo. Má resposta: vai trocando peças.'},
+   {q:'Como confirma que a avaria ficou resolvida antes de entregar?', h:'Cruza com o bloco 8. <em>3:</em> repete a condição em que a avaria aparecia. <em>1–2:</em> apaga o código e entrega.'}
   ],
-  flags:['Troca o sensor que aparece no código sem o testar.','Diz que nunca teve uma avaria que não resolvesse.','Fala em desativar EGR, FAP ou AdBlue como solução — isso é ilegal e desqualifica.']
+  flags:[
+   'Troca o sensor que aparece no código sem o testar.',
+   'Apaga a memória de avarias antes de registar os códigos.',
+   'Não distingue código presente de código memorizado ou esporádico.',
+   'Diz que nunca teve uma avaria que não resolvesse.',
+   'Fala em desativar EGR, FAP ou AdBlue como solução — é ilegal e desqualifica.',
+   'Diz que usa osciloscópio mas não nomeia um único sinal que já mediu.',
+   'Não consulta esquemas elétricos — diz que não são precisos.',
+   'Confunde massa com negativo de bateria; nunca fala em queda de tensão.',
+   'Diagnostica por experiência e recusa medir.',
+   'Não faz teste de confirmação depois da reparação.',
+   'Culpa sempre a peça alternativa, o cliente ou a oficina anterior.',
+   'Descreve o caso difícil na terceira pessoa — quem o resolveu foi outro.'
+  ]
 },
 {
   t:'Eletricidade e eletrónica de bordo', sub:'Carga/arranque, conforto, luzes, SRS', tempo:'12–15 min', itens:[{tipo:'T',idx:13},{tipo:'T',idx:14},{tipo:'T',idx:23},{tipo:'T',idx:22}],
   main:'Um cliente diz que o carro fica sem bateria se ficar dois dias parado. Como é que ataca isso?',
   qs:[
-   {q:'Como mede o consumo parasita e quanto tempo espera?', h:'<em>3:</em> amperímetro em série e valor de referência. <em>4:</em> fala em esperar que os módulos entrem em repouso e em ir puxando fusíveis para isolar.'},
+   {q:'Como mede o consumo parasita e quanto tempo espera?', h:'<em>3:</em> amperímetro em série e valor de referência. <em>4:</em> espera que os módulos entrem em repouso e vai isolando por fusíveis.'},
    {q:'O alternador não carrega — o que confirma antes de o condenar?', h:'<em>3:</em> queda de tensão nos cabos de massa e positivo, teste com carga. <em>2:</em> mede só a tensão aos bornes.'},
    {q:'Vidros, fecho centralizado, comandos de chave — o que faz destes sozinho?', h:'<em>3:</em> substitui e emparelha, faz a aprendizagem do anti-entalamento. <em>4:</em> ecrãs, quadrantes digitais, módulos de conectividade.'},
    {q:'Regula faróis? Em quê e com que critério? Já calibrou xénon ou LED?', h:'<em>2:</em> só halogéneo no regloscópio. <em>3:</em> xénon, balastros e ajuste eletrónico de nível. <em>4:</em> matrix e AFS.'},
-   {q:'Vai mexer num banco com pré-tensor. Qual é o seu procedimento antes de tocar?', h:'Pergunta de segurança, não de técnica. Tem de sair: <em>desligar a ignição, isolar a bateria e esperar</em>. Se não sai, o SRS não passa de 1 ou 2, seja o que for que ele diga.'}
+   {q:'Vai mexer num banco com pré-tensor. Qual é o seu procedimento antes de tocar?', h:'Pergunta de segurança, não de técnica. Tem de sair: <em>desligar a ignição, isolar a bateria e esperar</em>. Se não sai, o SRS não passa de 1 ou 2, seja o que for que ele diga.'},
+   {q:'Como repara um chicote com um fio partido dentro da manga?', h:'<em>3:</em> solda ou terminal apropriado e termoretrátil, respeitando a secção. <em>1–2:</em> fita isoladora e esticão.'}
   ],
-  flags:['Liga ou desliga fichas amarelas com a ignição ligada.','Nunca ouviu falar em queda de tensão.','Substitui óticas e entrega sem passar no regloscópio.']
+  flags:[
+   'Liga ou desliga fichas amarelas de airbag com a ignição ligada.',
+   'Não isola a bateria antes de mexer em SRS, ou desconhece o tempo de espera.',
+   'Mede consumo parasita sem esperar que os módulos adormeçam.',
+   'Nunca ouviu falar em queda de tensão.',
+   'Usa lâmpada de prova ou busca-pólos em circuitos eletrónicos.',
+   'Emenda cabos com fita isoladora, sem soldar nem termoretrátil.',
+   'Faz pontes e derivações provisórias em vez de reparar a cablagem.',
+   'Espeta agulhas nos condutores sem critério para medir.',
+   'Não sabe registar bateria nova na máquina em viaturas start-stop.',
+   'Nunca reparou um chicote — a solução é sempre substituir o módulo.',
+   'Substitui óticas e entrega sem passar no regloscópio.',
+   'Condena módulos caros sem medir alimentações e massas primeiro.'
+  ]
 },
 {
   t:'Motor, distribuição e gestão térmica', sub:'A parte pesada da oficina', tempo:'15–18 min', itens:[{tipo:'T',idx:8},{tipo:'T',idx:9},{tipo:'T',idx:21},{tipo:'T',idx:20}],
   main:'Qual foi o trabalho de motor mais complicado que fez do princípio ao fim sozinho?',
   qs:[
    {q:'Distribuições: correia, corrente ou as duas? Que ferramentas de trancagem usa e o que faz quando não tem o kit?', h:'<em>2:</em> desmonta e monta mas precisa que validem o ponto. <em>3:</em> tranca cambota e cames com as ferramentas certas e dá os binários. <em>4:</em> corrente, guias, tensores hidráulicos e motores complexos.'},
-   {q:'Junta de cabeça: como fecha? Binário, ângulo, parafusos?', h:'<em>3:</em> parafusos novos, sequência e aperto angular pelo manual, planos limpos. Se hesita aqui, motor não passa de 2.'},
+   {q:'Junta de cabeça: como fecha? Binário, ângulo, parafusos?', h:'<em>3:</em> parafusos novos, sequência e aperto angular pelo manual, planos limpos e verificados. Se hesita aqui, motor não passa de 2.'},
    {q:'FAP entupido. O que verifica antes de mandar limpar ou substituir?', h:'<em>2:</em> limpa ou substitui. <em>3:</em> investiga a causa da saturação — sensores de pressão, regenerações falhadas, tipo de utilização. <em>4:</em> cruza gráficos de pressão e ciclo de trabalho.'},
-   {q:'Como enche e sangra um circuito de arrefecimento moderno?', h:'<em>3:</em> por vácuo, ou o procedimento eletrónico do construtor. <em>2:</em> subir o carro à frente e deixar trabalhar.'}
+   {q:'Como enche e sangra um circuito de arrefecimento moderno?', h:'<em>3:</em> por vácuo, ou o procedimento eletrónico do construtor. <em>2:</em> subir o carro à frente e deixar trabalhar.'},
+   {q:'Um carro sobreaquece só em trânsito parado. Por onde começa?', h:'<em>3:</em> ventiladores, sensor, termóstato, circulação — método antes de peças. <em>4:</em> fala em gestão térmica eletrónica e válvulas de corte.'}
   ],
-  flags:['Fala em reutilizar parafusos de aperto angular.','Manda limpar o FAP sem procurar a causa.','Sobreaquecimentos que voltaram para trás.']
+  flags:[
+   'Fala em reutilizar parafusos de aperto angular.',
+   'Diz que faz distribuição sem ferramentas, pelas marcas.',
+   'Roda o motor depois da distribuição sem confirmar o ponto à mão.',
+   'Não limpa nem verifica empeno dos planos de junta.',
+   'Manda limpar o FAP sem procurar a causa da saturação.',
+   'Trata a EGR como peça de desgaste, sem diagnóstico.',
+   'Não faz teste de pressão ao circuito — procura fugas a olho.',
+   'Enche o circuito sem purga em sistemas que exigem vácuo.',
+   'Confunde correia de distribuição com correia de acessórios nos intervalos.',
+   'Não sabe indicar a especificação de óleo do motor que acabou de descrever.',
+   'Diz que nunca precisou de manual, mesmo em motores que não conhecia.',
+   'Tem histórico de sobreaquecimentos ou juntas que voltaram para trás.'
+  ]
 },
 {
   t:'Chassis e transmissão', sub:'Travagem, direção, suspensão, caixas', tempo:'18–20 min', itens:[{tipo:'T',idx:11},{tipo:'T',idx:12},{tipo:'T',idx:10}],
   main:'Cliente queixa-se de um ruído à frente em lombas. Como confirma de onde vem antes de orçamentar?',
   qs:[
    {q:'Que método usa para localizar folgas e ruídos?', h:'<em>3:</em> pé de cabra, ajudante a rodar o volante, inspeção sob carga, confirma antes de pedir peça. <em>1–2:</em> manda amortecedores por defeito.'},
-   {q:'Embraiagem com bimassa e autoajustável — faz sozinho? Com que ferramenta?', h:'<em>2:</em> embraiagem convencional com apoio. <em>3:</em> bimassa com a ferramenta de pré-tensão, autónomo. <em>4:</em> abre caixas manuais e diferenciais. <em>5:</em> corpos de válvulas de automáticas.'},
+   {q:'Embraiagem com bimassa e autoajustável — faz sozinho? Com que ferramenta?', h:'<em>2:</em> embraiagem convencional com apoio. <em>3:</em> bimassa com ferramenta de pré-tensão, autónomo. <em>4:</em> abre caixas manuais e diferenciais. <em>5:</em> corpos de válvulas de automáticas.'},
    {q:'ABS: já sangrou um bloco pela máquina? Já substituiu um grupo hidráulico e o codificou?', h:'<em>3:</em> sangria pela máquina e sensores de roda. <em>4:</em> unidades hidráulicas e módulos ESP.'},
-   {q:'Já lidou com suspensão pneumática ou direção assistida elétrica?', h:'<em>4:</em> substituiu bolsa e calibrou sensores de altura, ou parametrizou ângulo de direção.'}
+   {q:'Já lidou com suspensão pneumática ou direção assistida elétrica?', h:'<em>4:</em> substituiu bolsa e calibrou sensores de altura, ou parametrizou o ângulo de direção.'},
+   {q:'Quando substitui braços e rótulas, o que faz a seguir e porquê?', h:'Tem de sair <em>geometria</em>, sem hesitar. E aperto dos silentblocks à altura de marcha, não com o carro suspenso.'}
   ],
-  flags:['Substitui componentes de direção e não manda o carro à geometria.','Diz que faz caixas automáticas mas não sabe nomear o que abriu lá dentro.']
+  flags:[
+   'Substitui componentes de direção e não manda o carro à geometria.',
+   'Manda amortecedores por defeito perante qualquer ruído.',
+   'Aperta silentblocks com o carro suspenso em vez de à altura de marcha.',
+   'Desconhece a ferramenta de pré-tensão de embraiagem autoajustável.',
+   'Diz que faz caixas automáticas mas não nomeia o que abriu lá dentro.',
+   'Não faz sangria do ABS pela máquina — só pelo pedal.',
+   'Reutiliza porcas autoblocantes e parafusos de chumaceira.',
+   'Não verifica folga com o carro em carga e suspenso, só de uma forma.',
+   'Faz mudança de óleo de caixa automática por drenagem simples em qualquer caso.',
+   'Não confirma a reparação com teste de estrada.',
+   'Bate em rótulas e rolamentos com martelo em vez de usar extrator.',
+   'Não sabe dizer o binário das porcas de eixo que acabou de descrever.'
+  ]
 },
 {
   t:'Tecnologia recente', sub:'Programação, ADAS, gases e alta tensão — pedir documentos', tempo:'20–23 min', itens:[{tipo:'T',idx:7},{tipo:'T',idx:15},{tipo:'T',idx:16},{tipo:'T',idx:17}],
   main:'Que trabalho faz hoje que há cinco anos não fazia? É aqui que os escalões B e C se separam.',
   qs:[
-   {q:'Já substituiu um módulo que exigiu codificação ou proteção de componentes? Como o resolveu e com que ferramenta?', h:'<em>2:</em> adaptações simples com apoio. <em>3:</em> codifica e parametriza sozinho, sem erros. <em>4:</em> já recuperou um módulo com flash interrompido.'},
-   {q:'ADAS: já calibrou câmara ou radar? Estática ou dinâmica? Com que alvos e em que condições?', h:'Ouve os detalhes de setup — distância, altura, nivelamento do piso, pressão dos pneus. Quem calibrou a sério sabe que o chão tem de estar nivelado. <em>Sem esses detalhes, máximo 2.</em>'},
-   {q:'Tem certificado de manuseamento de gases fluorados? De que categoria e válido até quando?', h:'Legalmente obrigatório para intervir em AC. <em>Pede o documento.</em> Sem certificado, o máximo em AC é 2, independentemente da prática.'},
-   {q:'Alta tensão: tem formação? De que nível? Descreva-me o procedimento de consignação de uma viatura elétrica.', h:'<em>2:</em> nível 2, trabalha sob supervisão de um habilitado. <em>3:</em> nível 3, consigna e repara autónomo. Tem de sair: corte, remoção da ficha de serviço, <em>verificação da ausência de tensão</em> e sinalização. <em>Pede o certificado.</em>'}
+   {q:'Já substituiu um módulo que exigiu codificação ou proteção de componentes? Como resolveu e com que ferramenta?', h:'<em>2:</em> adaptações simples com apoio. <em>3:</em> codifica e parametriza sozinho, sem erros. <em>4:</em> já recuperou um módulo com flash interrompido.'},
+   {q:'ADAS: já calibrou câmara ou radar? Estática ou dinâmica? Com que alvos e em que condições?', h:'Ouve os detalhes de setup — distância, altura, piso nivelado, pressão dos pneus, depósito. Quem calibrou a sério sabe que o chão tem de estar nivelado. <em>Sem esses detalhes, máximo 2.</em>'},
+   {q:'Tem certificado de manuseamento de gases fluorados? De que categoria e válido até quando?', h:'Legalmente obrigatório para intervir em AC. <em>Pede o documento.</em> Sem certificado, o máximo em AC é 2, seja qual for a prática.'},
+   {q:'Alta tensão: tem formação? De que nível? Descreva-me o procedimento de consignação de uma viatura elétrica.', h:'<em>2:</em> nível 2, trabalha sob supervisão de um habilitado. <em>3:</em> nível 3, consigna e repara autónomo. Tem de sair: corte, remoção da ficha de serviço, <em>verificação da ausência de tensão</em> e sinalização. <em>Pede o certificado.</em>'},
+   {q:'Que software e licenças usava? Eram da oficina ou seus?', h:'Pergunta desconfortável mas necessária. Software clonado na oficina anterior é um risco que não queres importar.'}
   ],
-  docs:'Documentos a pedir <b>nesta fase</b>, e a fotocopiar se avançar: certificado de gases fluorados (categoria e validade), certificado de formação em alta tensão (nível), certificados de marca ou fabricante, carta de condução com categoria e validade (necessária para ensaios de estrada).',
-  flags:['Diz que trabalha em alta tensão sem formação — risco grave e responsabilidade da empresa.','Diz que substitui para-brisas e não calibra a câmara.','Mexe em AC sem certificado de gases fluorados.']
+  docs:'Documentos a pedir <b>nesta fase</b>, e a fotocopiar se avançar: certificado de gases fluorados (categoria e validade), certificado de formação em alta tensão (nível), certificados de marca ou fabricante, carta de condução com categoria e validade (necessária para ensaios de estrada), certificado de qualificações.',
+  flags:[
+   'Diz que trabalha em alta tensão sem formação — risco grave e responsabilidade da empresa.',
+   'No procedimento HV não menciona a verificação de ausência de tensão.',
+   'Diz que tem o certificado algures, mas não sabe a categoria nem a validade.',
+   'Mexe em AC sem certificado de gases fluorados.',
+   'Liberta gás para a atmosfera ou não recupera antes de abrir o circuito.',
+   'Diz que substitui para-brisas e não calibra a câmara.',
+   'Fala em calibrar ADAS a olho, ou em estrada sem procedimento do construtor.',
+   'Desconhece que o piso tem de estar nivelado e as pressões corretas na calibração.',
+   'Usa software de diagnóstico ou programação clonado.',
+   'Faz flash de ECU sem estabilizador de tensão.',
+   'Trata a proteção de componentes como coisa da marca e não sabe resolver.',
+   'Hesita ou desvia quando perguntas pela carta de condução.'
+  ]
 },
 {
   t:'Processo, tempos e qualidade', sub:'Como ele encaixa na operação', tempo:'23–25 min', itens:[{tipo:'T',idx:18},{tipo:'T',idx:19},{tipo:'T',idx:24}],
@@ -318,52 +455,97 @@ var BLOCOS = [
    {q:'O que escrevia quando encontrava alguma coisa que não estava no pedido do cliente?', h:'<em>2:</em> revisão feita. <em>3:</em> relatório do que fez, fotos dos componentes para a receção mostrar ao cliente. <em>4:</em> documenta a pensar em garantias e peritagens.'},
    {q:'Trabalhava a tempo tabelado? Como se saía face ao tempário?', h:'Não te fixes no número que ele diz. Pergunta antes: <em>qual foi o serviço em que estourou mais o tempo e porquê</em>. A resposta mostra se conhece tempário a sério.'},
    {q:'Faz ensaio de estrada em que casos?', h:'<em>3:</em> sempre que a queixa é dinâmica — ruído, vibração, travagem, comportamento. <em>2:</em> só confirma que não há erros no painel.'},
-   {q:'Quantos carros lhe voltaram para trás no último ano, e por que motivo?', h:'A resposta zero sem hesitação é suspeita. Quem tem noção de qualidade lembra-se dos casos que voltaram e do que aprendeu com eles.'}
+   {q:'Quantos carros lhe voltaram para trás no último ano, e por que motivo?', h:'A resposta zero sem hesitação é suspeita. Quem tem noção de qualidade lembra-se dos casos que voltaram e do que aprendeu.'},
+   {q:'Como se organizava quando tinha três carros ao mesmo tempo à espera de peças?', h:'Procura método: prioridades, comunicação com a receção, não deixar o elevador ocupado por um carro parado.'}
   ],
-  flags:['Nunca picou tempos e reage mal à ideia de o fazer.','Não faz ensaio de estrada.','Não reconhece nenhum retrabalho.']
+  flags:[
+   'Nunca picou tempos e reage mal à ideia de o fazer.',
+   'Diz que o registo é papelada ou trabalho da receção.',
+   'Escreve apenas feito ou reparado na folha de obra.',
+   'Não tira fotografias de nada.',
+   'Fala em picar tempos de colegas ou em deixar picagens abertas.',
+   'Não sabe indicar o tempo de tabela de um serviço comum.',
+   'Não faz ensaio de estrada.',
+   'Não reconhece nenhum retrabalho no último ano.',
+   'Culpa sempre as peças e a receção pelos atrasos.',
+   'Ri-se da ideia de ser avaliado por tempos e qualidade.',
+   'Deixa carros parados no elevador à espera de peças.',
+   'Não comunica atrasos — o cliente é que descobre na hora da entrega.'
+  ]
 },
 {
   t:'Comportamentais', sub:'As 5 competências de peso 50% na classificação', tempo:'25–28 min', itens:[{tipo:'C',idx:0},{tipo:'C',idx:1},{tipo:'C',idx:2},{tipo:'C',idx:3},{tipo:'C',idx:4}],
   main:'Agora fora da técnica. Conte-me um erro seu que teve consequência para o cliente ou para a oficina. O que aconteceu e o que fez a seguir.',
   qs:[
-   {q:'(Sobre o erro) Quem deu por ele? E como ficou resolvido?', h:'Cota <b>Responsabilidade</b> e <b>Rigor</b>. <em>4–5:</em> deu-se conta sozinho, assumiu e corrigiu. <em>2:</em> deram por ele e ele minimizou. <em>1:</em> não consegue lembrar-se de nenhum erro.'},
+   {q:'(Sobre o erro) Quem deu por ele? E como ficou resolvido?', h:'Cota <b>Responsabilidade</b> e <b>Rigor</b>. <em>4–5:</em> deu-se conta sozinho, assumiu e corrigiu. <em>2:</em> deram por ele e ele minimizou. <em>1:</em> não se lembra de nenhum erro.'},
    {q:'Descreva uma vez em que discordou de um colega ou do chefe de oficina sobre uma reparação. Como acabou?', h:'Cota <b>Trabalho em equipa</b>. Procura desacordo técnico resolvido com argumentos, não histórias de conflito nem submissão total.'},
    {q:'Como está a sua caixa de ferramentas neste momento? E a baia no fim do dia?', h:'Cota <b>Segurança e organização</b>. Complementa: <em>que EPI usava, e em que tarefas</em>. Quem responde luvas e óculos com naturalidade tem 3; quem hesita tem 2.'},
    {q:'Que horário fazia? Costumava ser preciso avisar de atrasos — como fazia isso e com que antecedência?', h:'Cota <b>Assiduidade</b>. <b style="color:#991B1B">Não perguntes o motivo das faltas.</b> Interessa o comportamento de comunicação, não a causa. Podes confirmar a regularidade com a referência da oficina anterior, com autorização dele.'},
-   {q:'O que é que o faz sair de uma oficina?', h:'Cruza com o percurso da abertura. Três saídas em três anos por atrito com colegas é informação relevante para trabalho em equipa.'}
+   {q:'Já teve de ensinar alguma coisa a um colega mais novo? O quê?', h:'Cota <b>Trabalho em equipa</b> e é o que separa o 4 do 5 nas técnicas. Quem forma colegas descreve <em>como</em> ensinou, não só que ensinou.'},
+   {q:'O que é que o faz sair de uma oficina?', h:'Cruza com o percurso da abertura. Três saídas em três anos por atrito com colegas é informação relevante.'}
   ],
-  flags:['Não consegue lembrar-se de nenhum erro próprio.','Fala mal de todos os empregadores anteriores.','Trata o EPI como algo que atrasa o trabalho.']
+  flags:[
+   'Não consegue lembrar-se de nenhum erro próprio.',
+   'Descreve o erro mas a culpa acaba sempre noutra pessoa.',
+   'Fala mal de todos os empregadores anteriores.',
+   'Conta o desacordo como conflito pessoal, não como discussão técnica.',
+   'Trata o EPI como algo que atrasa o trabalho.',
+   'Diz que a caixa de ferramentas está como está e ninguém lhe mexe.',
+   'Recusa-se a ajudar em tarefas que considera fora da sua função.',
+   'Assume que os atrasos se resolvem sozinhos — não avisava ninguém.',
+   'Refere colegas por alcunhas depreciativas.',
+   'Diz que não precisa de formação, que já sabe o que interessa.',
+   'Mostra irritação quando lhe pedes exemplos concretos.',
+   'Nunca ensinou nada a ninguém e não vê valor nisso.',
+   'Responde por cima, com pressa de acabar a entrevista.'
+  ]
 },
 {
   t:'Fecho e condições', sub:'Sem cotação — mas decide o negócio', tempo:'28–30 min', itens:[],
   main:'Deixe-me explicar-lhe como funcionamos: temos nove escalões, avaliação mensal por competências e a progressão é feita sobre essa grelha, não por antiguidade. O que lhe parece?',
   qs:[
-   {q:'Disponibilidade para começar e aviso prévio.', h:'—'},
+   {q:'Disponibilidade para começar e aviso prévio.', h:'Confirma que bate certo com o que disse na abertura sobre o emprego atual.'},
    {q:'Expectativa de remuneração. Pergunta o valor <b>líquido ou bruto</b> para não haver equívocos.', h:'Compara com a tabela do escalão que a grelha apurou antes de dares qualquer indicação de valor.'},
-   {q:'Unidade: Cacém ou Lisboa? Como se desloca?', h:'—'},
-   {q:'Autoriza que contactemos a oficina anterior como referência?', h:'Pede o nome e o contacto. Sem autorização expressa, não contactes.'},
+   {q:'Unidade: Cacém ou Lisboa? Como se desloca?', h:'Deslocação frágil é a causa mais comum de faltas nos primeiros meses.'},
+   {q:'Autoriza que contactemos a oficina anterior como referência? Nome e contacto.', h:'Sem autorização expressa, não contactes.'},
+   {q:'Disponibilidade para uma prova prática de cerca de hora e meia na oficina.', h:'A reação a esta pergunta vale tanto como a resposta. Quem sobrevalorizou competências costuma arranjar obstáculos aqui.'},
    {q:'Tem alguma pergunta para mim?', h:'As perguntas que ele faz dizem muito. Perguntar por equipamento, formação e tipo de trabalho é bom sinal.'}
   ],
-  close:'Fecha assim: <b>Vamos analisar e damos resposta até [data]. Se avançarmos, o passo seguinte é uma prova prática de cerca de hora e meia na oficina, com um coordenador.</b> Marca a decisão no separador Resultado antes de sair da sala, enquanto tens a conversa fresca.'
+  close:'Fecha assim: <b>Vamos analisar e damos resposta até [data]. Se avançarmos, o passo seguinte é uma prova prática de cerca de hora e meia na oficina, com um coordenador.</b> Marca a decisão no separador Resultado antes de sair da sala, enquanto tens a conversa fresca.',
+  flags:[
+   'Só pergunta pelo salário e por mais nada.',
+   'Reage mal ao modelo de avaliação mensal por competências.',
+   'Não aceita a prova prática ou tenta adiá-la sem motivo.',
+   'Recusa dar referência da oficina anterior sem explicação.',
+   'Pressiona com uma proposta concorrente que não consegue concretizar.',
+   'Exige resposta imediata.',
+   'Diz-se disponível de imediato depois de ter falado em aviso prévio.',
+   'Pede parte do pagamento fora do recibo.',
+   'Não tem forma de se deslocar à unidade e não levanta o problema.',
+   'Não faz uma única pergunta sobre o trabalho.'
+  ]
 }
 ];
 /* ================== ESTADO ================== */
 var ratings = {C:{},T:{}}, evid = {C:{},T:{}}, decisao = null;
-var LS = 'domuscar_guiao_entrevista_v1';
+var respostas = {};   /* chave 'b_q' -> texto */
+var alarmes = {};     /* chave 'b_i' -> true */
+var LS = 'domuscar_guiao_entrevista_v2';
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(m,e){var t=document.getElementById('toast');t.textContent=m;t.className=e?'err':'';t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},e?5000:3000);}
 function nivelPara(n){if(n==null||isNaN(n))return null;var v=REGUA[0].n;for(var i=0;i<REGUA.length;i++)if(n>=REGUA[i].min)v=REGUA[i].n;return v;}
 function compDe(it){return it.tipo==='C'?COMPORT[it.idx]:TECNICAS[it.idx];}
 function idxNivel(nv){for(var i=0;i<REGUA.length;i++)if(REGUA[i].n===nv)return i;return 0;}
+function nAlarmes(){var n=0;for(var k in alarmes)if(alarmes[k])n++;return n;}
+function nRespostas(){var n=0;for(var k in respostas)if((respostas[k]||'').trim())n++;return n;}
+function totalPerguntas(){var n=0;BLOCOS.forEach(function(b){n+=1+(b.qs?b.qs.length:0);});return n;}
 
 /* ================== RENDER GUIÃO ================== */
 function linhaCot(it){
   var c=compDe(it), key=it.tipo+it.idx, anc=c.anc||null;
   var h='<div class="crow" id="cr_'+key+'">';
-  h+='<div class="cn"><span>'+esc(c.nome)+'</span>';
-  if(anc) h+='<button class="anc-btn" data-anc="'+key+'">âncoras 1–5</button>';
-  h+='</div>';
+  h+='<div class="cn"><span>'+esc(c.nome)+'</span><button class="anc-btn" data-anc="'+key+'">âncoras 1–5</button></div>';
   h+='<div class="scale">';
   for(var v=1;v<=5;v++) h+='<button class="sc" data-k="'+key+'" data-v="'+v+'" title="'+esc(ESCALA[v-1].nome)+'">'+v+'</button>';
   h+='<span class="ev">';
@@ -373,18 +555,16 @@ function linhaCot(it){
   });
   h+='</span></div>';
   h+='<div class="evwarn">&#9888; Nível 4 ou 5 apenas declarado — confirmar na prova prática antes de fixar o escalão.</div>';
-  if(anc){
-    h+='<div class="anc">';
-    anc.forEach(function(a){h+='<div class="anc-l"><span class="an an'+a.n+'">'+a.n+'</span><span class="at">'+esc(a.anc)+'<i>'+esc(a.ex)+'</i></span></div>';});
-    h+='</div>';
-  } else {
-    h+='<div class="anc">';
-    ESCALA.forEach(function(e){h+='<div class="anc-l"><span class="an an'+e.n+'">'+e.n+'</span><span class="at"><b>'+esc(e.nome)+'</b> — '+esc(e.comp)+'</span></div>';});
-    h+='</div>';
-    h=h.replace('<div class="cn"><span>'+esc(c.nome)+'</span>','<div class="cn"><span>'+esc(c.nome)+'</span><button class="anc-btn" data-anc="'+key+'">âncoras 1–5</button>');
-  }
-  h+='</div>';
+  h+='<div class="anc">';
+  if(anc) anc.forEach(function(a){h+='<div class="anc-l"><span class="an an'+a.n+'">'+a.n+'</span><span class="at">'+esc(a.anc)+'<i>'+esc(a.ex)+'</i></span></div>';});
+  else ESCALA.forEach(function(e){h+='<div class="anc-l"><span class="an an'+e.n+'">'+e.n+'</span><span class="at"><b>'+esc(e.nome)+'</b> — '+esc(e.comp)+'</span></div>';});
+  h+='</div></div>';
   return h;
+}
+
+function campo(bi,qi,grande){
+  var k=bi+'_'+qi;
+  return '<textarea class="ans '+(grande?'big':'sm')+'" data-ak="'+k+'" placeholder="'+(grande?'Resposta do candidato — cita as palavras dele':'Resposta / notas')+'"></textarea>';
 }
 
 function render(){
@@ -394,25 +574,31 @@ function render(){
     h+='<div class="blk-head" data-blk="'+i+'"><span class="chev">&#9654;</span><span class="bn">'+(i+1)+'</span>';
     h+='<span><span class="bt">'+esc(b.t)+'</span><br><span class="bs">'+esc(b.sub)+'</span></span>';
     h+='<span class="btime">'+esc(b.tempo)+'</span>';
+    h+='<span class="bflag" id="bf'+i+'">0</span>';
     if(b.itens.length) h+='<span class="bprog" id="bp'+i+'">0/'+b.itens.length+'</span>';
     h+='</div><div class="blk-body">';
     h+='<div class="sec-lab">Pergunta de abertura</div><div class="qmain">&#8220;'+b.main+'&#8221;</div>';
+    h+=campo(i,'m',true);
     if(b.qs&&b.qs.length){
       h+='<div class="sec-lab">Perguntas-cravo &amp; o que ouvir</div><ul class="qlist">';
-      b.qs.forEach(function(q){h+='<li><b>'+q.q+'</b>'+(q.h&&q.h!=='—'?'<span class="hint">'+q.h+'</span>':'')+'</li>';});
+      b.qs.forEach(function(q,qi){
+        h+='<li><b>'+q.q+'</b>'+(q.h&&q.h!=='—'?'<span class="hint">'+q.h+'</span>':'')+campo(i,qi,false)+'</li>';
+      });
       h+='</ul>';
     }
     if(b.docs) h+='<div class="doc-ask">&#128196; '+b.docs+'</div>';
     if(b.flags&&b.flags.length){
-      h+='<div class="flags"><div class="fl-t">Sinais de alarme</div><ul>';
-      b.flags.forEach(function(f){h+='<li>'+esc(f)+'</li>';});
+      h+='<div class="flags"><div class="fl-t">Sinais de alarme <span class="fl-h">'+b.flags.length+' a vigiar — clica para marcar o que observaste</span></div><ul>';
+      b.flags.forEach(function(f,fi){
+        h+='<li><label class="flag" id="fl_'+i+'_'+fi+'"><input type="checkbox" data-fk="'+i+'_'+fi+'"><span>'+esc(f)+'</span></label></li>';
+      });
       h+='</ul></div>';
     }
     if(b.close) h+='<div class="banner ok" style="margin-top:12px"><div class="bi">&#10004;</div><div>'+b.close+'</div></div>';
     if(b.itens.length){
       h+='<div class="cot"><div class="cot-t">Cotar agora — '+b.itens.length+' competência'+(b.itens.length>1?'s':'')+' · D declarado / E exemplo / C comprovado</div>';
       b.itens.forEach(function(it){h+=linhaCot(it);});
-      h+='<textarea class="nota" data-nb="'+i+'" placeholder="Notas deste bloco — cita as palavras dele, é o que vale na prova prática."></textarea>';
+      h+='<textarea class="nota" data-nb="'+i+'" placeholder="Notas adicionais deste bloco"></textarea>';
       h+='</div>';
     }
     h+='</div></div>';
@@ -421,7 +607,7 @@ function render(){
 
   wrap.addEventListener('click',function(e){
     var t=e.target;
-    if(t.closest('.blk-head')&&!t.closest('.anc-btn')){var i=t.closest('.blk-head').getAttribute('data-blk');document.getElementById('blk'+i).classList.toggle('open');return;}
+    if(t.closest('.blk-head')){var i=t.closest('.blk-head').getAttribute('data-blk');document.getElementById('blk'+i).classList.toggle('open');return;}
     if(t.classList.contains('anc-btn')){document.getElementById('cr_'+t.getAttribute('data-anc')).classList.toggle('show-anc');return;}
     if(t.classList.contains('sc')){
       var k=t.getAttribute('data-k'),v=+t.getAttribute('data-v'),tp=k.charAt(0),ix=+k.slice(1);
@@ -434,7 +620,20 @@ function render(){
       atualiza();return;
     }
   });
-  wrap.addEventListener('input',function(){salva();});
+  wrap.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.type==='checkbox'&&t.getAttribute('data-fk')){
+      alarmes[t.getAttribute('data-fk')]=t.checked; atualiza();
+    }
+  });
+  wrap.addEventListener('input',function(e){
+    var t=e.target;
+    if(t.getAttribute&&t.getAttribute('data-ak')){
+      respostas[t.getAttribute('data-ak')]=t.value;
+      t.classList.toggle('filled',!!t.value.trim());
+    }
+    salva();
+  });
 }
 
 /* ================== CÁLCULO ================== */
@@ -449,6 +648,16 @@ function calc(){
 
 function atualiza(){
   BLOCOS.forEach(function(b,i){
+    if(b.flags){
+      var nf=0;
+      b.flags.forEach(function(_,fi){
+        var on=!!alarmes[i+'_'+fi], lab=document.getElementById('fl_'+i+'_'+fi);
+        if(lab){lab.classList.toggle('on',on);lab.querySelector('input').checked=on;}
+        if(on)nf++;
+      });
+      var bf=document.getElementById('bf'+i);
+      if(bf){bf.textContent=nf+' alarme'+(nf===1?'':'s');bf.classList.toggle('on',nf>0);}
+    }
     if(!b.itens.length)return;
     var d=0;
     b.itens.forEach(function(it){
@@ -472,6 +681,8 @@ function atualiza(){
   var nb=document.getElementById('rbNiv');
   if(r.completo){nb.textContent=nivelPara(r.cf);nb.className='niv-badge';}
   else{nb.textContent=r.total+' de 31';nb.className='niv-badge off';}
+  var fc=document.getElementById('rbFlags'), n=nAlarmes();
+  if(fc){fc.textContent='⚠ '+n;fc.classList.toggle('on',n>0);fc.title=n+' sinal(is) de alarme marcado(s)';}
   salva();
 }
 /* ================== RESUMO ================== */
@@ -492,7 +703,26 @@ function renderResumo(){
   h+='<div class="regua">'+REGUA.map(function(x){return '<div class="rg'+(x.n===nv?' on':'')+'"><b>'+x.n+'</b>'+x.min.toFixed(2)+'+</div>';}).join('')+'</div>';
   h+='</div>';
 
-  /* risco de evidência */
+  /* ---- sinais de alarme observados ---- */
+  var nA=nAlarmes();
+  if(nA){
+    h+='<div class="flagbox"><h3>Sinais de alarme observados — '+nA+'</h3>';
+    BLOCOS.forEach(function(b,i){
+      if(!b.flags)return;
+      var m=[];
+      b.flags.forEach(function(f,fi){if(alarmes[i+'_'+fi])m.push(f);});
+      if(!m.length)return;
+      h+='<div style="margin-top:8px"><b style="font-size:.78rem;color:#991B1B">'+esc(b.t)+' ('+m.length+')</b><ul>';
+      m.forEach(function(f){h+='<li>'+esc(f)+'</li>';});
+      h+='</ul></div>';
+    });
+    if(nA>=6) h+='<p style="font-size:.83rem;color:#7F1D1D;margin-top:12px"><b>'+nA+' sinais é um padrão, não azar.</b> Antes de propor escalão, relê as cotações: é frequente terem ficado generosas em relação ao que os alarmes descrevem.</p>';
+    h+='</div>';
+  } else {
+    h+='<div class="banner ok"><div class="bi">&#10004;</div><div>Nenhum sinal de alarme marcado. Confirma que percorreste as listas — não marcar nada porque não olhaste não é o mesmo que não haver nada.</div></div>';
+  }
+
+  /* ---- risco de evidência ---- */
   var risco=[];
   ['C','T'].forEach(function(tp){
     var arr=tp==='C'?COMPORT:TECNICAS;
@@ -507,7 +737,7 @@ function renderResumo(){
     h+='<div class="banner info"><div class="bi">&#9432;</div><div>'+semEv.length+' competência(s) cotadas sem grau de evidência marcado. Não bloqueia o cálculo, mas fragiliza a defesa do escalão.</div></div>';
   }
 
-  /* gaps vs alvo do nível */
+  /* ---- gaps vs alvo do nível ---- */
   if(r.completo){
     var col=idxNivel(nv), abaixo=[], acima=[];
     ['C','T'].forEach(function(tp){
@@ -535,8 +765,6 @@ function renderResumo(){
       h+='</table>';
     }
     h+='</div>';
-
-    /* próximo escalão */
     if(col<REGUA.length-1){
       var falta=(REGUA[col+1].min-r.cf);
       var pT=Math.ceil(falta*2*TECNICAS.length), pC=Math.ceil(falta*2*COMPORT.length);
@@ -544,21 +772,34 @@ function renderResumo(){
     }
   }
 
-  /* tabela completa */
+  /* ---- registo das respostas ---- */
+  var tp2=totalPerguntas(), np=nRespostas();
+  h+='<div class="card"><h2>Registo das respostas — '+np+' de '+tp2+'</h2>';
+  if(np<tp2) h+='<p style="color:#B45309;font-size:.83rem">'+(tp2-np)+' pergunta(s) sem resposta registada. Aparecem assinaladas a amarelo — vale a pena preencher antes de arquivar, enquanto te lembras.</p>';
+  BLOCOS.forEach(function(b,i){
+    h+='<div class="rbl">'+(i+1)+'. '+esc(b.t)+'</div>';
+    h+=blocoResposta('Abertura: '+stripTags(b.main), respostas[i+'_m']);
+    (b.qs||[]).forEach(function(q,qi){ h+=blocoResposta(stripTags(q.q), respostas[i+'_'+qi]); });
+    var nb=respostas['nb_'+i];
+    if(nb&&nb.trim()) h+=blocoResposta('Notas do bloco', nb);
+  });
+  h+='</div>';
+
+  /* ---- tabela completa ---- */
   h+='<div class="card"><h2>Cotação completa</h2><table class="gap"><tr><th>#</th><th>Competência</th><th style="width:50px">Nível</th><th style="width:50px">Evid.</th></tr>';
   var n=0;
-  COMPORT.forEach(function(c,i){n++;h+=linhaTab(n,c.nome+' <span class="tagm hi">C</span>',ratings.C[i],evid.C[i]);});
-  TECNICAS.forEach(function(c,i){n++;h+=linhaTab(n,c.nome,ratings.T[i],evid.T[i]);});
+  COMPORT.forEach(function(c,i){n++;h+=linhaTab(n,esc(c.nome)+' <span class="tagm hi">C</span>',ratings.C[i],evid.C[i]);});
+  TECNICAS.forEach(function(c,i){n++;h+=linhaTab(n,esc(c.nome),ratings.T[i],evid.T[i]);});
   h+='</table></div>';
 
-  /* decisão */
+  /* ---- decisão ---- */
   h+='<div class="card"><h2>Decisão</h2><p>Marca antes de sair da sala, enquanto a conversa está fresca.</p><div class="dec">';
   [['avancar','Avançar — fazer proposta'],['prova','Prova prática primeiro'],['nao','Não avançar']].forEach(function(d){
     h+='<button class="decb'+(decisao===d[0]?' on':'')+'" data-d="'+d[0]+'">'+d[1]+'</button>';
   });
   h+='</div>';
   h+='<textarea class="nota" id="notaDec" placeholder="Fundamentação da decisão e proposta de escalão/valor..."></textarea>';
-  h+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn-l p" id="btPrint">Imprimir / PDF</button><button class="btn-l" id="btCopy">Copiar resumo para email</button><button class="btn-l" id="btClear">Limpar tudo</button></div>';
+  h+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn-l p" id="btPrint">Imprimir / PDF</button><button class="btn-l" id="btCopy">Copiar tudo para email</button><button class="btn-l" id="btClear">Limpar tudo</button></div>';
   h+='</div>';
 
   h+='<div class="banner warn"><div class="bi">&#9888;</div><div>Este escalão é uma <strong>estimativa de entrada baseada em declarações</strong>. Só a prova prática e o período experimental o confirmam. Recomenda-se contratar no escalão apurado e rever ao fim de 3 meses com a grelha de mérito preenchida por observação direta do coordenador.</div></div>';
@@ -567,15 +808,19 @@ function renderResumo(){
   var nd=document.getElementById('notaDec'); if(nd){nd.value=window._notaDec||'';nd.addEventListener('input',function(){window._notaDec=nd.value;salva();});}
   v.querySelectorAll('.decb').forEach(function(b){b.addEventListener('click',function(){decisao=(decisao===b.getAttribute('data-d'))?null:b.getAttribute('data-d');salva();renderResumo();});});
   document.getElementById('btPrint').addEventListener('click',function(){window.print();});
-  document.getElementById('btClear').addEventListener('click',function(){if(confirm('Apagar toda a entrevista?')){localStorage.removeItem(LS);location.reload();}});
+  document.getElementById('btClear').addEventListener('click',function(){if(confirm('Apagar toda a entrevista (respostas, cotações e alarmes)?')){localStorage.removeItem(LS);location.reload();}});
   document.getElementById('btCopy').addEventListener('click',copiaResumo);
 }
 
+function stripTags(s){return String(s||'').replace(/<[^>]*>/g,'');}
+function blocoResposta(q,a){
+  var vazio=!(a&&a.trim());
+  return '<div class="rq'+(vazio?' vazio':'')+'"><div class="rq-q">'+esc(q)+'</div><div class="rq-a">'+(vazio?'— sem resposta registada':esc(a))+'</div></div>';
+}
 function linhaTab(n,nome,v,ev){
   var cls=v?(v>=4?'ok':(v<=2?'lo':'hi')):'';
   return '<tr><td style="color:#9CA3AF">'+n+'</td><td>'+nome+'</td><td class="c">'+(v?'<span class="tagm '+cls+'">'+v+'</span>':'—')+'</td><td class="c" style="color:#6B7280">'+(ev||'—')+'</td></tr>';
 }
-
 function listaFalta(){
   var f=[];
   COMPORT.forEach(function(c,i){if(!ratings.C[i])f.push(c.nome);});
@@ -592,27 +837,49 @@ function copiaResumo(){
   L.push('');
   L.push('Comportamentais: '+(r.mc!=null?r.mc.toFixed(2):'—')+' | Tecnicas: '+(r.mt!=null?r.mt.toFixed(2):'—')+' | Classificacao final: '+(r.cf!=null?r.cf.toFixed(2):'—'));
   L.push('ESCALAO PROPOSTO: '+(r.completo?nivelPara(r.cf):'incompleto ('+r.total+'/31)'));
+  L.push('DECISAO: '+(decisao||'—')+' — '+(window._notaDec||''));
+  L.push('');
+  var nA=nAlarmes();
+  L.push('SINAIS DE ALARME OBSERVADOS: '+nA);
+  BLOCOS.forEach(function(b,i){
+    (b.flags||[]).forEach(function(f,fi){ if(alarmes[i+'_'+fi]) L.push('  ['+b.t+'] '+f); });
+  });
+  L.push('');
+  L.push('RESPOSTAS');
+  BLOCOS.forEach(function(b,i){
+    L.push('');
+    L.push('-- '+(i+1)+'. '+b.t+' ('+b.tempo+')');
+    var a=respostas[i+'_m'];
+    L.push('  P: '+stripTags(b.main));
+    L.push('  R: '+((a&&a.trim())?a.replace(/\n/g,' '):'—'));
+    (b.qs||[]).forEach(function(q,qi){
+      var x=respostas[i+'_'+qi];
+      L.push('  P: '+stripTags(q.q));
+      L.push('  R: '+((x&&x.trim())?x.replace(/\n/g,' '):'—'));
+    });
+    var nb=respostas['nb_'+i];
+    if(nb&&nb.trim()) L.push('  Notas: '+nb.replace(/\n/g,' '));
+  });
   L.push('');
   L.push('COTACAO');
   COMPORT.forEach(function(c,i){L.push(' [C] '+c.nome+': '+(ratings.C[i]||'-')+' ('+(evid.C[i]||'-')+')');});
   TECNICAS.forEach(function(c,i){L.push(' [T] '+c.nome+': '+(ratings.T[i]||'-')+' ('+(evid.T[i]||'-')+')');});
   L.push('');
-  L.push('NOTAS: '+(document.getElementById('notasGerais').value||'—'));
-  L.push('DECISAO: '+(decisao||'—')+' — '+(window._notaDec||''));
+  L.push('NOTAS GERAIS: '+(document.getElementById('notasGerais').value||'—'));
   var txt=L.join('\n');
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Resumo copiado.');},function(){fallbackCopy(txt);});}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Entrevista completa copiada.');},function(){fallbackCopy(txt);});}
   else fallbackCopy(txt);
 }
-function fallbackCopy(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('Resumo copiado.');}catch(e){toast('Não foi possível copiar.',true);}document.body.removeChild(a);}
+function fallbackCopy(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('Entrevista completa copiada.');}catch(e){toast('Não foi possível copiar.',true);}document.body.removeChild(a);}
 /* ================== PERSISTÊNCIA ================== */
 function salva(){
   try{
-    var notasB={};
-    document.querySelectorAll('[data-nb]').forEach(function(t){notasB[t.getAttribute('data-nb')]=t.value;});
+    document.querySelectorAll('[data-nb]').forEach(function(t){respostas['nb_'+t.getAttribute('data-nb')]=t.value;});
     localStorage.setItem(LS,JSON.stringify({
       r:ratings,e:evid,d:decisao,nd:window._notaDec||'',
+      resp:respostas, al:alarmes,
       m:{cand:val('m_cand'),data:val('m_data'),ent:val('m_ent'),loc:val('m_loc'),anos:val('m_anos')},
-      ng:val('notasGerais'),nb:notasB
+      ng:val('notasGerais')
     }));
   }catch(e){}
 }
@@ -621,9 +888,16 @@ function carrega(){
   try{
     var s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s)return false;
     ratings=s.r||{C:{},T:{}}; evid=s.e||{C:{},T:{}}; decisao=s.d||null; window._notaDec=s.nd||'';
+    respostas=s.resp||{}; alarmes=s.al||{};
     if(s.m){['cand','data','ent','loc','anos'].forEach(function(k){var el=document.getElementById('m_'+k);if(el&&s.m[k])el.value=s.m[k];});}
     if(s.ng)document.getElementById('notasGerais').value=s.ng;
-    if(s.nb)document.querySelectorAll('[data-nb]').forEach(function(t){var v=s.nb[t.getAttribute('data-nb')];if(v)t.value=v;});
+    document.querySelectorAll('[data-ak]').forEach(function(t){
+      var v=respostas[t.getAttribute('data-ak')];
+      if(v){t.value=v;t.classList.add('filled');}
+    });
+    document.querySelectorAll('[data-nb]').forEach(function(t){
+      var v=respostas['nb_'+t.getAttribute('data-nb')]; if(v)t.value=v;
+    });
     return true;
   }catch(e){return false;}
 }
