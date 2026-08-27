@@ -85,7 +85,7 @@ MODULES = {
     "aval_merito_admin":   {"title": "Avaliações de Mérito (Equipas)",          "file": "avaliacoes-merito-admin.html",       "icon": "⭐", "section": "Administração",
                             "kw": "avaliacao merito assessores vendas fieis armazem coordenadores admin"},
     "guiao_entrevista":    {"title": "Guião de Entrevista (Enquadramento)",     "file": "guiao-entrevista-enquadramento.html","icon": "🎙️", "section": "Administração",
-                            "kw": "guiao entrevista recrutamento candidato tecnico mecanico enquadramento escalao admissao competencias cotacao"},
+                            "kw": "guiao entrevista recrutamento candidato admissao enquadramento escalao competencias cotacao historico participantes mecatronico assessor vendas fiel armazem caixeiro coordenador sinais alarme prova pratica"},
     "margem":              {"title": "Cálculo Margem Provisória Mensal",        "file": "margem-provisoria.html",             "icon": "💰", "section": "Administração",
                             "kw": "margem provisoria mensal calculo vendas custos resultado"},
     "divergencias":        {"title": "Divergências Picagens OG vs 2Smart",      "file": "divergencias-picagens.html",         "icon": "📊", "section": "Administração",

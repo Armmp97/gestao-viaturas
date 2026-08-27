@@ -2960,7 +2960,8 @@
             termos_responsabilidade: 'Intranet/RH/Termos_Responsabilidade',
             registo_horas: 'Intranet/RH/Registo_Horas_Movimentacao',
             equipamentos_docs: 'Intranet/Equipamentos/Documentos',
-            relatorios_tecnicos_gerados: 'Intranet/Relatorios_Tecnicos/Gerados'
+            relatorios_tecnicos_gerados: 'Intranet/Relatorios_Tecnicos/Gerados',
+            guiao_entrevistas: 'Intranet/Guiao_Entrevistas'
         }
     };
     let spSiteId = null;
@@ -3708,6 +3709,50 @@
             return deleteSharePointFile(hit.id);
         });
     };
+    // ==== Guião de Entrevista (Enquadramento) — guiao-entrevista-enquadramento.html ====
+    // Relatórios em Intranet/Guiao_Entrevistas; índice em Dashboard_State/guiao_entrevistas_index.json.
+    // Leitura/escrita: apenas administração (o módulo já é role-gated a admin).
+    function _geAdmin() {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        return role === 'admin';
+    }
+    window.geUploadReport = function(fileName, htmlContent) {
+        if (!_geAdmin()) return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        return uploadToSharePoint('guiao_entrevistas', fileName, htmlContent, 'text/html');
+    };
+    window.geLoadIndex = function() {
+        if (!_geAdmin()) return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        return loadDashboardFromSP('guiao_entrevistas_index.json').then(function(data) {
+            return data || { updatedAt: null, rows: [] };
+        });
+    };
+    window.geSaveIndex = function(data) {
+        if (!_geAdmin()) return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        var driveId = getDriveId();
+        if (!driveId) return Promise.reject(new Error('SharePoint não inicializado'));
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' +
+                  SP_CONFIG.folders.dashboard_state + '/guiao_entrevistas_index.json:/content';
+        return getGraphToken().then(function(token) {
+            return fetch(url, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }).then(function(r) {
+            if (!r.ok) throw new Error('SP save falhou: ' + r.status);
+            console.log('[GE] guiao_entrevistas_index.json guardado (' + ((data.rows || []).length) + ' entrevistas)');
+            return true;
+        });
+    };
+    window.geDeleteReport = function(fileName) {
+        if (!_geAdmin()) return Promise.reject(new Error('Sem permissão (apenas administradores)'));
+        return listSharePointFiles('guiao_entrevistas').then(function(res) {
+            var items = (res && res.value) || [];
+            var hit = items.filter(function(f) { return f.name === fileName; })[0];
+            if (!hit) { console.warn('[GE] ficheiro não encontrado no SP:', fileName); return true; }
+            return deleteSharePointFile(hit.id);
+        });
+    };
     // ==== Parecer Avaliações Mérito Equipas — parecer-avaliacoes-merito.html ====
     // Relatórios em Intranet/Avaliacoes_Merito/Pareceres; índice em Dashboard_State/pareceres_merito_index.json.
     // Leitura/escrita: admins e coordenadores. Apagar: apenas admins.
@@ -4013,7 +4058,7 @@
             coord_auditoria_carrinhos: { title: 'Auditorias Carrinhos Ferramentas Mensal', url: 'auditoria-carrinhos-ferramentas.html' },
             aval_merito: { title: 'Avaliações de Mérito', url: 'avaliacoes-merito.html' },
             aval_merito_admin: { title: 'Avaliações de Mérito — Assessores, Fiéis de Armazém e Coordenadores', url: 'avaliacoes-merito-admin.html' },
-            guiao_entrevista: { title: 'Guião de Entrevista — Enquadramento de Técnicos', url: 'guiao-entrevista-enquadramento.html' },
+            guiao_entrevista: { title: 'Guião de Entrevista — Enquadramento em Escalões', url: 'guiao-entrevista-enquadramento.html' },
             parecer_merito: { title: 'Parecer Avaliações Mérito Equipas', url: 'parecer-avaliacoes-merito.html' },
             prep_auditoria_sqa_bcs: { title: 'Preparação Auditoria SQA - Bosch Car Service', url: 'Checklist_Auditoria_SQA_BCS.html' },
             officegest_api: { title: 'API Officegest (Consola)', url: 'officegest-api-explorer.html' },
