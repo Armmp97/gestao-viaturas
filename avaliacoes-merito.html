@@ -276,7 +276,7 @@ var TECNICOS = {
   ],
   'Mecânica Cacém': [
     { n: 'Arnaldo Cruz' },
-    { n: 'Edmilson Fernandes' },
+    { n: 'Edmilson Fernandes', ate: '2026-07' },   /* saída da empresa — última avaliação: Julho/2026 */
     { n: 'Filipe Bonifácio' },
     { n: 'Gonçalo Matos' }
   ]
@@ -389,6 +389,9 @@ function rebuildTecnicos() {
   selT.innerHTML = '<option value="">— selecionar —</option>';
   (TECNICOS[local] || []).forEach(function(t) {
     if (t.inativo) return;
+    /* fora da janela de atividade do técnico (entrada/saída) — não é avaliável nesse mês */
+    if (mes && t.desde && mes < t.desde) return;
+    if (mes && t.ate && mes > t.ate) return;
     var done = histLoaded && histRows.some(function(r) { return r.local === local && r.tecnico === t.n && r.mes === mes; });
     var o = document.createElement('option');
     o.value = t.n; o.textContent = t.n + (done ? ' — ✓ já avaliado' : '');
