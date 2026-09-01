@@ -4190,13 +4190,16 @@
     //   parecer-avaliacoes-merito.html (EQUIPAS)
     var HERO_CFG = {
         avalStart: '2026-07',
-        avalTecnicos: { 'Mecânica Lisboa': 5, 'Mecânica Cacém': 4 },
+        avalTecnicos: { 'Mecânica Lisboa': 5, 'Mecânica Cacém': 5 },
         acfStart: '2026-06',
         acfTecnicos: { 'Mecânica Lisboa': 3, 'Mecânica Cacém': 4 },
-        // Saídas: técnicos que deixam de ser cobrados a partir do mês seguinte a 'ate'.
-        // MANUTENÇÃO: manter em sincronia com o campo 'ate' nos módulos (TECNICOS).
-        saidas: [
-            { nome: 'Edmilson Fernandes', unidade: 'Mecânica Cacém', ate: '2026-07', aval: true, acf: true }
+        // Entradas e saídas. Os contadores acima são o total de técnicos na lista de cada
+        // módulo; cada movimento desconta os meses em que a pessoa ainda não tinha entrado
+        // ('desde') ou em que já tinha saído ('ate').
+        // MANUTENÇÃO: manter em sincronia com os campos 'desde'/'ate' dos TECNICOS nos módulos.
+        movimentos: [
+            { nome: 'Edmilson Fernandes', unidade: 'Mecânica Cacém', ate: '2026-07',   aval: true, acf: true  },
+            { nome: 'David Veiga',        unidade: 'Mecânica Cacém', desde: '2026-09', aval: true, acf: false }
         ],
         parecerStart: '2026-07',
         parecerEquipas: { 'fabio.ramalho@domuscar.com': 4, 'jose.rodriguez@domuscar.com': 4 },
@@ -4226,10 +4229,12 @@
     };
     var HERO_MESES_PT = { 'janeiro': 1, 'fevereiro': 2, 'março': 3, 'marco': 3, 'abril': 4, 'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 };
 
-    /* Quantos técnicos com saída já não são cobrados no mes (YYYY-MM) do módulo indicado. */
-    function heroSaidas(modulo, unidade, mes) {
-        return (HERO_CFG.saidas || []).filter(function(s) {
-            return s[modulo] && (!unidade || s.unidade === unidade) && s.ate && mes > s.ate;
+    /* Técnicos que no mes (YYYY-MM) ainda não tinham entrado ou já tinham saído — descontam ao total. */
+    function heroMovimentos(modulo, unidade, mes) {
+        return (HERO_CFG.movimentos || []).filter(function(m) {
+            if (!m[modulo]) return false;
+            if (unidade && m.unidade !== unidade) return false;
+            return (m.ate && mes > m.ate) || (m.desde && mes < m.desde);
         }).length;
     }
 
@@ -4376,7 +4381,7 @@
                 Object.keys(HERO_CFG.avalTecnicos).forEach(function(u) {
                     if (!unitF || u === unitF) expected += HERO_CFG.avalTecnicos[u];
                 });
-                expected -= heroSaidas('aval', unitF, mesRef);
+                expected -= heroMovimentos('aval', unitF, mesRef);
                 var done = rows.filter(function(r) { return r.mes === mesRef && (!unitF || r.local === unitF); }).length;
                 var falta = Math.max(0, expected - done);
                 chips.push({ o: 10, h: heroChip(falta > 0 ? 'red' : 'grn', null, 'Avaliações de mérito ' + mesNome + ' em falta', falta, "openModule('aval_merito')", 'Abrir Avaliações de Mérito') });
@@ -4392,7 +4397,7 @@
                 Object.keys(HERO_CFG.acfTecnicos).forEach(function(u) {
                     if (!unitF || u === unitF) expected += HERO_CFG.acfTecnicos[u];
                 });
-                expected -= heroSaidas('acf', unitF, mesRef);
+                expected -= heroMovimentos('acf', unitF, mesRef);
                 var done = rows.filter(function(r) { return r.mes === mesRef && (!unitF || r.local === unitF); }).length;
                 var falta = Math.max(0, expected - done);
                 chips.push({ o: 20, h: heroChip(falta > 0 ? 'amb' : 'grn', null, 'Auditorias carrinhos ' + mesNome + ' em falta', falta, "openModule('coord_auditoria_carrinhos')", 'Abrir Auditorias Carrinhos Ferramentas') });
