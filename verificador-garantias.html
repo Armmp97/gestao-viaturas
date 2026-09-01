@@ -70,6 +70,16 @@
     <button class="upload-btn">📁 Escolher Ficheiro</button>
     <input type="file" id="fileInput" accept=".xlsx,.xls">
   </div>
+  <div style="margin-top:16px;padding-top:14px;border-top:1px dashed #e2e8f0">
+    <p style="margin:0 0 8px;font-size:13px;color:#475569">— ou buscar diretamente do Officegest (escolhe o mês primeiro) —</p>
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap">
+      <select id="garApiMes" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px"></select>
+      <input id="garApiAno" type="number" min="2018" max="2099" style="width:96px;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-family:inherit;font-size:14px">
+      <button id="garApiBtn" class="upload-btn" style="background:linear-gradient(135deg,#1d4ed8,#1e40af);box-shadow:0 4px 14px rgba(29,78,216,0.4)">⬇ Buscar do Officegest (API)</button>
+    </div>
+    <div id="garApiStatus" style="margin-top:10px;font-size:13px;min-height:18px"></div>
+    <p style="font-size:11px;color:#94a3b8;margin-top:6px">Usa a V1 da API (traz o <b>centro de custo</b> por linha). Credenciais: definidas uma vez no módulo "API Officegest (Consola)".</p>
+  </div>
   <div id="status"></div>
   <div class="hint">
     <h4>O que é verificado</h4>
@@ -122,6 +132,80 @@ document.getElementById('fileInput').addEventListener('change', function(e){
   };
   reader.readAsArrayBuffer(file);
 });
+
+/* ============================================================
+   BUSCAR DO OFFICEGEST (API) — reutiliza verificar()/render()
+   A V1 do detalhe da fatura traz cod_centrocusto + id_empreg por linha.
+   ============================================================ */
+function garApiCfg(){ try{ var c=JSON.parse(localStorage.getItem('officegest_cfg_v1')); if(c&&c.base) return c; }catch(e){} return null; }
+var _garTok=null;
+async function garLogin(cfg){
+  var r=await fetch(cfg.base.replace(/\/$/,'')+'/api/v2/auth/login',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({username:cfg.user,password:(cfg.v2pass||cfg.hash)})});
+  var j=await r.json(); var t=j&&((j.data&&(j.data.token||j.data.access_token))||j.token||j.access_token);
+  if(!t) throw new Error('Login V2 falhou (confirma a password na consola).'); _garTok=t;
+}
+async function garGet(cfg, ver, path, query){
+  var url=cfg.base.replace(/\/$/,'')+(ver==='v2'?'/api/v2':'/api')+path;
+  if(query){ var qs=[]; for(var k in query){ if(query[k]!=null&&query[k]!=='') qs.push(encodeURIComponent(k)+'='+encodeURIComponent(query[k])); } if(qs.length) url+='?'+qs.join('&'); }
+  var h={Accept:'application/json'};
+  if(ver==='v2'){ if(!_garTok) await garLogin(cfg); h.Authorization='Bearer '+_garTok; } else h.Authorization='Basic '+btoa(cfg.user+':'+cfg.hash);
+  var r=await fetch(url,{headers:h}); if(!r.ok) throw new Error('API '+ver+' '+path+' → '+r.status); return await r.json();
+}
+function garListRows(d){
+  if(!d) return []; if(Array.isArray(d)) return d;
+  if(d.data!==undefined){ if(Array.isArray(d.data)) return d.data; if(d.data&&typeof d.data==='object') return Object.values(d.data); }
+  var skip={result:1,code:1,code_desc:1,method:1,timestamp:1,timenow:1,api_throttle_left:1,api_monthly_left:1,trace_id:1,order:1,sorder:1,total:1,meta:1};
+  for(var k in d){ if(skip[k]) continue; if(Array.isArray(d[k])) return d[k]; }
+  for(var k2 in d){ if(skip[k2]) continue; if(d[k2]&&typeof d[k2]==='object'){ var vals=Object.values(d[k2]); if(vals.length&&typeof vals[0]==='object') return vals; } }
+  return [];
+}
+async function fetchGarantiasFromAPI(year, month, onP){
+  var cfg=garApiCfg(); if(!cfg||!cfg.hash) throw new Error('Sem credenciais Officegest. Define-as no módulo "API Officegest (Consola)".');
+  _garTok=null; onP&&onP('A ligar à API...'); await garLogin(cfg);
+  var emp={}; try{ garListRows(await garGet(cfg,'v1','/entities/employees',{limit:5000})).forEach(function(e){ if(e&&e.id!=null) emp[e.id]=e.name; }); }catch(e){}
+  var mm=('0'+month).slice(-2); var from=year+'-'+mm+'-01'; var to=year+'-'+mm+'-'+('0'+(new Date(year,month,0).getDate())).slice(-2);
+  onP&&onP('A listar faturas GAR de '+mm+'/'+year+'...');
+  var docs=garListRows(await garGet(cfg,'v2','/sales/documents/GAR',{date_from:from,date_to:to,per_page:2000,sort_by:'date',sort_direction:'ASC'}));
+  // filtro de mês do lado do cliente (o filtro de data da API nem sempre aplica)
+  docs=docs.filter(function(d){ return String(d.date||'').slice(0,7)===year+'-'+mm; });
+  if(!docs.length) return [];
+  var HEADER=["Num Doc","Data Doc.","Colaborador","Cód. Artigo","Artigo","Qtd","Preço Uni.","Total s/ Iva","Matrícula","Centro Custo","Desig. Centro","Família"];
+  var out=[HEADER];
+  for(var i=0;i<docs.length;i++){
+    var dh=docs[i]; onP&&onP('A ler linhas... documento '+(i+1)+'/'+docs.length);
+    var det; try{ det=await garGet(cfg,'v1','/sales/documents/GAR/'+dh.number); }catch(e){ continue; }
+    var lraw=det.lines; var lines=Array.isArray(lraw)?lraw:(lraw&&typeof lraw==='object'?Object.values(lraw):[]);
+    for(var j2=0;j2<lines.length;j2++){ var ln=lines[j2];
+      var empName=emp[dh.employee_code]||emp[ln.id_empreg]||(dh.employee_code?('emp '+dh.employee_code):'');
+      out.push([ dh.document_number, dh.date, empName, ln.idarticle, ln.description, ln.quantity, ln.sellingprice, ln.totalwithoutvat, (dh.plate||''), (ln.cod_centrocusto||''), (ln.desig_centrocusto||''), (ln.famnome||'') ]);
+    }
+    await new Promise(function(r){ setTimeout(r,80); });
+  }
+  return out;
+}
+function setupGarApi(){
+  var sel=document.getElementById('garApiMes'); if(!sel) return;
+  var MN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var now=new Date(); var pm=now.getMonth(); if(pm===0) pm=12; // mês anterior (1..12)
+  var opts=''; for(var m=1;m<=12;m++){ opts+='<option value="'+m+'"'+(m===pm?' selected':'')+'>'+MN[m-1]+'</option>'; }
+  sel.innerHTML=opts;
+  document.getElementById('garApiAno').value = (now.getMonth()===0?now.getFullYear()-1:now.getFullYear());
+  document.getElementById('garApiBtn').addEventListener('click', async function(){
+    var month=parseInt(sel.value,10), year=parseInt(document.getElementById('garApiAno').value,10);
+    if(!year){ alert('Indica o ano de referência.'); return; }
+    var st=document.getElementById('garApiStatus'); var btn=document.getElementById('garApiBtn');
+    btn.disabled=true; st.style.color='#1d4ed8'; st.textContent='A buscar...';
+    try{
+      var rows=await fetchGarantiasFromAPI(year, month, function(msg){ st.textContent=msg; });
+      if(rows.length<2){ st.style.color='#b45309'; st.textContent='Sem faturas de garantia em '+MN[month-1]+' '+year+'.'; btn.disabled=false; return; }
+      var res=verificar(rows); render(res);
+      var ds=document.getElementById('status'); ds.className='ok'; ds.textContent='✓ Verificação concluída via API ('+(rows.length-1)+' linhas).';
+      st.style.color='#0d904f'; st.textContent='✓ '+(rows.length-1)+' linhas de faturas GAR de '+MN[month-1]+' '+year+'.';
+    }catch(e){ st.style.color='#dc2626'; st.textContent='Erro: '+e.message; }
+    btn.disabled=false;
+  });
+}
+setupGarApi();
 
 function findHeader(rows){
   for(var i=0;i<Math.min(rows.length,10);i++){
