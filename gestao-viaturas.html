@@ -2172,6 +2172,43 @@
 
     function editBooking(id) { closeDayPanel(); navigate('booking', { bookingId: id }); }
 
+    // Só administradores. Fail-closed: se não der para confirmar as permissões, recusa.
+    function isAdminUser() {
+        try {
+            var perms = window.parent && window.parent.getCurrentUserPermissions && window.parent.getCurrentUserPermissions();
+            return !!(perms && perms.role === 'admin');
+        } catch (e) { return false; }
+    }
+
+    // Apaga DEFINITIVAMENTE um registo (marcação + levantamento + devolução) do SharePoint
+    // e do armazenamento local. Existe para limpar registos de teste; não tem retrocesso.
+    function deleteBookingPermanently(id) {
+        if (!isAdminUser()) { showToast('Apenas administradores podem eliminar registos.', 'error'); return; }
+        var b = bookings.find(function(x) { return x.id === id; });
+        if (!b) { showToast('Registo não encontrado.', 'error'); return; }
+        var rot = b.matricula + ' — ' + (b.nomeCliente || '') + (b.levantamento && b.levantamento.id ? ' (Nº ' + b.levantamento.id + ')' : '');
+        if (!confirm('Eliminar definitivamente este registo?\n\n' + rot + '\n\nApaga a marcação, o levantamento e a devolução. Esta ação não tem retrocesso.')) return;
+        if (!confirm('Confirmação final: eliminar ' + rot + '?')) return;
+
+        var passoSP = Promise.resolve();
+        if (b._spItemId && spSiteId && spListId) {
+            passoSP = graphRequest('https://graph.microsoft.com/v1.0/sites/' + spSiteId + '/lists/' + spListId + '/items/' + b._spItemId, 'DELETE');
+        }
+        showToast('A eliminar registo...', 'warning');
+        passoSP.catch(function(e) {
+            console.warn('[gestao-viaturas] falha ao apagar no SharePoint (segue a limpeza local):', e);
+            showToast('Aviso: não foi possível apagar no SharePoint (' + (e && e.message ? e.message : e) + '). Removido localmente.', 'error');
+        }).then(function() {
+            bookings = bookings.filter(function(x) { return x.id !== id; });
+            if (fileStore && fileStore[id]) delete fileStore[id];
+            saveData();
+            renderCalendar();
+            if (typeof renderHistPickups === 'function') renderHistPickups();
+            if (typeof renderHistReturns === 'function') renderHistReturns();
+            showToast('Registo eliminado.', 'success');
+        });
+    }
+
     function cancelBooking(id) {
         if (!confirm('Tem a certeza que deseja cancelar este agendamento?')) return;
         const b = bookings.find(x => x.id === id);
@@ -3495,6 +3532,7 @@
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); showBookingDetail(\'' + b.id + '\')">&#128065; Ver Detalhes</button>' +
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewHistoryFiles(\'' + b.id + '\', \'levantamento\')">&#128193; Ver Ficheiros</button>' +
                 (signedDone ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); viewSignedDoc(\'' + b.id + '\', \'levantamento\')">&#128196; Doc. Assinado</button>' : '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showSignedDocUploadFromHistory(\'' + b.id + '\', \'levantamento\')">&#128196; Carregar Doc. Assinado</button>') +
+                (isAdminUser() ? '<button class="btn btn-danger btn-sm" title="Eliminar definitivamente (apenas administradores)" onclick="event.stopPropagation(); deleteBookingPermanently(\'' + b.id + '\')">&#128465; Eliminar</button>' : '') +
                 '</div>';
             container.appendChild(card);
         });
@@ -3543,6 +3581,7 @@
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); showBookingDetail(\'' + b.id + '\')">&#128065; Ver Detalhes</button>' +
                 '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewHistoryFiles(\'' + b.id + '\', \'devolucao\')">&#128193; Ver Ficheiros</button>' +
                 (signedDone ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); viewSignedDoc(\'' + b.id + '\', \'devolucao\')">&#128196; Doc. Assinado</button>' : '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); showSignedDocUploadFromHistory(\'' + b.id + '\', \'devolucao\')">&#128196; Carregar Doc. Assinado</button>') +
+                (isAdminUser() ? '<button class="btn btn-danger btn-sm" title="Eliminar definitivamente (apenas administradores)" onclick="event.stopPropagation(); deleteBookingPermanently(\'' + b.id + '\')">&#128465; Eliminar</button>' : '') +
                 '</div>';
             container.appendChild(card);
         });
