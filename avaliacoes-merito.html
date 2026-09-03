@@ -300,6 +300,9 @@ var isAdmin = false;
 var userRole = null;
 var hideLive = false;             /* coordenadores só veem médias/nível após Concluir e Arquivar */
 var obsValue = '';
+/* A quem pertencem as notas em memória (local||tecnico||mes). Sem isto, mudar de
+   técnico herdava as notas do anterior — era o que acontecia em Set/2026. */
+var draftOwner = null;
 
 /* ================== HELPERS ================== */
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -407,6 +410,27 @@ function onLocalChange() { rebuildTecnicos(); onFormChange(); }
 
 function onFormChange() {
   hideResBanner();
+  /* Mudou o técnico, o mês ou a unidade? As notas são de outra pessoa — limpar.
+     Só pergunta se houver mesmo alguma coisa preenchida para perder. */
+  var agora = ownerAtual();
+  if (draftOwner !== null && agora !== draftOwner) {
+    var tecNovo = document.getElementById('fTecnico').value;
+    if (temRespostas() && tecNovo) {
+      if (!confirm('Mudar de técnico ou de mês limpa as notas já preenchidas nesta avaliação.\n\nContinuar?')) {
+        var p = String(draftOwner).split('||');
+        if (!isCoordinatorLocked) document.getElementById('fLocal').value = p[0];
+        document.getElementById('fMes').value = p[2];
+        rebuildTecnicos();
+        document.getElementById('fTecnico').value = p[1];
+        checkDuplicate();
+        return;
+      }
+    }
+    resetRespostas();
+    renderWizard();
+    updateSummary();
+  }
+  draftOwner = ownerAtual();
   rebuildTecnicosKeepingSelection();
   checkDuplicate();
   saveDraft();
@@ -628,6 +652,7 @@ function saveDraft() {
       data: document.getElementById('fData').value,
       coordenador: document.getElementById('fCoordenador').value,
       obs: obsValue,
+      owner: draftOwner,
       ratings: ratings,
       obsPer: obsPer
     }));
@@ -650,8 +675,27 @@ function restoreDraft() {
     Object.keys(d.ratings.T || {}).forEach(function(k) { var v = d.ratings.T[k]; if (typeof v === 'number') ratings.T[k] = v; });
   }
   if (d.obsPer) obsPer = { C: d.obsPer.C || {}, T: d.obsPer.T || {} };
+  draftOwner = d.owner || ownerAtual();
   var next = nextUnanswered(0);
   pageIdx = next !== -1 ? next : TOTAL;
+}
+
+/* Identidade da avaliação que está no ecrã. */
+function ownerAtual() {
+  return document.getElementById('fLocal').value + '||' +
+         document.getElementById('fTecnico').value + '||' +
+         document.getElementById('fMes').value;
+}
+function temRespostas() {
+  return Object.keys(ratings.C).length > 0 || Object.keys(ratings.T).length > 0 ||
+         Object.keys(obsPer.C).length > 0 || Object.keys(obsPer.T).length > 0 ||
+         !!(obsValue && obsValue.trim());
+}
+function resetRespostas() {
+  ratings = { C: {}, T: {} };
+  obsPer = { C: {}, T: {} };
+  obsValue = '';
+  pageIdx = 0;
 }
 
 /* ================== GRAVAÇÃO ================== */
@@ -716,10 +760,8 @@ function guardar() {
 }
 
 function limparForm() {
-  ratings = { C: {}, T: {} };
-  obsPer = { C: {}, T: {} };
-  obsValue = '';
-  pageIdx = 0;
+  resetRespostas();
+  draftOwner = null;
   document.getElementById('fTecnico').value = '';
   renderWizard();
   updateSummary();

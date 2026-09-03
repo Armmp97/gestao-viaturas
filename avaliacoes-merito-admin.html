@@ -228,6 +228,9 @@ var ALL = [], TOTAL = 0, REGUA = [];
 var ratings = { C: {}, T: {} };
 var obsPer = { C: {}, T: {} };
 var obsValue = '';
+/* A quem pertencem as notas em memória (funcao||pessoa||mes) — sem isto, mudar de
+   pessoa herdava as notas da anterior. Mesmo problema do avaliacoes-merito.html. */
+var draftOwner = null;
 var pageIdx = 0;
 var histRows = [];
 var histLoaded = false;
@@ -345,6 +348,23 @@ function rebuildPessoas() {
 
 function onFormChange() {
   hideResBanner();
+  /* Mudou a pessoa ou o mês? As notas são de outra avaliação — limpar. */
+  var agora = ownerAtual();
+  if (draftOwner !== null && agora !== draftOwner) {
+    if (temRespostas() && document.getElementById('fPessoa').value) {
+      if (!confirm('Mudar de pessoa ou de mês limpa as notas já preenchidas nesta avaliação.\n\nContinuar?')) {
+        var p = String(draftOwner).split('||');
+        document.getElementById('fMes').value = p[2];
+        rebuildPessoas();
+        document.getElementById('fPessoa').value = p[1];
+        checkDuplicate();
+        return;
+      }
+    }
+    ratings = { C: {}, T: {} }; obsPer = { C: {}, T: {} }; obsValue = ''; pageIdx = 0;
+    renderWizard(); updateSummary();
+  }
+  draftOwner = ownerAtual();
   rebuildPessoas();
   checkDuplicate();
   saveDraft();
@@ -529,7 +549,8 @@ function saveDraft() {
       pessoa: document.getElementById('fPessoa').value,
       mes: document.getElementById('fMes').value,
       data: document.getElementById('fData').value,
-      obs: obsValue, ratings: ratings, obsPer: obsPer
+      obs: obsValue,
+      owner: draftOwner, ratings: ratings, obsPer: obsPer
     }));
   } catch (e) {}
 }
@@ -550,6 +571,7 @@ function restoreDraft() {
   if (d.pessoa) setTimeout(function() { document.getElementById('fPessoa').value = d.pessoa; }, 0);
   var F = FUNCOES[funcao];
   var total = F.comport.length + F.tecnicas.length;
+  draftOwner = d.owner || ownerAtual();
   var done = Object.keys(ratings.C).length + Object.keys(ratings.T).length;
   pageIdx = done >= total ? total : 0;
 }
@@ -613,11 +635,22 @@ function guardar() {
   });
 }
 
+function ownerAtual() {
+  return document.getElementById('fFuncao').value + '||' +
+         document.getElementById('fPessoa').value + '||' +
+         document.getElementById('fMes').value;
+}
+function temRespostas() {
+  return Object.keys(ratings.C).length > 0 || Object.keys(ratings.T).length > 0 ||
+         Object.keys(obsPer.C).length > 0 || Object.keys(obsPer.T).length > 0 ||
+         !!(obsValue && obsValue.trim());
+}
 function limparForm() {
   ratings = { C: {}, T: {} };
   obsPer = { C: {}, T: {} };
   obsValue = '';
   pageIdx = 0;
+  draftOwner = null;
   document.getElementById('fPessoa').value = '';
   renderWizard();
   updateSummary();

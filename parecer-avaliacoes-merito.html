@@ -179,6 +179,8 @@ var histRows = [], histLoaded = false;
 var currentUserEmail = '', currentUserName = '';
 var isAdmin = false, minhaEquipa = null;
 var apreciacao = undefined;
+/* A quem pertence o parecer em memória (pessoa||mes) — mudar de pessoa tem de limpar. */
+var draftOwner = null;
 
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(msg, isErr) {
@@ -271,8 +273,37 @@ function pickLevel(n) {
   saveDraft();
 }
 
+function ownerAtual() {
+  return document.getElementById('fPessoa').value + '||' + document.getElementById('fMes').value;
+}
+function temConteudo() {
+  return typeof apreciacao === 'number' ||
+         !!document.getElementById('fParecer').value.trim() ||
+         !!document.getElementById('fFortes').value.trim() ||
+         !!document.getElementById('fMelhorar').value.trim();
+}
 function onFormChange() {
   hideResBanner();
+  /* Mudou a pessoa ou o mês? O parecer escrito é de outra pessoa — limpar. */
+  var agora = ownerAtual();
+  if (draftOwner !== null && agora !== draftOwner) {
+    if (temConteudo() && document.getElementById('fPessoa').value) {
+      if (!confirm('Mudar de pessoa ou de mês limpa o parecer já escrito.\n\nContinuar?')) {
+        var p = String(draftOwner).split('||');
+        document.getElementById('fMes').value = p[1];
+        rebuildPessoas();
+        document.getElementById('fPessoa').value = p[0];
+        checkDuplicate();
+        return;
+      }
+    }
+    apreciacao = undefined;
+    document.getElementById('fParecer').value = '';
+    document.getElementById('fFortes').value = '';
+    document.getElementById('fMelhorar').value = '';
+    renderLevels();
+  }
+  draftOwner = ownerAtual();
   rebuildPessoas();
   checkDuplicate();
   saveDraft();
@@ -303,6 +334,7 @@ function saveDraft() {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({
       pessoa: document.getElementById('fPessoa').value,
       mes: document.getElementById('fMes').value,
+      owner: draftOwner,
       apreciacao: apreciacao,
       parecer: document.getElementById('fParecer').value,
       fortes: document.getElementById('fFortes').value,
@@ -317,6 +349,7 @@ function restoreDraft() {
   if (d.mes && d.mes >= ALERT_START) document.getElementById('fMes').value = d.mes;
   rebuildPessoas();
   if (d.pessoa) document.getElementById('fPessoa').value = d.pessoa;
+  draftOwner = d.owner || (d.pessoa ? d.pessoa + '||' + d.mes : null);
   if (typeof d.apreciacao === 'number') { apreciacao = d.apreciacao; renderLevels(); }
   if (d.parecer) document.getElementById('fParecer').value = d.parecer;
   if (d.fortes) document.getElementById('fFortes').value = d.fortes;
@@ -382,6 +415,7 @@ function apreciacaoLbl(n) { var e2 = ESCALA[n-1]; return n + ' — ' + (e2 ? e2.
 
 function limparForm() {
   apreciacao = undefined;
+  draftOwner = null;
   renderLevels();
   document.getElementById('fPessoa').value = '';
   document.getElementById('fParecer').value = '';
