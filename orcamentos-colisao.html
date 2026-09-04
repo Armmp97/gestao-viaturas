@@ -119,7 +119,7 @@ table.t .del:hover{color:var(--danger)}
 
 /* ---- totais ---- */
 .tot{background:var(--navy-deep);color:#fff;border-radius:var(--radius);padding:18px 24px;margin-bottom:18px;
-  display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 @media(max-width:860px){.tot{grid-template-columns:1fr 1fr}}
 .tot .t{font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:#8fb8d8;font-weight:700}
 .tot .v{font-size:20px;font-weight:800;margin-top:2px}
@@ -161,12 +161,11 @@ table.t .del:hover{color:var(--danger)}
 .folha .rodape{margin-top:4mm;padding-top:2mm;border-top:.2mm solid #ddd;font-size:6.8pt;color:#333;line-height:1.3}
 .folha .assin{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:6mm}
 .folha .assin div{border-top:.3mm solid #000;padding-top:1.2mm;font-size:7.5pt;color:#333}
-.folha .dsgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:1.5mm;margin-bottom:1.5mm;align-items:start}
+.folha .dsgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5mm;margin-bottom:2mm;align-items:start}
 .folha .dsv{border:.2mm solid #d8dde4;border-radius:1mm;padding:.8mm 1.2mm;page-break-inside:avoid}
 .folha .dsv.w2{grid-column:span 2}
 .folha .dsl{font-size:6.2pt;text-transform:uppercase;letter-spacing:.4px;color:#666;margin-bottom:.4mm}
 .folha .dsv svg{width:100%;height:auto;display:block}
-.folha .dsleg{display:flex;gap:5mm;font-size:6.8pt;color:#333;margin-bottom:3mm}
 .folha .vazio{color:#b91c1c}
 @media print{
   body{background:#fff}
@@ -250,9 +249,16 @@ table.t .del:hover{color:var(--danger)}
     </div>
 
     <div class="card">
-      <h2>Componentes / Peças / Diversos</h2>
+      <h2>Componentes / Peças</h2>
       <div id="pecasTab"></div>
       <div class="addrow"><button class="linkbtn" onclick="addPeca()">+ Adicionar linha</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Diversos</h2>
+      <div class="f" style="max-width:300px"><label>Quantos diversos pretende adicionar</label>
+        <input id="fDiversos" inputmode="numeric" placeholder="0" oninput="renderDiversos();calc();marcar()"></div>
+      <div id="diversosTab" style="margin-top:12px"></div>
     </div>
 
     <div class="cols2">
@@ -276,6 +282,7 @@ table.t .del:hover{color:var(--danger)}
     <div class="tot">
       <div><div class="t">Pintura (MOP)</div><div class="v" id="tZonas">0,00 €</div></div>
       <div><div class="t">Peças</div><div class="v" id="tPecas">0,00 €</div></div>
+      <div><div class="t">Diversos</div><div class="v" id="tDiv">0,00 €</div></div>
       <div><div class="t">Horas de pintura</div><div class="v" id="tHp">0,00 h</div></div>
       <div><div class="t">Mão de obra (chapa)</div><div class="v" id="tMo">0,00 €</div></div>
       <div><div class="t">Total s/ IVA · IVA 23%</div><div class="v" id="tSiva">0,00 €</div></div>
@@ -383,7 +390,12 @@ var VISTAS = [
 var acc = '1';
 var zonas = {};              /* chave -> { a:'1'..'4', p:'180,00' } */
 var pecas = [];              /* { d:'', q:'1', v:'' } */
-var livres = [];             /* artigos MOP0 de escrita livre: { d:'', p:'' } */
+var livres = [];             /* artigos MOP0 de escrita livre: { d:'', a:'1', p:'' } */
+/* Artigos fixos de "Diversos" — codigos e precos unitarios do OfficeGest (sem IVA) */
+var DIVERSOS = [
+  { cod:'999', desc:'Material de desgaste e limpeza', pu:5.61 },
+  { cod:'GA',  desc:'Gestão Ambiental',               pu:3.17 }
+];
 var histRows = [], histLoaded = false;
 var currentUserName = '', currentUserEmail = '';
 var DES = null;              /* desenho do tipo escolhido */
@@ -483,6 +495,7 @@ function boot(){
   renderDesenhos();
   renderZonas();
   renderPecas();
+  renderDiversos();
   onEstado();
   carregarHist();
 
@@ -576,6 +589,13 @@ function addZonaManual(){
   if (!zonas[k]) zonas[k] = { a: (acc==='0' ? '1' : acc), p: precoBase() };
   pintarSvg(); renderZonas(); calc(); marcar();
 }
+function selAccao(actual, onch){
+  var sel = '<select onchange="' + onch + '">';
+  ['1','2','3','4'].forEach(function(a){
+    sel += '<option value="' + a + '"' + (actual===a?' selected':'') + '>' + a + ' · ' + ACCOES[a] + '</option>';
+  });
+  return sel + '</select>';
+}
 function renderZonas(){
   var ks = Object.keys(zonas).sort(function(a,b){ return (MOP[a]||99) - (MOP[b]||99); });
   var c = $('zonasTab');
@@ -596,11 +616,7 @@ function renderZonas(){
     var b = blocoZona(k);
     if (b !== bloco) { fecharBloco(); bloco = b; sub = 0; algum = false; }
     algum = true; sub += num(zonas[k].p);
-    var sel = '<select onchange="setZonaAcc(\'' + k + '\',this.value)">';
-    ['1','2','3','4'].forEach(function(a){
-      sel += '<option value="' + a + '"' + (zonas[k].a===a?' selected':'') + '>' + a + ' · ' + ACCOES[a] + '</option>';
-    });
-    sel += '</select>';
+    var sel = selAccao(zonas[k].a, 'setZonaAcc(\'' + k + '\',this.value)');
     h += '<tr><td class="mop">MOP' + MOP[k] + '</td><td class="z">' + esc(descMop(k)) + '</td><td>' + sel + '</td>'
        + '<td style="text-align:right"><input class="pr" inputmode="decimal" placeholder="0,00" value="' + esc(zonas[k].p) + '" oninput="setZonaPreco(\'' + k + '\',this.value)"></td>'
        + '<td class="hr" style="text-align:right" data-hk="' + k + '">' + hrs(horasDe(zonas[k].p)) + '</td>'
@@ -613,7 +629,7 @@ function renderZonas(){
       subL += num(l.p);
       h += '<tr><td class="mop">MOP0</td>'
          + '<td><span class="pfx">PINTURA |</span> <input class="ds" style="width:calc(100% - 76px)" placeholder="escrever aqui" value="' + esc(l.d) + '" oninput="setLivre(' + i + ',\'d\',this.value)"></td>'
-         + '<td><span class="hint" style="font-size:12px;color:var(--gray-600)">escrita livre</span></td>'
+         + '<td>' + selAccao(livres[i].a, 'setLivre(' + i + ',\'a\',this.value)') + '</td>'
          + '<td style="text-align:right"><input class="pr" inputmode="decimal" placeholder="0,00" value="' + esc(l.p) + '" oninput="setLivre(' + i + ',\'p\',this.value)"></td>'
          + '<td class="hr" style="text-align:right" data-hl="' + i + '">' + hrs(horasDe(l.p)) + '</td>'
          + '<td style="text-align:right"><button class="del" title="Remover" onclick="delLivre(' + i + ')">×</button></td></tr>';
@@ -624,13 +640,31 @@ function renderZonas(){
   c.innerHTML = h;
 }
 /* ---------------- artigos MOP0 (escrita livre) ---------------- */
-function addLivre(){ livres.push({ d:'', p: precoBase() }); renderZonas(); calc(); marcar(); }
+function addLivre(){ livres.push({ d:'', a:(acc==='0'?'1':acc), p: precoBase() }); renderZonas(); calc(); marcar(); }
 function delLivre(i){ livres.splice(i,1); renderZonas(); calc(); marcar(); }
 function setLivre(i,campo,val){
   if (!livres[i]) return;
   livres[i][campo] = val;
   if (campo === 'p') { calcSubtotais(); calc(); }
   marcar();
+}
+/* ---------------- diversos ---------------- */
+function qtdDiversos(){ var q = Math.floor(num($('fDiversos').value)); return q > 0 ? q : 0; }
+function totalDiversos(){ var q = qtdDiversos(), t = 0; DIVERSOS.forEach(function(x){ t += q * x.pu; }); return t; }
+function renderDiversos(){
+  var q = qtdDiversos(), c = $('diversosTab');
+  if (!q) { c.innerHTML = '<div class="twrap"><div class="empty">Sem diversos. Escreve quantos queres acrescentar.</div></div>'; return; }
+  var h = '<div class="twrap"><table class="t"><thead><tr><th style="width:70px">Cód.</th><th>Designação</th>'
+        + '<th style="text-align:right">Qtd.</th><th style="text-align:right">Unid.</th>'
+        + '<th style="text-align:right">Preço unit.</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+  DIVERSOS.forEach(function(x){
+    h += '<tr><td class="mop">' + esc(x.cod) + '</td><td class="z">' + esc(x.desc) + '</td>'
+       + '<td style="text-align:right">' + q + ',00</td><td style="text-align:right">UN</td>'
+       + '<td style="text-align:right">' + eur(x.pu) + '</td>'
+       + '<td style="text-align:right;font-weight:700">' + eur(q * x.pu) + '</td></tr>';
+  });
+  h += '<tr class="sub"><td colspan="5">Sub-total Diversos</td><td style="text-align:right">' + eur(totalDiversos()) + '</td></tr>';
+  c.innerHTML = h + '</tbody></table></div>';
 }
 function totalLivres(){ var t=0; livres.forEach(function(l){ t += num(l.p); }); return t; }
 function refreshHoras(){
@@ -711,10 +745,11 @@ function totalMO(){ return horasChapa() * valorHora(); }
 function hrs(n){ return (Math.round(n*100)/100).toFixed(2).replace('.',',') + ' h'; }
 function horasDe(v){ var vh = valorHoraPint(); return vh ? num(v)/vh : 0; }
 function calc(){
-  var z = totalZonas(), p = totalPecas(), mo = totalMO();
-  var siva = z + p + mo, iva = siva * IVA;
+  var z = totalZonas(), p = totalPecas(), dv = totalDiversos(), mo = totalMO();
+  var siva = z + p + dv + mo, iva = siva * IVA;
   $('tZonas').textContent = eur(z);
   $('tPecas').textContent = eur(p);
+  $('tDiv').textContent = eur(dv);
   $('tMo').textContent = eur(mo);
   $('moCalc').textContent = eur(mo);
   $('moDetalhe').textContent = horasChapa() ? ('(' + String($('fHoras').value).trim() + ' h × ' + eur(valorHora()) + '/h)') : '';
@@ -736,7 +771,7 @@ function onEstado(){
 
 /* ---------------- rascunho ---------------- */
 var CAMPOS = ['fUnidade','fData','fEstado','fMotivo','cNome','cTel','cEmail','cNif',
-              'vMarca','vModelo','vMat','vCor','vTipo','fPreco','fHoras','fVHora','fVHPint','fValidade','fObs'];
+              'vMarca','vModelo','vMat','vCor','vTipo','fPreco','fHoras','fVHora','fVHPint','fDiversos','fValidade','fObs'];
 function dados(){
   var d = {};
   CAMPOS.forEach(function(id){ var el = $(id); d[id] = el ? el.value : ''; });
@@ -765,7 +800,7 @@ function limpar(){
   $('fValidade').value = '30 dias';
   $('fEstado').value = ESTADOS[0].v;
   try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
-  renderDesenhos(); renderZonas(); renderPecas(); onEstado();
+  renderDesenhos(); renderZonas(); renderPecas(); renderDiversos(); onEstado();
   toast('Orçamento limpo.');
 }
 
@@ -788,7 +823,7 @@ function linhasZonas(){
     livres.forEach(function(l){
       if (!String(l.d||'').trim() && !num(l.p)) return;
       subL += num(l.p);
-      h += '<tr><td>MOP0</td><td>PINTURA | '+esc(l.d)+'</td><td>—</td>'
+      h += '<tr><td>MOP0</td><td>PINTURA | '+esc(l.d)+'</td><td>'+(l.a||'1')+' · '+ACCOES[l.a||'1']+'</td>'
          + '<td class="n">'+eur(num(l.p))+'</td><td class="n">'+hrs(horasDe(l.p))+'</td></tr>';
     });
     if (subL) h += '<tr class="sub"><td colspan="3">Sub-total MOP0</td><td class="n">'+eur(subL)+'</td><td></td></tr>';
@@ -829,15 +864,13 @@ function desenhoFolha(){
   var h = '';
   VISTAS.forEach(function(v){ var vd = DES.vistas[v.k]; if (vd) h += svgFolhaVista(v, vd); });
   if (!h) return '';
-  return '<h2 style="margin:1mm 0 2mm">Zonas marcadas na viatura</h2><div class="dsgrid">' + h + '</div>'
-    + '<div class="dsleg"><span>1 · Pintar</span><span>2 · Reparar danos / Pintar</span>'
-    + '<span>3 · Substituir peça / Pintar</span><span>4 · Polimento</span></div>';
+  return '<h2 style="margin:1mm 0 2mm">Zonas marcadas na viatura</h2><div class="dsgrid">' + h + '</div>';
 }
 function corpoFolha(){
   var d = dados();
   var u = UNIDADES[d.fUnidade] || UNIDADES['Colisão'];
-  var z = totalZonas(), p = totalPecas(), mo = totalMO();
-  var siva = z + p + mo, iva = siva * IVA;
+  var z = totalZonas(), p = totalPecas(), dv = totalDiversos(), mo = totalMO();
+  var siva = z + p + dv + mo, iva = siva * IVA;
   var moTxt = (horasChapa() && valorHora())
     ? ('Mão de obra — horas de chapa (' + esc(String(d.fHoras).trim()) + ' h × ' + eur(valorHora()) + '/h)')
     : 'Mão de obra — horas de chapa';
@@ -874,9 +907,22 @@ function corpoFolha(){
   h += desenhoFolha();
 
   if (pec) {
-    h += '<h2 style="margin-bottom:2mm">Componentes / Peças / Diversos</h2>'
+    h += '<h2 style="margin-bottom:2mm">Componentes / Peças</h2>'
       + '<table><thead><tr><th>Descritivo</th><th style="width:16mm;text-align:right">Qtd.</th><th style="width:24mm;text-align:right">Valor unit.</th><th style="width:26mm;text-align:right">Total</th></tr></thead>'
       + '<tbody>' + pec + '<tr class="sub"><td colspan="3">Sub-total Componentes / Peças</td><td class="n">' + eur(p) + '</td></tr></tbody></table>';
+  }
+
+  if (qtdDiversos()) {
+    var q = qtdDiversos(), dl = '';
+    DIVERSOS.forEach(function(x){
+      dl += '<tr><td>' + esc(x.cod) + '</td><td>' + esc(x.desc) + '</td><td class="n">' + q + ',00</td>'
+          + '<td class="n">UN</td><td class="n">' + eur(x.pu) + '</td><td class="n">' + eur(q*x.pu) + '</td></tr>';
+    });
+    h += '<h2 style="margin-bottom:2mm">Diversos</h2>'
+      + '<table><thead><tr><th style="width:16mm">Cód.</th><th>Designação</th><th style="width:14mm;text-align:right">Qtd.</th>'
+      + '<th style="width:12mm;text-align:right">Unid.</th><th style="width:22mm;text-align:right">Preço unit.</th>'
+      + '<th style="width:22mm;text-align:right">Total</th></tr></thead>'
+      + '<tbody>' + dl + '<tr class="sub"><td colspan="5">Sub-total Diversos</td><td class="n">' + eur(dv) + '</td></tr></tbody></table>';
   }
 
   if (String(d.fObs||'').trim()) {
@@ -890,6 +936,7 @@ function corpoFolha(){
     + '<tr><td>Pintura (MOP)</td><td class="n">' + eur(z) + '</td></tr>'
     + '<tr><td style="color:#555">Horas de pintura (' + eur(z) + ' ÷ ' + eur(valorHoraPint()) + '/h)</td><td class="n" style="color:#555">' + hrs(horasDe(z)) + '</td></tr>'
     + '<tr><td>Componentes / Peças</td><td class="n">' + eur(p) + '</td></tr>'
+    + (dv ? '<tr><td>Diversos</td><td class="n">' + eur(dv) + '</td></tr>' : '')
     + '<tr><td>' + moTxt + '</td><td class="n">' + eur(mo) + '</td></tr>'
     + '<tr><td>Total s/ IVA</td><td class="n">' + eur(siva) + '</td></tr>'
     + '<tr><td>IVA (23%)</td><td class="n">' + eur(iva) + '</td></tr>'
@@ -897,7 +944,7 @@ function corpoFolha(){
     + '</tbody></table>';
 
   h += '<div class="assin"><div>Assinatura do cliente</div><div>Pela DomusCar</div></div>';
-  h += '<div class="rodape">Acções: (1) Pintar · (2) Reparar danos / Pintar · (3) Substituir peça / Pintar · (4) Polimento.<br>'
+  h += '<div class="rodape">'
     + 'Orçamento válido por ' + esc(d.fValidade || '30 dias') + '. Valores em euros, IVA à taxa legal em vigor. '
     + 'Documento gerado pela Intranet DomusCar — módulo Orçamentos de Colisão.'
     + (currentUserName ? ' Elaborado por ' + esc(currentUserName) + '.' : '') + '</div>';
@@ -965,7 +1012,7 @@ function addIndex(row){
 function gravar(){
   var d = dados();
   if (!String(d.vMat).trim() || !String(d.fData).trim()) { toast('Falta a matrícula ou a data.', true); return; }
-  var z = totalZonas(), p = totalPecas(), mo = totalMO(), siva = z+p+mo, civa = siva*(1+IVA);
+  var z = totalZonas(), p = totalPecas(), mo = totalMO(), siva = z+p+totalDiversos()+mo, civa = siva*(1+IVA);
   var ag = new Date(), hh = ('0'+ag.getHours()).slice(-2) + ('0'+ag.getMinutes()).slice(-2);
   var nome = 'Orcamento_' + slug(d.vMat) + '_' + String(d.fData||'').replace(/-/g,'') + '_' + hh + '.html';
   var btn = $('btnSave'); btn.disabled = true; toast('A gravar no SharePoint...');
@@ -974,7 +1021,7 @@ function gravar(){
       data:d.fData, unidade:d.fUnidade, estado:d.fEstado, motivo:d.fMotivo,
       cliente:d.cNome, contacto:d.cTel, matricula:d.vMat, marca:d.vMarca, modelo:d.vModelo,
       zonas:Object.keys(zonas).length + livres.length, horas:d.fHoras, vhora:d.fVHora, mo:mo,
-      vhpint:d.fVHPint, horasPintura:horasDe(z),
+      vhpint:d.fVHPint, horasPintura:horasDe(z), diversos:qtdDiversos(),
       totalSiva:siva, totalCiva:civa,
       ficheiro:nome, webUrl:(res && res.webUrl) || '',
       criadoPor: currentUserName || currentUserEmail, criadoEm: new Date().toISOString()
