@@ -1306,11 +1306,23 @@
     /* ============================================
        SHAREPOINT CRUD
        ============================================ */
+    // Le TODAS as reservas, seguindo as paginas do Graph.
+    // A versao antiga pedia so as primeiras 500 e nunca ia buscar as seguintes:
+    // passadas as 500 a aplicacao recebia as mais ANTIGAS e deixava de ver as recentes.
+    function spFetchAllItems(url, acc) {
+        acc = acc || [];
+        return graphRequest(url).then(function(data) {
+            acc = acc.concat(data.value || []);
+            var next = data['@odata.nextLink'];
+            if (next && acc.length < 20000) return spFetchAllItems(next, acc);
+            return acc;
+        });
+    }
     function spLoadBookings() {
         if (!spSiteId || !spListId) return Promise.resolve([]);
-        return graphRequest('https://graph.microsoft.com/v1.0/sites/' + spSiteId + '/lists/' + spListId + '/items?$expand=fields&$top=500')
-            .then(function(data) {
-                return (data.value || []).map(function(item) {
+        return spFetchAllItems('https://graph.microsoft.com/v1.0/sites/' + spSiteId + '/lists/' + spListId + '/items?$expand=fields&$top=999')
+            .then(function(items) {
+                return (items || []).map(function(item) {
                     var f = item.fields;
                     var booking = {
                         id: f.BookingId || item.id,

@@ -217,7 +217,10 @@ function hm2min(s) {
 }
 function fmt(minutes) {
     if(minutes === null || minutes === undefined || minutes <= 0) return "0h 00m";
-    var h = Math.floor(minutes / 60), m = Math.round(minutes) % 60;
+    // Arredondar UMA vez, antes de separar horas e minutos. A versao antiga fazia
+    // floor nas horas e round nos minutos, e perdia uma hora inteira (419,6 -> 6h00).
+    var t = Math.round(minutes);
+    var h = Math.floor(t / 60), m = t % 60;
     return h + "h " + (m < 10 ? "0" : "") + m + "m";
 }
 function fmtTime(min) {
@@ -527,12 +530,32 @@ function analyze(name, smart2, ogData) {
     if(movMins.length < 2) return null;
 
     var entry = movMins[0], exit = movMins[movMins.length - 1];
-    var hasLunch = movMins.length === 4;
-    var lunchOut = movMins.length >= 3 ? movMins[1] : null;
-    var lunchIn = movMins.length >= 4 ? movMins[2] : null;
     var totalMin = exit - entry;
-    var lunchBreak = hasLunch ? (lunchIn - lunchOut) : 0;
-    var presence = hasLunch ? totalMin - lunchBreak : totalMin;
+
+    // As picagens alternam entrada/saida. A versao antiga so sabia lidar com
+    // exactamente 4: um dia com 6 picagens (almoco + um recado) era contado como
+    // presenca continua, sem alerta de almoco e com horas extras inventadas.
+    var pares = [], impar = (movMins.length % 2) !== 0;
+    for (var pi = 0; pi + 1 < movMins.length; pi += 2) pares.push([movMins[pi], movMins[pi + 1]]);
+    var presence = 0;
+    for (var pj = 0; pj < pares.length; pj++) presence += pares[pj][1] - pares[pj][0];
+
+    var pausas = [];
+    for (var pk = 1; pk < pares.length; pk++) {
+        pausas.push({ ini: pares[pk - 1][1], fim: pares[pk][0], min: pares[pk][0] - pares[pk - 1][1] });
+    }
+    // O almoco e' a maior pausa do dia; as restantes sao interrupcoes.
+    var lunchIdx = -1, lunchBreak = 0;
+    for (var pl = 0; pl < pausas.length; pl++) {
+        if (pausas[pl].min > lunchBreak) { lunchBreak = pausas[pl].min; lunchIdx = pl; }
+    }
+    var hasLunch = pausas.length > 0;
+    var lunchOut = hasLunch ? pausas[lunchIdx].ini : null;
+    var lunchIn  = hasLunch ? pausas[lunchIdx].fim : null;
+    var outrasPausas = pausas.filter(function(_, ix){ return ix !== lunchIdx; });
+    var totalOutrasPausas = 0;
+    for (var po = 0; po < outrasPausas.length; po++) totalOutrasPausas += outrasPausas[po].min;
+    if (!hasLunch) lunchBreak = 0;
 
     // OG intervals - merge overlaps
     var ogIntervals = [];
@@ -554,13 +577,7 @@ function analyze(name, smart2, ogData) {
 
     // Calculate ALL dead time gaps between 2Smart periods and merged OG intervals
     // Working periods: morning [entry→lunchOut], afternoon [lunchIn→exit] (or [entry→exit] if no lunch)
-    var workPeriods = [];
-    if(hasLunch) {
-        workPeriods.push([entry, lunchOut]);
-        workPeriods.push([lunchIn, exit]);
-    } else {
-        workPeriods.push([entry, exit]);
-    }
+    var workPeriods = pares.length ? pares.slice() : [[entry, exit]];
 
     var mortoGaps = []; // {from, to, min, label}
     var totalMorto = 0;
@@ -603,8 +620,12 @@ function analyze(name, smart2, ogData) {
     else alerts.push({type:"danger",cat:"Officegest",msg:"Tempo em intervenções: "+fmt(ogTotal)+" — faltam "+fmt(408-ogTotal)+" para as 6h 48m"});
     // 3. Almoço
     if(hasLunch) alerts.push({type:"ok",cat:"Almoço",msg:"Almoço registado: "+fmtTime(lunchOut)+"-"+fmtTime(lunchIn)+" ("+fmt(lunchBreak)+")"});
-    else if(movMins.length === 3) alerts.push({type:"warn",cat:"Almoço",msg:"Imparidade: 3 picagens ("+s2.movs+") — falta registo"});
-    else if(movMins.length === 2) alerts.push({type:"warn",cat:"Almoço",msg:"Sem picagem de almoço ("+s2.movs+")"});
+    else alerts.push({type:"warn",cat:"Almoço",msg:"Sem picagem de almoço ("+s2.movs+")"});
+    if(impar) alerts.push({type:"warn",cat:"Almoço",msg:"Imparidade: "+movMins.length+" picagens ("+s2.movs+") — falta um registo, a última não foi contada"});
+    if(outrasPausas.length) {
+        var det = outrasPausas.map(function(p){ return fmtTime(p.ini)+"-"+fmtTime(p.fim)+" ("+fmt(p.min)+")"; }).join(", ");
+        alerts.push({type:"warn",cat:"Interrupções",msg:outrasPausas.length+" interrupção(ões) além do almoço: "+det+" — total "+fmt(totalOutrasPausas)+", já descontado da presença"});
+    }
     // 4. Almoço > 1h
     if(hasLunch && lunchBreak > 60) alerts.push({type:"danger",cat:"AlmoçoDuracao",msg:"Almoço superior a 1h: "+fmt(lunchBreak)+" (excesso "+fmt(lunchBreak-60)+")"});
     // 5. Horas extras

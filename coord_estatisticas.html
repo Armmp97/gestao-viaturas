@@ -262,11 +262,21 @@ function applyDataset(ds){
 function toMin(txt){ var m=/(\d+)h\s*(\d{1,2})m/.exec(txt||""); return m?(+m[1])*60+(+m[2]):null; }
 
 function parsePago(obs, extrasMin){
+  // Ordem importa: "1h30" sao 90 minutos, mas "1,5 horas" sao tambem 90 minutos.
+  // A versao antiga convertia a virgula em ponto e lia "2,5 horas" como 5h00.
   if(obs){
-    var t=obs.toLowerCase().replace(/,/g,".");
-    var m=/(\d+)\s*h(?:oras?)?\s*(\d{1,2})(?!\d)/.exec(t);
+    var t=String(obs).toLowerCase(), m;
+    // "1h30", "1 h 30", "1:30" -> horas + minutos
+    m=/(\d+)\s*(?:h|:)\s*(\d{1,2})(?!\d)/.exec(t);
     if(m) return (+m[1])*60+(+m[2]);
-    m=/(\d+)\s*h(?:oras?)?(?![\d:])/.exec(t);
+    // "2,5 horas", "1.5h" -> horas decimais
+    m=/(\d+)[.,](\d+)\s*h(?:oras?)?\b/.exec(t);
+    if(m) return Math.round(parseFloat(m[1]+'.'+m[2])*60);
+    // "90 min", "45m"
+    m=/(\d+)\s*(?:min(?:utos?)?|m)\b/.exec(t);
+    if(m) return +m[1];
+    // "2 horas", "8h"
+    m=/(\d+)\s*h(?:oras?)?\b/.exec(t);
     if(m) return (+m[1])*60;
   }
   return Math.round(extrasMin/60)*60; // validado sem valor escrito -> hora mais próxima

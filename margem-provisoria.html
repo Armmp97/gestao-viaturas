@@ -159,6 +159,31 @@ function fmt(v){
 }
 function fp(v){ return (v*100).toFixed(2).replace('.',',')+' %'; }
 
+// Le um numero escrito em texto, em formato pt-PT ("1.234,56") ou en ("1234.56").
+// A versao antiga so trocava a primeira virgula por ponto e nunca removia o ponto
+// dos milhares, pelo que "1.234,56" era lido como 1,234 (mil vezes menor).
+function parseNumeroPT(txt) {
+  var s = String(txt).replace(/[^\d.,-]/g, '');
+  if (!s) return 0;
+  var neg = s.indexOf('-') === 0; if (neg) s = s.slice(1);
+  s = s.replace(/-/g, '');
+  var uc = s.lastIndexOf(','), up = s.lastIndexOf('.');
+  if (uc > -1 && up > -1) {
+    if (uc > up) s = s.replace(/\./g, '').replace(',', '.');   // 1.234,56
+    else s = s.replace(/,/g, '');                              // 1,234.56
+  } else if (uc > -1) {
+    var pc = s.split(',');
+    s = (pc.length === 2 && pc[1].length !== 3) ? s.replace(',', '.') : s.replace(/,/g, '');
+  } else if (up > -1) {
+    var pp = s.split('.');
+    if (pp.length > 2) s = s.replace(/\./g, '');                       // 1.234.567
+    else if (pp[1] && pp[1].length === 3 && pp[0].length <= 3) s = s.replace(/\./g, ''); // 1.234 -> milhares
+  }
+  var n = parseFloat(s);
+  if (isNaN(n)) return 0;
+  return neg ? -n : n;
+}
+
 // ====== ROBUST CELL READER ======
 function getCellValue(ws, col, row) {
   const ref = col + row;
@@ -168,10 +193,7 @@ function getCellValue(ws, col, row) {
   // If it has a value, use it
   if (cell.v !== undefined && cell.v !== null) {
     if (typeof cell.v === 'number') return cell.v;
-    if (typeof cell.v === 'string') {
-      const n = parseFloat(cell.v.replace(/[^\d.,-]/g, '').replace(',', '.'));
-      return isNaN(n) ? 0 : n;
-    }
+    if (typeof cell.v === 'string') return parseNumeroPT(cell.v);
   }
 
   // If it's a formula without cached value, try to parse simple formulas
@@ -301,8 +323,12 @@ function parseSection(ws, cfg, range) {
   ].filter(x => x.v !== 0);
 
   // Targets
+  // As vendas necessarias tem de sair da MESMA formula com que a margem e' medida.
+  // Com a formula 'rappel' a margem e' (V-CF-CV)/(V-Rappel), logo V = (CF+CV-p*Rappel)/(1-p).
   const tgts = [0.21, 0.28, 0.35].map(p => {
-    const ts = (cf + cv) / (1 - p);
+    const ts = (cfg.marginFormula === 'rappel')
+      ? (cf + cv - p * rappel) / (1 - p)
+      : (cf + cv) / (1 - p);
     return {pl:Math.round(p*100)+'%', ts, df:ts-vendasTotal, tm:ts-cf-cv, hit:mpct>=p};
   });
 

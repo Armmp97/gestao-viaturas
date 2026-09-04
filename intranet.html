@@ -3120,11 +3120,24 @@
         });
     }
 
+    // Segue as paginas do Graph. A versao antiga trazia so os 50 ficheiros mais
+    // recentes, pelo que apagar um documento mais antigo dizia "sucesso" sem apagar
+    // nada, e as estatisticas de picagens perdiam dias silenciosamente.
+    function spListaTodos(url, acc) {
+        acc = acc || [];
+        return graphRequest(url).then(function(data) {
+            acc = acc.concat(data.value || []);
+            var next = data['@odata.nextLink'];
+            if (next && acc.length < 5000) return spListaTodos(next, acc);
+            return acc;
+        });
+    }
     function listSharePointFiles(folderKey) {
         var driveId = getDriveId();
         if (!driveId) return Promise.reject('SharePoint not initialized');
         var folderPath = SP_CONFIG.folders[folderKey] || SP_CONFIG.folders.geral;
-        return graphRequest('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + ':/children?$orderby=lastModifiedDateTime desc&$top=50');
+        return spListaTodos('https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + ':/children?$orderby=lastModifiedDateTime desc&$top=200')
+            .then(function(all) { return { value: all }; });
     }
 
     function downloadSharePointFile(fileId) {
@@ -3737,7 +3750,7 @@
         return listSharePointFiles('avaliacoes_merito').then(function(res) {
             var items = (res && res.value) || [];
             var hit = items.filter(function(f) { return f.name === fileName; })[0];
-            if (!hit) { console.warn('[AM] ficheiro não encontrado no SP:', fileName); return true; }
+            if (!hit) { console.warn('[AM] ficheiro não encontrado no SP:', fileName); throw new Error('Documento não encontrado no SharePoint: ' + fileName); }
             return deleteSharePointFile(hit.id);
         });
     };
@@ -3781,7 +3794,7 @@
         return listSharePointFiles('guiao_entrevistas').then(function(res) {
             var items = (res && res.value) || [];
             var hit = items.filter(function(f) { return f.name === fileName; })[0];
-            if (!hit) { console.warn('[GE] ficheiro não encontrado no SP:', fileName); return true; }
+            if (!hit) { console.warn('[GE] ficheiro não encontrado no SP:', fileName); throw new Error('Documento não encontrado no SharePoint: ' + fileName); }
             return deleteSharePointFile(hit.id);
         });
     };
@@ -3831,7 +3844,7 @@
         return listSharePointFiles('pareceres_merito').then(function(res) {
             var items = (res && res.value) || [];
             var hit = items.filter(function(f) { return f.name === fileName; })[0];
-            if (!hit) { console.warn('[PM] ficheiro não encontrado no SP:', fileName); return true; }
+            if (!hit) { console.warn('[PM] ficheiro não encontrado no SP:', fileName); throw new Error('Documento não encontrado no SharePoint: ' + fileName); }
             return deleteSharePointFile(hit.id);
         });
     };
