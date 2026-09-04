@@ -782,7 +782,7 @@ function spSave(fileName, html){
     }
     window.addEventListener('message', on);
     window.parent.postMessage({ type:'saveToSharePoint', correlationId:cid, folderKey:FOLDER_KEY,
-      fileName:fileName, content:html, contentType:'text/html' }, '*');
+      fileName:fileName, fileContent:html, contentType:'text/html' }, '*');
   });
 }
 function addIndex(row){

@@ -3270,7 +3270,7 @@
         var data = event.data;
         var cid = data.correlationId || null;
         // Convert base64 data URL to ArrayBuffer if needed
-        var content = data.fileContent;
+        var content = (data.fileContent !== undefined) ? data.fileContent : data.content;
         if (typeof content === 'string' && content.indexOf('data:') === 0) {
             var base64 = content.split(',')[1];
             var binary = atob(base64);
@@ -3626,7 +3626,7 @@
     // ==== Termos de Responsabilidade (termos-responsabilidade.html) ====
     // Indice do historico em Dashboard_State/termos_index.json
     window.termosLoadIndex = function() {
-        return loadDashboardFromSP('termos_index.json').then(function(data) {
+        return loadIndexFromSP('termos_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3653,7 +3653,7 @@
     };
 
     window.acfLoadIndex = function() {
-        return loadDashboardFromSP('auditorias_carrinhos_index.json').then(function(data) {
+        return loadIndexFromSP('auditorias_carrinhos_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3687,7 +3687,7 @@
     };
     // --- Formulário de Identificação de Avaria (Serviço de Assistência) ---
     window.avariaLoadIndex = function() {
-        return loadDashboardFromSP('avarias_index.json').then(function(data) {
+        return loadIndexFromSP('avarias_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3701,7 +3701,7 @@
 
     // --- Orçamentos de Colisão (orcamentos-colisao.html) ---
     window.orcLoadIndex = function() {
-        return loadDashboardFromSP('orcamentos_colisao_index.json').then(function(data) {
+        return loadIndexFromSP('orcamentos_colisao_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3714,7 +3714,7 @@
     };
 
     window.amLoadIndex = function() {
-        return loadDashboardFromSP('avaliacoes_merito_index.json').then(function(data) {
+        return loadIndexFromSP('avaliacoes_merito_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3754,7 +3754,7 @@
     };
     window.geLoadIndex = function() {
         if (!_geAdmin()) return Promise.reject(new Error('Sem permissão (apenas administradores)'));
-        return loadDashboardFromSP('guiao_entrevistas_index.json').then(function(data) {
+        return loadIndexFromSP('guiao_entrevistas_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3800,7 +3800,7 @@
         if (role !== 'admin' && role !== 'coordenador') {
             return Promise.reject(new Error('Sem permissão (apenas administradores e coordenadores)'));
         }
-        return loadDashboardFromSP('pareceres_merito_index.json').then(function(data) {
+        return loadIndexFromSP('pareceres_merito_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3842,7 +3842,7 @@
     window.amaLoadIndex = function() {
         var role = currentUserPermissions ? currentUserPermissions.role : null;
         if (role !== 'admin') return Promise.reject(new Error('Sem permissão (apenas administradores)'));
-        return loadDashboardFromSP('avaliacoes_merito_admin_index.json').then(function(data) {
+        return loadIndexFromSP('avaliacoes_merito_admin_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
     };
@@ -3890,7 +3890,7 @@
     // ==== Estatísticas Picagens (coord_estatisticas.html) ====
     // Dataset agregado guardado em Dashboard_State/estatisticas_picagens.json
     window.statsLoadDataset = function() {
-        return loadDashboardFromSP('estatisticas_picagens.json');
+        return loadIndexFromSP('estatisticas_picagens.json');
     };
     window.statsSaveDataset = function(data) {
         // Escrita restrita a administradores (o botão "Atualizar dias em falta" é admin-only)
@@ -3988,7 +3988,6 @@
     let currentModule = null;
     let desktopSidebarVisible = true;
 
-    function isMobile() { return window.innerWidth <= 768; }
 
     function toggleSidebar() {
         var sidebar = document.getElementById('sidebar');
@@ -4516,21 +4515,25 @@
     // === SharePoint Dashboard State Persistence ===
     function saveDashboardToSP(fileName, data) {
         var driveId = getDriveId();
-        if (!driveId) { console.warn('[saveDashboardToSP] Sem driveId, a ignorar save para:', fileName); return; }
+        if (!driveId) { console.warn('[saveDashboardToSP] Sem driveId, a ignorar save para:', fileName); return Promise.reject(new Error('SharePoint nao inicializado')); }
         var json = JSON.stringify(data);
         var blob = new Blob([json], { type: 'application/json' });
         var folderPath = SP_CONFIG.folders.dashboard_state;
         var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
-        getGraphToken().then(function(token) {
+        var p = getGraphToken().then(function(token) {
             return fetch(url, {
                 method: 'PUT',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                 body: blob
             });
         }).then(function(resp) {
-            if (resp.ok) console.log('Dashboard state saved to SP:', fileName);
-            else console.warn('SP save failed:', resp.status);
-        }).catch(function(e) { console.warn('saveDashboardToSP error:', e); });
+            if (!resp.ok) throw new Error('Falha ao gravar ' + fileName + ' (HTTP ' + resp.status + ')');
+            console.log('Dashboard state saved to SP:', fileName);
+            return true;
+        });
+        // Quem chama sem tratar o erro (dashboards) nao deve gerar unhandled rejection.
+        p.catch(function(e) { console.warn('saveDashboardToSP error:', e && e.message ? e.message : e); });
+        return p;
     }
 
     function getGraphReadToken() {
@@ -4574,6 +4577,25 @@
         }).catch(function(e) {
             console.error('[SP-Load] COMPLETE FAILURE for', fileName, ':', e.errorCode || e.message || e);
             return null;
+        });
+    }
+
+    // Leitura de INDICES. Ao contrario de loadDashboardFromSP, nao devolve null quando a
+    // leitura falha: so o 404 (ficheiro ainda nao existe) e' um indice vazio legitimo.
+    // Qualquer outro erro rejeita, para que um save nunca escreva por cima de um indice
+    // que nao chegou a ser lido (perda total de historico).
+    function loadIndexFromSP(fileName) {
+        var driveId = getDriveId();
+        var folderPath = SP_CONFIG.folders.dashboard_state;
+        var url = 'https://graph.microsoft.com/v1.0/drives/' + driveId + '/root:/' + folderPath + '/' + encodeURIComponent(fileName) + ':/content';
+        return getGraphToken().catch(function() {
+            return getGraphReadToken();
+        }).then(function(token) {
+            return fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        }).then(function(resp) {
+            if (resp.status === 404) return null;              // ainda nao existe -> indice vazio
+            if (!resp.ok) throw new Error('Nao foi possivel ler ' + fileName + ' (HTTP ' + resp.status + '). Tente novamente.');
+            return resp.json();
         });
     }
 
