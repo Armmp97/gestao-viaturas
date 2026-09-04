@@ -1303,6 +1303,15 @@
             });
     }
 
+    // Escapa texto antes de o meter em HTML. Sem isto, o nome de um cliente escrito
+    // com marcacao executava codigo no browser de todos os colegas que abrissem o
+    // calendario — na mesma origem onde estao guardados os tokens da Microsoft.
+    function escHtml(v) {
+        return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function(c) {
+            return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+        });
+    }
+
     /* ============================================
        SHAREPOINT CRUD
        ============================================ */
@@ -1842,7 +1851,7 @@
                 locHtml += '<option value="' + l + '"' + (l === loc ? ' selected' : '') + '>' + l + '</option>';
             });
             locHtml += '</select>';
-            tr.innerHTML = '<td class="matricula-cell">' + v.matricula + '</td><td>' + v.modelo + '</td><td>' + locHtml + '</td><td>' + statusHtml + '</td><td>' +
+            tr.innerHTML = '<td class="matricula-cell">' + escHtml(v.matricula) + '</td><td>' + escHtml(v.modelo) + '</td><td>' + locHtml + '</td><td>' + statusHtml + '</td><td>' +
                 (!activeBooking ? '<button class="btn btn-primary btn-sm" onclick="startBookingForVehicle(\'' + v.matricula + '\')">Agendar</button>' : '') +
                 (activeBooking && activeBooking.estado === 'Agendado' ? '<button class="btn btn-success btn-sm" onclick="startPickupFromBooking(\'' + activeBooking.id + '\')">Levantamento</button>' : '') +
                 (activeBooking && activeBooking.estado === 'Levantado' ? '<button class="btn btn-warning btn-sm" onclick="startReturnFromBooking(\'' + activeBooking.id + '\')">Devolução</button>' : '') +
@@ -1873,7 +1882,7 @@
             div.className = 'vehicle-option' + (v.matricula === selectedMatricula ? ' selected' : '');
             var vLoc = getVehicleLocation(v.matricula);
             var vLocClass = vLoc === 'Lisboa' ? 'lisboa' : 'cacem';
-            div.innerHTML = '<span class="v-matricula">' + v.matricula + '</span><span class="v-model">' + v.modelo + '</span><span class="location-badge ' + vLocClass + '" style="font-size:10px;padding:1px 8px;">' + vLoc + '</span><span class="v-status"></span>';
+            div.innerHTML = '<span class="v-matricula">' + escHtml(v.matricula) + '</span><span class="v-model">' + escHtml(v.modelo) + '</span><span class="location-badge ' + vLocClass + '" style="font-size:10px;padding:1px 8px;">' + escHtml(vLoc) + '</span><span class="v-status"></span>';
             div.onclick = function() {
                 container.querySelectorAll('.vehicle-option').forEach(el => el.classList.remove('selected'));
                 div.classList.add('selected');
@@ -2030,8 +2039,8 @@
             dayBookings.forEach(b => {
                 const card = document.createElement('div');
                 card.className = 'booking-card';
-                card.innerHTML = '<div><span class="booking-status ' + b.estado.toLowerCase() + '">' + b.estado + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span></div>' +
-                    '<div class="booking-info"><strong>' + b.matricula + ' — ' + b.nomeCliente + '</strong><span>' + (b.marcaModelo || '') + ' | ' + b.tipoServico + '</span><span>Entrada: ' + formatDate(b.dataEntrada) + (b.dataSaida ? ' | Saída: ' + formatDate(b.dataSaida) : '') + '</span></div>' +
+                card.innerHTML = '<div><span class="booking-status ' + escHtml(String(b.estado).toLowerCase()) + '">' + escHtml(b.estado) + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + escHtml(b.localizacao) + '</span></div>' +
+                    '<div class="booking-info"><strong>' + escHtml(b.matricula) + ' — ' + escHtml(b.nomeCliente) + '</strong><span>' + escHtmlescHtml(b.marcaModelo || '') + ' | ' + escHtml(b.tipoServico) + '</span><span>Entrada: ' + formatDate(b.dataEntrada) + (b.dataSaida ? ' | Saída: ' + formatDate(b.dataSaida) : '') + '</span></div>' +
                     '<div class="booking-actions">' +
                     (b.estado === 'Agendado' ? '<button class="btn btn-success btn-sm" onclick="event.stopPropagation(); startPickupFromBooking(\'' + b.id + '\')">&#128663; Levantamento</button><button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); editBooking(\'' + b.id + '\')">&#9998; Editar</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); cancelBooking(\'' + b.id + '\')">Cancelar</button>' : '') +
                     (b.estado === 'Levantado' ? '<button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); startReturnFromBooking(\'' + b.id + '\')">&#128230; Devolução</button><button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); extendBooking(\'' + b.id + '\')">&#128197; Prolongar</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); cancelBooking(\'' + b.id + '\')">Cancelar</button>' : '') +
@@ -2235,9 +2244,9 @@
         if (!b) return;
         closeDayPanel();
         const body = document.getElementById('bookingModalBody');
-        body.innerHTML = '<div style="margin-bottom:16px;"><span class="status-badge ' + b.estado.toLowerCase() + '">' + b.estado + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span></div>' +
-            '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128100; Cliente</div><div class="detail-grid"><div class="detail-item"><label>Nome</label><span>' + b.nomeCliente + '</span></div><div class="detail-item"><label>Telefone</label><span>' + (b.telefone || '—') + '</span></div><div class="detail-item"><label>Email</label><span>' + (b.email || '—') + '</span></div></div></div>' +
-            '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128663; Viatura</div><div class="detail-grid"><div class="detail-item"><label>Matrícula</label><span><strong>' + b.matricula + '</strong></span></div><div class="detail-item"><label>Marca/Modelo</label><span>' + (b.marcaModelo || '—') + '</span></div><div class="detail-item"><label>Tipo Serviço</label><span>' + b.tipoServico + '</span></div><div class="detail-item"><label>Data Levantamento</label><span>' + formatDate(b.dataEntrada) + '</span></div><div class="detail-item"><label>Data Prev. Devolução</label><span>' + (b.dataSaida ? formatDate(b.dataSaida) : '—') + '</span></div></div></div>' +
+        body.innerHTML = '<div style="margin-bottom:16px;"><span class="status-badge ' + escHtml(String(b.estado).toLowerCase()) + '">' + escHtml(b.estado) + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + escHtml(b.localizacao) + '</span></div>' +
+            '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128100; Cliente</div><div class="detail-grid"><div class="detail-item"><label>Nome</label><span>' + escHtml(b.nomeCliente) + '</span></div><div class="detail-item"><label>Telefone</label><span>' + escHtml(b.telefone || '—') + '</span></div><div class="detail-item"><label>Email</label><span>' + (b.email || '—') + '</span></div></div></div>' +
+            '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128663; Viatura</div><div class="detail-grid"><div class="detail-item"><label>Matrícula</label><span><strong>' + escHtml(b.matricula) + '</strong></span></div><div class="detail-item"><label>Marca/Modelo</label><span>' + escHtml(b.marcaModelo || '—') + '</span></div><div class="detail-item"><label>Tipo Serviço</label><span>' + escHtml(b.tipoServico) + '</span></div><div class="detail-item"><label>Data Levantamento</label><span>' + formatDate(b.dataEntrada) + '</span></div><div class="detail-item"><label>Data Prev. Devolução</label><span>' + (b.dataSaida ? formatDate(b.dataSaida) : '—') + '</span></div></div></div>' +
             (b.levantamento ? '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128663; Levantamento <span style="font-weight:400;font-size:12px;color:var(--gray-600);">Nº ' + (b.levantamento.id || '—') + '</span></div><div class="detail-grid"><div class="detail-item"><label>Kms</label><span>' + b.levantamento.kms + '</span></div><div class="detail-item"><label>Combustível</label><span>' + b.levantamento.combustivel + '%</span></div><div class="detail-item"><label>Data/Hora</label><span>' + formatDateTime(b.levantamento.dataHora) + '</span></div></div></div>' : '') +
             (b.devolucao ? '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128230; Devolução <span style="font-weight:400;font-size:12px;color:var(--gray-600);">Nº ' + (b.devolucao.id || '—') + '</span></div><div class="detail-grid"><div class="detail-item"><label>Kms</label><span>' + b.devolucao.kms + '</span></div><div class="detail-item"><label>Combustível</label><span>' + b.devolucao.combustivel + '%</span></div><div class="detail-item"><label>Valor</label><span>' + (b.devolucao.valor ? b.devolucao.valor + ' €' : '—') + '</span></div><div class="detail-item"><label>Data/Hora</label><span>' + formatDateTime(b.devolucao.dataHora) + '</span></div></div></div>' : '') +
             '<div class="card" style="box-shadow:none;border:1px solid var(--gray-200);"><div class="card-title">&#128100; Responsáveis (auditoria)</div><div class="detail-grid">' +
@@ -2280,9 +2289,9 @@
             var lev = b.levantamento || {};
             var resp = (lev.registadoPor && lev.registadoPor.nome) || (b.criadoPor && b.criadoPor.nome) || '—';
             return '<tr>' +
-                '<td style="padding:6px 8px;border-bottom:1px solid #eee;font-weight:600;">' + b.matricula + '</td>' +
-                '<td style="padding:6px 8px;border-bottom:1px solid #eee;">' + (b.nomeCliente || '—') + '</td>' +
-                '<td style="padding:6px 8px;border-bottom:1px solid #eee;">' + b.localizacao + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;font-weight:600;">' + escHtml(b.matricula) + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;">' + escHtml(b.nomeCliente || '—') + '</td>' +
+                '<td style="padding:6px 8px;border-bottom:1px solid #eee;">' + escHtml(b.localizacao) + '</td>' +
                 '<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#c0392b;font-weight:600;">' + formatDate(saida) + ' (' + dias + 'd)</td>' +
                 '<td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:11px;color:#666;">' + resp + '</td>' +
                 '<td style="padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap;"><button class="btn btn-warning btn-sm" onclick="var m=document.getElementById(\'overdueModal\');if(m)m.remove();startReturnFromBooking(\'' + b.id + '\')">Devolução</button> <button class="btn btn-outline btn-sm" onclick="var m=document.getElementById(\'overdueModal\');if(m)m.remove();extendBooking(\'' + b.id + '\')">Prolongar</button></td>' +
@@ -2392,10 +2401,10 @@
         document.getElementById('pickupForm').style.display = 'block';
         document.getElementById('pk_bookingId').value = b.id;
         document.getElementById('pickupBookingSummary').innerHTML =
-            '<div class="detail-item"><label>Cliente</label><span><strong>' + b.nomeCliente + '</strong></span></div>' +
-            '<div class="detail-item"><label>Matrícula</label><span><strong>' + b.matricula + '</strong></span></div>' +
-            '<div class="detail-item"><label>Marca/Modelo</label><span>' + (b.marcaModelo || '—') + '</span></div>' +
-            '<div class="detail-item"><label>Tipo Serviço</label><span>' + b.tipoServico + '</span></div>' +
+            '<div class="detail-item"><label>Cliente</label><span><strong>' + escHtml(b.nomeCliente) + '</strong></span></div>' +
+            '<div class="detail-item"><label>Matrícula</label><span><strong>' + escHtml(b.matricula) + '</strong></span></div>' +
+            '<div class="detail-item"><label>Marca/Modelo</label><span>' + escHtml(b.marcaModelo || '—') + '</span></div>' +
+            '<div class="detail-item"><label>Tipo Serviço</label><span>' + escHtml(b.tipoServico) + '</span></div>' +
             '<div class="detail-item"><label>Localização</label><span>' +
                 '<select id="pk_localizacao" style="padding:4px 8px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:13px;font-weight:600;">' +
                     '<option value="Colisão"' + (b.localizacao === 'Colisão' ? ' selected' : '') + '>Colisão</option>' +
@@ -2557,7 +2566,7 @@
                 el.classList.add('unavailable');
                 var _saidaServ = emServico.dataSaida || emServico.dataEntrada;
                 var _atraso = _saidaServ && _saidaServ < today;
-                statusEl.innerHTML = '<span style="color:var(--danger);font-weight:600;">Indisponível — em serviço, devolução pendente (' + emServico.nomeCliente + (_atraso ? ', PRAZO ULTRAPASSADO desde ' + formatDate(_saidaServ) : '') + ')</span>';
+                statusEl.innerHTML = '<span style="color:var(--danger);font-weight:600;">Indisponível — em serviço, devolução pendente (' + escHtml(emServico.nomeCliente) + (_atraso ? ', PRAZO ULTRAPASSADO desde ' + formatDate(_saidaServ) : '') + ')</span>';
                 return;
             }
             // Verificar conflito (viatura indisponível à data)
@@ -2570,7 +2579,7 @@
             if (conflict) {
                 el.classList.add('unavailable');
                 var conflictEnd = conflict.dataSaida || conflict.dataEntrada;
-                statusEl.innerHTML = '<span style="color:var(--danger);">Indisponível (' + formatDate(conflict.dataEntrada) + ' a ' + formatDate(conflictEnd) + ' — ' + conflict.nomeCliente + ')</span>';
+                statusEl.innerHTML = '<span style="color:var(--danger);">Indisponível (' + formatDate(conflict.dataEntrada) + ' a ' + formatDate(conflictEnd) + ' — ' + escHtml(conflict.nomeCliente) + ')</span>';
                 return;
             }
             el.classList.remove('unavailable');
@@ -2640,11 +2649,11 @@
         var locAddr = LOCATION_ADDRESS[b.localizacao] || '';
         var printWin = window.open('', '_blank');
         if (!printWin) { showToast('Popup bloqueado pelo browser. Permita popups para imprimir. Pode reimprimir no Histórico.', 'error'); return; }
-        printWin.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Levantamento - ' + b.matricula + '</title><style>');
+        printWin.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Levantamento - ' + escHtml(b.matricula) + '</title><style>');
         printWin.document.write('body{font-family:"Segoe UI",sans-serif;padding:15px 25px;color:#333;font-size:12px;} h1{font-size:17px;text-align:center;margin-bottom:2px;margin-top:0;} .subtitle{text-align:center;color:#666;margin-bottom:10px;font-size:11px;} .section{margin-bottom:8px;} .section-title{font-size:13px;font-weight:700;border-bottom:2px solid #333;padding-bottom:2px;margin-bottom:6px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;} .field{margin-bottom:2px;} .field label{font-size:10px;color:#666;display:block;margin-bottom:0;} .field span{font-size:11px;font-weight:500;} .conditions{font-size:8.5px;line-height:1.35;padding:6px 8px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;margin-bottom:6px;} .conditions p{margin-bottom:2px;margin-top:0;} .signatures{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:10px;} .sig-block{text-align:center;} .sig-line{border-top:1px solid #333;margin-top:24px;padding-top:4px;font-size:11px;} .decl{font-size:10.6px;line-height:1.4;text-align:justify;} .sig-label{font-size:9px;color:#666;margin-top:2px;} .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:6px;} .logo-text span.b{font-size:20px;font-weight:800;} .logo-text span.l{font-size:20px;font-weight:300;color:#999;} .header-right{text-align:right;font-size:10px;color:#666;} @media print{body{padding:10px 15px;font-size:11px;} @page{margin:8mm;}}');
         printWin.document.write('</style></head><body>');
         var logoHtml = logoBase64 ? '<img src="' + logoBase64 + '" style="height:40px;">' : '<img src="' + getLogoUrl() + '" style="height:40px;" onerror="this.outerHTML=\'<div style=font-size:24px;font-weight:800>DOMUS<span style=font-weight:300;color:#999>car</span></div>\'">';
-        printWin.document.write('<div class="header">' + logoHtml + '<div class="header-right"><strong>' + b.localizacao + '</strong><br>' + locAddr + '</div></div>');
+        printWin.document.write('<div class="header">' + logoHtml + '<div class="header-right"><strong>' + escHtml(b.localizacao) + '</strong><br>' + locAddr + '</div></div>');
         var _isFidelidade = (lev.condicoesTipo === 'fidelidade');
         var _blank = function(w) { return '<span style="display:inline-block;border-bottom:1px solid #333;min-width:' + (w || 60) + 'px;">&nbsp;</span>'; };
         if (_isFidelidade) {
@@ -2653,10 +2662,10 @@
             var _tipoDoc = lev.tipoDocId || 'documento de identificação';
             var _val = lev.validadeDocId ? formatDate(lev.validadeDocId) : _blank(70);
             var f = lev.fidelidade || {};
-            var _fv = function(val, w) { return val ? '<strong>' + val + '</strong>' : _blank(w); };
+            var _fv = function(val, w) { return val ? '<strong>' + escHtml(val) + '</strong>' : _blank(w); };
             var _fvDate = function(val, w) { return val ? '<strong>' + formatDate(val) + '</strong>' : _blank(w); };
             var dcl = '<div class="decl">';
-            dcl += '<p style="margin:0 0 3.5px;">Eu, <strong>' + (lev.nomeCompleto || _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId || _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif || _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + b.localizacao + '</strong> em nome da Companhia de Seguros ' + _fv(f.companhiaSeguros, 130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo || _blank(130)) + '</strong>, com a matrícula nº <strong>' + b.matricula + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _fv(f.matriculaCliente, 90) + ', durante o período que durar a reparação decorrente do acidente de viação e até à entrega da minha viatura reparada em ' + _fvDate(f.dataReparacao, 70) + '.</p>';
+            dcl += '<p style="margin:0 0 3.5px;">Eu, <strong>' + (lev.nomeCompleto ? escHtml(lev.nomeCompleto) : _blank(160)) + '</strong> abaixo assinado, portador do ' + _tipoDoc + ' nº <strong>' + (lev.numDocId ? escHtml(lev.numDocId) : _blank(90)) + '</strong>, válido até ' + _val + ', com o nº de contribuinte <strong>' + (lev.nif ? escHtml(lev.nif) : _blank(80)) + '</strong>, declaro que me foi cedido a título de empréstimo pela oficina <strong>Walkingarage, Lda – ' + escHtml(b.localizacao) + '</strong> em nome da Companhia de Seguros ' + _fv(f.companhiaSeguros, 130) + ', o veículo com a marca/modelo <strong>' + (b.marcaModelo ? escHtml(b.marcaModelo) : _blank(130)) + '</strong>, com a matrícula nº <strong>' + escHtml(b.matricula) + '</strong>, como acto de cortesia da oficina e com o único fim de substituir temporariamente a minha viatura com a matrícula ' + _fv(f.matriculaCliente, 90) + ', durante o período que durar a reparação decorrente do acidente de viação e até à entrega da minha viatura reparada em ' + _fvDate(f.dataReparacao, 70) + '.</p>';
             dcl += '<p style="margin:0 0 3.5px;">Tomei conhecimento que o veículo acima descrito tem um seguro com as coberturas de responsabilidade civil, choque, colisão, capotamento e furto ou roubo e extensão territorial (carta verde), aplicando-se às garantias de danos próprios uma franquia no valor de ' + _fv(f.franquiaDanosProprios, 70) + ' euros.</p>';
             dcl += '<p style="margin:0 0 2.5px;font-weight:700;">Declaro que tomei conhecimento e me obrigo aos seguintes procedimentos:</p>';
             dcl += '<p style="margin:0 0 2px;font-style:italic;">Em caso de acidente com o veículo de cortesia:</p>';
@@ -2687,26 +2696,26 @@
         printWin.document.write('<h1>Contrato de Cedência de Viatura</h1>');
         printWin.document.write('<div class="subtitle">Documento de Levantamento | Nº <strong>' + (lev.id || '—') + '</strong> | ' + formatDateTime(lev.dataHora) + '</div>');
         printWin.document.write('<div class="section"><div class="section-title">Dados do Cessionário</div><div class="grid">');
-        printWin.document.write('<div class="field"><label>Nome Completo</label><span>' + lev.nomeCompleto + '</span></div>');
-        printWin.document.write('<div class="field"><label>NIF</label><span>' + (lev.nif || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Nome Completo</label><span>' + escHtml(lev.nomeCompleto) + '</span></div>');
+        printWin.document.write('<div class="field"><label>NIF</label><span>' + escHtml(lev.nif || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Morada</label><span>' + lev.morada + '</span></div>');
         printWin.document.write('<div class="field"><label>Nº Carta de Condução</label><span>' + (lev.numCarta || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Tipo de Documento de Identificação</label><span>' + (lev.tipoDocId || '—') + '</span></div>');
-        printWin.document.write('<div class="field"><label>Nº do Documento</label><span>' + (lev.numDocId || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Nº do Documento</label><span>' + escHtml(lev.numDocId || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Validade do Documento</label><span>' + (lev.validadeDocId ? formatDate(lev.validadeDocId) : '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Código Postal</label><span>' + lev.codigoPostal + '</span></div>');
         printWin.document.write('<div class="field"><label>Localidade</label><span>' + lev.localidade + '</span></div>');
         printWin.document.write('</div></div>');
         printWin.document.write('<div class="section"><div class="section-title">Dados da Viatura</div><div class="grid">');
-        printWin.document.write('<div class="field"><label>Matrícula</label><span><strong>' + b.matricula + '</strong></span></div>');
-        printWin.document.write('<div class="field"><label>Marca/Modelo</label><span>' + (b.marcaModelo || '—') + '</span></div>');
-        printWin.document.write('<div class="field"><label>Tipo de Serviço</label><span>' + b.tipoServico + '</span></div>');
+        printWin.document.write('<div class="field"><label>Matrícula</label><span><strong>' + escHtml(b.matricula) + '</strong></span></div>');
+        printWin.document.write('<div class="field"><label>Marca/Modelo</label><span>' + escHtml(b.marcaModelo || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Tipo de Serviço</label><span>' + escHtml(b.tipoServico) + '</span></div>');
         printWin.document.write('<div class="field"><label>Quilómetros</label><span>' + lev.kms + ' km</span></div>');
         printWin.document.write('<div class="field"><label>Combustível</label><span>' + lev.combustivel + '%</span></div>');
         printWin.document.write('<div class="field"><label>Período</label><span>' + formatDate(b.dataEntrada) + ' a ' + formatDate(b.dataSaida) + '</span></div>');
         printWin.document.write('</div>');
         if (lev.danos) printWin.document.write('<div class="field" style="margin-top:6px;"><label>Descrição danos atuais</label><span>' + lev.danos + '</span></div>');
-        if (lev.observacoes) printWin.document.write('<div class="field"><label>Observações</label><span>' + lev.observacoes + '</span></div>');
+        if (lev.observacoes) printWin.document.write('<div class="field"><label>Observações</label><span>' + escHtml(lev.observacoes) + '</span></div>');
         printWin.document.write('</div>');
         printWin.document.write('<div class="section"><div class="section-title">Condições Gerais de Cedência</div><div class="conditions">');
         printWin.document.write('<p>O Utilizador compromete-se:</p>');
@@ -2725,7 +2734,7 @@
         printWin.document.write('</div></div>');
         }
         printWin.document.write('<div class="signatures">');
-        printWin.document.write('<div class="sig-block"><div class="sig-line">O Cessionário (Cliente)</div><div class="sig-label">' + lev.nomeCompleto + '<br>NIF: ' + (lev.nif || '—') + '</div></div>');
+        printWin.document.write('<div class="sig-block"><div class="sig-line">O Cessionário (Cliente)</div><div class="sig-label">' + escHtml(lev.nomeCompleto) + '<br>NIF: ' + escHtml(lev.nif || '—') + '</div></div>');
         printWin.document.write('<div class="sig-block"><div class="sig-line">Walkingarage Lda</div><div class="sig-label">Representante da Empresa</div></div>');
         printWin.document.write('</div>');
         printWin.document.write('</body></html>');
@@ -2878,9 +2887,9 @@
         document.getElementById('returnForm').style.display = 'block';
         document.getElementById('rt_bookingId').value = b.id;
         document.getElementById('returnBookingSummary').innerHTML =
-            '<div class="detail-item"><label>Cliente</label><span><strong>' + b.nomeCliente + '</strong></span></div>' +
-            '<div class="detail-item"><label>Matrícula</label><span><strong>' + b.matricula + '</strong></span></div>' +
-            '<div class="detail-item"><label>Marca/Modelo</label><span>' + (b.marcaModelo || '—') + '</span></div>' +
+            '<div class="detail-item"><label>Cliente</label><span><strong>' + escHtml(b.nomeCliente) + '</strong></span></div>' +
+            '<div class="detail-item"><label>Matrícula</label><span><strong>' + escHtml(b.matricula) + '</strong></span></div>' +
+            '<div class="detail-item"><label>Marca/Modelo</label><span>' + escHtml(b.marcaModelo || '—') + '</span></div>' +
             '<div class="detail-item"><label>Nº Levantamento</label><span><strong>' + (b.levantamento && b.levantamento.id ? b.levantamento.id : '—') + '</strong></span></div>' +
             '<div class="detail-item"><label>Kms Entrada</label><span>' + (b.levantamento ? b.levantamento.kms : '—') + '</span></div>' +
             '<div class="detail-item"><label>Combustível Entrada</label><span>' + (b.levantamento ? b.levantamento.combustivel + '%' : '—') + '</span></div>' +
@@ -3049,24 +3058,24 @@
         var locAddr = LOCATION_ADDRESS[b.localizacao] || '';
         var printWin = window.open('', '_blank');
         if (!printWin) { showToast('Popup bloqueado pelo browser. Permita popups para imprimir. Pode reimprimir no Histórico.', 'error'); return; }
-        printWin.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolução - ' + b.matricula + '</title><style>');
+        printWin.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolução - ' + escHtml(b.matricula) + '</title><style>');
         printWin.document.write('body{font-family:"Segoe UI",sans-serif;padding:40px;color:#333;font-size:14px;} h1{font-size:20px;text-align:center;margin-bottom:4px;} .subtitle{text-align:center;color:#666;margin-bottom:24px;font-size:13px;} .section{margin-bottom:18px;} .section-title{font-size:15px;font-weight:700;border-bottom:2px solid #333;padding-bottom:4px;margin-bottom:10px;} .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;} .field{margin-bottom:4px;} .field label{font-size:11px;color:#666;display:block;} .field span{font-size:13px;font-weight:500;} .alert-box{padding:10px;border-radius:4px;margin-top:8px;font-weight:600;font-size:13px;} .alert-danger{background:#fce8e6;color:#d93025;border:1px solid #d93025;} .alert-success{background:#e6f4ea;color:#0d904f;border:1px solid #0d904f;} .signatures{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:40px;} .sig-block{text-align:center;} .sig-line{border-top:1px solid #333;margin-top:60px;padding-top:6px;font-size:12px;} .sig-label{font-size:10px;color:#666;margin-top:2px;} .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;border-bottom:2px solid #333;padding-bottom:12px;} .logo-text span.b{font-size:24px;font-weight:800;} .logo-text span.l{font-size:24px;font-weight:300;color:#999;} .header-right{text-align:right;font-size:11px;color:#666;} @media print{body{padding:15px;font-size:12px;} @page{margin:10mm;}}');
         printWin.document.write('</style></head><body>');
         var logoHtml = logoBase64 ? '<img src="' + logoBase64 + '" style="height:40px;">' : '<img src="' + getLogoUrl() + '" style="height:40px;" onerror="this.outerHTML=\'<div style=font-size:24px;font-weight:800>DOMUS<span style=font-weight:300;color:#999>car</span></div>\'">';
-        printWin.document.write('<div class="header">' + logoHtml + '<div class="header-right"><strong>' + b.localizacao + '</strong><br>' + locAddr + '</div></div>');
+        printWin.document.write('<div class="header">' + logoHtml + '<div class="header-right"><strong>' + escHtml(b.localizacao) + '</strong><br>' + locAddr + '</div></div>');
         printWin.document.write('<h1>Documento de Devolução de Viatura</h1>');
-        printWin.document.write('<div class="subtitle">Nº <strong>' + (dev.id || '—') + '</strong> | Ref. Levantamento: <strong>' + (lev.id || '—') + '</strong> | ' + b.localizacao + ' | ' + formatDateTime(dev.dataHora) + '</div>');
+        printWin.document.write('<div class="subtitle">Nº <strong>' + (dev.id || '—') + '</strong> | Ref. Levantamento: <strong>' + (lev.id || '—') + '</strong> | ' + escHtml(b.localizacao) + ' | ' + formatDateTime(dev.dataHora) + '</div>');
         printWin.document.write('<div class="section"><div class="section-title">Dados do Cliente</div><div class="grid">');
-        printWin.document.write('<div class="field"><label>Nome</label><span>' + (lev.nomeCompleto || b.nomeCliente) + '</span></div>');
-        printWin.document.write('<div class="field"><label>NIF</label><span>' + (lev.nif || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Nome</label><span>' + escHtml(lev.nomeCompleto || b.nomeCliente) + '</span></div>');
+        printWin.document.write('<div class="field"><label>NIF</label><span>' + escHtml(lev.nif || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Morada</label><span>' + (lev.morada || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Nº Carta de Condução</label><span>' + (lev.numCarta || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Código Postal</label><span>' + (lev.codigoPostal || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Localidade</label><span>' + (lev.localidade || '—') + '</span></div>');
         printWin.document.write('</div></div>');
         printWin.document.write('<div class="section"><div class="section-title">Dados da Viatura</div><div class="grid">');
-        printWin.document.write('<div class="field"><label>Matrícula</label><span><strong>' + b.matricula + '</strong></span></div>');
-        printWin.document.write('<div class="field"><label>Marca/Modelo</label><span>' + (b.marcaModelo || '—') + '</span></div>');
+        printWin.document.write('<div class="field"><label>Matrícula</label><span><strong>' + escHtml(b.matricula) + '</strong></span></div>');
+        printWin.document.write('<div class="field"><label>Marca/Modelo</label><span>' + escHtml(b.marcaModelo || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Kms Entrada</label><span>' + (lev.kms || '—') + '</span></div>');
         printWin.document.write('<div class="field"><label>Kms Saída</label><span>' + dev.kms + '</span></div>');
         printWin.document.write('<div class="field"><label>Combustível Entrada</label><span>' + (lev.combustivel != null ? lev.combustivel + '%' : '—') + '</span></div>');
@@ -3090,9 +3099,9 @@
             if (dev.valor) printWin.document.write('<p><strong>Valor Danos Orçamentados C/IVA: ' + dev.valor.toFixed(2) + '€</strong></p>');
             printWin.document.write('</div>');
         }
-        if (dev.observacoes) printWin.document.write('<div class="section"><div class="section-title">Observações</div><p>' + dev.observacoes + '</p></div>');
+        if (dev.observacoes) printWin.document.write('<div class="section"><div class="section-title">Observações</div><p>' + escHtml(dev.observacoes) + '</p></div>');
         printWin.document.write('<div class="signatures">');
-        printWin.document.write('<div class="sig-block"><div class="sig-line">O Cessionário (Cliente)</div><div class="sig-label">' + (lev.nomeCompleto || b.nomeCliente) + '<br>NIF: ' + (lev.nif || '—') + '</div></div>');
+        printWin.document.write('<div class="sig-block"><div class="sig-line">O Cessionário (Cliente)</div><div class="sig-label">' + escHtml(lev.nomeCompleto || b.nomeCliente) + '<br>NIF: ' + escHtml(lev.nif || '—') + '</div></div>');
         printWin.document.write('<div class="sig-block"><div class="sig-line">Walkingarage Lda</div><div class="sig-label">Representante da Empresa</div></div>');
         printWin.document.write('</div>');
         printWin.document.write('</body></html>');
@@ -3245,13 +3254,13 @@
         if (query) results = results.filter(b => b.matricula.toLowerCase().includes(query) || b.nomeCliente.toLowerCase().includes(query) || (b.marcaModelo && b.marcaModelo.toLowerCase().includes(query)));
         resultsDiv.innerHTML = '';
         if (results.length === 0) {
-            resultsDiv.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:16px;">' + (query ? 'Nenhum resultado encontrado.' : 'Sem viaturas com estado "' + targetStatus + '".') + '</p>';
+            resultsDiv.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:16px;">' + (query ? 'Nenhum resultado encontrado.' : 'Sem viaturas com estado "' + escHtml(targetStatus) + '".') + '</p>';
             return;
         }
         results.forEach(b => {
             const item = document.createElement('div');
             item.className = 'search-result-item';
-            item.innerHTML = '<div><strong>' + b.matricula + '</strong> — ' + b.nomeCliente + '<br><span style="font-size:12px;color:var(--gray-600)">' + (b.marcaModelo || '') + ' | ' + b.tipoServico + ' | ' + formatDate(b.dataEntrada) + '</span></div><span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>';
+            item.innerHTML = '<div><strong>' + escHtml(b.matricula) + '</strong> — ' + escHtml(b.nomeCliente) + '<br><span style="font-size:12px;color:var(--gray-600)">' + escHtmlescHtml(b.marcaModelo || '') + ' | ' + escHtml(b.tipoServico) + ' | ' + formatDate(b.dataEntrada) + '</span></div><span class="location-badge ' + getLocationClass(b.localizacao) + '">' + escHtml(b.localizacao) + '</span>';
             item.onclick = function() {
                 if (context === 'pickup') selectBookingForPickup(b);
                 else selectBookingForReturn(b);
@@ -3532,10 +3541,10 @@
             if (signedDone) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
             else filesHtml += '<span style="background:#fdecea;color:var(--danger);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">&#9888;&#65039; FALTA Doc. Assinado</span>';
             filesHtml += '</div>';
-            card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span class="booking-status ' + b.estado.toLowerCase() + '">' + b.estado + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>' + (lev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + lev.id + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(lev.dataHora) + '</span></div>' +
-                '<div class="booking-info"><strong>' + b.matricula + ' — ' + (lev.nomeCompleto || b.nomeCliente) + '</strong>' +
-                '<span>' + (b.marcaModelo || '') + ' | ' + b.tipoServico + ' | Kms: ' + lev.kms + ' | Comb: ' + lev.combustivel + '%</span>' +
-                '<span>NIF: ' + (lev.nif || '—') + ' | Carta: ' + (lev.numCarta || '—') + ' | Morada: ' + (lev.morada || '—') + ', ' + (lev.codigoPostal || '') + ' ' + (lev.localidade || '') + '</span>' +
+            card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span class="booking-status ' + escHtml(String(b.estado).toLowerCase()) + '">' + escHtml(b.estado) + '</span> <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + escHtml(b.localizacao) + '</span>' + (lev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + escHtml(lev.id) + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(lev.dataHora) + '</span></div>' +
+                '<div class="booking-info"><strong>' + escHtml(b.matricula) + ' — ' + escHtmlescHtml(lev.nomeCompleto || b.nomeCliente) + '</strong>' +
+                '<span>' + escHtml(b.marcaModelo || '') + ' | ' + escHtml(b.tipoServico) + ' | Kms: ' + lev.kms + ' | Comb: ' + lev.combustivel + '%</span>' +
+                '<span>NIF: ' + escHtml(lev.nif || '—') + ' | Carta: ' + (lev.numCarta || '—') + ' | Morada: ' + (lev.morada || '—') + ', ' + (lev.codigoPostal || '') + ' ' + (lev.localidade || '') + '</span>' +
                 (lev.registadoPor ? '<span style="color:var(--gray-500);font-size:11px;">Registado por: ' + lev.registadoPor.nome + '</span>' : '') + '</div>' +
                 filesHtml +
                 '<div class="booking-actions" style="margin-top:10px;">' +
@@ -3582,9 +3591,9 @@
             if (signedDone) filesHtml += '<span style="background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">&#128196; Doc. Assinado</span>';
             else filesHtml += '<span style="background:#fdecea;color:var(--danger);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">&#9888;&#65039; FALTA Doc. Assinado</span>';
             filesHtml += '</div>';
-            card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div>' + (isRascunho ? '<span class="booking-status" style="background:#fdecea;color:#a61b1b;border:1px solid var(--danger);font-weight:700;">&#9888;&#65039; RASCUNHO — POR CONCLUIR</span>' : '<span class="booking-status devolvido">Devolvido</span>') + ' <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + b.localizacao + '</span>' + (dev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + dev.id + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(dev.dataHora) + '</span></div>' +
-                '<div class="booking-info"><strong>' + b.matricula + ' — ' + b.nomeCliente + '</strong>' +
-                '<span>' + (b.marcaModelo || '') + ' | Kms: ' + dev.kms + ' | Comb: ' + dev.combustivel + '%' + (dev.valor ? ' | Valor Danos: ' + dev.valor + '€' : '') + '</span>' +
+            card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div>' + (isRascunho ? '<span class="booking-status" style="background:#fdecea;color:#a61b1b;border:1px solid var(--danger);font-weight:700;">&#9888;&#65039; RASCUNHO — POR CONCLUIR</span>' : '<span class="booking-status devolvido">Devolvido</span>') + ' <span class="location-badge ' + getLocationClass(b.localizacao) + '">' + escHtml(b.localizacao) + '</span>' + (dev.id ? ' <span style="font-size:11px;color:var(--gray-600);font-weight:600;">Nº ' + escHtml(dev.id) + '</span>' : '') + '</div><span style="font-size:12px;color:var(--gray-500);">' + formatDateTime(dev.dataHora) + '</span></div>' +
+                '<div class="booking-info"><strong>' + escHtml(b.matricula) + ' — ' + escHtml(b.nomeCliente) + '</strong>' +
+                '<span>' + escHtml(b.marcaModelo || '') + ' | Kms: ' + dev.kms + ' | Comb: ' + dev.combustivel + '%' + (dev.valor ? ' | Valor Danos: ' + dev.valor + '€' : '') + '</span>' +
                 (dev.excessKms > 0 ? '<span style="color:var(--danger);font-weight:600;">Kms extra: ' + dev.excessKms + ' km = ' + dev.extraCost.toFixed(2) + '€</span>' : '<span style="color:var(--success);">Kms dentro do limite</span>') +
                 (dev.registadoPor ? '<span style="color:var(--gray-500);font-size:11px;">Registado por: ' + dev.registadoPor.nome + '</span>' : '') + '</div>' +
                 filesHtml +

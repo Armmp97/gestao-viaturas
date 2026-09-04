@@ -2673,7 +2673,9 @@
         return isMobile() || isSafariOrMacWebKit();
     }
 
-    var msalLoginScopes = ['User.Read', 'Files.ReadWrite.All', 'Sites.ReadWrite.All', 'Mail.ReadWrite', 'Mail.Send'];
+    // A aplicacao so precisa da biblioteca do SharePoint. Files.ReadWrite.All dava acesso
+    // a TODO o OneDrive do utilizador e nao era usado em lado nenhum (nenhuma chamada a /me/drive).
+    var msalLoginScopes = ['User.Read', 'Sites.ReadWrite.All', 'Mail.ReadWrite', 'Mail.Send'];
 
     function initMsal() {
         try {
@@ -2916,6 +2918,12 @@
     }
 
     // ======== SHAREPOINT INTEGRATION ========
+    // Versao dos modulos. MUDAR sempre que se faz upload de um modulo para o GitHub:
+    // e' isto que faz os browsers irem buscar a versao nova em vez da que tem em cache.
+    // Antes usava-se Date.now(), o que garantia a versao nova mas obrigava a
+    // descarregar o modulo inteiro em TODAS as aberturas.
+    var BUILD = '2026090402';
+
     const SP_CONFIG = {
         siteUrl: 'cpmem.sharepoint.com',
         sitePath: '/sites/GestaoViaturas',
@@ -2985,10 +2993,10 @@
     function getGraphToken() {
         if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
         return msalInstance.acquireTokenSilent({
-            scopes: ['Files.ReadWrite.All', 'Sites.ReadWrite.All'],
+            scopes: ['Sites.ReadWrite.All'],
             account: currentMsalUser
         }).catch(function() {
-            return acquireTokenInteractive(['Files.ReadWrite.All', 'Sites.ReadWrite.All']);
+            return acquireTokenInteractive(['Sites.ReadWrite.All']);
         }).then(function(resp) { return resp.accessToken; });
     }
 
@@ -3053,7 +3061,21 @@
             });
     }
 
+    // Verificar/criar as 45 pastas custa 46 a 248 pedidos ao SharePoint. Nao faz
+    // sentido em cada carregamento: as pastas existem desde Abril e quem nao tem
+    // permissao de escrita falha nas 45 na mesma. Passa a correr so para admins e
+    // no maximo uma vez por mes, por browser.
     function ensureFolderStructure() {
+        var role = currentUserPermissions ? currentUserPermissions.role : null;
+        if (role !== 'admin') return Promise.resolve();
+        var marca = 'sp_estrutura_verificada';
+        var mesAtual = new Date().toISOString().slice(0, 7);
+        try { if (localStorage.getItem(marca) === mesAtual) return Promise.resolve(); } catch (e) {}
+        try { localStorage.setItem(marca, mesAtual); } catch (e) {}
+        return _ensureFolderStructure();
+    }
+
+    function _ensureFolderStructure() {
         var promises = Object.values(SP_CONFIG.folders).map(function(folderPath) {
             return createFolderPath(folderPath);
         });
@@ -3278,7 +3300,18 @@
 
     // Listen for messages from iframe modules (margem, divergencias) to save files
     // Modules are responsible for naming files descriptively — handler does passthrough
-    window.addEventListener('message', function(event) {
+    // Só aceitamos mensagens vindas dos nossos próprios módulos (mesma origem).
+    // Sem esta verificação, qualquer página externa que abrisse a intranet numa
+    // moldura podia mandar gravar ficheiros no SharePoint ou enviar email em nome
+    // de quem estivesse autenticado.
+    function onIntranetMessage(handler) {
+        window.addEventListener('message', function(event) {
+            if (event.origin !== window.location.origin) return;
+            return handler(event);
+        });
+    }
+
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'saveToSharePoint') return;
         var data = event.data;
         var cid = data.correlationId || null;
@@ -3306,7 +3339,7 @@
     });
 
     // ===== FARDAS: carregar estado JSON guardado no SharePoint =====
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'fardasLoadState') return;
         var cid = event.data.correlationId || null;
         var driveId = getDriveId();
@@ -3323,7 +3356,7 @@
     });
 
     // ===== RH: ler um JSON de uma pasta do SharePoint (folderKey + fileName) =====
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'rhLoadJson') return;
         var cid = event.data.correlationId || null;
         function reply(payload){ try { event.source.postMessage(Object.assign({ type:'rhLoadJsonResult', correlationId:cid }, payload), '*'); } catch(e){} }
@@ -3342,7 +3375,7 @@
     });
 
     // ===== FARDAS: listar ficheiros de uma pasta (termos/arquivo) =====
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'fardasListFiles') return;
         var cid = event.data.correlationId || null;
         function reply(payload){ try { event.source.postMessage(Object.assign({ type:'fardasListFilesResult', correlationId:cid }, payload), '*'); } catch(e){} }
@@ -3355,67 +3388,69 @@
     });
 
     // Listen for margem dashboard data from iframe
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'margemDashboardUpdate') return;
         saveMargemDashboard(event.data.payload);
     });
 
     // Listen for margem real data from iframe (tab "Margem Real")
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'margemRealUpdate') return;
         saveMargemReal(event.data.payload);
     });
 
     // Listen for garantias data from iframe (Verificador de Faturas de Garantia)
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'garantiasUpdate') return;
         saveGarantias(event.data.payload);
     });
 
     // Listen for assessoria de vendas data (Verificação Orçamentos + Analisador OS)
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'assessoriaUpdate') return;
         saveAssessoria(event.data.payload);
     });
 
     // Listen for Google Reviews data from google-reviews iframe
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'googleReviewsUpdate') return;
         saveGoogleReviews(event.data.payload);
     });
 
     // Listen for Questionário de Satisfação data from questionario-satisfacao iframe
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'questionarioUpdate') return;
         saveQuestionario(event.data.payload);
     });
 
     // Listen for Calendário de Formação events from formacao iframe
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'formacaoEventosUpdate') return;
         saveFormacaoEventos(event.data.payload);
     });
 
     // Listen for Manutenção de Equipamentos from equipamentos iframe
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'equipamentosUpdate') return;
         saveEquipamentos(event.data.payload);
     });
 
     // Listen for KPI dashboard data from gerador-kpis iframe
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'kpiDashboardUpdate') return;
         saveKpiDashboard(event.data.payload);
     });
 
     // Listen for openUrl requests from iframes (popups from sandboxed iframes get blocked)
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'openUrl') return;
-        window.open(event.data.url, '_blank');
+        var _u = String(event.data.url || '');
+        if (!/^https?:\/\//i.test(_u)) { console.warn('[openUrl] endereço recusado:', _u); return; }
+        window.open(_u, '_blank', 'noopener');
     });
 
     // Listen for saveAndDraftEmail: saves HTML to SharePoint THEN creates draft email (sequential, separate tokens)
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'saveAndDraftEmail') return;
         var d = event.data;
         // Step 1: Save to SharePoint (uses Files token)
@@ -3474,7 +3509,7 @@
     var INTRANET_URL = 'https://intranet.domuscar.com/intranet.html';
 
     // Called from divergencias-picagens.html when admin sends reports (all or individual)
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'saveDivCoord') return;
         var d = event.data;
         // d.reports = [ { unit: 'colisao'|'mecanica_lisboa'|'mecanica_cacem', fileName, htmlContent } ]
@@ -3531,7 +3566,7 @@
     });
 
     // Called from coord_divergencias.html when coordinator submits validation
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'divCoordRespond') return;
         var d = event.data;
         // d = { unit, fileName, htmlContent, originalFileId }
@@ -3870,7 +3905,7 @@
     };
 
     // Handler: delete all pending div coord files (called from coord_divergencias.html admin action)
-    window.addEventListener('message', function(event) {
+    onIntranetMessage(function(event) {
         if (!event.data || event.data.type !== 'deleteAllPendingDiv') return;
         // Double-check: only admins can delete all pending
         if (!currentUserPermissions || currentUserPermissions.role !== 'admin') {
@@ -4078,7 +4113,7 @@
         // Se subId for passado (deep-link da pesquisa), anexa ao hash; iframe lê no load
         var hash = subId ? ('#sub=' + encodeURIComponent(subId)) : '';
         if (query) hash += (hash ? '&' : '#') + 'q=' + encodeURIComponent(query);
-        frame.src = mod.url + '?v=' + Date.now() + hash;
+        frame.src = mod.url + '?v=' + BUILD + hash;
         frame.classList.add('active');
 
         clearActiveNav();
@@ -4456,10 +4491,10 @@
         // Try read-only scopes as fallback for non-admin users
         if (!msalInstance || !currentMsalUser) return Promise.reject('Not authenticated');
         return msalInstance.acquireTokenSilent({
-            scopes: ['Files.Read.All', 'Sites.Read.All'],
+            scopes: ['Sites.Read.All'],
             account: currentMsalUser
         }).catch(function() {
-            return acquireTokenInteractive(['Files.Read.All', 'Sites.Read.All']);
+            return acquireTokenInteractive(['Sites.Read.All']);
         }).then(function(resp) { return resp.accessToken; });
     }
 
