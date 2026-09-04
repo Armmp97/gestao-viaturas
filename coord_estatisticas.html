@@ -61,15 +61,35 @@ tr.colab-row:hover td{background:#eef4fb}
 </div>
 <div class="gate" id="gate" style="display:none"></div>
 <div id="app" style="display:none">
+
+<div class="section" id="semanaCard" style="border-left:5px solid #2980b9">
+  <h2>Resumo da semana <span style="font-weight:400;color:#999;font-size:0.85em">(a ronda de domingo, numa página)</span></h2>
+  <div class="filters" style="box-shadow:none;padding:0;margin-bottom:10px;background:transparent">
+    <div class="fg"><label>De</label><input type="date" id="wDe" onchange="renderSemana()"></div>
+    <div class="fg"><label>Até</label><input type="date" id="wAte" onchange="renderSemana()"></div>
+    <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label>
+      <div style="display:flex;gap:6px">
+        <button class="btn-upd" style="background:#34495e" onclick="setSemana(-1)">Semana passada</button>
+        <button class="btn-upd" style="background:#7f8c8d" onclick="setSemana(0)">Esta semana</button>
+        <button class="btn-upd" style="background:#27ae60" onclick="exportarSemana()">⬇ CSV</button>
+      </div>
+    </div>
+  </div>
+  <div id="semAtencao"></div>
+  <div class="tbl-wrap"><table id="semTbl"></table></div>
+  <div class="note" id="semNota"></div>
+</div>
+
 <div class="filters">
 <div class="fg"><label>Local</label><select id="fLocal"><option value="">Todos</option></select></div>
 <div class="fg"><label>Mês</label><select id="fMes"><option value="">Todos</option></select></div>
+<div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn-upd" style="background:#27ae60" onclick="exportarCSV()">⬇ Exportar resumo (CSV)</button></div>
 <div class="fg"><label>Colaborador</label><select id="fColab"><option value="">Todos</option></select></div>
 </div>
 <div class="cards" id="cards"></div>
 <div class="charts">
-<div class="section"><h2>Horas extras por mês — pagas vs não pagas</h2><div id="chExtras"></div>
-<div class="legend"><span><span class="sw" style="background:#27ae60"></span>Pagas (valor escrito pelo coordenador)</span><span><span class="sw" style="background:#e74c3c"></span>Não pagas (não validadas / sem decisão / diferença)</span></div></div>
+<div class="section"><h2>Horas extras e horas em falta, por mês</h2><div id="chExtras"></div>
+<div class="legend"><span><span class="sw" style="background:#27ae60"></span>Extras validadas</span><span><span class="sw" style="background:#e74c3c"></span>Extras não validadas / sem decisão</span><span><span class="sw" style="background:#8e44ad"></span>Horas em falta (abaixo das 8h)</span></div></div>
 <div class="section">
 <h2>Presença média em oficina por mês <span style="font-weight:400;color:#999;font-size:0.85em">(horas por dia trabalhado)</span></h2><div id="chPres"></div>
 <h2 style="margin-top:14px">Tempo morto médio por mês <span style="font-weight:400;color:#999;font-size:0.85em">(minutos por dia trabalhado)</span></h2><div id="chMorto"></div>
@@ -79,7 +99,7 @@ tr.colab-row:hover td{background:#eef4fb}
 <div class="section"><h2>Detalhe por colaborador e mês <span style="font-weight:400;color:#999;font-size:0.85em">(clicar numa linha para ver os dias)</span></h2>
 <div class="tbl-wrap"><table id="tbl"></table></div>
 <div class="note">
-<strong>Definições:</strong> <em>Horas extras pagas</em> = valor escrito pelo coordenador na justificação da validação (ex.: "1 hora", "8h sábado"); quando validou sem escrever valor, assume-se as extras do dia arredondadas à hora mais próxima. <em>Horas extras não pagas</em> = extras trabalhadas além das 8h que não foram validadas, ficaram sem decisão, ou excedem o valor pago. <em>Presença</em> = tempo 2Smart em oficina (média nos dias trabalhados). <em>Tempo morto</em> = tempo presente sem intervenção aberta no Officegest. <em>Faltas de picagem</em> = dias sem registo 2Smart + dias com picagens incompletas (nº ímpar / sem picagem de almoço). O histórico da "Colisão" antiga (até 16/05/2026) é distribuído por Bela Vista e Tagus Park segundo o local atual de cada colaborador (Nuno Montês → Tagus Park). Dados guardados em SharePoint (Dashboard_State/estatisticas_picagens.json); o botão "Atualizar dias em falta" (administradores) lê os novos relatórios respondidos e atualiza automaticamente.
+<strong>Definições:</strong> <em>Horas extras pagas</em> = valor que o coordenador escolheu no campo "Horas a pagar" ao validar. Nos relatórios anteriores a Setembro de 2026 esse valor era escrito à mão e continua a ser lido do texto; quando validou sem escrever nada, assume-se as extras do dia arredondadas à hora mais próxima. <em>Horas extras não pagas</em> = extras trabalhadas além das 8h que não foram validadas, ficaram sem decisão, ou excedem o valor pago. <em>Presença</em> = tempo 2Smart em oficina (média nos dias trabalhados). <em>Tempo morto</em> = tempo presente sem intervenção aberta no Officegest. <em>Horas em falta</em> = soma do que faltou para as 8 horas, dia a dia, contada ao minuto; dias de férias, baixa ou falta não entram. <em>Saldo</em> = horas extras validadas menos horas em falta — só entram as extras que o coordenador aprovou. Quando o coordenador corrige o horário de um dia sem registo, esse dia passa a contar com as horas corrigidas e aparece marcado com "corr." no detalhe. <em>Faltas de picagem</em> = dias sem registo 2Smart + dias com picagens incompletas (nº ímpar / sem picagem de almoço). O histórico da "Colisão" antiga (até 16/05/2026) é distribuído por Bela Vista e Tagus Park segundo o local atual de cada colaborador (Nuno Montês → Tagus Park). Dados guardados em SharePoint (Dashboard_State/estatisticas_picagens.json); o botão "Atualizar dias em falta" (administradores) lê os novos relatórios respondidos e atualiza automaticamente.
 </div></div>
 </div>
 <script>
@@ -126,23 +146,31 @@ function filtered(){
 }
 
 function aggr(rows){
-  var a={diasTrab:0,pres:0,og:0,xv:0,xvN:0,xn:0,xnN:0,morto:0,mortoDias30:0,dias8:0,semReg:0,ferias:0,baixa:0,falta:0,picIncomp:0,aExc:0};
+  var a={diasTrab:0,pres:0,og:0,xv:0,xvN:0,xn:0,xnN:0,morto:0,mortoDias30:0,dias8:0,semReg:0,ferias:0,baixa:0,falta:0,picIncomp:0,aExc:0,
+         hFalta:0,hFaltaN:0,corrigidos:0,semDecisao:0,saldo:0};
   rows.forEach(function(r){
     if(r.t==="ferias")a.ferias++;
     else if(r.t==="baixa")a.baixa++;
     else if(r.t==="falta")a.falta++;
     else if(r.t==="sem_registo")a.semReg++;
-    if(r.p!=null){a.diasTrab++;a.pres+=r.p;if(r.p<480)a.dias8++;}
+    if(r.p!=null){
+      a.diasTrab++; a.pres+=r.p;
+      if(r.p<480){ a.dias8++; a.hFalta += (480-r.p); a.hFaltaN++; }
+      if(r.pc) a.corrigidos++;
+    }
     if(r.og!=null)a.og+=r.og;
     if(r.x>0){
       if(r.xp>0){a.xv+=r.xp;a.xvN++;}
       var np=(r.xv==="Validado")?Math.max(0,r.x-r.xp):r.x;
       if(np>0){a.xn+=np;a.xnN++;}
+      if(!r.xv) a.semDecisao++;
     }
     a.morto+=r.m||0; if((r.m||0)>30)a.mortoDias30++;
     if(r.asp)a.picIncomp++;
     a.aExc+=r.ae||0;
   });
+  /* Saldo: so' entram as horas extras que o coordenador validou. */
+  a.saldo = a.xv - a.hFalta;
   return a;
 }
 
@@ -150,8 +178,10 @@ function renderCards(rows){
   var a=aggr(rows);
   var presMed=a.diasTrab?a.pres/a.diasTrab:null, mortoMed=a.diasTrab?a.morto/a.diasTrab:null;
   document.getElementById("cards").innerHTML=
-  '<div class="card"><div class="lbl">Horas extras pagas</div><div class="val green">'+hmm(a.xv)+'</div><div class="det">'+a.xvN+' dia(s) · valor escrito pelo coordenador</div></div>'+
+  '<div class="card"><div class="lbl">Horas extras pagas</div><div class="val green">'+hmm(a.xv)+'</div><div class="det">'+a.xvN+' dia(s) · valor escolhido pelo coordenador</div></div>'+
   '<div class="card"><div class="lbl">Horas extras não pagas</div><div class="val red">'+hmm(a.xn)+'</div><div class="det">'+a.xnN+' dia(s) · além das 8h sem pagamento</div></div>'+
+  '<div class="card"><div class="lbl">Horas em falta</div><div class="val red">'+hmm(a.hFalta)+'</div><div class="det">'+a.hFaltaN+' dia(s) abaixo das 8h</div></div>'+
+  '<div class="card"><div class="lbl">Saldo (extras validadas − falta)</div><div class="val '+(a.saldo>=0?"green":"red")+'">'+hmm(a.saldo)+'</div><div class="det">'+(a.semDecisao?a.semDecisao+' dia(s) de extras sem decisão':'todas as extras decididas')+'</div></div>'+
   '<div class="card"><div class="lbl">Presença média/dia</div><div class="val blue">'+hmm(presMed)+'</div><div class="det">'+a.diasTrab+' dias trabalhados · '+a.dias8+' dias &lt;8h</div></div>'+
   '<div class="card"><div class="lbl">Tempo morto</div><div class="val orange">'+hmm(a.morto)+'</div><div class="det">média '+hmm(mortoMed)+'/dia · '+a.mortoDias30+' dias &gt;30m</div></div>'+
   '<div class="card"><div class="lbl">Faltas de picagem</div><div class="val purple">'+(a.semReg+a.picIncomp)+'</div><div class="det">'+a.semReg+' sem registo · '+a.picIncomp+' incompletas</div></div>'+
@@ -184,7 +214,8 @@ function renderCharts(rows){
   var byMes=meses.map(function(m){ return aggr(rows.filter(function(r){return r.mes===m;})); });
   barChart(document.getElementById("chExtras"),meses,[
     {color:"#27ae60",vals:byMes.map(function(a){return +(a.xv/60).toFixed(1);})},
-    {color:"#e74c3c",vals:byMes.map(function(a){return +(a.xn/60).toFixed(1);})}],function(v){return (+(+v).toFixed(1))+"h";});
+    {color:"#e74c3c",vals:byMes.map(function(a){return +(a.xn/60).toFixed(1);})},
+    {color:"#8e44ad",vals:byMes.map(function(a){return +(a.hFalta/60).toFixed(1);})}],function(v){return (+(+v).toFixed(1))+"h";});
   barChart(document.getElementById("chPres"),meses,[
     {color:"#2980b9",vals:byMes.map(function(a){return a.diasTrab?Math.round(a.pres/a.diasTrab):0;})}],
     function(v){return hmm(v);},118);
@@ -200,17 +231,20 @@ function renderTable(rows){
   '<th title="Dias com presença registada no 2Smart">Dias<br>trabalhados</th>'+
   '<th title="Média da presença 2Smart nos dias trabalhados">Presença média<br>por dia (2Smart)</th>'+
   '<th title="Nº de dias em que a presença ficou abaixo das 8 horas">Dias com<br>presença &lt;8h</th>'+
+  '<th title="Soma do que faltou para as 8 horas, dia a dia">Horas<br>em falta</th>'+
   '<th title="Horas a pagar escritas pelo coordenador na validação">Horas extras<br>pagas</th>'+
   '<th title="Nº de dias com horas extras pagas">Dias c/<br>extras pagas</th>'+
   '<th title="Horas além das 8h não validadas, sem decisão, ou diferença entre o trabalhado e o valor pago">Horas extras<br>não pagas</th>'+
   '<th title="Nº de dias com horas extras não pagas">Dias c/ extras<br>não pagas</th>'+
+  '<th title="Horas extras validadas menos horas em falta">Saldo</th>'+
   '<th title="Tempo presente em oficina sem intervenção aberta no Officegest">Tempo morto<br>total (sem OG)</th>'+
   '<th title="Nº de dias com mais de 30 minutos de tempo morto">Dias c/ tempo<br>morto &gt;30m</th>'+
   '<th title="Dias sem registo 2Smart + dias com picagens incompletas (nº ímpar / sem picagem de almoço)">Faltas de<br>picagem</th>'+
   '<th title="Férias (F), Baixa (B) e Faltas (Ft) registadas nos relatórios">Ausências<br>(Férias/Baixa/Falta)</th></tr>';
   meses.forEach(function(m){
-    h+='<tr class="mesgrp"><td colspan="13">'+mesLabel(m)+'</td></tr>';
     var sub=rows.filter(function(r){return r.mes===m;});
+    var diasCob={}; sub.forEach(function(r){ diasCob[r.d]=1; });
+    h+='<tr class="mesgrp"><td colspan="15">'+mesLabel(m)+' <span style="font-weight:400;opacity:.75">· '+Object.keys(diasCob).length+' dia(s) com relatório respondido</span></td></tr>';
     var colabs=[]; sub.forEach(function(r){ if(colabs.indexOf(r.n)<0)colabs.push(r.n); }); colabs.sort();
     colabs.forEach(function(n){
       var rs=sub.filter(function(r){return r.n===n;}), a=aggr(rs);
@@ -219,14 +253,167 @@ function renderTable(rows){
       h+='<tr class="colab-row" onclick="showDetail(\''+n.replace(/'/g,"\\'")+'\',\''+m+'\')">'+
       '<td>'+n+'</td><td>'+locs.join(", ")+'</td><td>'+a.diasTrab+'</td><td>'+presMed+'</td>'+
       '<td>'+(a.dias8>0?'<span class="badge b-warn">'+a.dias8+'</span>':"0")+'</td>'+
+      '<td class="red"><strong>'+(a.hFalta?hmm(a.hFalta):"—")+'</strong></td>'+
       '<td class="green"><strong>'+hmm(a.xv)+'</strong></td><td>'+a.xvN+'</td>'+
       '<td class="red"><strong>'+hmm(a.xn)+'</strong></td><td>'+a.xnN+'</td>'+
+      '<td class="'+(a.saldo>=0?"green":"red")+'"><strong>'+hmm(a.saldo)+'</strong></td>'+
       '<td>'+hmm(a.morto)+'</td><td>'+(a.mortoDias30>0?'<span class="badge b-warn">'+a.mortoDias30+'</span>':"0")+'</td>'+
       '<td>'+((a.semReg+a.picIncomp)>0?'<span class="badge b-red">'+(a.semReg+a.picIncomp)+'</span>':"0")+'</td>'+
       '<td>'+((a.ferias+a.baixa+a.falta)>0?(a.ferias+a.baixa+a.falta)+' ('+a.ferias+'F/'+a.baixa+'B/'+a.falta+'Ft)':"0")+'</td></tr>';
     });
   });
   document.getElementById("tbl").innerHTML=h;
+}
+
+/* ================= RESUMO DA SEMANA =================
+   O que o Andre confere ao domingo: horas extras validadas, faltas, ferias e
+   Officegest vs 2Smart, numa so' tabela, mais um bloco com o que ficou por resolver. */
+var ATRASO_MIN = 1;   /* a partir de 1 minuto conta como atraso */
+
+function iso(dt){ return dt.toISOString().slice(0,10); }
+function segundaFeira(dt){
+  var d=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate());
+  var w=(d.getDay()+6)%7;            /* 0 = segunda */
+  d.setDate(d.getDate()-w); return d;
+}
+function setSemana(offset){
+  var seg=segundaFeira(new Date());
+  seg.setDate(seg.getDate()+offset*7);
+  var dom=new Date(seg); dom.setDate(dom.getDate()+6);
+  document.getElementById("wDe").value=iso(seg);
+  document.getElementById("wAte").value=iso(dom);
+  renderSemana();
+}
+function linhasSemana(){
+  var de=document.getElementById("wDe").value, ate=document.getElementById("wAte").value;
+  if(!de||!ate) return [];
+  return D.filter(function(r){
+    return r.d>=de && r.d<=ate && (!fLocal.value||r.l===fLocal.value) && (!fColab.value||r.n===fColab.value);
+  });
+}
+function aggrSemana(rs){
+  var a={dias:0,p:0,og:0,ogDias:0,xv:0,xpend:0,xpendN:0,falta:0,faltas:0,ferias:0,baixa:0,semReg:0,atr:0,atrN:0,sant:0,hor:false};
+  rs.forEach(function(r){
+    if(r.t==="ferias")a.ferias++; else if(r.t==="baixa")a.baixa++;
+    else if(r.t==="falta")a.faltas++; else if(r.t==="sem_registo")a.semReg++;
+    if(r.p!=null){ a.dias++; a.p+=r.p; a.falta+=r.f||0; }
+    if(r.og!=null){ a.og+=r.og; a.ogDias++; }
+    if(r.x>0){ if(r.xv==="Validado") a.xv+=r.xp; else { a.xpend+=r.x; a.xpendN++; } }
+    if(r.hor){ a.hor=true; if((r.at||0)>=ATRASO_MIN){ a.atr+=r.at; a.atrN++; } a.sant+=(r.sa||0); }
+  });
+  return a;
+}
+function renderSemana(){
+  var rs=linhasSemana();
+  var de=document.getElementById("wDe").value, ate=document.getElementById("wAte").value;
+  var nota=document.getElementById("semNota"), aviso=document.getElementById("semAtencao");
+
+  /* --- bloco "por resolver" --- */
+  var porDia={}, locais={};
+  rs.forEach(function(r){ porDia[r.d+"|"+r.l]=1; locais[r.l]=1; });
+  var emFalta=[];
+  if(de&&ate){
+    var d1=new Date(de+"T00:00:00"), d2=new Date(ate+"T00:00:00");
+    for(var dd=new Date(d1); dd<=d2; dd.setDate(dd.getDate()+1)){
+      var wd=dd.getDay(); if(wd===0||wd===6) continue;      /* fim-de-semana fora */
+      var k=iso(dd);
+      Object.keys(locais).forEach(function(L){ if(!porDia[k+"|"+L]) emFalta.push(k+" · "+(LOCAIS[L]||L)); });
+    }
+  }
+  var pend=rs.filter(function(r){ return r.x>0 && r.xv!=="Validado" && r.xv!=="Não validado"; });
+  var av="";
+  if(emFalta.length) av+='<div class="badge b-red" style="display:block;margin-bottom:6px;padding:8px 10px;text-align:left">'
+    +'<strong>'+emFalta.length+' dia(s) sem relatório respondido:</strong> '+emFalta.slice(0,12).join(" · ")
+    +(emFalta.length>12?" … (+"+(emFalta.length-12)+")":"")+'</div>';
+  if(pend.length) av+='<div class="badge b-warn" style="display:block;margin-bottom:6px;padding:8px 10px;text-align:left">'
+    +'<strong>'+pend.length+' dia(s) com horas extras por decidir:</strong> '
+    +pend.map(function(r){ return r.n.split(" ")[0]+" ("+r.d.slice(8)+"/"+r.d.slice(5,7)+", "+hmm(r.x)+")"; }).join(" · ")+'</div>';
+  if(!av) av='<div class="badge b-green" style="display:block;margin-bottom:6px;padding:8px 10px;text-align:left">Nada por resolver nesta semana — todos os dias respondidos e todas as horas extras decididas.</div>';
+  aviso.innerHTML=av;
+
+  /* --- tabela --- */
+  var colabs=[]; rs.forEach(function(r){ if(colabs.indexOf(r.n)<0)colabs.push(r.n); }); colabs.sort();
+  if(!colabs.length){ document.getElementById("semTbl").innerHTML='<tr><td style="padding:14px;color:#999">Sem dados no período escolhido.</td></tr>'; nota.textContent=""; return; }
+  var h='<tr><th>Colaborador</th><th>Local</th><th title="Dias com presença registada">Dias</th>'
+   +'<th title="Soma da presença 2Smart na semana">Horas 2Smart</th>'
+   +'<th title="Soma do tempo em intervenções no Officegest">Horas Officegest</th>'
+   +'<th title="Presença menos tempo em intervenções — tempo na oficina sem OG aberto">2Smart − OG</th>'
+   +'<th title="Horas extras que o coordenador validou">Extras validadas</th>'
+   +'<th title="Horas extras ainda sem decisão do coordenador">Extras por decidir</th>'
+   +'<th title="Soma do que faltou para as 8h">Horas em falta</th>'
+   +'<th title="Entradas depois da hora prevista (só mecânicas)">Atrasos</th>'
+   +'<th title="Faltas registadas">Faltas</th><th title="Dias de férias">Férias</th>'
+   +'<th title="Dias de baixa">Baixa</th><th title="Dias sem registo no 2Smart">Sem registo</th></tr>';
+  colabs.forEach(function(n){
+    var sub=rs.filter(function(r){return r.n===n;}), a=aggrSemana(sub);
+    var locs=[]; sub.forEach(function(r){ var L=LOCAIS[r.l]||r.l; if(locs.indexOf(L)<0)locs.push(L); });
+    var dif=a.p-a.og;
+    h+='<tr class="colab-row" onclick="showDetail(\''+n.replace(/'/g,"\\'")+'\',\''+sub[0].mes+'\')">'
+     +'<td>'+n+'</td><td>'+locs.join(", ")+'</td><td>'+a.dias+'</td>'
+     +'<td><strong>'+(a.dias?hmm(a.p):"—")+'</strong></td>'
+     +'<td class="green"><strong>'+(a.ogDias?hmm(a.og):"—")+'</strong></td>'
+     +'<td class="'+(dif>120?"red":"")+'">'+(a.ogDias?hmm(dif):"—")+'</td>'
+     +'<td class="green"><strong>'+(a.xv?hmm(a.xv):"—")+'</strong></td>'
+     +'<td>'+(a.xpend?'<span class="badge b-warn">'+hmm(a.xpend)+' ('+a.xpendN+'d)</span>':"—")+'</td>'
+     +'<td class="red"><strong>'+(a.falta?hmm(a.falta):"—")+'</strong></td>'
+     +'<td>'+(!a.hor?'<span style="color:#bbb" title="Sem horário rígido">n/a</span>':(a.atrN?'<span class="badge b-warn">'+a.atrN+'× · '+hmm(a.atr)+'</span>':"—"))+'</td>'
+     +'<td>'+(a.faltas?'<span class="badge b-red">'+a.faltas+'</span>':"—")+'</td>'
+     +'<td>'+(a.ferias?a.ferias:"—")+'</td>'
+     +'<td>'+(a.baixa?a.baixa:"—")+'</td>'
+     +'<td>'+(a.semReg?'<span class="badge b-red">'+a.semReg+'</span>':"—")+'</td></tr>';
+  });
+  document.getElementById("semTbl").innerHTML=h;
+  nota.innerHTML='<em>2Smart − OG</em> = tempo em oficina sem intervenção aberta no Officegest; a vermelho acima de 2h na semana. '
+   +'<em>Atrasos</em> = entradas depois da hora prevista, ao minuto, só para quem tem horário fixo (mecânicas); nos relatórios anteriores a Setembro de 2026 só existem atrasos acima de 5 minutos, porque abaixo disso nunca foram registados. '
+   +'Clicar numa linha abre o detalhe diário desse colaborador.';
+}
+function exportarSemana(){
+  var rs=linhasSemana();
+  var colabs=[]; rs.forEach(function(r){ if(colabs.indexOf(r.n)<0)colabs.push(r.n); }); colabs.sort();
+  var L=[['De','Ate','Colaborador','Local','Dias','2Smart (min)','Officegest (min)','Diferenca (min)',
+          'Extras validadas (min)','Extras por decidir (min)','Horas em falta (min)','Atrasos (nº)','Atrasos (min)',
+          'Faltas','Ferias','Baixa','Sem registo']];
+  var de=document.getElementById("wDe").value, ate=document.getElementById("wAte").value;
+  colabs.forEach(function(n){
+    var sub=rs.filter(function(r){return r.n===n;}), a=aggrSemana(sub);
+    var locs=[]; sub.forEach(function(r){ var X=LOCAIS[r.l]||r.l; if(locs.indexOf(X)<0)locs.push(X); });
+    L.push([de,ate,n,locs.join(" / "),a.dias,a.p,a.og,a.p-a.og,a.xv,a.xpend,a.falta,a.atrN,a.atr,a.faltas,a.ferias,a.baixa,a.semReg]);
+  });
+  var csv=L.map(function(l){ return l.map(function(c){
+    var v=String(c==null?"":c); return /[";\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }).join(";"); }).join("\r\n");
+  var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
+  var a2=document.createElement("a"); a2.href=URL.createObjectURL(blob);
+  a2.download="Semana_Picagens_"+de+"_a_"+ate+".csv";
+  document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
+  setTimeout(function(){ URL.revokeObjectURL(a2.href); },1000);
+}
+
+/* Resumo mensal para o RH: uma linha por colaborador e mes, com o saldo. */
+function exportarCSV(){
+  var rows=filtered();
+  var meses=[]; rows.forEach(function(r){ if(meses.indexOf(r.mes)<0)meses.push(r.mes); }); meses.sort();
+  var L=[['Mes','Colaborador','Local','Dias trabalhados','Presenca media (min)','Dias abaixo de 8h',
+          'Horas em falta (min)','Extras validadas (min)','Extras nao validadas (min)','Saldo (min)',
+          'Horas em falta (h)','Extras validadas (h)','Saldo (h)','Dias sem picagem','Ferias','Baixa','Faltas']];
+  meses.forEach(function(m){
+    var sub=rows.filter(function(r){return r.mes===m;});
+    var colabs=[]; sub.forEach(function(r){ if(colabs.indexOf(r.n)<0)colabs.push(r.n); }); colabs.sort();
+    colabs.forEach(function(n){
+      var rs=sub.filter(function(r){return r.n===n;}), a=aggr(rs);
+      var locs=[]; rs.forEach(function(r){ var X=LOCAIS[r.l]||r.l; if(locs.indexOf(X)<0)locs.push(X); });
+      L.push([mesLabel(m),n,locs.join(" / "),a.diasTrab,a.diasTrab?Math.round(a.pres/a.diasTrab):0,a.dias8,
+              a.hFalta,a.xv,a.xn,a.saldo,hmm(a.hFalta),hmm(a.xv),hmm(a.saldo),
+              a.semReg+a.picIncomp,a.ferias,a.baixa,a.falta]);
+    });
+  });
+  var csv=L.map(function(l){ return l.map(function(c){
+    var v=String(c==null?"":c); return /[";\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }).join(";"); }).join("\r\n");
+  var blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
+  var a2=document.createElement("a");
+  a2.href=URL.createObjectURL(blob);
+  a2.download="Resumo_Picagens_"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
+  setTimeout(function(){ URL.revokeObjectURL(a2.href); },1000);
 }
 
 function showDetail(nome,mes){
@@ -236,7 +423,7 @@ function showDetail(nome,mes){
   rows.forEach(function(r){
     var dec=r.x>0?(r.xv==="Validado"?'<span class="badge b-green">Validado</span>':(r.xv==="Não validado"?'<span class="badge b-red">Não validado</span>':'<span class="badge b-warn">Sem decisão</span>')):"—";
     var pic=r.t==="sem_registo"?'<span class="badge b-red">Sem registo</span>':(r.asp?'<span class="badge b-warn">Incompleta</span>':"OK");
-    h+='<tr><td>'+r.d.slice(8)+'/'+r.d.slice(5,7)+'</td><td>'+r.t+'</td><td>'+hmm(r.p)+'</td><td>'+hmm(r.og)+'</td><td>'+(r.x>0?hmm(r.x):"—")+'</td><td>'+(r.xp>0?'<strong class="green">'+hmm(r.xp)+'</strong>':"—")+'</td><td>'+dec+'</td><td>'+(r.xo||"")+'</td><td>'+(r.m>0?hmm(r.m):"—")+'</td><td>'+pic+'</td><td>'+(r.esp||"")+'</td></tr>';
+    h+='<tr><td>'+r.d.slice(8)+'/'+r.d.slice(5,7)+'</td><td>'+r.t+'</td><td>'+hmm(r.p)+(r.pc?' <span class="badge b-warn" title="Horário corrigido pelo coordenador">corr.</span>':'')+'</td><td>'+(r.f>0?'<span class="red">'+hmm(r.f)+'</span>':"—")+'</td><td>'+hmm(r.og)+'</td><td>'+(r.x>0?hmm(r.x):"—")+'</td><td>'+(r.xp>0?'<strong class="green">'+hmm(r.xp)+'</strong>':"—")+'</td><td>'+dec+'</td><td>'+(r.xo||"")+'</td><td>'+(r.m>0?hmm(r.m):"—")+'</td><td>'+pic+'</td><td>'+(r.esp||"")+'</td></tr>';
   });
   document.getElementById("detTbl").innerHTML=h;
   var d=document.getElementById("detail"); d.style.display="block"; d.scrollIntoView({behavior:"smooth"});
@@ -246,6 +433,7 @@ function closeDetail(){document.getElementById("detail").style.display="none";}
 function render(){
   var rows=filtered();
   renderCards(rows); renderCharts(rows); renderTable(rows); closeDetail();
+  if(!document.getElementById("wDe").value) setSemana(-1); else renderSemana();
 }
 
 function applyDataset(ds){
@@ -287,7 +475,7 @@ function parsePago(obs, extrasMin){
 
 function classifyEspecial(txt){
   if(!txt) return "outro";
-  if(/sem registo|sem movimentos/i.test(txt)) return "sem_registo";
+  if(/sem registo|sem movimentos|sem dados/i.test(txt)) return "sem_registo";
   if(/f[ée]rias/i.test(txt)) return "ferias";
   if(/baixa/i.test(txt)) return "baixa";
   if(/falta/i.test(txt)) return "falta";
@@ -306,6 +494,13 @@ function localFor(unit,nome){
 function parseReport(html, unit, dateISO){
   var doc=new DOMParser().parseFromString(html,"text/html");
   var rows=[], byName={};
+  /* Relatorios novos trazem as horas corrigidas em campos de hora; o resultado ja' vem
+     calculado no atributo data-presenca-corr do grupo. Os antigos so' tinham texto livre. */
+  var corr={};
+  Array.prototype.forEach.call(doc.querySelectorAll(".corrgrp[data-presenca-corr]"),function(g){
+    var nm=g.getAttribute("data-corr-name"), v=parseInt(g.getAttribute("data-presenca-corr"),10);
+    if(nm && !isNaN(v) && v>0) corr[nm]=v;
+  });
   // Casos Especiais
   Array.prototype.forEach.call(doc.querySelectorAll(".special"),function(sp){
     var st=sp.querySelector("strong"); if(!st) return;
@@ -314,7 +509,7 @@ function parseReport(html, unit, dateISO){
     Array.prototype.forEach.call(sp.childNodes,function(nd){ if(nd.nodeType===3) topTxt+=nd.textContent; });
     var esp=topTxt.replace(/^[\s—-]+/,"").trim()||"Caso especial";
     var hr=null;
-    Array.prototype.forEach.call(sp.querySelectorAll("input"),function(inp){ var v=inp.getAttribute("value"); if(v&&v.trim())hr=v.trim(); });
+    Array.prototype.forEach.call(sp.querySelectorAll('input[type="text"]'),function(inp){ var v=inp.getAttribute("value"); if(v&&v.trim())hr=v.trim(); });
     byName[nome]={esp:esp,hr:hr};
   });
   // Análise por colaborador
@@ -322,7 +517,31 @@ function parseReport(html, unit, dateISO){
     var nmEl=cb.querySelector(".ch .name"); if(!nmEl) return;
     var nome=nmEl.textContent.trim();
     var body=cb.querySelector(".cbody")||cb;
-    var r={l:localFor(unit,nome),d:dateISO,n:nome,t:"normal",p:null,og:null,x:0,xv:null,xo:null,m:0,mp:0,asp:false,ae:0,esp:null,xp:0};
+    var r={l:localFor(unit,nome),d:dateISO,n:nome,t:"normal",p:null,og:null,x:0,xv:null,xo:null,m:0,mp:0,asp:false,ae:0,esp:null,xp:0,f:0,pc:false,at:0,sa:0,hor:false};
+    /* Se o relatorio ja' traz os valores em atributos, usa-os — e' exacto e nao depende
+       de ler o texto dos alertas. */
+    var dp=cb.getAttribute("data-presenca");
+    var da=cb.getAttribute("data-atraso");
+    if(da!==null && da!==""){ r.at=parseInt(da,10)||0; r.sa=parseInt(cb.getAttribute("data-saidaant")||"0",10)||0; r.hor=true; }
+    else {
+      /* Relatorios antigos: ler a seccao "Desvios de Horário". So' existem desvios
+         acima de 5 minutos — abaixo disso nunca chegaram a ser escritos. */
+      Array.prototype.forEach.call(body.querySelectorAll(".sched-row"),function(sr){
+        var txt=sr.textContent||"", mm=/(\d+)h\s*(\d{1,2})m/.exec(txt);
+        if(!mm) return;
+        r.hor=true;
+        var mins=(+mm[1])*60+(+mm[2]);
+        var mau=!!sr.querySelector(".neg");
+        if(/^\s*[⚠\s]*Entrada:/.test(txt) && mau) r.at=mins;
+        else if(/^\s*[⚠\s]*Saída:/.test(txt) && mau) r.sa=mins;
+      });
+    }
+    if(dp!==null && dp!==""){
+      r.p=parseInt(dp,10);
+      var dog=cb.getAttribute("data-og"); if(dog) r.og=parseInt(dog,10);
+      var dx=cb.getAttribute("data-extras"); if(dx) r.x=parseInt(dx,10);
+      var dm=cb.getAttribute("data-morto"); if(dm) r.m=parseInt(dm,10);
+    }
     Array.prototype.forEach.call(body.querySelectorAll(".alert"),function(al){
       var t=al.textContent;
       if(/Presença 2Smart:/.test(t)) r.p=toMin(t);
@@ -334,15 +553,27 @@ function parseReport(html, unit, dateISO){
     });
     var sel=body.querySelector('select[data-field="horas_extras"]');
     if(sel){ var opt=sel.querySelector("option[selected]"); r.xv=opt?opt.getAttribute("value"):""; }
+    /* Horas a pagar: nos relatorios novos vem de um dropdown em minutos. */
+    var selp=body.querySelector('select[data-field="horas_extras_pagas"]');
+    var pagoSel=null;
+    if(selp){ var op2=selp.querySelector("option[selected]"); var vv=op2?op2.getAttribute("value"):"";
+              if(vv!==null && vv!=="") pagoSel=parseInt(vv,10); }
     var obsIn=body.querySelector('input[data-field="horas_extras_obs"]');
     if(obsIn){ var ov=obsIn.getAttribute("value"); if(ov&&ov.trim()) r.xo=ov.trim(); }
     if(byName[nome]){ r.esp=byName[nome].esp; r.t=classifyEspecial(byName[nome].esp); delete byName[nome]; }
-    if(r.x>0 && r.xv==="Validado") r.xp=parsePago(r.xo,r.x);
+    if(r.x>0 && r.xv==="Validado") r.xp = (pagoSel!==null && !isNaN(pagoSel)) ? pagoSel : parsePago(r.xo,r.x);
+    else if(pagoSel!==null && !isNaN(pagoSel) && pagoSel>0 && r.xv!=="Não validado") r.xp=pagoSel;
+    /* Presenca corrigida pelo coordenador substitui a do Face ID. */
+    if(corr[nome]!=null){ r.p=corr[nome]; r.pc=true; delete corr[nome]; }
+    if(r.p!=null) r.f=Math.max(0, 480-r.p);
     rows.push(r);
   });
   // Especiais sem análise associada
   Object.keys(byName).forEach(function(nome){
-    rows.push({l:localFor(unit,nome),d:dateISO,n:nome,t:classifyEspecial(byName[nome].esp),p:null,og:null,x:0,xv:null,xo:null,m:0,mp:0,asp:false,ae:0,esp:byName[nome].esp,xp:0});
+    var pc=(corr[nome]!=null), pv=pc?corr[nome]:null;
+    rows.push({l:localFor(unit,nome),d:dateISO,n:nome,t:classifyEspecial(byName[nome].esp),p:pv,og:null,x:pv!=null?Math.max(0,pv-480):0,
+               xv:null,xo:null,m:0,mp:0,asp:false,ae:0,esp:byName[nome].esp,xp:0,
+               f:pv!=null?Math.max(0,480-pv):0,pc:pc});
   });
   return rows;
 }
