@@ -94,6 +94,8 @@ body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text
 .moline{margin-top:10px;padding:9px 12px;background:var(--gray-100);border-radius:var(--radius-sm);font-size:13.5px}
 .moline b{color:var(--navy);font-size:15px}
 .moline span{color:var(--gray-600);font-size:12.5px;margin-left:6px}
+.pfx{font-size:11.5px;font-weight:800;color:var(--gray-400);letter-spacing:.4px}
+td.hr{font-weight:700;color:var(--gray-600);white-space:nowrap}
 
 /* ---- tabelas ---- */
 .twrap{overflow:auto;border:1px solid var(--gray-200);border-radius:var(--radius-sm);background:#fff}
@@ -159,7 +161,7 @@ table.t .del:hover{color:var(--danger)}
 .folha .rodape{margin-top:4mm;padding-top:2mm;border-top:.2mm solid #ddd;font-size:6.8pt;color:#333;line-height:1.3}
 .folha .assin{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:6mm}
 .folha .assin div{border-top:.3mm solid #000;padding-top:1.2mm;font-size:7.5pt;color:#333}
-.folha .dsgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5mm;margin-bottom:1.5mm;align-items:start}
+.folha .dsgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:1.5mm;margin-bottom:1.5mm;align-items:start}
 .folha .dsv{border:.2mm solid #d8dde4;border-radius:1mm;padding:.8mm 1.2mm;page-break-inside:avoid}
 .folha .dsv.w2{grid-column:span 2}
 .folha .dsl{font-size:6.2pt;text-transform:uppercase;letter-spacing:.4px;color:#666;margin-bottom:.4mm}
@@ -242,6 +244,7 @@ table.t .del:hover{color:var(--danger)}
       <div class="addrow">
         <select id="addZona"></select>
         <button class="btn btn-alt" style="padding:9px 16px;font-size:13px" onclick="addZonaManual()">Adicionar zona</button>
+        <button class="linkbtn" style="padding:9px 4px" onclick="addLivre()">+ MOP0 (escrita livre)</button>
         <span class="hint" style="font-size:12.5px;color:var(--gray-600)">— também podes marcar directamente no desenho</span>
       </div>
     </div>
@@ -254,12 +257,14 @@ table.t .del:hover{color:var(--danger)}
 
     <div class="cols2">
       <div class="card">
-        <h2>Mão de obra — horas de chapa</h2>
+        <h2>Mão de obra</h2>
         <div class="grid">
           <div class="f"><label>Horas de chapa</label><input id="fHoras" inputmode="decimal" placeholder="ex.: 6" oninput="calc();marcar()"></div>
-          <div class="f"><label>Valor / hora (€)</label><input id="fVHora" inputmode="decimal" placeholder="ex.: 35,00" oninput="guardarVHora();calc();marcar()"></div>
+          <div class="f"><label>Valor / hora de chapa (€)</label><input id="fVHora" inputmode="decimal" placeholder="50,00" oninput="calc();marcar()"></div>
         </div>
-        <div class="moline">Total da mão de obra: <b id="moCalc">0,00 €</b> <span id="moDetalhe"></span></div>
+        <div class="moline">Total das horas de chapa: <b id="moCalc">0,00 €</b> <span id="moDetalhe"></span></div>
+        <div class="f" style="margin-top:12px"><label>Valor / hora de pintura (€) <span class="req">*</span></label><input id="fVHPint" inputmode="decimal" placeholder="45,00" oninput="refreshHoras();calc();marcar()"></div>
+        <div class="moline">Horas de pintura: <b id="hpCalc">0,00 h</b> <span id="hpDetalhe"></span></div>
         <div class="f" style="margin-top:12px"><label>Validade do orçamento</label><input id="fValidade" value="30 dias" oninput="marcar()"></div>
       </div>
       <div class="card">
@@ -269,8 +274,9 @@ table.t .del:hover{color:var(--danger)}
     </div>
 
     <div class="tot">
-      <div><div class="t">Zonas</div><div class="v" id="tZonas">0,00 €</div></div>
+      <div><div class="t">Pintura (MOP)</div><div class="v" id="tZonas">0,00 €</div></div>
       <div><div class="t">Peças</div><div class="v" id="tPecas">0,00 €</div></div>
+      <div><div class="t">Horas de pintura</div><div class="v" id="tHp">0,00 h</div></div>
       <div><div class="t">Mão de obra (chapa)</div><div class="v" id="tMo">0,00 €</div></div>
       <div><div class="t">Total s/ IVA · IVA 23%</div><div class="v" id="tSiva">0,00 €</div></div>
       <div><div class="t">Total c/ IVA</div><div class="v big" id="tCiva">0,00 €</div></div>
@@ -364,8 +370,10 @@ var ORDEM = ['gl:D','pf:D','pt:D','il:D','em:D','jf:D','jt:D',
 var MOP = {}; ORDEM.forEach(function(k,i){ MOP[k] = i+1; });
 
 var VISTAS = [
-  { k:'lat',    t:'Lateral Direita', lado:'D' },
-  { k:'lat',    t:'Lateral Esquerda', lado:'E', esp:true },
+  /* o desenho original tem a frente virada para a esquerda: e' a LATERAL ESQUERDA.
+     A direita e' a mesma imagem espelhada. */
+  { k:'lat',    t:'Lateral Direita',  lado:'D', esp:true },
+  { k:'lat',    t:'Lateral Esquerda', lado:'E' },
   { k:'frente', t:'Frente' },
   { k:'tras',   t:'Traseira' },
   { k:'topo',   t:'Tejadilho / Capot / Mala' }
@@ -375,6 +383,7 @@ var VISTAS = [
 var acc = '1';
 var zonas = {};              /* chave -> { a:'1'..'4', p:'180,00' } */
 var pecas = [];              /* { d:'', q:'1', v:'' } */
+var livres = [];             /* artigos MOP0 de escrita livre: { d:'', p:'' } */
 var histRows = [], histLoaded = false;
 var currentUserName = '', currentUserEmail = '';
 var DES = null;              /* desenho do tipo escolhido */
@@ -401,12 +410,28 @@ function toast(m, err){
 }
 function estClass(v){ for(var i=0;i<ESTADOS.length;i++) if(ESTADOS[i].v===v) return ESTADOS[i].c; return 'est-orc'; }
 
+/* Designacoes exactamente como estao no mapa de artigos (OfficeGest) — MOP1 a MOP21. */
+var NOMEMOP = {
+  'gl:D':'Guarda-Lamas direito',    'pf:D':'Porta dianteira direita',
+  'pt:D':'Porta traseira direita',  'il:D':'Ilharga Direita',
+  'em:D':'Embaladeira Direita',     'jf:D':'Jante dianteira direita',
+  'jt:D':'Jante traseira direita',  'gl:E':'Guarda-Lamas Esquerdo',
+  'pf:E':'Porta dianteira Esquerda','pt:E':'Porta traseira Esquerda',
+  'il:E':'Ilharga Esquerda',        'em:E':'Embaladeira Esquerda',
+  'jf:E':'Jante dianteira Esquerda','jt:E':'Jante traseira Esquerda',
+  'tej':'Tejadilho',                'cap':'Capot',
+  'tam':'Tampa da Mala',            'rv:D':'Retrovisor Direito',
+  'rv:E':'Retrovisor Esquerdo',     'pcf':'Para-Choques Dianteiro',
+  'pct':'Para-Choques Traseiro'
+};
 function nomeZona(k){
+  if (NOMEMOP[k]) return NOMEMOP[k];
   var p = k.split(':'), z = ZMAP[p[0]];
   if (!z) return k;
   if (!p[1]) return z.nome;
-  return z.nome + ' ' + (p[1]==='D' ? 'Dta' : 'Esq');
+  return z.nome + ' ' + (p[1]==='D' ? 'Direito' : 'Esquerdo');
 }
+function descMop(k){ return 'PINTURA | ' + nomeZona(k); }
 function blocoZona(k){ var n = MOP[k]||99; return n<=7 ? 0 : (n<=14 ? 1 : 2); }
 
 /* ---------------- arranque ---------------- */
@@ -453,7 +478,6 @@ function boot(){
   });
 
   $('fData').value = new Date().toISOString().slice(0,10);
-  try { var vh = localStorage.getItem('orc_colisao_vhora'); if (vh) $('fVHora').value = vh; } catch(e){}
 
   restaurar();
   renderDesenhos();
@@ -555,16 +579,18 @@ function addZonaManual(){
 function renderZonas(){
   var ks = Object.keys(zonas).sort(function(a,b){ return (MOP[a]||99) - (MOP[b]||99); });
   var c = $('zonasTab');
-  $('zHint').textContent = ks.length ? (ks.length + (ks.length===1?' zona marcada':' zonas marcadas')) : '';
-  if (!ks.length) {
-    c.innerHTML = '<div class="twrap"><div class="empty">Nenhuma zona marcada. Clica nas peças do desenho ou usa o selector em baixo.</div></div>';
+  var n = ks.length + livres.length;
+  $('zHint').textContent = n ? (n + (n===1?' linha':' linhas')) : '';
+  if (!n) {
+    c.innerHTML = '<div class="twrap"><div class="empty">Nenhuma zona marcada. Clica nas peças do desenho, usa o selector em baixo ou acrescenta uma linha MOP0.</div></div>';
     return;
   }
   var nomesBloco = ['Sub-total Lateral Direita','Sub-total Lateral Esquerda','Sub-total Restantes zonas'];
-  var h = '<div class="twrap"><table class="t"><thead><tr><th>N.º</th><th>Zona</th><th>Acção</th><th style="text-align:right">Preço</th><th></th></tr></thead><tbody>';
+  var h = '<div class="twrap"><table class="t"><thead><tr><th>N.º</th><th>Descritivo</th><th>Acção</th>'
+        + '<th style="text-align:right">Preço</th><th style="text-align:right">Horas</th><th></th></tr></thead><tbody>';
   var bloco = -1, sub = 0, algum = false;
   function fecharBloco(){
-    if (bloco >= 0 && algum) h += '<tr class="sub"><td></td><td colspan="2">' + nomesBloco[bloco] + '</td><td class="n" style="text-align:right">' + eur(sub) + '</td><td></td></tr>';
+    if (bloco >= 0 && algum) h += '<tr class="sub"><td></td><td colspan="2">' + nomesBloco[bloco] + '</td><td class="n" style="text-align:right">' + eur(sub) + '</td><td></td><td></td></tr>';
   }
   ks.forEach(function(k){
     var b = blocoZona(k);
@@ -575,13 +601,45 @@ function renderZonas(){
       sel += '<option value="' + a + '"' + (zonas[k].a===a?' selected':'') + '>' + a + ' · ' + ACCOES[a] + '</option>';
     });
     sel += '</select>';
-    h += '<tr><td class="mop">MOP' + MOP[k] + '</td><td class="z">' + esc(nomeZona(k)) + '</td><td>' + sel + '</td>'
+    h += '<tr><td class="mop">MOP' + MOP[k] + '</td><td class="z">' + esc(descMop(k)) + '</td><td>' + sel + '</td>'
        + '<td style="text-align:right"><input class="pr" inputmode="decimal" placeholder="0,00" value="' + esc(zonas[k].p) + '" oninput="setZonaPreco(\'' + k + '\',this.value)"></td>'
+       + '<td class="hr" style="text-align:right" data-hk="' + k + '">' + hrs(horasDe(zonas[k].p)) + '</td>'
        + '<td style="text-align:right"><button class="del" title="Remover" onclick="delZona(\'' + k + '\')">×</button></td></tr>';
   });
   fecharBloco();
+  if (livres.length) {
+    var subL = 0;
+    livres.forEach(function(l,i){
+      subL += num(l.p);
+      h += '<tr><td class="mop">MOP0</td>'
+         + '<td><span class="pfx">PINTURA |</span> <input class="ds" style="width:calc(100% - 76px)" placeholder="escrever aqui" value="' + esc(l.d) + '" oninput="setLivre(' + i + ',\'d\',this.value)"></td>'
+         + '<td><span class="hint" style="font-size:12px;color:var(--gray-600)">escrita livre</span></td>'
+         + '<td style="text-align:right"><input class="pr" inputmode="decimal" placeholder="0,00" value="' + esc(l.p) + '" oninput="setLivre(' + i + ',\'p\',this.value)"></td>'
+         + '<td class="hr" style="text-align:right" data-hl="' + i + '">' + hrs(horasDe(l.p)) + '</td>'
+         + '<td style="text-align:right"><button class="del" title="Remover" onclick="delLivre(' + i + ')">×</button></td></tr>';
+    });
+    h += '<tr class="sub"><td></td><td colspan="2">Sub-total MOP0</td><td class="n" style="text-align:right">' + eur(subL) + '</td><td></td><td></td></tr>';
+  }
   h += '</tbody></table></div>';
   c.innerHTML = h;
+}
+/* ---------------- artigos MOP0 (escrita livre) ---------------- */
+function addLivre(){ livres.push({ d:'', p: precoBase() }); renderZonas(); calc(); marcar(); }
+function delLivre(i){ livres.splice(i,1); renderZonas(); calc(); marcar(); }
+function setLivre(i,campo,val){
+  if (!livres[i]) return;
+  livres[i][campo] = val;
+  if (campo === 'p') { calcSubtotais(); calc(); }
+  marcar();
+}
+function totalLivres(){ var t=0; livres.forEach(function(l){ t += num(l.p); }); return t; }
+function refreshHoras(){
+  var cs = document.querySelectorAll('#zonasTab td.hr');
+  for (var i=0;i<cs.length;i++){
+    var k = cs[i].getAttribute('data-hk'), li = cs[i].getAttribute('data-hl');
+    if (k != null && zonas[k]) cs[i].textContent = hrs(horasDe(zonas[k].p));
+    else if (li != null && livres[li]) cs[i].textContent = hrs(horasDe(livres[li].p));
+  }
 }
 function precoBase(){ var el = $('fPreco'); return el ? String(el.value||'').trim() : ''; }
 function setPrecoPeca(v){
@@ -589,24 +647,26 @@ function setPrecoPeca(v){
      Depois disto, quem quiser altera linha a linha — ate voltar a mexer neste campo. */
   var t = String(v||'').trim();
   Object.keys(zonas).forEach(function(k){ zonas[k].p = t; });
+  livres.forEach(function(l){ l.p = t; });
   renderZonas(); calc(); marcar();
 }
 function setZonaAcc(k,v){ if(zonas[k]){ zonas[k].a = v; pintarSvg(); renderZonas(); marcar(); } }
 function setZonaPreco(k,v){ if(zonas[k]){ zonas[k].p = v; calcSubtotais(); calc(); marcar(); } }
 function delZona(k){ delete zonas[k]; pintarSvg(); renderZonas(); calc(); marcar(); }
 function calcSubtotais(){
-  /* redesenha só os subtotais sem perder o foco do campo em edição */
+  /* actualiza subtotais e horas sem redesenhar a tabela (nao perde o foco do campo) */
   var ks = Object.keys(zonas).sort(function(a,b){ return (MOP[a]||99)-(MOP[b]||99); });
   var subs = [0,0,0];
   ks.forEach(function(k){ subs[blocoZona(k)] += num(zonas[k].p); });
-  var rows = document.querySelectorAll('#zonasTab tr.sub');
-  var idx = 0, ordem = [];
-  var vistos = {};
+  var ordem = [], vistos = {};
   ks.forEach(function(k){ var b = blocoZona(k); if(!vistos[b]){ vistos[b]=1; ordem.push(b); } });
+  if (livres.length) ordem.push(-1);
+  var rows = document.querySelectorAll('#zonasTab tr.sub');
   for (var i=0;i<rows.length && i<ordem.length;i++){
     var td = rows[i].querySelectorAll('td');
-    if (td.length >= 4) td[2].textContent = eur(subs[ordem[i]]);
+    if (td.length >= 4) td[2].textContent = eur(ordem[i] === -1 ? totalLivres() : subs[ordem[i]]);
   }
+  refreshHoras();
 }
 
 /* ---------------- peças ---------------- */
@@ -640,14 +700,16 @@ function renderPecas(){
 }
 
 /* ---------------- totais ---------------- */
-function totalZonas(){ var t=0; Object.keys(zonas).forEach(function(k){ t += num(zonas[k].p); }); return t; }
+function totalZonas(){ var t=0; Object.keys(zonas).forEach(function(k){ t += num(zonas[k].p); }); return t + totalLivres(); }
+var VH_CHAPA_DEF = 50, VH_PINT_DEF = 45;
 function horasChapa(){ return num($('fHoras').value); }
-function valorHora(){ return num($('fVHora').value); }
+/* Se ficarem em branco assume-se o valor da casa (o que esta' a sombreado no campo).
+   Nao se guarda de um orcamento para o outro: ha' clientes com valores diferentes. */
+function valorHora(){ return num($('fVHora').value) || VH_CHAPA_DEF; }
+function valorHoraPint(){ return num($('fVHPint').value) || VH_PINT_DEF; }
 function totalMO(){ return horasChapa() * valorHora(); }
-function guardarVHora(){
-  /* o valor/hora e' sempre o mesmo na oficina: fica guardado para o proximo orcamento */
-  try { localStorage.setItem('orc_colisao_vhora', String($('fVHora').value||'')); } catch(e){}
-}
+function hrs(n){ return (Math.round(n*100)/100).toFixed(2).replace('.',',') + ' h'; }
+function horasDe(v){ var vh = valorHoraPint(); return vh ? num(v)/vh : 0; }
 function calc(){
   var z = totalZonas(), p = totalPecas(), mo = totalMO();
   var siva = z + p + mo, iva = siva * IVA;
@@ -655,8 +717,11 @@ function calc(){
   $('tPecas').textContent = eur(p);
   $('tMo').textContent = eur(mo);
   $('moCalc').textContent = eur(mo);
-  $('moDetalhe').textContent = (horasChapa() && valorHora())
-    ? ('(' + String($('fHoras').value).trim() + ' h × ' + eur(valorHora()) + '/h)') : '';
+  $('moDetalhe').textContent = horasChapa() ? ('(' + String($('fHoras').value).trim() + ' h × ' + eur(valorHora()) + '/h)') : '';
+  var hp = horasDe(z);
+  $('tHp').textContent = hrs(hp);
+  $('hpCalc').textContent = hrs(hp);
+  $('hpDetalhe').textContent = z ? ('(' + eur(z) + ' ÷ ' + eur(valorHoraPint()) + '/h)') : '';
   $('tSiva').textContent = eur(siva) + '  ·  ' + eur(iva);
   $('tCiva').textContent = eur(siva + iva);
   var mat = $('vMat').value.trim(), dt = $('fData').value;
@@ -671,11 +736,11 @@ function onEstado(){
 
 /* ---------------- rascunho ---------------- */
 var CAMPOS = ['fUnidade','fData','fEstado','fMotivo','cNome','cTel','cEmail','cNif',
-              'vMarca','vModelo','vMat','vCor','vTipo','fPreco','fHoras','fVHora','fValidade','fObs'];
+              'vMarca','vModelo','vMat','vCor','vTipo','fPreco','fHoras','fVHora','fVHPint','fValidade','fObs'];
 function dados(){
   var d = {};
   CAMPOS.forEach(function(id){ var el = $(id); d[id] = el ? el.value : ''; });
-  d.zonas = zonas; d.pecas = pecas;
+  d.zonas = zonas; d.pecas = pecas; d.livres = livres;
   return d;
 }
 function marcar(){
@@ -690,10 +755,11 @@ function restaurar(){
   CAMPOS.forEach(function(id){ var el = $(id); if (el && d[id] != null) el.value = d[id]; });
   zonas = d.zonas || {};
   pecas = d.pecas || [];
+  livres = d.livres || [];
 }
 function limpar(){
   if (!confirm('Limpar todo o orçamento em edição?')) return;
-  zonas = {}; pecas = [];
+  zonas = {}; pecas = []; livres = [];
   CAMPOS.forEach(function(id){ var el = $(id); if (el && id!=='fUnidade' && id!=='vTipo' && id!=='fEstado' && id!=='fValidade' && id!=='fVHora') el.value = ''; });
   $('fData').value = new Date().toISOString().slice(0,10);
   $('fValidade').value = '30 dias';
@@ -708,15 +774,26 @@ function linhasZonas(){
   var ks = Object.keys(zonas).sort(function(a,b){ return (MOP[a]||99)-(MOP[b]||99); });
   var nomesBloco = ['Sub-total Lateral Direita','Sub-total Lateral Esquerda','Sub-total Restantes zonas'];
   var h = '', bloco = -1, sub = 0, algum = false;
-  function fechar(){ if (bloco>=0 && algum) h += '<tr class="sub"><td colspan="3">'+nomesBloco[bloco]+'</td><td class="n">'+eur(sub)+'</td></tr>'; }
+  function fechar(){ if (bloco>=0 && algum) h += '<tr class="sub"><td colspan="3">'+nomesBloco[bloco]+'</td><td class="n">'+eur(sub)+'</td><td></td></tr>'; }
   ks.forEach(function(k){
     var b = blocoZona(k);
     if (b !== bloco){ fechar(); bloco = b; sub = 0; algum = false; }
     algum = true; sub += num(zonas[k].p);
-    h += '<tr><td>MOP'+MOP[k]+'</td><td>'+esc(nomeZona(k))+'</td><td>'+zonas[k].a+' · '+ACCOES[zonas[k].a]+'</td><td class="n">'+eur(num(zonas[k].p))+'</td></tr>';
+    h += '<tr><td>MOP'+MOP[k]+'</td><td>'+esc(descMop(k))+'</td><td>'+zonas[k].a+' · '+ACCOES[zonas[k].a]+'</td>'
+       + '<td class="n">'+eur(num(zonas[k].p))+'</td><td class="n">'+hrs(horasDe(zonas[k].p))+'</td></tr>';
   });
   fechar();
-  if (!h) h = '<tr><td colspan="4" class="vazio">Sem zonas marcadas.</td></tr>';
+  if (livres.length){
+    var subL = 0;
+    livres.forEach(function(l){
+      if (!String(l.d||'').trim() && !num(l.p)) return;
+      subL += num(l.p);
+      h += '<tr><td>MOP0</td><td>PINTURA | '+esc(l.d)+'</td><td>—</td>'
+         + '<td class="n">'+eur(num(l.p))+'</td><td class="n">'+hrs(horasDe(l.p))+'</td></tr>';
+    });
+    if (subL) h += '<tr class="sub"><td colspan="3">Sub-total MOP0</td><td class="n">'+eur(subL)+'</td><td></td></tr>';
+  }
+  if (!h) h = '<tr><td colspan="5" class="vazio">Sem zonas marcadas.</td></tr>';
   return h;
 }
 function linhasPecas(){
@@ -790,7 +867,8 @@ function corpoFolha(){
     + '</div>';
 
   h += '<h2 style="margin-bottom:2mm">Zonas a intervencionar</h2>'
-    + '<table><thead><tr><th style="width:14mm">N.º</th><th>Zona</th><th style="width:52mm">Acção</th><th style="width:26mm;text-align:right">Preço</th></tr></thead>'
+    + '<table><thead><tr><th style="width:12mm">N.º</th><th>Descritivo</th><th style="width:46mm">Acção</th>'
+    + '<th style="width:22mm;text-align:right">Preço</th><th style="width:17mm;text-align:right">Horas</th></tr></thead>'
     + '<tbody>' + linhasZonas() + '</tbody></table>';
 
   h += desenhoFolha();
@@ -809,7 +887,8 @@ function corpoFolha(){
   }
 
   h += '<table class="totais"><tbody>'
-    + '<tr><td>Zonas</td><td class="n">' + eur(z) + '</td></tr>'
+    + '<tr><td>Pintura (MOP)</td><td class="n">' + eur(z) + '</td></tr>'
+    + '<tr><td style="color:#555">Horas de pintura (' + eur(z) + ' ÷ ' + eur(valorHoraPint()) + '/h)</td><td class="n" style="color:#555">' + hrs(horasDe(z)) + '</td></tr>'
     + '<tr><td>Componentes / Peças</td><td class="n">' + eur(p) + '</td></tr>'
     + '<tr><td>' + moTxt + '</td><td class="n">' + eur(mo) + '</td></tr>'
     + '<tr><td>Total s/ IVA</td><td class="n">' + eur(siva) + '</td></tr>'
@@ -894,7 +973,8 @@ function gravar(){
     return addIndex({
       data:d.fData, unidade:d.fUnidade, estado:d.fEstado, motivo:d.fMotivo,
       cliente:d.cNome, contacto:d.cTel, matricula:d.vMat, marca:d.vMarca, modelo:d.vModelo,
-      zonas:Object.keys(zonas).length, horas:d.fHoras, vhora:d.fVHora, mo:mo,
+      zonas:Object.keys(zonas).length + livres.length, horas:d.fHoras, vhora:d.fVHora, mo:mo,
+      vhpint:d.fVHPint, horasPintura:horasDe(z),
       totalSiva:siva, totalCiva:civa,
       ficheiro:nome, webUrl:(res && res.webUrl) || '',
       criadoPor: currentUserName || currentUserEmail, criadoEm: new Date().toISOString()
