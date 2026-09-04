@@ -94,6 +94,20 @@ body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text
 .moline{margin-top:10px;padding:9px 12px;background:var(--gray-100);border-radius:var(--radius-sm);font-size:13.5px}
 .moline b{color:var(--navy);font-size:15px}
 .moline span{color:var(--gray-600);font-size:12.5px;margin-left:6px}
+/* visualizador do histórico, dentro da intranet */
+.vwrap{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:9000;display:none;padding:18px}
+.vwrap.on{display:flex;align-items:stretch;justify-content:center}
+.vbox{background:#fff;border-radius:var(--radius);width:100%;max-width:1000px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.vhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 18px;background:var(--navy-deep);color:#fff}
+.vhead .vt{font-weight:800;font-size:15px;margin-right:auto}
+.vhead .vt small{display:block;font-weight:500;font-size:12px;color:#a9c6e0;margin-top:1px}
+.vhead select{padding:7px 10px;border-radius:8px;border:0;font-family:inherit;font-size:13px;font-weight:700}
+.vhead button{padding:7px 14px;border-radius:8px;border:0;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.vhead .vclose{background:rgba(255,255,255,.16);color:#fff}
+.vbody{flex:1;overflow:auto;background:var(--gray-100)}
+.vbody iframe{width:100%;height:100%;min-height:60vh;border:0;background:#fff}
+.vmsg{padding:10px 18px;font-size:13px;background:#eff6ff;color:#1e40af;border-bottom:1px solid #bfdbfe}
+.lock{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:800}
 .pfx{font-size:11.5px;font-weight:800;color:var(--gray-400);letter-spacing:.4px}
 td.hr{font-weight:700;color:var(--gray-600);white-space:nowrap}
 
@@ -159,7 +173,7 @@ table.t .del:hover{color:var(--danger)}
 .folha .totais tr.fin td{border-top:.5mm solid #000;font-weight:700;font-size:10.5pt}
 .folha .obs{border:.2mm solid #d8dde4;padding:2mm;min-height:10mm;margin-bottom:2mm}
 .folha .rodape{margin-top:4mm;padding-top:2mm;border-top:.2mm solid #ddd;font-size:6.8pt;color:#333;line-height:1.3}
-.folha .assin{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:6mm}
+.folha .assin{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:18mm;page-break-inside:avoid}
 .folha .assin div{border-top:.3mm solid #000;padding-top:1.2mm;font-size:7.5pt;color:#333}
 .folha .dsgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5mm;margin-bottom:2mm;align-items:start}
 .folha .dsv{border:.2mm solid #d8dde4;border-radius:1mm;padding:.8mm 1.2mm;page-break-inside:avoid}
@@ -298,6 +312,7 @@ table.t .del:hover{color:var(--danger)}
         <input class="searchbox" id="hSearch" placeholder="Procurar por matrícula, cliente, marca ou modelo…" oninput="renderHist()">
         <select id="hEstado" onchange="renderHist()"><option value="">Todos os estados</option></select>
         <select id="hUnidade" onchange="renderHist()"><option value="">Todas as unidades</option></select>
+        <select id="hFechado" onchange="renderHist()"><option value="">Abertos e fechados</option><option value="abertos">Só abertos</option><option value="fechados">Só fechados</option></select>
       </div>
       <div id="histContent"></div>
     </div>
@@ -309,6 +324,20 @@ table.t .del:hover{color:var(--danger)}
   <button class="btn btn-ghost" onclick="limpar()">Limpar</button>
   <button class="btn btn-alt" onclick="imprimir()">🖨️ Imprimir / PDF</button>
   <button class="btn btn-main" id="btnSave" onclick="gravar()">💾 Gravar no SharePoint</button>
+</div>
+<div class="vwrap" id="vwrap">
+  <div class="vbox">
+    <div class="vhead">
+      <div class="vt" id="vTitulo">Orçamento<small id="vSub"></small></div>
+      <span id="vLock" class="lock" style="display:none">🔒 Fechado</span>
+      <select id="vEstado" onchange="mudarEstado()"></select>
+      <button class="btn-alt" id="vFechar" onclick="fecharOrcamento()">🔒 Fechar orçamento</button>
+      <button class="btn-alt" onclick="imprimirArquivado()">🖨️ Imprimir</button>
+      <button class="vclose" onclick="fecharVisualizador()">✕ Fechar janela</button>
+    </div>
+    <div class="vmsg" id="vMsg" style="display:none"></div>
+    <div class="vbody"><iframe id="vFrame" title="Orçamento arquivado"></iframe></div>
+  </div>
 </div>
 <div id="toast"></div>
 <script src="orcamentos-desenhos.js"></script>
@@ -1023,7 +1052,8 @@ function gravar(){
       zonas:Object.keys(zonas).length + livres.length, horas:d.fHoras, vhora:d.fVHora, mo:mo,
       vhpint:d.fVHPint, horasPintura:horasDe(z), diversos:qtdDiversos(),
       totalSiva:siva, totalCiva:civa,
-      ficheiro:nome, webUrl:(res && res.webUrl) || '',
+      ficheiro:nome, webUrl:(res && res.webUrl) || '', fileId:(res && res.fileId) || '',
+      fechado:false,
       criadoPor: currentUserName || currentUserEmail, criadoEm: new Date().toISOString()
     });
   }).then(function(){
@@ -1032,6 +1062,144 @@ function gravar(){
     renderHist(); updatePill(); btn.disabled = false;
   }).catch(function(e){
     toast('Erro ao gravar: ' + (e && e.message ? e.message : e), true); btn.disabled = false;
+  });
+}
+
+/* ---------------- visualizador do arquivo (dentro da intranet) ---------------- */
+var vRow = null, vHtml = '';
+function ehAdmin(){
+  try { var p = window.parent.getCurrentUserPermissions && window.parent.getCurrentUserPermissions();
+        return !!(p && p.role === 'admin'); } catch(e){ return false; }
+}
+function vmsg(t, err){
+  var el = $('vMsg');
+  if (!t) { el.style.display = 'none'; return; }
+  el.style.display = ''; el.textContent = t;
+  el.style.background = err ? '#fef2f2' : '#eff6ff';
+  el.style.color = err ? '#991b1b' : '#1e40af';
+  el.style.borderBottomColor = err ? '#fecaca' : '#bfdbfe';
+}
+function pintarCabecalhoV(){
+  var r = vRow || {};
+  $('vTitulo').innerHTML = esc(r.matricula || '—')
+    + '<small>' + esc(dPT(r.data)) + ' · ' + esc(r.unidade || '') + ' · ' + esc(r.cliente || '') + ' · ' + eur(num(r.totalCiva)) + '</small>';
+  var sel = $('vEstado'); sel.innerHTML = '';
+  ESTADOS.forEach(function(e){
+    var o = document.createElement('option'); o.value = e.v; o.textContent = e.v;
+    if (r.estado === e.v) o.selected = true;
+    sel.appendChild(o);
+  });
+  var trancado = !!r.fechado;
+  $('vLock').style.display = trancado ? '' : 'none';
+  $('vLock').textContent = trancado ? ('🔒 Fechado por ' + (r.fechadoPor || '—')) : '🔒 Fechado';
+  sel.disabled = trancado;
+  var bt = $('vFechar');
+  if (trancado) {
+    bt.textContent = '🔓 Reabrir';
+    bt.style.display = ehAdmin() ? '' : 'none';
+  } else {
+    bt.textContent = '🔒 Fechar orçamento';
+    bt.style.display = '';
+  }
+}
+function abrirArquivado(ficheiro){
+  var r = null;
+  histRows.forEach(function(x){ if (x.ficheiro === ficheiro) r = x; });
+  if (!r) { toast('Orçamento não encontrado no histórico.', true); return; }
+  vRow = r; vHtml = '';
+  pintarCabecalhoV();
+  $('vFrame').srcdoc = '<p style="font:15px system-ui;color:#64748b;padding:24px">A carregar o orçamento…</p>';
+  vmsg('');
+  $('vwrap').classList.add('on');
+  carregarFicheiro(r).then(function(html){
+    vHtml = html;
+    var d = $('vFrame').contentDocument;
+    d.open(); d.write(html); d.close();
+  }).catch(function(e){
+    $('vFrame').srcdoc = '';
+    vmsg('Não foi possível mostrar o orçamento: ' + (e && e.message ? e.message : e)
+       + (vRow.webUrl ? ' — ainda o pode abrir no SharePoint.' : ''), true);
+  });
+}
+function carregarFicheiro(r){
+  var P; try { P = window.parent; } catch(e){ return Promise.reject(new Error('Fora da intranet')); }
+  if (!P || !P.orcDownloadFile) return Promise.reject(new Error('Esta versão da intranet ainda não sabe abrir ficheiros — falta actualizar o intranet.html'));
+  if (r.fileId) return P.orcDownloadFile(r.fileId);
+  /* Orçamentos gravados antes de o id passar a ser guardado: procura pelo nome. */
+  if (!P.orcListFiles) return Promise.reject(new Error('Orçamento antigo sem referência ao ficheiro'));
+  return P.orcListFiles().then(function(lista){
+    var achado = null;
+    lista.forEach(function(f){ if (f.name === r.ficheiro) achado = f; });
+    if (!achado) throw new Error('Ficheiro não encontrado no SharePoint');
+    r.fileId = achado.id;                       /* fica guardado da próxima vez que o índice gravar */
+    return P.orcDownloadFile(achado.id);
+  });
+}
+function fecharVisualizador(){ $('vwrap').classList.remove('on'); vRow = null; vHtml = ''; }
+function imprimirArquivado(){
+  if (!vHtml) { toast('O orçamento ainda não acabou de carregar.', true); return; }
+  var w = window.open('', '_blank');
+  if (!w) { toast('O browser bloqueou a janela de impressão.', true); return; }
+  w.document.write(vHtml); w.document.close();
+  setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 700);
+}
+function guardarLinha(){
+  var loader, saver;
+  try { loader = window.parent.orcLoadIndex; saver = window.parent.orcSaveIndex; } catch(e){}
+  if (!loader || !saver) return Promise.reject(new Error('Helpers do índice indisponíveis'));
+  return loader().then(function(idx){
+    idx = idx || { updatedAt:null, rows:[] };
+    var achou = false;
+    idx.rows = (idx.rows||[]).map(function(x){
+      if (x.ficheiro === vRow.ficheiro) { achou = true; return vRow; }
+      return x;
+    });
+    if (!achou) idx.rows.push(vRow);
+    idx.updatedAt = new Date().toISOString();
+    return saver(idx).then(function(){ histRows = idx.rows; });
+  });
+}
+function mudarEstado(){
+  if (!vRow) return;
+  if (vRow.fechado) { pintarCabecalhoV(); return; }
+  var novo = $('vEstado').value, antigo = vRow.estado;
+  if (novo === antigo) return;
+  var motivo = vRow.motivo || '';
+  if (novo === 'Recusado') {
+    motivo = prompt('Motivo da recusa (ex.: preço, seguradora não autorizou):', motivo) || '';
+  }
+  vRow.estado = novo; vRow.motivo = motivo;
+  vRow.estadoPor = currentUserName || currentUserEmail;
+  vRow.estadoEm = new Date().toISOString();
+  vmsg('A gravar o novo estado…');
+  guardarLinha().then(function(){
+    vmsg('Estado alterado para «' + novo + '».');
+    pintarCabecalhoV(); renderHist(); updatePill();
+  }).catch(function(e){
+    vRow.estado = antigo; pintarCabecalhoV();
+    vmsg('Não foi possível gravar: ' + (e && e.message ? e.message : e), true);
+  });
+}
+function fecharOrcamento(){
+  if (!vRow) return;
+  if (vRow.fechado) {
+    if (!ehAdmin()) { toast('Só um administrador pode reabrir um orçamento fechado.', true); return; }
+    if (!confirm('Reabrir este orçamento? Volta a poder ser alterado.')) return;
+    vRow.fechado = false; vRow.fechadoPor = ''; vRow.fechadoEm = '';
+  } else {
+    if (!confirm('Fechar o orçamento ' + vRow.matricula + ' de ' + dPT(vRow.data) + '?\n\n'
+      + 'Depois de fechado o estado deixa de poder ser alterado. Só um administrador o pode reabrir.')) return;
+    vRow.fechado = true;
+    vRow.fechadoPor = currentUserName || currentUserEmail;
+    vRow.fechadoEm = new Date().toISOString();
+  }
+  vmsg(vRow.fechado ? 'A fechar…' : 'A reabrir…');
+  guardarLinha().then(function(){
+    vmsg(vRow.fechado ? 'Orçamento fechado. O estado deixou de poder ser alterado.' : 'Orçamento reaberto.');
+    pintarCabecalhoV(); renderHist();
+  }).catch(function(e){
+    vRow.fechado = !vRow.fechado; pintarCabecalhoV();
+    vmsg('Não foi possível gravar: ' + (e && e.message ? e.message : e), true);
   });
 }
 
@@ -1059,6 +1227,9 @@ function renderHist(){
   var rows = histRows.slice().sort(function(a,b){ return String(b.criadoEm||'').localeCompare(String(a.criadoEm||'')); });
   if (fe) rows = rows.filter(function(r){ return r.estado === fe; });
   if (fu) rows = rows.filter(function(r){ return r.unidade === fu; });
+  var ff = String(($('hFechado')||{}).value||'');
+  if (ff === 'abertos')  rows = rows.filter(function(r){ return !r.fechado; });
+  if (ff === 'fechados') rows = rows.filter(function(r){ return !!r.fechado; });
   if (q) rows = rows.filter(function(r){
     return [r.matricula, r.cliente, r.norc, r.nos, r.marca, r.modelo].join(' ').toLowerCase().indexOf(q) >= 0;
   });
@@ -1067,16 +1238,17 @@ function renderHist(){
     c.innerHTML = '<div class="twrap"><div class="empty">' + (histRows.length ? 'Sem resultados para os filtros aplicados.' : 'Ainda não há orçamentos gravados.') + '</div></div>';
     return;
   }
-  var h = '<div class="twrap"><table class="t"><thead><tr><th>Data</th><th>Matrícula</th><th>Cliente</th><th>Viatura</th><th>Unidade</th><th style="text-align:right">Total c/ IVA</th><th>Estado</th><th></th></tr></thead><tbody>';
+  var h = '<div class="twrap"><table class="t"><thead><tr><th>Data</th><th>Matrícula</th><th>Cliente</th><th>Viatura</th><th>Unidade</th><th style="text-align:right">Total c/ IVA</th><th>Estado</th><th style="text-align:right">Ver</th></tr></thead><tbody>';
   rows.forEach(function(r){
     var via = ((r.marca||'') + ' ' + (r.modelo||'')).trim();
     h += '<tr><td>' + esc(dPT(r.data || String(r.criadoEm||'').slice(0,10))) + '</td>'
       + '<td class="z">' + esc(r.matricula||'') + '</td><td>' + esc(r.cliente||'') + '</td><td>' + esc(via) + '</td>'
       + '<td>' + esc(r.unidade||'') + '</td><td style="text-align:right;font-weight:700">' + eur(num(r.totalCiva)) + '</td>'
       + '<td><span class="est ' + estClass(r.estado) + '">' + esc(r.estado||'') + '</span>'
+      + (r.fechado ? '<div style="font-size:11px;color:#991b1b;margin-top:2px;font-weight:700">🔒 fechado</div>' : '')
       + (r.estado === 'Recusado' && r.motivo ? '<div style="font-size:11px;color:#991b1b;margin-top:2px">' + esc(r.motivo) + '</div>' : '') + '</td>'
       + '<td style="text-align:right;white-space:nowrap">'
-      + (r.webUrl ? '<a href="' + esc(r.webUrl) + '" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700;text-decoration:none">Abrir</a>' : '<span style="color:var(--gray-400)">—</span>')
+      + '<button class="linkbtn" onclick="abrirArquivado(\'' + esc(String(r.ficheiro||'').replace(/'/g,"\\'")) + '\')">Ver</button>'
       + '</td></tr>';
   });
   h += '</tbody></table></div>';

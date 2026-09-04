@@ -2925,7 +2925,7 @@
     // e' isto que faz os browsers irem buscar a versao nova em vez da que tem em cache.
     // Antes usava-se Date.now(), o que garantia a versao nova mas obrigava a
     // descarregar o modulo inteiro em TODAS as aberturas.
-    var BUILD = '2026090408';
+    var BUILD = '2026090409';
 
     const SP_CONFIG = {
         siteUrl: 'cpmem.sharepoint.com',
@@ -3334,7 +3334,8 @@
             .then(function(result) {
                 var webUrl = (result && result.webUrl) || null;
                 var dlUrl = (result && result['@microsoft.graph.downloadUrl']) || null;
-                try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: true, fileName: data.fileName, webUrl: webUrl, downloadUrl: dlUrl }, '*'); } catch(e) {}
+                var fid = (result && result.id) || null;
+                try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: true, fileName: data.fileName, webUrl: webUrl, downloadUrl: dlUrl, fileId: fid }, '*'); } catch(e) {}
             })
             .catch(function(err) {
                 try { event.source.postMessage({ type: 'saveToSharePointResult', correlationId: cid, success: false, error: err && err.message ? err.message : String(err), fileName: data.fileName }, '*'); } catch(e) {}
@@ -3731,6 +3732,17 @@
         return loadIndexFromSP('orcamentos_colisao_index.json').then(function(data) {
             return data || { updatedAt: null, rows: [] };
         });
+    };
+    // Ler um orcamento ja' gravado, para o mostrar dentro da intranet (sem saltar para o SharePoint).
+    window.orcDownloadFile = function(fileId) {
+        return downloadSharePointFile(fileId).then(function(r) {
+            if (!r.ok) throw new Error('Não foi possível abrir o ficheiro (HTTP ' + r.status + ')');
+            return r.text();
+        });
+    };
+    // Fallback para os orcamentos antigos, gravados antes de o id passar a ser guardado.
+    window.orcListFiles = function() {
+        return listSharePointFiles('orcamentos_colisao').then(function(res) { return (res && res.value) || []; });
     };
     window.orcSaveIndex = function(data) {
         var role = currentUserPermissions ? currentUserPermissions.role : null;
