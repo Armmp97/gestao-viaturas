@@ -60,6 +60,9 @@
   .sbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;text-align:center;min-width:120px;}
   .sbox .n{font-size:1.4rem;font-weight:800;color:var(--navy);}.sbox .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
   .toggle{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;}
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -132,7 +135,37 @@ var modalDate=null;
 
 function pad(n){return (n<10?'0':'')+n;}
 function dkey(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d);}
+/* Mesma protecao dos Equipamentos: so gravamos depois de ler o SharePoint. */
+var spCarregado = false;
+function avisoSP(txt, erro){
+  var el = document.getElementById('spAviso');
+  if(!el){ el = document.createElement('div'); el.id='spAviso';
+    el.style.cssText='margin:0 0 14px;padding:11px 15px;border-radius:12px;font-size:13.5px;font-weight:600';
+    var alvo = document.querySelector('.page') || document.body; alvo.insertBefore(el, alvo.firstChild); }
+  el.style.background = erro ? '#fef2f2' : '#fffbeb';
+  el.style.border = '1px solid ' + (erro ? '#fca5a5' : '#fde68a');
+  el.style.color = erro ? '#991b1b' : '#92400e';
+  el.textContent = txt; el.style.display = txt ? 'block' : 'none';
+}
+(function(){
+  var loader = null;
+  try { if(window.parent && window.parent!==window && window.parent.dashLoadJson) loader = window.parent.dashLoadJson; } catch(e){}
+  if(!loader){ avisoSP('Fora da intranet: as alterações não são gravadas no SharePoint.', true); return; }
+  avisoSP('A ler o calendário do SharePoint...');
+  loader('formacao_eventos.json').then(function(data){
+    if(Array.isArray(data)){
+      EVENTOS = data;
+      try{ localStorage.setItem('intranet_formacaoEventos', JSON.stringify(EVENTOS)); }catch(e){}
+    }
+    spCarregado = true; avisoSP('');
+    try{ renderCalendar(); renderResumo(); }catch(e){}
+  }).catch(function(e){
+    avisoSP('Não foi possível ler o calendário do SharePoint (' + (e && e.message ? e.message : e) + '). As alterações estão bloqueadas para não apagar o histórico. Recarregue a página.', true);
+  });
+})();
+
 function save(){
+  if(!spCarregado){ alert('Ainda não foi possível ler o calendário do SharePoint. Recarregue a página antes de gravar.'); return; }
   try{ localStorage.setItem('intranet_formacaoEventos', JSON.stringify(EVENTOS)); }catch(e){}
   if(window.parent && window.parent!==window){ window.parent.postMessage({type:'formacaoEventosUpdate',payload:{eventos:EVENTOS}},'*'); }
 }

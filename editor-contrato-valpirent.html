@@ -90,6 +90,9 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
 #toast.err { background: var(--danger); }
 
 @media (max-width: 640px) { .page { padding: 18px 12px 60px; } }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -205,7 +208,7 @@ function hideErr() { document.getElementById('errBanner').style.display = 'none'
 function fmt(n) { return (Math.round(n * 100) / 100).toFixed(2); }
 /* No PDF os valores seguem a notação do contrato (vírgula decimal): 55,50 */
 function fmtPt(n) { return fmt(n).replace('.', ','); }
-function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }  /* escapa tambem aspas: sem isso, uma polegada (jante 17") partia os atributos HTML */
 
 /* ================= Upload ================= */
 var drop = document.getElementById('drop');

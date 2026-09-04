@@ -52,6 +52,9 @@
   .toggle .arrow{font-size:11px;transition:transform .2s;display:inline-block}
   .collapsed .arrow{transform:rotate(-90deg)}
   .collapsed .tbl-wrap,.collapsed .filterbar{display:none}
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -87,7 +90,7 @@ var LAST = null;
 var SEL_OPERS = {};   // técnicos selecionados no filtro das OS sem orçamento (multi-seleção)
 
 /* ============ Utilitários ============ */
-function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }  /* escapa tambem aspas: sem isso, uma polegada (jante 17") partia os atributos HTML */
 function pad2(x){ return String(x).padStart(2,'0'); }
 function deac(s){ return String(s===null||s===undefined?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
 function nmat(x){ return String(x===null||x===undefined?'':x).toUpperCase().replace(/[^A-Z0-9]/g,''); }

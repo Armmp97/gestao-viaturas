@@ -244,6 +244,9 @@ table.gap td.c{text-align:center;font-weight:800}
 #toast.err{background:var(--danger)}
 @media(max-width:640px){.page{padding:18px 12px 170px}.rbar{gap:10px;padding:9px 12px}.rbar .rb .v{font-size:.9rem}}
 @media print{body{background:#fff}.tabs,.rbar,#toast,.anc-btn,.btn,.btn-l,.ev{display:none!important}.page{padding:0;max-width:100%}.view{display:block!important}.blk-body{display:block!important}.blk{break-inside:avoid}}
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>

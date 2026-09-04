@@ -1097,7 +1097,10 @@
                 margin-bottom: 2px;
             }
         }
-    </style>
+    
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
+</style>
 </head>
 <body>
 
@@ -2922,7 +2925,7 @@
     // e' isto que faz os browsers irem buscar a versao nova em vez da que tem em cache.
     // Antes usava-se Date.now(), o que garantia a versao nova mas obrigava a
     // descarregar o modulo inteiro em TODAS as aberturas.
-    var BUILD = '2026090402';
+    var BUILD = '2026090403';
 
     const SP_CONFIG = {
         siteUrl: 'cpmem.sharepoint.com',
@@ -3718,6 +3721,10 @@
         }
         return saveIndexToSP('avarias_index.json', data);
     };
+
+    // Leitura directa de um JSON do Dashboard_State, para os modulos que precisam
+    // de confirmar que leram o SharePoint ANTES de deixarem gravar por cima.
+    window.dashLoadJson = function(fileName) { return loadIndexFromSP(fileName); };
 
     // --- Orçamentos de Colisão (orcamentos-colisao.html) ---
     window.orcLoadIndex = function() {

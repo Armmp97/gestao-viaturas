@@ -53,6 +53,9 @@
   .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .fbtn{padding:5px 12px;border:1px solid #cbd5e1;background:white;border-radius:20px;font-size:11.5px;font-weight:600;color:#475569;cursor:pointer;font-family:inherit}
   .fbtn.active{background:#0f172a;color:white;border-color:#0f172a}
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -117,7 +120,7 @@ function toISO(v){
 function isoToPt(iso){ var m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?m[3]+'/'+m[2]+'/'+m[1]:iso; }
 function normRef(r){ return String(r||'').trim().toUpperCase().replace(/\s+/g,''); }
 function eur(n){ return n===null||n===undefined?'—':n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
-function esc(s){ return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }  /* escapa tambem aspas: sem isso, uma polegada (jante 17") partia os atributos HTML */
 
 /* ============ Leitura de ficheiros ============ */
 function readFile(file, kind, cb){
@@ -310,7 +313,7 @@ function valCell(av,ov){
 }
 function render(R){
   var nAy=Object.keys(R.ay).length, nOg=R.og.length;
-  var nProblem = R.valDiff.length + R.dateDiff.length + R.missOg.length + R.missAy.length + R.fmtDiff.length + R.ogNoRef.length + R.unitDiff.length;
+  var nProblem = R.valDiff.length + R.dateDiff.length + R.missOg.length + R.missAy.length + R.fmtDiff.length + R.ogNoRef.length + R.unitDiff.length + R.dupRef.length;
   var nOkClean = R.matched.filter(function(m){return !m.dv && !m.dd && !m.df && !m.du;}).length;
 
   LAST=R;
@@ -328,6 +331,20 @@ function render(R){
 
   if(nProblem===0){
     h+='<div class="sec"><div class="sec-h">✅ Sem divergências</div><div class="sec-d">Todas as '+R.matched.length+' faturas correspondidas conferem em referência, datas e valores ao cêntimo.</div></div>';
+  }
+
+  // Referencias repetidas no OfficeGest (eram detectadas e nunca mostradas)
+  if(R.dupRef && R.dupRef.length){
+    h+='<div class="sec"><div class="sec-h">🔁 Referências repetidas no OfficeGest ('+R.dupRef.length+')</div>';
+    h+='<div class="sec-d">A mesma referência Ayvens aparece em mais do que um documento do OfficeGest. Confirmar se é duplicação de faturação.</div>';
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="l">Referência</th><th class="l">Documentos OfficeGest</th><th>Datas</th><th>Totais</th></tr></thead><tbody>';
+    R.dupRef.forEach(function(d){
+      h+='<tr><td class="l">'+esc(d.ref)+'</td>'
+       + '<td class="l">'+d.items.map(function(x){return esc(x.num||x.numero||x.ref||'?');}).join('<br>')+'</td>'
+       + '<td>'+d.items.map(function(x){return isoToPt(x.dataISO);}).join('<br>')+'</td>'
+       + '<td>'+d.items.map(function(x){return eur(x.total);}).join('<br>')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
   }
 
   // Documentos em falta

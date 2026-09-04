@@ -15,6 +15,7 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:var(--off-white);color:var(--text-body);line-height:1.6}
 .page{max-width:1180px;margin:0 auto;padding:28px 22px 120px}
+@media(max-width:640px){.page{padding-bottom:200px}}  /* a barra fixa tapava os ultimos campos */
 .hero{background:linear-gradient(135deg,var(--navy-deep),var(--navy));color:#fff;border-radius:var(--radius);padding:26px 30px;margin-bottom:22px}
 .hero h1{font-size:26px;font-weight:800;letter-spacing:-.4px}
 .hero h1 span{color:var(--accent-light)}
@@ -155,6 +156,9 @@ table.t .del:hover{color:var(--danger)}
   body{background:#fff}
   .page,.bar,.tabs,.hero,#toast{display:none!important}
 }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>

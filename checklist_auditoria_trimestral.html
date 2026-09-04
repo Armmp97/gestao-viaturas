@@ -191,6 +191,9 @@ body { font-family: 'Inter', sans-serif; background: var(--off-white); color: va
   .meta-input { border-bottom: 1px solid #ccc; }
   .summary-bar { break-inside: avoid; }
 }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>

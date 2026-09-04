@@ -196,6 +196,9 @@ input[type="file"] { display: none; }
   .actions { display: none; }
   .form-section { break-inside: avoid; }
 }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>

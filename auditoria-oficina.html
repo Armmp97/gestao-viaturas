@@ -46,6 +46,9 @@
   .note{font-size:11.5px;color:#64748b;margin-top:6px;line-height:1.5}
   .badge-wait{background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 12px;border-radius:9px;font-size:12.5px;margin:8px 0}
   .upbox{border:1.5px dashed #cbd5e1;border-radius:10px;padding:12px;font-size:12px;color:#475569}
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -99,7 +102,7 @@ function sleep(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
 
 /* ================= HELPERS ================= */
 function pad2(x){return String(x).padStart(2,'0');}
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s){ return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }  /* escapa tambem aspas: sem isso, uma polegada (jante 17") partia os atributos HTML */
 function nmat(x){return String(x==null?'':x).toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function deaccent(s){return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
 function norm(s){return String(s==null?'':s).replace(/\s+/g,' ').trim();}

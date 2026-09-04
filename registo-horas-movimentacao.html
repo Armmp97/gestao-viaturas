@@ -147,6 +147,9 @@ table.p-dias td.c { text-align: center; }
   .page { padding: 16px 12px 60px; }
   table.dias input.desc { min-width: 150px; }
 }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -548,12 +551,13 @@ function toggleArred() {
 
 function calcula() {
   var n = diasNoMes(mesAtual), ano = +mesAtual.split('-')[0], mes = +mesAtual.split('-')[1];
-  var r = { dias: 0, horas: 0, horasCruas: 0, validados: 0, curtos: [], uteisSem: [], porValidar: 0 };
+  var r = { dias: 0, horas: 0, horasCruas: 0, validados: 0, curtos: [], uteisSem: [], porValidar: 0, ganhoArred: 0 };
   for (var i = 1; i <= n; i++) {
     var d = DADOS.dias[i], ws = new Date(ano, mes - 1, i).getDay(), fds = (ws === 0 || ws === 6);
     var hc = horasCruas(d), h = horasDia(d);
     if (h > 0) {
       r.dias++; r.horas += h; r.horasCruas += hc;
+      r.ganhoArred += (Math.ceil(hc * 2) / 2) - hc;   // o arredondamento e' por DIA, nao sobre o total
       if (d && d.val) r.validados++; else r.porValidar++;
       if (!fds && hc < 4) r.curtos.push(i);
     } else if (!fds) { r.uteisSem.push(i); }
@@ -580,7 +584,7 @@ function totais() {
   var dif = r.horas - r.horasCruas;
   document.getElementById('arredNota').textContent = DADOS.arredondar
     ? '(a somar ' + hh(dif) + ' h ao mês, ' + eur(dif * p.valorHora) + ')'
-    : '(o Excel atual não arredonda — ligar isto sobe o mês em ' + hh(Math.ceil(r.horasCruas * 2) / 2 - r.horasCruas) + ' h)';
+    : '(o Excel atual não arredonda — ligar isto sobe o mês em ' + hh(r.ganhoArred) + ' h, ' + eur(r.ganhoArred * p.valorHora) + ')';
 
   var av = [];
   if (r.curtos.length) av.push('<div class="aviso">⚠ Dia' + (r.curtos.length > 1 ? 's' : '') + ' útil' + (r.curtos.length > 1 ? 'eis' : '') + ' abaixo das 4h de disponibilidade mínima: ' + r.curtos.join(', ') + '.</div>');

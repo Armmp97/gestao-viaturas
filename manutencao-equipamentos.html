@@ -47,6 +47,9 @@
   .mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
   .empty{color:var(--muted);text-align:center;padding:18px;}
   .small{font-size:11px;color:var(--muted);}
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -184,7 +187,41 @@ var EQUIP;
 
 var filtro={of:'todas',es:'todos',tp:'todos'};
 
+/* So gravamos depois de termos a certeza de que lemos o SharePoint. Sem isto,
+   abrir o modulo num computador novo antes da leitura terminar repunha o
+   inventario inicial e apagava todo o historico de manutencoes. */
+var spCarregado = false;
+function avisoSP(txt, erro){
+  var el = document.getElementById('spAviso');
+  if(!el){ el = document.createElement('div'); el.id='spAviso';
+    el.style.cssText='margin:0 0 14px;padding:11px 15px;border-radius:12px;font-size:13.5px;font-weight:600';
+    var alvo = document.querySelector('.page') || document.body; alvo.insertBefore(el, alvo.firstChild); }
+  el.style.background = erro ? '#fef2f2' : '#fffbeb';
+  el.style.border = '1px solid ' + (erro ? '#fca5a5' : '#fde68a');
+  el.style.color = erro ? '#991b1b' : '#92400e';
+  el.textContent = txt;
+  el.style.display = txt ? 'block' : 'none';
+}
+(function(){
+  var loader = null;
+  try { if(window.parent && window.parent!==window && window.parent.dashLoadJson) loader = window.parent.dashLoadJson; } catch(e){}
+  if(!loader){ avisoSP('Fora da intranet: as alterações não são gravadas no SharePoint.', true); return; }
+  avisoSP('A ler o inventário do SharePoint...');
+  loader('equipamentos.json').then(function(data){
+    if(Array.isArray(data) && data.length){
+      EQUIP = data;
+      EQUIP.forEach(function(e){ if(!Array.isArray(e.docs)) e.docs=[]; });
+      try{ localStorage.setItem('intranet_equipamentos', JSON.stringify(EQUIP)); }catch(e){}
+    }
+    spCarregado = true; avisoSP('');
+    try{ renderFilters(); render(); }catch(e){}
+  }).catch(function(e){
+    avisoSP('Não foi possível ler o inventário do SharePoint (' + (e && e.message ? e.message : e) + '). As alterações estão bloqueadas para não apagar o histórico. Recarregue a página.', true);
+  });
+})();
+
 function save(){
+  if(!spCarregado){ alert('Ainda não foi possível ler o inventário do SharePoint. Recarregue a página antes de gravar — gravar agora apagaria o histórico.'); return; }
   try{ localStorage.setItem('intranet_equipamentos', JSON.stringify(EQUIP)); }catch(e){}
   if(window.parent && window.parent!==window){ window.parent.postMessage({type:'equipamentosUpdate',payload:{equip:EQUIP}},'*'); }
 }

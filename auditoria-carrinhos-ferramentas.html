@@ -334,6 +334,9 @@ table.regs a:hover { text-decoration: underline; }
   .actions, .bulk-bar, .hint, .draft-note, .sig-tools button, .tabs { display: none; }
   .tools-card, .sig-cell { break-inside: avoid; }
 }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -930,12 +933,18 @@ function updateSummary() {
 }
 
 /* ================= Cabeçalho e sincronização ================= */
-function tecnicosDe(local) {
-  return (TECNICOS[local] || []).filter(function(t) { return !t.inativo; }).map(function(t) { return t.n; });
+function tecnicosDe(local, mes) {
+  return (TECNICOS[local] || []).filter(function(t) {
+    if (t.inativo) return false;
+    // fora da janela de atividade (entrada/saida) nao e' auditavel nesse mes
+    if (mes && t.desde && mes < t.desde) return false;
+    if (mes && t.ate && mes > t.ate) return false;
+    return true;
+  }).map(function(t) { return t.n; });
 }
 function fillTecSelects(local) {
   var opts = '<option value="">— Selecionar —</option>';
-  tecnicosDe(local).forEach(function(n) { opts += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
+  tecnicosDe(local, (document.getElementById('fMes')||{}).value).forEach(function(n) { opts += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
   if (!local) opts = '<option value="">— Selecionar local primeiro —</option>';
   var a = document.getElementById('fTecnico'), b = document.getElementById('fTecBaixo');
   var prev = a.value;
@@ -1589,7 +1598,8 @@ function renderUnitCards(ano, locais, faltas) {
       var m = ALERT_START;
       if (t.desde && t.desde > m) m = t.desde;
       while (ymLE(m, fim)) {
-        if (m.slice(0, 4) === ano) {
+        // Nao cobrar meses depois da saida (o mesmo criterio que mesesEmFalta ja usava)
+        if (m.slice(0, 4) === ano && (!t.ate || ymLE(m, t.ate))) {
           esperadas++;
           var tem = INDEX_ROWS.some(function(r) { return r.local === local && r.mes === m && r.tecnico === t.n; });
           if (tem) feitas++; else mesesIncompletos[m] = true;

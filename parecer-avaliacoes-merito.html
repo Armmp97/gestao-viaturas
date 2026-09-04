@@ -86,6 +86,9 @@ table.hlist td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); fo
 #toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 99; background: var(--navy); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: .84rem; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.25); display: none; max-width: 90vw; }
 #toast.err { background: var(--danger); }
 @media (max-width: 640px) { .page { padding: 18px 12px 60px; } }
+
+/* mobile: 16px evita que o iPhone dê zoom ao tocar num campo */
+@media(max-width:640px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
