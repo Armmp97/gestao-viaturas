@@ -286,7 +286,15 @@ var TECNICOS = {
 /* As avaliações começam em Julho/2026 (feitas no início do mês seguinte).
    Meses anteriores não aparecem nem são cobrados; o mês corrente também não é cobrado. */
 var ALERT_START = '2026-07';
-var DRAFT_KEY = 'am_draft_v3';
+var DRAFT_KEY = (function(){
+  // O rascunho passa a ser por pessoa: num computador partilhado, o rascunho (e a
+  // assinatura) de um colega deixa de aparecer a quem usar a maquina a seguir.
+  var e = '';
+  try { if (window.parent && window.parent !== window && window.parent.amGetUser) {
+    var u = window.parent.amGetUser(); e = (u && u.email) || '';
+  } } catch (x) {}
+  return 'am_draft_v3' + (e ? '::' + e : '');
+})();
 
 /* ================== ESTADO ================== */
 var ratings = { C: {}, T: {} };   /* idx -> 1..5 */

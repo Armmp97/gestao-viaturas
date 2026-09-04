@@ -705,7 +705,15 @@ var HIST_SEED = [
 
 
 /* ================= Estado ================= */
-var DRAFT_KEY = 'acf_draft_v2';
+var DRAFT_KEY = (function(){
+  // O rascunho passa a ser por pessoa: num computador partilhado, o rascunho (e a
+  // assinatura) de um colega deixa de aparecer a quem usar a maquina a seguir.
+  var e = '';
+  try { if (window.parent && window.parent !== window && window.parent.amGetUser) {
+    var u = window.parent.amGetUser(); e = (u && u.email) || '';
+  } } catch (x) {}
+  return 'acf_draft_v2' + (e ? '::' + e : '');
+})();
 var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 var MES_ABR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 var TOOLS = [];            // lista ativa (depende do local)
@@ -1182,7 +1190,10 @@ function saveAuditoria() {
 
   var html = buildReport(d, okCount, nokItens, valNok, pend);
   var dp = d.data.split('-');
-  var filename = 'Auditoria_Carrinho_' + slug(d.tecnico) + '_' + dp[2] + '-' + dp[1] + '-' + dp[0] + '_' + slug(d.local) + '.html';
+  // Com hora: duas auditorias ao mesmo tecnico no mesmo dia deixam de se substituir.
+  var _ag = new Date();
+  var _hm = String(_ag.getHours()).padStart(2,'0') + String(_ag.getMinutes()).padStart(2,'0');
+  var filename = 'Auditoria_Carrinho_' + slug(d.tecnico) + '_' + dp[2] + '-' + dp[1] + '-' + dp[0] + '_' + _hm + '_' + slug(d.local) + '.html';
 
   var record = {
     local: d.local, mes: d.mes, tecnico: d.tecnico, assinada: d.dataFecho || d.data,

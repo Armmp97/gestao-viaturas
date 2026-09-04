@@ -602,7 +602,7 @@ var TERMOS_SEED = [
 var EMPRESA = {
   nome: 'Walkingarage, Lda',
   nif: '513 281 622',
-  sede: 'Estrada de Paço de Arcos Nº167 Armazém C, 2735-509'
+  sede: 'Alto da Bela Vista, Pav. 32, 2735-340 Agualva-Cacém'
 };
 
 /* Colaboradores — organigrama DomusCar */
@@ -1140,7 +1140,9 @@ function nomeFicheiro(d){
   var p=(d.data||hoje()).split('-');
   var quem = (d.tipo==='devolucao_farda'||!d.nomeCurto) ? (d.nomeCompleto||d.nomeCurto) : d.nomeCurto;
   var extra = d.tipo==='carrinho' && d.local ? '_'+slug(d.local.replace('Mecânica ','')) : '';
-  return slug(quem)+'_'+p[2]+p[1]+p[0]+'_'+TIPOS[d.tipo].ficheiro+extra+'.html';
+  // Com hora: dois termos da mesma pessoa e do mesmo tipo no mesmo dia deixam de se substituir.
+  var _a=new Date(), _hm=String(_a.getHours()).padStart(2,'0')+String(_a.getMinutes()).padStart(2,'0');
+  return slug(quem)+'_'+p[2]+p[1]+p[0]+'_'+_hm+'_'+TIPOS[d.tipo].ficheiro+extra+'.html';
 }
 function standalone(d){
   var css=document.querySelector('style').textContent;

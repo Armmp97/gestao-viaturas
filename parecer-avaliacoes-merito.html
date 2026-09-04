@@ -165,15 +165,23 @@ var EQUIPAS = {
     { n: 'Gonçalo Faustino', f: 'Fiel de Armazém' }
   ]},
   'jose.rodriguez@domuscar.com': { coord: 'José Rodriguez', unidade: 'Mecânica Cacém', pessoas: [
-    { n: 'Tomas Figueiredo', f: 'Assessor de Vendas' },
+    { n: 'Tomás Figueiredo', f: 'Assessor de Vendas' },
     { n: 'Inês Peixinho',    f: 'Fiel de Armazém' },
-    { n: 'Alicia Vieira',    f: 'Fiel de Armazém' },
+    { n: 'Alícia Vieira',    f: 'Fiel de Armazém' },
     { n: 'André Gomes',      f: 'Fiel de Armazém' }
   ]}
 };
 
 var ALERT_START = '2026-07';
-var DRAFT_KEY = 'pm_draft_v1';
+var DRAFT_KEY = (function(){
+  // O rascunho passa a ser por pessoa: num computador partilhado, o rascunho (e a
+  // assinatura) de um colega deixa de aparecer a quem usar a maquina a seguir.
+  var e = '';
+  try { if (window.parent && window.parent !== window && window.parent.amGetUser) {
+    var u = window.parent.amGetUser(); e = (u && u.email) || '';
+  } } catch (x) {}
+  return 'pm_draft_v1' + (e ? '::' + e : '');
+})();
 
 var histRows = [], histLoaded = false;
 var currentUserEmail = '', currentUserName = '';
