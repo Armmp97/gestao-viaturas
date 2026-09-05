@@ -564,7 +564,10 @@ function parseReport(html, unit, dateISO){
     if(r.x>0 && r.xv==="Validado") r.xp = (pagoSel!==null && !isNaN(pagoSel)) ? pagoSel : parsePago(r.xo,r.x);
     else if(pagoSel!==null && !isNaN(pagoSel) && pagoSel>0 && r.xv!=="Não validado") r.xp=pagoSel;
     /* Presenca corrigida pelo coordenador substitui a do Face ID. */
-    if(corr[nome]!=null){ r.p=corr[nome]; r.pc=true; delete corr[nome]; }
+    if(corr[nome]!=null){
+      r.p=corr[nome]; r.pc=true; delete corr[nome];
+      r.x=Math.max(0, r.p-480);          /* extras recalculadas com o horário corrigido */
+    }
     if(r.p!=null) r.f=Math.max(0, 480-r.p);
     rows.push(r);
   });

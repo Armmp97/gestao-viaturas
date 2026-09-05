@@ -688,9 +688,19 @@ function checkSchedule(name, r, horarios) {
 /* Campos de hora a serio para o coordenador corrigir picagens: em vez de escrever
    "08:30 | 12:30 | 13:30 | 17:30" numa caixa de texto, escolhe as horas e a presenca
    desse dia passa a ser calculada com exactidao (fica em data-presenca-corr). */
-function corrHorasHTML(gid, name){
+function dcOpcoesPagar(ex){
+  var o = '<option value="">-- Horas a pagar --<\/option>';
+  if (ex > 0) {
+    o += '<option value="'+ex+'">Tudo — '+fmt(ex)+'<\/option>';
+    for (var q=15; q<ex; q+=15) o += '<option value="'+q+'">'+fmt(q)+'<\/option>';
+  }
+  o += '<option value="0">0h00m — não pagar<\/option>';
+  return o;
+}
+
+function corrHorasHTML(gid, name, cid){
   var s = '';
-  s += '<div class="row corrgrp" id="'+gid+'" data-corr-name="'+name+'" style="gap:8px;flex-wrap:wrap;align-items:center">';
+  s += '<div class="row corrgrp" id="'+gid+'" data-corr-name="'+name+'"'+(cid?' data-cid="'+cid+'"':'')+' style="gap:8px;flex-wrap:wrap;align-items:center">';
   s += '<label style="font-size:0.85em;display:flex;align-items:center;gap:4px"><input type="checkbox" data-field="corr_sem_almoco" data-name="'+name+'" onchange="dcPausa(\''+gid+'\')"> sem pausa de almoço<\/label>';
   s += '<span style="font-size:0.85em">Entrada<\/span><input type="time" data-field="corr_entrada" data-name="'+name+'" oninput="dcCorr(\''+gid+'\')">';
   s += '<span class="pz" style="font-size:0.85em">Saída almoço<\/span><input type="time" class="pz" data-field="corr_saida_almoco" data-name="'+name+'" oninput="dcCorr(\''+gid+'\')">';
@@ -774,6 +784,11 @@ function generateUnitHTML(unitName, smart2, ogData) {
     h += '.intv-table td{padding:5px 8px;border-bottom:1px solid #eee}\n';
     h += '.intv-table tr:nth-child(even){background:#fafafa}\n';
     h += '.sched-row{font-size:0.83em;padding:3px 0}\n';
+    h += 'details.intv{margin:8px 0}\n';
+    h += 'details.intv>summary{cursor:pointer;font-size:0.83em;color:#2980b9;font-weight:600;list-style:none;padding:5px 0}\n';
+    h += 'details.intv>summary::-webkit-details-marker{display:none}\n';
+    h += 'details.intv>summary::before{content:"\\25B8 ";display:inline-block;transition:transform .15s}\n';
+    h += 'details.intv[open]>summary::before{content:"\\25BE "}\n';
     h += '.sched-row .neg{color:#e74c3c;font-weight:600}.sched-row .pos{color:#27ae60}\n';
     h += '.special{padding:10px 14px;border-radius:6px;margin-bottom:6px;font-size:0.86em}\n';
     h += '.special.ferias{background:#d4edda;border-left:4px solid #28a745}\n';
@@ -854,6 +869,11 @@ function generateUnitHTML(unitName, smart2, ogData) {
         // Alerts
         for(var ai=0;ai<r.alerts.length;ai++){
             var a = r.alerts[ai];
+            /* O verde repete o que ja' esta' nos crachas e na tira de factos, e a linha do
+               tempo morto repete a caixa amarela logo a seguir. Fica so' o que esta' mal. */
+            if(a.type === "ok") continue;
+            if(a.cat === "TempoMorto") continue;      /* repete a caixa amarela */
+            if(a.cat === "HorasExtras") continue;     /* repete a etiqueta do formulário */
             var cls = {ok:"alert-ok",danger:"alert-danger",warn:"alert-warn",info:"alert-info"}[a.type];
             var icon = {ok:"✓",danger:"✗",warn:"⚠",info:"ℹ"}[a.type];
             h += '<div class="alert '+cls+'">'+icon+' '+a.msg+'<\/div>\n';
@@ -864,7 +884,7 @@ function generateUnitHTML(unitName, smart2, ogData) {
             h += '<div style="margin:8px 0"><strong style="font-size:0.83em;color:#2980b9">Desvios de Horário:<\/strong><br>\n';
             for(var di=0;di<r.schedDevs.length;di++){
                 var d = r.schedDevs[di];
-                if(d.diffMin===null) h += '<div class="sched-row">⚠ '+d.tipo+': previsto '+d.previsto+', sem registo<\/div>\n';
+                if(d.diffMin===null) continue;   /* já está dito no alerta da picagem em falta */
                 else h += '<div class="sched-row">'+d.tipo+': previsto '+d.previsto+', real '+d.real+' <span class="'+(d.status==="danger"?"neg":"pos")+'">('+d.diffStr+')<\/span><\/div>\n';
             }
             h += '<\/div>\n';
@@ -879,21 +899,19 @@ function generateUnitHTML(unitName, smart2, ogData) {
         h += '<div class="item"><div class="lbl">Tempo OG<\/div><div class="val green">'+fmt(r.ogTotal)+'<\/div><\/div>\n';
         h += '<div class="item"><div class="lbl">Nº Intervenções<\/div><div class="val">'+r.nIntv+'<\/div><\/div><\/div>\n';
 
-        // Horas extras form
-        if(r.extras > 0) {
-            h += '<div class="form-group">\n';
-            h += '<label>Horas Extras: '+fmt(r.extras)+' — Validação<\/label>\n';
+        // Horas extras form — fica sempre no HTML: se o coordenador corrigir as picagens
+        // e aparecerem extras, o campo tem de estar la' para ele as poder validar.
+        {
+            h += '<div class="form-group" id="'+cid+'_xg"'+(r.extras > 0 ? '' : ' style="display:none"')+'>\n';
+            h += '<label id="'+cid+'_xlbl">Horas Extras: '+fmt(r.extras)+' — Validação<\/label>\n';
             h += '<div class="row">\n';
-            h += '<select id="'+cid+'_extras" data-field="horas_extras" data-name="'+r.name+'">\n';
+            h += '<select id="'+cid+'_extras" data-field="horas_extras" data-name="'+r.name+'" onchange="dcVal(\''+cid+'\')">\n';
             h += '<option value="">-- Selecionar --<\/option>\n';
             h += '<option value="Validado">✓ Validar horas extras<\/option>\n';
             h += '<option value="Não validado">✗ Não validar<\/option>\n';
             h += '<\/select>\n';
             h += '<select id="'+cid+'_extras_pagas" data-field="horas_extras_pagas" data-name="'+r.name+'">\n';
-            h += '<option value="">-- Horas a pagar --<\/option>\n';
-            h += '<option value="'+r.extras+'">Tudo — '+fmt(r.extras)+'<\/option>\n';
-            for(var qm=15; qm<r.extras; qm+=15) h += '<option value="'+qm+'">'+fmt(qm)+'<\/option>\n';
-            h += '<option value="0">0h00m — não pagar<\/option>\n';
+            h += dcOpcoesPagar(r.extras);
             h += '<\/select>\n';
             h += '<input type="text" id="'+cid+'_extras_obs" placeholder="Justificação (opcional)" style="flex:1" data-field="horas_extras_obs" data-name="'+r.name+'">\n';
             h += '<\/div><\/div>\n';
@@ -904,13 +922,12 @@ function generateUnitHTML(unitName, smart2, ogData) {
             h += '<div class="form-group">\n';
             h += '<label>Correção de Picagens 2Smart (imparidade / falta de registo almoço)<\/label>\n';
             h += '<div style="font-size:0.85em;color:#666;margin-bottom:4px">Picagens reais:<\/div>\n';
-            h += corrHorasHTML('cg_'+cid, r.name) + '\n';
-            h += '<textarea id="'+cid+'_picagem_obs" placeholder="Motivo da imparidade / correção necessária..." data-field="picagem_obs" data-name="'+r.name+'"><\/textarea>\n';
+            h += corrHorasHTML('cg_'+cid, r.name, cid) + '\n';
             h += '<\/div>\n';
         }
 
         // Tempo morto form (all gaps between 2Smart and OG)
-        if(r.totalMorto > 5 && r.mortoGaps && r.mortoGaps.length > 0) {
+        if(r.totalMorto > 30 && r.mortoGaps && r.mortoGaps.length > 0) {
             h += '<div class="form-group" style="background:#fff8f0;border-color:#f0c060">\n';
             h += '<label style="color:#856404">Tempo Morto Total: '+fmt(r.totalMorto)+' ('+r.mortoGaps.length+' períodos) — Justificação<\/label>\n';
             h += '<div style="font-size:0.83em;color:#666;margin-bottom:6px">';
@@ -924,14 +941,9 @@ function generateUnitHTML(unitName, smart2, ogData) {
             h += '<\/div>\n';
         }
 
-        // Faltas/Atrasos observations
-        h += '<div class="form-group" style="background:#f0f0ff;border-color:#b8b8e0">\n';
-        h += '<label style="color:#444">Observações sobre faltas / atrasos de '+r.name.split(' ')[0]+'<\/label>\n';
-        h += '<textarea id="'+cid+'_faltas_obs" placeholder="Registar justificação de faltas, atrasos ou saídas antecipadas..." data-field="faltas_atrasos_obs" data-name="'+r.name+'"><\/textarea>\n';
-        h += '<\/div>\n';
-
-        // Interventions table
+        // Interventions table — fechada por defeito, para nao empurrar tudo para baixo
         if(r.interventions.length) {
+            h += '<details class="intv"><summary>Ver intervenções ('+r.interventions.length+') — '+fmt(r.ogTotal)+'<\/summary>\n';
             h += '<table class="intv-table"><tr><th>Intervenção<\/th><th>OSV<\/th><th>Início<\/th><th>Fim<\/th><th>Duração<\/th><\/tr>\n';
             for(var ii=0;ii<r.interventions.length;ii++){
                 var iv = r.interventions[ii];
@@ -940,13 +952,13 @@ function generateUnitHTML(unitName, smart2, ogData) {
                 var fimStr = iv.fim!==null ? fmtTime(Math.round(iv.fim)) : "—";
                 h += '<tr><td>'+iv.intervencao+'<\/td><td>'+iv.osv+'<\/td><td>'+iniStr+'<\/td><td>'+fimStr+'<\/td><td>'+dur+'<\/td><\/tr>\n';
             }
-            h += '<\/table>\n';
+            h += '<\/table><\/details>\n';
         }
 
-        // General observations
+        // Uma unica caixa de observacoes: motivo da imparidade, faltas, atrasos e notas gerais.
         h += '<div class="form-group" style="background:#f8f8f8;border-color:#ddd">\n';
-        h += '<label style="color:#333">Observações gerais sobre '+r.name.split(' ')[0]+'<\/label>\n';
-        h += '<textarea id="'+cid+'_obs_geral" placeholder="Notas adicionais..." data-field="obs_geral" data-name="'+r.name+'"><\/textarea>\n';
+        h += '<label style="color:#333">Observações sobre '+r.name.split(' ')[0]+'<\/label>\n';
+        h += '<textarea id="'+cid+'_obs_geral" placeholder="Faltas, atrasos, motivo da correção de picagens, notas para o RH..." data-field="obs_geral" data-name="'+r.name+'"><\/textarea>\n';
         h += '<\/div>\n';
         h += '<\/div><\/div>\n';
     }
@@ -984,6 +996,29 @@ function generateUnitHTML(unitName, smart2, ogData) {
     h += '  if(!sem && sa!=null && ea!=null && ea>sa) pr-=(ea-sa);\n';
     h += '  out.textContent="Presença corrigida: "+dcFmt(pr)+(pr<480?" — em falta "+dcFmt(480-pr):(pr>480?" — extras "+dcFmt(pr-480):""));\n';
     h += '  g.setAttribute("data-presenca-corr", String(pr));\n';
+    h += '  var cid=g.getAttribute("data-cid");\n';
+    h += '  if(cid){\n';
+    h += '    var ex=Math.max(0,pr-480);\n';
+    h += '    var grp=document.getElementById(cid+"_xg"), lbl=document.getElementById(cid+"_xlbl");\n';
+    h += '    var sv=document.getElementById(cid+"_extras"), sp=document.getElementById(cid+"_extras_pagas");\n';
+    h += '    if(grp){ grp.style.display = ex>0 ? "" : "none"; }\n';
+    h += '    if(lbl){ lbl.textContent = "Horas Extras: "+dcFmt(ex)+" — Validação (após correção)"; }\n';
+    h += '    if(sp && sp.getAttribute("data-ex")!==String(ex)){ sp.innerHTML=dcOpc(ex); sp.setAttribute("data-ex",String(ex)); sp.value=""; sp.disabled=false; if(sv) sv.value=""; }\n';
+    h += '    var cb=g.closest?g.closest(".cb"):null;\n';
+    h += '    if(cb){ cb.setAttribute("data-presenca",String(pr)); cb.setAttribute("data-extras",String(ex)); cb.setAttribute("data-falta",String(Math.max(0,480-pr))); }\n';
+    h += '  }\n';
+    h += '}\n';
+    h += 'function dcOpc(ex){\n';
+    h += '  var o = \'<option value="">-- Horas a pagar --<\\/option>\';\n';
+    h += '  if(ex>0){ o += \'<option value="\'+ex+\'">Tudo — \'+dcFmt(ex)+\'<\\/option>\';\n';
+    h += '    for(var q=15;q<ex;q+=15) o += \'<option value="\'+q+\'">\'+dcFmt(q)+\'<\\/option>\'; }\n';
+    h += '  return o + \'<option value="0">0h00m — não pagar<\\/option>\';\n';
+    h += '}\n';
+    h += 'function dcVal(cid){\n';
+    h += '  var sv=document.getElementById(cid+"_extras"), sp=document.getElementById(cid+"_extras_pagas");\n';
+    h += '  if(!sv||!sp) return;\n';
+    h += '  if(sv.value==="Não validado"){ sp.value="0"; sp.disabled=true; }\n';
+    h += '  else { sp.disabled=false; if(sv.value==="" || sp.value==="0") sp.value=""; }\n';
     h += '}\n';
     h += 'function submitValidation() {\n';
     h += '    var fields = document.querySelectorAll("[data-field]");\n';
@@ -1005,7 +1040,7 @@ function generateUnitHTML(unitName, smart2, ogData) {
     h += '        if (entries.length === 0) continue;\n';
     h += '        hasContent = true;\n';
     h += '        body += "▶ " + name + "\\n";\n';
-    h += '        var labels = {"horas_extras":"Horas Extras","horas_extras_pagas":"Horas a pagar (min)","horas_extras_obs":"Justificação H. Extras","picagem_correcao":"Picagens Corrigidas","picagem_obs":"Motivo Correção Picagem","obs_geral":"Observações","horario_correcao":"Horário Real (sem registo)","obs_sem_registo":"Obs. Falta Registo","tempo_morto_obs":"Justificação Tempo Morto","faltas_atrasos_obs":"Obs. Faltas/Atrasos","corr_entrada":"Correção — Entrada","corr_saida_almoco":"Correção — Saída almoço","corr_entrada_almoco":"Correção — Entrada almoço","corr_saida":"Correção — Saída","corr_sem_almoco":"Correção — sem pausa de almoço"};\n';
+    h += '        var labels = {"horas_extras":"Horas Extras","horas_extras_pagas":"Horas a pagar (min)","horas_extras_obs":"Justificação H. Extras","picagem_correcao":"Picagens Corrigidas","obs_geral":"Observações","horario_correcao":"Horário Real (sem registo)","obs_sem_registo":"Obs. Falta Registo","tempo_morto_obs":"Justificação Tempo Morto","corr_entrada":"Correção — Entrada","corr_saida_almoco":"Correção — Saída almoço","corr_entrada_almoco":"Correção — Entrada almoço","corr_saida":"Correção — Saída","corr_sem_almoco":"Correção — sem pausa de almoço"};\n';
     h += '        for (var i=0;i<entries.length;i++) {\n';
     h += '            body += "  " + (labels[entries[i][0]] || entries[i][0]) + ": " + entries[i][1] + "\\n";\n';
     h += '        }\n';
